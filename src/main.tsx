@@ -1,384 +1,525 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import {
-  ArrowRight,
   BadgeCheck,
-  BarChart3,
+  Banknote,
   Bell,
+  Boxes,
   CalendarDays,
+  CheckCircle2,
   ChevronDown,
-  CircleDollarSign,
   ClipboardCheck,
   Clock3,
-  Filter,
-  Handshake,
-  HeartHandshake,
+  Gauge,
+  HandCoins,
+  LayoutDashboard,
   MapPin,
   Menu,
-  MessageCircle,
+  MessageSquareText,
   PackageCheck,
+  Plus,
+  Route,
   Search,
+  Settings,
   ShieldCheck,
   ShoppingBag,
   Sprout,
-  Star,
+  TrendingDown,
+  TrendingUp,
   Truck,
   UsersRound,
   WalletCards,
 } from "lucide-react";
 import "./styles.css";
 
-type CropListing = {
+type Stat = {
+  label: string;
+  value: string;
+  detail: string;
+  trend: "up" | "down" | "steady";
+};
+
+type Order = {
+  id: string;
+  buyer: string;
+  crop: string;
+  quantity: string;
+  location: string;
+  value: string;
+  status: "Matching" | "Pickup booked" | "In transit" | "Quality check";
+  eta: string;
+};
+
+type SupplyLot = {
   crop: string;
   farmer: string;
-  location: string;
+  district: string;
   quantity: string;
-  price: string;
+  ask: string;
   grade: string;
-  harvest: string;
+  readiness: string;
   image: string;
 };
 
-type MarketPrice = {
-  item: string;
+type PriceSignal = {
+  crop: string;
   region: string;
-  wholesale: string;
-  farmerAsk: string;
-  change: string;
+  farmerAsk: number;
+  wholesale: number;
+  market: number;
 };
 
-const listings: CropListing[] = [
+type RouteItem = {
+  route: string;
+  driver: string;
+  lots: string;
+  status: string;
+  temperature: string;
+};
+
+const stats: Stat[] = [
   {
-    crop: "Green Chilli",
-    farmer: "Abdul Karim",
-    location: "Bogura Sadar",
-    quantity: "420 kg",
-    price: "৳86/kg",
-    grade: "Grade A",
-    harvest: "Ready today",
-    image:
-      "https://images.unsplash.com/photo-1583119022894-919a68a3d0e3?auto=format&fit=crop&w=900&q=80",
+    label: "GMV today",
+    value: "৳4.82L",
+    detail: "18 orders confirmed",
+    trend: "up",
   },
+  {
+    label: "Farmer payout",
+    value: "৳3.96L",
+    detail: "৳82K pending escrow",
+    trend: "up",
+  },
+  {
+    label: "Active supply",
+    value: "27.4 tons",
+    detail: "63 verified lots",
+    trend: "steady",
+  },
+  {
+    label: "Avg price lift",
+    value: "16.8%",
+    detail: "vs local middleman rate",
+    trend: "up",
+  },
+];
+
+const orders: Order[] = [
+  {
+    id: "AK-2048",
+    buyer: "Shwapno Retail",
+    crop: "Tomato",
+    quantity: "2.0 tons",
+    location: "Dhaka North",
+    value: "৳84,000",
+    status: "Matching",
+    eta: "3 farmer groups",
+  },
+  {
+    id: "AK-2047",
+    buyer: "Hotel Sarina",
+    crop: "Green Chilli",
+    quantity: "360 kg",
+    location: "Banani",
+    value: "৳34,920",
+    status: "Pickup booked",
+    eta: "Today 6:30 PM",
+  },
+  {
+    id: "AK-2046",
+    buyer: "Agora Warehouse",
+    crop: "Potato",
+    quantity: "4.5 tons",
+    location: "Tejgaon",
+    value: "৳1,21,500",
+    status: "In transit",
+    eta: "2 hr 10 min",
+  },
+  {
+    id: "AK-2045",
+    buyer: "B2B Kitchen Co.",
+    crop: "Onion",
+    quantity: "1.1 tons",
+    location: "Mirpur",
+    value: "৳81,400",
+    status: "Quality check",
+    eta: "Awaiting buyer",
+  },
+];
+
+const supplyLots: SupplyLot[] = [
   {
     crop: "Tomato",
     farmer: "Mst. Rahima",
-    location: "Jashore",
+    district: "Jashore",
     quantity: "1.2 tons",
-    price: "৳34/kg",
-    grade: "Grade B+",
-    harvest: "Tomorrow",
+    ask: "৳34/kg",
+    grade: "B+",
+    readiness: "Ready tomorrow",
     image:
-      "https://images.unsplash.com/photo-1592841200221-a6898f307baa?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1592841200221-a6898f307baa?auto=format&fit=crop&w=500&q=80",
+  },
+  {
+    crop: "Green Chilli",
+    farmer: "Abdul Karim",
+    district: "Bogura",
+    quantity: "420 kg",
+    ask: "৳86/kg",
+    grade: "A",
+    readiness: "Ready now",
+    image:
+      "https://images.unsplash.com/photo-1583119022894-919a68a3d0e3?auto=format&fit=crop&w=500&q=80",
   },
   {
     crop: "Potato",
     farmer: "Nayan Mondol",
-    location: "Rangpur",
+    district: "Rangpur",
     quantity: "3.6 tons",
-    price: "৳21/kg",
-    grade: "Grade A",
-    harvest: "In storage",
+    ask: "৳21/kg",
+    grade: "A",
+    readiness: "Cold stored",
     image:
-      "https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=500&q=80",
   },
 ];
 
-const marketPrices: MarketPrice[] = [
+const priceSignals: PriceSignal[] = [
+  { crop: "Tomato", region: "Jashore", farmerAsk: 34, wholesale: 42, market: 48 },
+  { crop: "Potato", region: "Rangpur", farmerAsk: 21, wholesale: 27, market: 32 },
+  { crop: "Onion", region: "Pabna", farmerAsk: 63, wholesale: 74, market: 82 },
+  { crop: "Chilli", region: "Bogura", farmerAsk: 86, wholesale: 98, market: 116 },
+];
+
+const routes: RouteItem[] = [
   {
-    item: "Potato",
-    region: "Rangpur",
-    wholesale: "৳27/kg",
-    farmerAsk: "৳21/kg",
-    change: "+6%",
+    route: "Bogura - Dhaka",
+    driver: "Hasan Logistics",
+    lots: "3 lots / 1.1 tons",
+    status: "Pickup in 42 min",
+    temperature: "Ambient",
   },
   {
-    item: "Tomato",
-    region: "Jashore",
-    wholesale: "৳42/kg",
-    farmerAsk: "৳34/kg",
-    change: "-3%",
+    route: "Rangpur - Tejgaon",
+    driver: "North Cold Van",
+    lots: "2 lots / 4.5 tons",
+    status: "In transit",
+    temperature: "8°C",
   },
   {
-    item: "Onion",
-    region: "Pabna",
-    wholesale: "৳74/kg",
-    farmerAsk: "৳63/kg",
-    change: "+11%",
-  },
-  {
-    item: "Green Chilli",
-    region: "Bogura",
-    wholesale: "৳98/kg",
-    farmerAsk: "৳86/kg",
-    change: "+18%",
+    route: "Jashore - Dhaka",
+    driver: "Padma Cargo",
+    lots: "4 lots / 2.8 tons",
+    status: "Awaiting load",
+    temperature: "Ambient",
   },
 ];
 
-const steps = [
-  {
-    icon: Sprout,
-    title: "Farmer lists crop",
-    text: "Quantity, grade, harvest date, and expected fair price.",
-  },
-  {
-    icon: Handshake,
-    title: "Buyer confirms deal",
-    text: "Retailer, restaurant, or wholesaler orders directly.",
-  },
-  {
-    icon: Truck,
-    title: "Logistics picks up",
-    text: "Verified transport partners handle route and delivery.",
-  },
-  {
-    icon: WalletCards,
-    title: "Escrow releases pay",
-    text: "Farmer gets paid after delivery and quality confirmation.",
-  },
+const navItems = [
+  { label: "Dashboard", icon: LayoutDashboard, active: true },
+  { label: "Orders", icon: ShoppingBag },
+  { label: "Supply Lots", icon: Boxes },
+  { label: "Farmers", icon: UsersRound },
+  { label: "Logistics", icon: Truck },
+  { label: "Payouts", icon: WalletCards },
+  { label: "Settings", icon: Settings },
 ];
+
+function TrendIcon({ trend }: { trend: Stat["trend"] }) {
+  if (trend === "down") {
+    return <TrendingDown size={17} />;
+  }
+
+  if (trend === "up") {
+    return <TrendingUp size={17} />;
+  }
+
+  return <Gauge size={17} />;
+}
+
+function statusClass(status: Order["status"]) {
+  return status.toLowerCase().replaceAll(" ", "-");
+}
 
 function App() {
   return (
-    <main className="app-shell">
-      <nav className="topbar" aria-label="Main navigation">
-        <a className="brand" href="#top" aria-label="AmarKrishok home">
+    <main className="dashboard-shell">
+      <aside className="sidebar" aria-label="Dashboard navigation">
+        <a className="brand" href="/" aria-label="AmarKrishok dashboard">
           <span className="brand-mark">
             <Sprout size={22} strokeWidth={2.6} />
           </span>
           <span>
             <strong>AmarKrishok</strong>
-            <small>Fair farm trade</small>
+            <small>Supply command</small>
           </span>
         </a>
 
-        <div className="nav-links" aria-label="Sections">
-          <a href="#market">Market</a>
-          <a href="#prices">Prices</a>
-          <a href="#logistics">Logistics</a>
-          <a href="#trust">Trust</a>
-        </div>
-
-        <div className="nav-actions">
-          <button className="icon-button" type="button" aria-label="Notifications">
-            <Bell size={19} />
-          </button>
-          <button className="secondary-button" type="button">
-            <MessageCircle size={18} />
-            Support
-          </button>
-          <button className="menu-button" type="button" aria-label="Open menu">
-            <Menu size={22} />
-          </button>
-        </div>
-      </nav>
-
-      <section className="hero-section" id="top">
-        <div className="hero-copy">
-          <div className="status-pill">
-            <ShieldCheck size={16} />
-            Verified farmer-to-buyer marketplace
-          </div>
-          <h1>AmarKrishok brings fair crop prices from field to market.</h1>
-          <p>
-            A direct supply-chain platform for Bangladesh where farmers post
-            harvests, buyers order transparently, logistics partners deliver,
-            and payments stay protected.
-          </p>
-          <div className="hero-actions">
-            <button className="primary-button" type="button">
-              Browse crops
-              <ArrowRight size={19} />
-            </button>
-            <button className="secondary-button large" type="button">
-              <CircleDollarSign size={19} />
-              View live prices
-            </button>
-          </div>
-        </div>
-
-        <div className="market-console" id="market">
-          <div className="console-header">
-            <div>
-              <span>Today&apos;s supply</span>
-              <strong>Bogura - Jashore - Rangpur</strong>
-            </div>
-            <button className="icon-button" type="button" aria-label="Filter listings">
-              <Filter size={18} />
-            </button>
-          </div>
-
-          <div className="search-box">
-            <Search size={18} />
-            <input aria-label="Search crops" value="Search tomato, potato, chilli..." readOnly />
-            <button type="button">
-              District
-              <ChevronDown size={16} />
-            </button>
-          </div>
-
-          <div className="listing-grid">
-            {listings.map((listing) => (
-              <article className="crop-card" key={listing.crop}>
-                <img src={listing.image} alt={`${listing.crop} harvest`} />
-                <div className="crop-card-body">
-                  <div className="crop-title-row">
-                    <div>
-                      <h2>{listing.crop}</h2>
-                      <p>{listing.farmer}</p>
-                    </div>
-                    <span>{listing.price}</span>
-                  </div>
-                  <div className="crop-meta">
-                    <span>
-                      <MapPin size={15} />
-                      {listing.location}
-                    </span>
-                    <span>
-                      <PackageCheck size={15} />
-                      {listing.quantity}
-                    </span>
-                    <span>
-                      <BadgeCheck size={15} />
-                      {listing.grade}
-                    </span>
-                    <span>
-                      <CalendarDays size={15} />
-                      {listing.harvest}
-                    </span>
-                  </div>
-                  <button className="order-button" type="button">
-                    Reserve lot
-                  </button>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="metrics-band" aria-label="Platform metrics">
-        <div>
-          <strong>18%</strong>
-          <span>average farmer price lift</span>
-        </div>
-        <div>
-          <strong>42 min</strong>
-          <span>typical buyer response</span>
-        </div>
-        <div>
-          <strong>96%</strong>
-          <span>verified delivery completion</span>
-        </div>
-        <div>
-          <strong>৳12.8m</strong>
-          <span>protected escrow volume</span>
-        </div>
-      </section>
-
-      <section className="section-grid" id="prices">
-        <div className="section-heading">
-          <span>Live pricing</span>
-          <h2>Transparent prices before anyone bargains.</h2>
-          <p>
-            Farmers and buyers see the same district-level wholesale signal,
-            farmer asking price, and trend movement before placing an order.
-          </p>
-        </div>
-
-        <div className="price-panel">
-          <div className="panel-title">
-            <BarChart3 size={20} />
-            <strong>Market price board</strong>
-          </div>
-          {marketPrices.map((price) => (
-            <div className="price-row" key={price.item}>
-              <div>
-                <strong>{price.item}</strong>
-                <span>{price.region}</span>
-              </div>
-              <div>
-                <span>Wholesale</span>
-                <strong>{price.wholesale}</strong>
-              </div>
-              <div>
-                <span>Farmer ask</span>
-                <strong>{price.farmerAsk}</strong>
-              </div>
-              <em>{price.change}</em>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="workflow-section" id="logistics">
-        <div className="section-heading compact">
-          <span>Operating model</span>
-          <h2>Built around the parts that usually break.</h2>
-        </div>
-
-        <div className="workflow-grid">
-          {steps.map((step) => {
-            const Icon = step.icon;
+        <nav className="side-nav">
+          {navItems.map((item) => {
+            const Icon = item.icon;
             return (
-              <article className="workflow-card" key={step.title}>
-                <Icon size={23} />
-                <h3>{step.title}</h3>
-                <p>{step.text}</p>
-              </article>
+              <button className={item.active ? "active" : ""} type="button" key={item.label}>
+                <Icon size={19} />
+                {item.label}
+              </button>
             );
           })}
+        </nav>
+
+        <div className="trust-summary">
+          <ShieldCheck size={22} />
+          <strong>Escrow protected</strong>
+          <span>৳82,000 ready for farmer release after buyer confirmation.</span>
         </div>
-      </section>
+      </aside>
 
-      <section className="trust-section" id="trust">
-        <div className="trust-panel">
-          <div className="section-heading">
-            <span>Trust layer</span>
-            <h2>Quality, payment, and delivery stay visible.</h2>
-            <p>
-              AmarKrishok reduces middleman abuse by keeping lot grading,
-              escrow status, buyer history, and delivery proof in one shared
-              record.
-            </p>
-          </div>
-
-          <div className="trust-list">
-            <div>
-              <ClipboardCheck size={20} />
-              <span>Digital quality checklist before pickup</span>
-            </div>
-            <div>
-              <Clock3 size={20} />
-              <span>Delivery milestones with buyer confirmation</span>
-            </div>
-            <div>
-              <HeartHandshake size={20} />
-              <span>Farmer co-op groups for bulk orders</span>
-            </div>
-          </div>
-        </div>
-
-        <aside className="buyer-card" aria-label="Buyer request">
-          <div className="buyer-card-header">
-            <ShoppingBag size={22} />
-            <span>Buyer request</span>
-          </div>
-          <h3>Need 2 tons tomato for Dhaka retail chain</h3>
-          <p>Preferred delivery: next morning. Escrow ready after lot approval.</p>
-          <div className="buyer-stats">
-            <span>
-              <Star size={15} />
-              4.9 buyer rating
-            </span>
-            <span>
-              <UsersRound size={15} />
-              6 farmers matched
-            </span>
-          </div>
-          <button className="primary-button full" type="button">
-            Match farmers
+      <section className="workspace">
+        <header className="dashboard-topbar">
+          <button className="mobile-menu" type="button" aria-label="Open navigation">
+            <Menu size={22} />
           </button>
-        </aside>
+
+          <div className="page-title">
+            <span>Sunday, May 24</span>
+            <h1>Operations dashboard</h1>
+          </div>
+
+          <div className="topbar-actions">
+            <label className="global-search">
+              <Search size={18} />
+              <input value="Search order, farmer, district..." readOnly aria-label="Search dashboard" />
+            </label>
+            <button className="icon-button" type="button" aria-label="Notifications">
+              <Bell size={19} />
+            </button>
+            <button className="primary-button" type="button">
+              <Plus size={18} />
+              New lot
+            </button>
+          </div>
+        </header>
+
+        <section className="stats-grid" aria-label="Business metrics">
+          {stats.map((stat) => (
+            <article className="stat-card" key={stat.label}>
+              <div className={`trend ${stat.trend}`}>
+                <TrendIcon trend={stat.trend} />
+              </div>
+              <span>{stat.label}</span>
+              <strong>{stat.value}</strong>
+              <p>{stat.detail}</p>
+            </article>
+          ))}
+        </section>
+
+        <section className="dashboard-grid">
+          <section className="panel orders-panel" aria-labelledby="orders-heading">
+            <div className="panel-header">
+              <div>
+                <span>Order control</span>
+                <h2 id="orders-heading">Buyer demand queue</h2>
+              </div>
+              <button className="secondary-button" type="button">
+                All orders
+                <ChevronDown size={17} />
+              </button>
+            </div>
+
+            <div className="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Order</th>
+                    <th>Buyer</th>
+                    <th>Crop</th>
+                    <th>Quantity</th>
+                    <th>Value</th>
+                    <th>Status</th>
+                    <th>ETA</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {orders.map((order) => (
+                    <tr key={order.id}>
+                      <td>
+                        <strong>{order.id}</strong>
+                        <span>{order.location}</span>
+                      </td>
+                      <td>{order.buyer}</td>
+                      <td>{order.crop}</td>
+                      <td>{order.quantity}</td>
+                      <td>{order.value}</td>
+                      <td>
+                        <em className={`status ${statusClass(order.status)}`}>{order.status}</em>
+                      </td>
+                      <td>{order.eta}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <aside className="panel action-panel" aria-labelledby="release-heading">
+            <div className="panel-header">
+              <div>
+                <span>Payout action</span>
+                <h2 id="release-heading">Release queue</h2>
+              </div>
+              <HandCoins size={22} />
+            </div>
+            <div className="release-amount">
+              <span>Ready after QC</span>
+              <strong>৳82,000</strong>
+            </div>
+            <div className="checklist">
+              <span>
+                <CheckCircle2 size={18} />
+                Delivery photo received
+              </span>
+              <span>
+                <CheckCircle2 size={18} />
+                Buyer weight confirmed
+              </span>
+              <span>
+                <Clock3 size={18} />
+                Quality check pending
+              </span>
+            </div>
+            <button className="primary-button full" type="button">
+              Review payouts
+            </button>
+          </aside>
+
+          <section className="panel supply-panel" aria-labelledby="supply-heading">
+            <div className="panel-header">
+              <div>
+                <span>Farmer supply</span>
+                <h2 id="supply-heading">Verified lots</h2>
+              </div>
+              <button className="secondary-button" type="button">
+                <ClipboardCheck size={17} />
+                Grade lots
+              </button>
+            </div>
+
+            <div className="supply-list">
+              {supplyLots.map((lot) => (
+                <article className="supply-item" key={`${lot.crop}-${lot.farmer}`}>
+                  <img src={lot.image} alt={`${lot.crop} supply`} />
+                  <div>
+                    <h3>{lot.crop}</h3>
+                    <span>{lot.farmer}</span>
+                    <p>
+                      <MapPin size={15} />
+                      {lot.district}
+                    </p>
+                  </div>
+                  <div>
+                    <strong>{lot.quantity}</strong>
+                    <span>{lot.ask}</span>
+                  </div>
+                  <div>
+                    <strong>Grade {lot.grade}</strong>
+                    <span>{lot.readiness}</span>
+                  </div>
+                  <button className="icon-button" type="button" aria-label={`Approve ${lot.crop} lot`}>
+                    <BadgeCheck size={19} />
+                  </button>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <section className="panel price-panel" aria-labelledby="price-heading">
+            <div className="panel-header">
+              <div>
+                <span>Price intelligence</span>
+                <h2 id="price-heading">Farmer vs market spread</h2>
+              </div>
+              <Banknote size={22} />
+            </div>
+
+            <div className="price-bars">
+              {priceSignals.map((price) => (
+                <div className="price-row" key={price.crop}>
+                  <div className="price-label">
+                    <strong>{price.crop}</strong>
+                    <span>{price.region}</span>
+                  </div>
+                  <div className="bar-stack" aria-label={`${price.crop} price comparison`}>
+                    <span style={{ width: `${(price.farmerAsk / price.market) * 100}%` }} />
+                    <span style={{ width: `${(price.wholesale / price.market) * 100}%` }} />
+                  </div>
+                  <strong>৳{price.market}/kg</strong>
+                </div>
+              ))}
+            </div>
+            <div className="legend">
+              <span>
+                <i className="farmer" />
+                Farmer ask
+              </span>
+              <span>
+                <i className="wholesale" />
+                Wholesale
+              </span>
+            </div>
+          </section>
+
+          <section className="panel logistics-panel" aria-labelledby="logistics-heading">
+            <div className="panel-header">
+              <div>
+                <span>Logistics board</span>
+                <h2 id="logistics-heading">Routes in motion</h2>
+              </div>
+              <Route size={22} />
+            </div>
+
+            <div className="route-list">
+              {routes.map((route) => (
+                <article className="route-item" key={route.route}>
+                  <div className="route-icon">
+                    <Truck size={20} />
+                  </div>
+                  <div>
+                    <h3>{route.route}</h3>
+                    <span>{route.driver}</span>
+                  </div>
+                  <div>
+                    <strong>{route.lots}</strong>
+                    <span>{route.temperature}</span>
+                  </div>
+                  <em>{route.status}</em>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <aside className="panel messages-panel" aria-labelledby="messages-heading">
+            <div className="panel-header">
+              <div>
+                <span>Alerts</span>
+                <h2 id="messages-heading">Field updates</h2>
+              </div>
+              <MessageSquareText size={22} />
+            </div>
+            <div className="message-list">
+              <span>
+                <PackageCheck size={18} />
+                Tomato lot AKL-882 passed weight check.
+              </span>
+              <span>
+                <CalendarDays size={18} />
+                Rangpur potato pickup moved to 8:20 PM.
+              </span>
+              <span>
+                <UsersRound size={18} />
+                4 new farmers awaiting verification.
+              </span>
+            </div>
+          </aside>
+        </section>
       </section>
     </main>
   );
