@@ -97,7 +97,8 @@ button {
   overflow-x: auto;
 }
 
-.main-nav button {
+.main-nav button,
+.mobile-menu-panel button {
   min-height: 38px;
   padding: 0 12px;
   border: 0;
@@ -109,9 +110,15 @@ button {
 }
 
 .main-nav button.active,
-.main-nav button:hover {
+.main-nav button:hover,
+.mobile-menu-panel button.active,
+.mobile-menu-panel button:hover {
   color: #176b47;
   background: #e8f3e8;
+}
+
+.mobile-menu-panel {
+  display: none;
 }
 
 .icon-button,
@@ -218,7 +225,9 @@ button {
 .panel,
 .crop-card,
 .stat-card,
-.workflow-card {
+.workflow-card,
+.trust-panel,
+.buyer-card {
   border: 1px solid rgba(24, 48, 40, 0.12);
   border-radius: 8px;
   background: #ffffff;
@@ -388,6 +397,88 @@ button {
   margin: 0;
   color: #60736b;
   line-height: 1.55;
+}
+
+.trust-section {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 410px);
+  gap: 18px;
+  max-width: 1480px;
+  margin: 0 auto;
+  padding: 0 clamp(14px, 4vw, 56px) 56px;
+}
+
+.trust-panel {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(260px, 0.9fr);
+  gap: 24px;
+  align-items: center;
+  padding: clamp(22px, 4vw, 42px);
+}
+
+.trust-title {
+  margin-bottom: 0;
+}
+
+.trust-title p {
+  max-width: 620px;
+  margin: 0;
+  color: #5f7169;
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.trust-list {
+  display: grid;
+  gap: 12px;
+}
+
+.trust-list div {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 58px;
+  padding: 14px;
+  border-radius: 8px;
+  color: #25473a;
+  background: #f3f6ef;
+  font-weight: 760;
+}
+
+.trust-list svg {
+  flex: 0 0 auto;
+  color: #176b47;
+}
+
+.buyer-card {
+  align-self: stretch;
+  padding: 24px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.98)),
+    url("https://images.unsplash.com/photo-1523741543316-beb7fc7023d8?auto=format&fit=crop&w=900&q=80");
+  background-position: center;
+  background-size: cover;
+}
+
+.buyer-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #176b47;
+  font-size: 0.82rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.buyer-card h3 {
+  margin: 32px 0 12px;
+  font-size: 1.7rem;
+  line-height: 1.12;
+}
+
+.buyer-card p {
+  color: #5b7067;
+  line-height: 1.6;
 }
 
 .page-wrap {
@@ -672,7 +763,8 @@ th {
 @media (max-width: 1160px) {
   .hero-section,
   .form-layout,
-  .dashboard-shell {
+  .dashboard-shell,
+  .trust-section {
     grid-template-columns: 1fr;
   }
 
@@ -687,6 +779,10 @@ th {
     min-height: auto;
     border-right: 0;
     border-bottom: 1px solid rgba(24, 48, 40, 0.12);
+  }
+
+  .trust-panel {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -704,15 +800,22 @@ th {
   }
 
   .brand small,
-  .header-actions .icon-button {
+  .header-actions .icon-button,
+  .main-nav {
     display: none;
   }
 
-  .main-nav {
-    display: flex;
+  .mobile-menu-panel {
+    display: grid;
     grid-column: 1 / -1;
-    justify-content: flex-start;
-    padding-bottom: 2px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    padding-top: 4px;
+  }
+
+  .mobile-menu-panel button {
+    justify-content: center;
+    min-width: 0;
   }
 
   .hero-section {
@@ -727,6 +830,7 @@ th {
   .market-grid,
   .metrics-band,
   .workflow-section,
+  .trust-section,
   .stats-grid,
   .form-grid {
     grid-template-columns: 1fr;

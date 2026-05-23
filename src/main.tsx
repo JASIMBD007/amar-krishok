@@ -10,6 +10,7 @@ import {
   ChevronDown,
   ClipboardCheck,
   Clock3,
+  HeartHandshake,
   HandCoins,
   LayoutDashboard,
   ListFilter,
@@ -23,6 +24,7 @@ import {
   ShoppingBag,
   Sprout,
   Store,
+  X,
   Truck,
   UserRoundCheck,
   UsersRound,
@@ -142,6 +144,7 @@ function App() {
   const [query, setQuery] = useState("");
   const [district, setDistrict] = useState("All districts");
   const [loggedIn, setLoggedIn] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const filteredLots = useMemo(() => {
     return lots.filter((lot) => {
@@ -151,13 +154,24 @@ function App() {
     });
   }, [query, district]);
 
+  const selectView = (nextView: View) => {
+    setView(nextView);
+    setMenuOpen(false);
+  };
+
   return (
     <main className="app-shell">
       <header className="site-header">
-        <button className="icon-button mobile-only" type="button" aria-label="Open menu">
-          <Menu size={21} />
+        <button
+          className="icon-button mobile-only"
+          type="button"
+          aria-expanded={menuOpen}
+          aria-label={menuOpen ? "Close menu" : "Open menu"}
+          onClick={() => setMenuOpen((value) => !value)}
+        >
+          {menuOpen ? <X size={21} /> : <Menu size={21} />}
         </button>
-        <button className="brand" type="button" onClick={() => setView("home")} aria-label="AmarKrishok home">
+        <button className="brand" type="button" onClick={() => selectView("home")} aria-label="AmarKrishok home">
           <span className="brand-mark">
             <Sprout size={22} strokeWidth={2.6} />
           </span>
@@ -169,7 +183,7 @@ function App() {
 
         <nav className="main-nav" aria-label="Main navigation">
           {views.map((item) => (
-            <button className={view === item.id ? "active" : ""} key={item.id} type="button" onClick={() => setView(item.id)}>
+            <button className={view === item.id ? "active" : ""} key={item.id} type="button" onClick={() => selectView(item.id)}>
               {item.label}
             </button>
           ))}
@@ -184,9 +198,19 @@ function App() {
             {loggedIn ? "Logged in" : "Login"}
           </button>
         </div>
+
+        {menuOpen && (
+          <nav className="mobile-menu-panel" aria-label="Mobile navigation">
+            {views.map((item) => (
+              <button className={view === item.id ? "active" : ""} key={item.id} type="button" onClick={() => selectView(item.id)}>
+                {item.label}
+              </button>
+            ))}
+          </nav>
+        )}
       </header>
 
-      {view === "home" && <HomeView setView={setView} />}
+      {view === "home" && <HomeView setView={selectView} />}
       {view === "market" && (
         <MarketplaceView
           district={district}
@@ -194,7 +218,7 @@ function App() {
           query={query}
           setDistrict={setDistrict}
           setQuery={setQuery}
-          setView={setView}
+          setView={selectView}
         />
       )}
       {view === "farmer" && <FarmerView />}
@@ -280,6 +304,47 @@ function HomeView({ setView }: { setView: (view: View) => void }) {
             </article>
           );
         })}
+      </section>
+
+      <section className="trust-section" id="trust">
+        <div className="trust-panel">
+          <div className="section-title trust-title">
+            <span>Trust layer</span>
+            <h1>Quality, payment, and delivery stay visible.</h1>
+            <p>
+              AmarKrishok reduces middleman abuse by keeping lot grading,
+              escrow status, buyer history, and delivery proof in one shared
+              record.
+            </p>
+          </div>
+
+          <div className="trust-list">
+            <div>
+              <ClipboardCheck size={20} />
+              <span>Digital quality checklist before pickup</span>
+            </div>
+            <div>
+              <Clock3 size={20} />
+              <span>Delivery milestones with buyer confirmation</span>
+            </div>
+            <div>
+              <HeartHandshake size={20} />
+              <span>Farmer co-op groups for bulk orders</span>
+            </div>
+          </div>
+        </div>
+
+        <aside className="buyer-card" aria-label="Buyer request">
+          <div className="buyer-card-header">
+            <ShoppingBag size={22} />
+            <span>Buyer request</span>
+          </div>
+          <h3>Need 2 tons tomato for Dhaka retail chain</h3>
+          <p>Preferred delivery: next morning. Escrow ready after lot approval.</p>
+          <button className="primary-button full" type="button" onClick={() => setView("buyer")}>
+            Match farmers
+          </button>
+        </aside>
       </section>
     </>
   );
