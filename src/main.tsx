@@ -134,10 +134,10 @@ const bn: Record<string, string> = {
   Notifications: "নোটিফিকেশন",
   "Logged in": "লগইন হয়েছে",
   Login: "লগইন",
-  "Choose login type": "লগইন টাইপ বেছে নিন",
-  "Continue as admin": "অ্যাডমিন হিসেবে যান",
-  "Continue as buyer": "ক্রেতা হিসেবে যান",
-  "Continue as farmer": "কৃষক হিসেবে যান",
+  "Choose login type": "কোন ভূমিকায় লগইন করবেন",
+  "Continue as admin": "অ্যাডমিন হিসেবে লগইন",
+  "Continue as buyer": "ক্রেতা হিসেবে লগইন",
+  "Continue as farmer": "কৃষক হিসেবে লগইন",
   "Seller / Farmer": "বিক্রেতা / কৃষক",
   "Buyer account": "ক্রেতা অ্যাকাউন্ট",
   "Admin account": "অ্যাডমিন অ্যাকাউন্ট",
@@ -145,95 +145,103 @@ const bn: Record<string, string> = {
   "Signed in as": "লগইন করেছেন",
   "Secure login": "নিরাপদ লগইন",
   "Login to continue": "চালিয়ে যেতে লগইন করুন",
-  "Choose your role and sign in to access protected AmarKrishok tools.": "সুরক্ষিত AmarKrishok টুল ব্যবহার করতে আপনার ভূমিকা বেছে নিয়ে লগইন করুন।",
+  "Choose your role and sign in to access protected AmarKrishok tools.": "আমারকৃষকের সুরক্ষিত অংশে যেতে আপনার ভূমিকা বেছে নিয়ে লগইন করুন।",
   Role: "ভূমিকা",
   "Full name": "পুরো নাম",
   "Mobile number": "মোবাইল নম্বর",
-  "PIN or password": "PIN বা পাসওয়ার্ড",
-  "Use any 4+ character PIN for this prototype.": "এই প্রোটোটাইপে ৪ বা তার বেশি অক্ষরের যেকোনো PIN ব্যবহার করুন।",
-  "Sign in": "সাইন ইন",
-  "Signing in": "সাইন ইন হচ্ছে",
+  "PIN or password": "পিন বা পাসওয়ার্ড",
+  "Use any 4+ character PIN for this prototype.": "এই ডেমোতে ৪ অক্ষর বা তার বেশি পিন ব্যবহার করুন।",
+  "Sign in": "লগইন",
+  "Signing in": "লগইন হচ্ছে",
   "Please enter your name.": "আপনার নাম লিখুন।",
   "Please enter a valid mobile number.": "সঠিক মোবাইল নম্বর লিখুন।",
-  "PIN must be at least 4 characters.": "PIN কমপক্ষে ৪ অক্ষরের হতে হবে।",
+  "PIN must be at least 4 characters.": "পিন কমপক্ষে ৪ অক্ষরের হতে হবে।",
   "You need to sign in first.": "আগে লগইন করতে হবে।",
   "Protected area": "সুরক্ষিত এলাকা",
   "This page is protected": "এই পেজ সুরক্ষিত",
-  "Your current role cannot open this page.": "আপনার বর্তমান role দিয়ে এই পেজ খোলা যাবে না।",
+  "Your current role cannot open this page.": "আপনার বর্তমান ভূমিকা দিয়ে এই পেজ খোলা যাবে না।",
   "Switch account": "অ্যাকাউন্ট বদলান",
   "Go home": "হোমে যান",
-  Register: "রেজিস্টার",
-  "Register buyer": "ক্রেতা রেজিস্টার",
-  "Register seller": "বিক্রেতা রেজিস্টার",
+  Register: "নিবন্ধন",
+  "Register buyer": "ক্রেতা নিবন্ধন",
+  "Register seller": "বিক্রেতা নিবন্ধন",
   "New buyer account": "নতুন ক্রেতা অ্যাকাউন্ট",
   "New seller account": "নতুন বিক্রেতা অ্যাকাউন্ট",
-  "Create buyer account": "ক্রেতা অ্যাকাউন্ট তৈরি করুন",
-  "Create seller account": "বিক্রেতা অ্যাকাউন্ট তৈরি করুন",
-  "Submit your information. Admin will verify it before your account becomes active.": "আপনার তথ্য জমা দিন। অ্যাকাউন্ট চালু হওয়ার আগে অ্যাডমিন তথ্য যাচাই করবে।",
+  "Create buyer account": "ক্রেতার অ্যাকাউন্ট খুলুন",
+  "Create seller account": "বিক্রেতার অ্যাকাউন্ট খুলুন",
+  "Submit your information. Admin will verify it before your account becomes active.": "তথ্য জমা দিন। অ্যাকাউন্ট চালু করার আগে অ্যাডমিন সেগুলো যাচাই করবে।",
   "Business / farm name": "ব্যবসা / খামারের নাম",
-  "Shop, restaurant, company, or farm": "দোকান, রেস্টুরেন্ট, কোম্পানি বা খামার",
+  "Shop, restaurant, company, or farm": "দোকান, রেস্তোরাঁ, কোম্পানি বা খামার",
   "Address": "ঠিকানা",
-  "NID / trade license": "NID / ট্রেড লাইসেন্স",
+  "NID / trade license": "জাতীয় পরিচয়পত্র / ট্রেড লাইসেন্স",
   "Crop interest / supply focus": "যে ফসল কিনবেন / বিক্রি করবেন",
   "Tomato, potato, chilli...": "টমেটো, আলু, মরিচ...",
-  "Submit registration": "রেজিস্ট্রেশন জমা দিন",
-  "Registration submitted": "রেজিস্ট্রেশন জমা হয়েছে",
-  "Admin verification required": "অ্যাডমিন যাচাই প্রয়োজন",
+  "Submit registration": "নিবন্ধন জমা দিন",
+  "Registration submitted": "নিবন্ধন জমা হয়েছে",
+  "Admin verification required": "অ্যাডমিন যাচাই লাগবে",
   "Your account is pending admin verification. You can sign in after approval.": "আপনার অ্যাকাউন্ট অ্যাডমিন যাচাইয়ের অপেক্ষায় আছে। অনুমোদনের পর লগইন করতে পারবেন।",
   "Back to login": "লগইনে ফিরুন",
-  "Please fill in all registration fields.": "রেজিস্ট্রেশনের সব তথ্য পূরণ করুন।",
-  "An account with this role and phone already exists.": "এই role ও ফোন নম্বর দিয়ে একটি অ্যাকাউন্ট আছে।",
-  "Account not found. Please register first.": "অ্যাকাউন্ট পাওয়া যায়নি। আগে রেজিস্টার করুন।",
+  "Please fill in all registration fields.": "নিবন্ধনের সব তথ্য পূরণ করুন।",
+  "An account with this role and phone already exists.": "এই ভূমিকা ও ফোন নম্বর দিয়ে একটি অ্যাকাউন্ট আছে।",
+  "Account not found. Please register first.": "অ্যাকাউন্ট পাওয়া যায়নি। আগে নিবন্ধন করুন।",
   "Account is waiting for admin verification.": "অ্যাকাউন্ট অ্যাডমিন যাচাইয়ের অপেক্ষায় আছে।",
-  "Registration was not approved. Please contact admin.": "রেজিস্ট্রেশন অনুমোদন হয়নি। অ্যাডমিনের সাথে যোগাযোগ করুন।",
+  "Registration was not approved. Please contact admin.": "নিবন্ধন অনুমোদন হয়নি। অ্যাডমিনের সঙ্গে যোগাযোগ করুন।",
   "Password does not match.": "পাসওয়ার্ড মিলছে না।",
   "Pending verification": "যাচাইয়ের অপেক্ষায়",
+  "New registration": "নতুন নিবন্ধন",
   "Account verification": "অ্যাকাউন্ট যাচাই",
-  "Buyer and seller registrations awaiting admin approval.": "ক্রেতা ও বিক্রেতার রেজিস্ট্রেশন অ্যাডমিন অনুমোদনের অপেক্ষায় আছে।",
-  "No pending registrations": "কোনো pending registration নেই",
-  "Approve": "অনুমোদন",
-  "Reject": "রিজেক্ট",
+  "Buyer and seller registrations awaiting admin approval.": "ক্রেতা ও বিক্রেতার নিবন্ধন অ্যাডমিন অনুমোদনের অপেক্ষায় আছে।",
+  "No pending registrations": "অপেক্ষায় থাকা কোনো নিবন্ধন নেই",
+  "Approve": "অনুমোদন করুন",
+  "Reject": "বাতিল করুন",
   "Approved accounts": "অনুমোদিত অ্যাকাউন্ট",
-  "Rejected accounts": "রিজেক্টেড অ্যাকাউন্ট",
+  "Rejected accounts": "বাতিল করা অ্যাকাউন্ট",
   "Submitted": "জমা হয়েছে",
+  "Sample full name": "আব্দুল করিম",
+  "Sample mobile number": "০১৭০০০০০০০০",
+  "Sample PIN": "১২৩৪",
+  "Sample identity": "জাতীয় পরিচয়পত্র-১২৩৪৫৬",
   "Language switch": "ভাষা বদল",
   "Open menu": "মেনু খুলুন",
   "Close menu": "মেনু বন্ধ করুন",
   "Main navigation": "প্রধান মেনু",
   "Mobile navigation": "মোবাইল মেনু",
+  "AmarKrishok home": "আমারকৃষক হোম",
   "Dashboard navigation": "ড্যাশবোর্ড মেনু",
   "Open admin navigation": "অ্যাডমিন মেনু খুলুন",
   "Search dashboard": "ড্যাশবোর্ডে খুঁজুন",
   "Business metrics": "ব্যবসার হিসাব",
+  "Platform metrics": "প্ল্যাটফর্মের হিসাব",
   "Verified farmer-to-buyer marketplace": "যাচাই করা কৃষক ও ক্রেতার সরাসরি বাজার",
   "Farmers post crops. Buyers order directly. Admins manage the chain.": "কৃষক ফসলের তথ্য দেবেন। ক্রেতা সরাসরি অর্ডার করবেন। অ্যাডমিন পুরো প্রক্রিয়া সামলাবে।",
-  "A direct supply-chain platform for Bangladesh where farmers post harvests, buyers order transparently, logistics partners deliver, and payments stay protected.": "বাংলাদেশের কৃষিপণ্যের জন্য সরাসরি সাপ্লাই-চেইন প্ল্যাটফর্ম। এখানে কৃষক ফসল পোস্ট করেন, ক্রেতা স্বচ্ছভাবে অর্ডার করেন, লজিস্টিকস পার্টনার ডেলিভারি দেয়, আর পেমেন্ট নিরাপদে থাকে।",
+  "A direct supply-chain platform for Bangladesh where farmers post harvests, buyers order transparently, logistics partners deliver, and payments stay protected.": "বাংলাদেশের কৃষিপণ্যের জন্য সরাসরি সাপ্লাই-চেইন প্ল্যাটফর্ম: কৃষক ফসল দেন, ক্রেতা স্বচ্ছভাবে অর্ডার করেন, ডেলিভারি পার্টনার পৌঁছে দেয়, আর পেমেন্ট নিরাপদে থাকে।",
   "Browse crops": "ফসল দেখুন",
   "Post a crop": "ফসল পোস্ট করুন",
   "Today's supply": "আজকের ফসল",
   "Live lots from verified farmers": "যাচাই করা কৃষকদের নতুন লট",
   "active verified supply": "যাচাই করা সক্রিয় ফসল",
-  "orders confirmed today": "আজ কনফার্ম হওয়া অর্ডার",
+  "orders confirmed today": "আজ নিশ্চিত হওয়া অর্ডার",
   "average farmer price lift": "কৃষকের গড় বাড়তি দাম",
-  "escrow pending release": "এসক্রোতে থাকা টাকা",
+  "escrow pending release": "ছাড়ের অপেক্ষায় থাকা নিরাপদ পেমেন্ট",
   "Farmer posts crop": "কৃষক ফসল পোস্ট করেন",
   "Crop, district, quantity, grade, harvest date, and asking price.": "ফসলের নাম, জেলা, পরিমাণ, গ্রেড, কাটার সময় আর চাওয়া দাম।",
   "Buyer orders": "ক্রেতা অর্ডার করেন",
-  "Retailers and restaurants reserve lots or request bulk supply.": "দোকান, রেস্টুরেন্ট বা bulk buyer সরাসরি লট বুক করতে পারে।",
+  "Retailers and restaurants reserve lots or request bulk supply.": "দোকান, রেস্তোরাঁ বা পাইকারি ক্রেতা সরাসরি লট বুক করতে পারে।",
   "Logistics runs": "ডেলিভারি চলে",
   "Pickup, delivery, and proof stay visible to all parties.": "পিকআপ, ডেলিভারি আর প্রমাণ সব পক্ষ একই জায়গায় দেখতে পারে।",
   "Admin releases payout": "অ্যাডমিন টাকা ছাড়ে",
-  "Escrow protects buyers and pays farmers after confirmation.": "এসক্রো ক্রেতার টাকা সুরক্ষিত রাখে, আর কনফার্ম হলে কৃষকের কাছে পেমেন্ট যায়।",
+  "Escrow protects buyers and pays farmers after confirmation.": "নিরাপদ পেমেন্ট ক্রেতার টাকা ধরে রাখে, আর নিশ্চিত হলে কৃষকের কাছে টাকা যায়।",
   "Trust layer": "ভরসার ব্যবস্থা",
   "Quality, payment, and delivery stay visible.": "মান, পেমেন্ট আর ডেলিভারির সব আপডেট এক জায়গায়।",
-  "AmarKrishok reduces middleman abuse by keeping lot grading, escrow status, buyer history, and delivery proof in one shared record.": "AmarKrishok লটের গ্রেড, এসক্রো স্ট্যাটাস, ক্রেতার ইতিহাস আর ডেলিভারি প্রমাণ এক জায়গায় রাখে। এতে দালালের ওপর নির্ভরতা কমে।",
-  "Digital quality checklist before pickup": "পিকআপের আগে মান যাচাইয়ের ডিজিটাল চেকলিস্ট",
-  "Delivery milestones with buyer confirmation": "ডেলিভারির প্রতিটি ধাপে ক্রেতার কনফার্মেশন",
+  "AmarKrishok reduces middleman abuse by keeping lot grading, escrow status, buyer history, and delivery proof in one shared record.": "আমারকৃষক লটের গ্রেড, নিরাপদ পেমেন্টের অবস্থা, ক্রেতার ইতিহাস আর ডেলিভারির প্রমাণ এক জায়গায় রাখে। তাই দালালের ওপর নির্ভরতা কমে।",
+  "Digital quality checklist before pickup": "পিকআপের আগে ডিজিটাল মান যাচাই তালিকা",
+  "Delivery milestones with buyer confirmation": "ডেলিভারির প্রতিটি ধাপে ক্রেতার নিশ্চিতকরণ",
   "Farmer co-op groups for bulk orders": "বড় অর্ডারের জন্য কৃষক গ্রুপ",
-  "Buyer request": "ক্রেতার অনুরোধ",
-  "Need 2 tons tomato for Dhaka retail chain": "ঢাকার রিটেইল চেইনের জন্য ২ টন টমেটো প্রয়োজন",
-  "Preferred delivery: next morning. Escrow ready after lot approval.": "ডেলিভারি চাই: আগামীকাল সকাল। লট অনুমোদন হলে এসক্রো প্রস্তুত।",
-  "Match farmers": "কৃষক খুঁজুন",
+  "Buyer request": "ক্রেতার চাহিদা",
+  "price comparison": "দামের তুলনা",
+  "Need 2 tons tomato for Dhaka retail chain": "ঢাকার খুচরা বিক্রয় চেইনের জন্য ২ টন টমেটো দরকার",
+  "Preferred delivery: next morning. Escrow ready after lot approval.": "ডেলিভারি চাই আগামীকাল সকাল। লট অনুমোদনের পর নিরাপদ পেমেন্ট প্রস্তুত।",
+  "Match farmers": "উপযুক্ত কৃষক খুঁজুন",
   "Search crops by location and reserve directly from farmers.": "লোকেশন ধরে ফসল খুঁজুন, কৃষকের কাছ থেকেই বুক করুন।",
   "Search tomato, potato, farmer...": "টমেটো, আলু বা কৃষকের নাম লিখুন...",
   "All districts": "সব জেলা",
@@ -246,7 +254,7 @@ const bn: Record<string, string> = {
   Potato: "আলু",
   Onion: "পেঁয়াজ",
   Chilli: "মরিচ",
-  "Post a crop lot for direct buyer orders.": "সরাসরি অর্ডারের জন্য আপনার ফসলের লট দিন।",
+  "Post a crop lot for direct buyer orders.": "ক্রেতার সরাসরি অর্ডারের জন্য ফসলের লট দিন।",
   "Farmer app": "কৃষক প্যানেল",
   "Crop name": "ফসলের নাম",
   District: "জেলা",
@@ -264,14 +272,14 @@ const bn: Record<string, string> = {
   "Packaging, pickup point, storage condition...": "প্যাকেজিং, পিকআপ পয়েন্ট, সংরক্ষণের অবস্থা...",
   "Publish crop lot": "লট প্রকাশ করুন",
   "Farmer profile readiness": "কৃষক প্রোফাইল",
-  "Phone OTP, NID, farm location, and bank/mobile wallet details should be verified before payout.": "পেমেন্ট ছাড়ার আগে ফোন OTP, NID, খামারের লোকেশন এবং ব্যাংক/মোবাইল ওয়ালেট যাচাই করে নিতে হবে।",
+  "Phone OTP, NID, farm location, and bank/mobile wallet details should be verified before payout.": "টাকা ছাড়ার আগে ফোন ওটিপি, জাতীয় পরিচয়পত্র, খামারের লোকেশন এবং ব্যাংক/মোবাইল ওয়ালেট যাচাই করে নিতে হবে।",
   "Phone verified": "ফোন যাচাই করা হয়েছে",
   "Farm location added": "খামারের লোকেশন যোগ হয়েছে",
   "Wallet verification pending": "ওয়ালেট যাচাই বাকি",
   "Buyer order": "ক্রেতার অর্ডার",
   "Place a direct order or bulk request.": "সরাসরি অর্ডার দিন বা বড় অর্ডারের অনুরোধ পাঠান।",
   "Buyer name": "ক্রেতার নাম",
-  "Restaurant / retailer / family group": "রেস্টুরেন্ট / রিটেইলার / পরিবার গ্রুপ",
+  "Restaurant / retailer / family group": "রেস্তোরাঁ / দোকান / পরিবার গ্রুপ",
   "Crop needed": "যে ফসল চাই",
   "Delivery area": "ডেলিভারি এলাকা",
   "Target date": "যে তারিখে চাই",
@@ -281,7 +289,7 @@ const bn: Record<string, string> = {
   "Grade, packaging, ripeness, delivery notes...": "গ্রেড, প্যাকেজিং, পাকা না কাঁচা, ডেলিভারি নোট...",
   "Submit order request": "অর্ডার পাঠান",
   "Matched supply": "মিল পাওয়া ফসল",
-  "Current best match: 3 verified tomato lots from Jashore, total 2.9 tons.": "সেরা মিল: যশোরের ৩টি যাচাই করা টমেটো লট, মোট ২.৯ টন।",
+  "Current best match: 3 verified tomato lots from Jashore, total 2.9 tons.": "সেরা মিল: যশোরের যাচাই করা ৩টি টমেটো লট, মোট ২.৯ টন।",
   "View matched lots": "মিল পাওয়া লট দেখুন",
   "Market prices": "বাজারদর",
   "Daily farmer, wholesale, and retail price signals.": "প্রতিদিনের কৃষক, পাইকারি আর খুচরা দামের ধারণা।",
@@ -289,7 +297,7 @@ const bn: Record<string, string> = {
   Wholesale: "পাইকারি",
   Retail: "খুচরা",
   "Admin Control": "অ্যাডমিন কন্ট্রোল",
-  "Supply command": "সাপ্লাই অপারেশন",
+  "Supply command": "সরবরাহ নিয়ন্ত্রণ",
   Dashboard: "ড্যাশবোর্ড",
   Orders: "অর্ডার",
   "Supply Lots": "ফসলের লট",
@@ -297,16 +305,16 @@ const bn: Record<string, string> = {
   Logistics: "লজিস্টিকস",
   Payouts: "টাকা ছাড়",
   Settings: "সেটিংস",
-  "Escrow protected": "এসক্রোতে সুরক্ষিত",
-  "৳82,000 ready for farmer release after buyer confirmation.": "ক্রেতা কনফার্ম করলে কৃষকের জন্য ৳৮২,০০০ ছাড় করা যাবে।",
+  "Escrow protected": "নিরাপদ পেমেন্ট",
+  "৳82,000 ready for farmer release after buyer confirmation.": "ক্রেতা নিশ্চিত করলে কৃষকের জন্য ৳৮২,০০০ ছাড় করা যাবে।",
   "Sunday, May 24": "রবিবার, ২৪ মে",
-  "Operations dashboard": "অপারেশন ড্যাশবোর্ড",
+  "Operations dashboard": "কার্যক্রমের ড্যাশবোর্ড",
   "Search order, farmer, district...": "অর্ডার, কৃষক, জেলা খুঁজুন...",
   "New lot": "নতুন লট",
-  "GMV today": "আজকের বিক্রি",
-  "18 orders confirmed": "১৮টি অর্ডার কনফার্ম",
+  "GMV today": "আজকের মোট বিক্রি",
+  "18 orders confirmed": "১৮টি অর্ডার নিশ্চিত",
   "Farmer payout": "কৃষকের পাওনা",
-  "৳82K pending escrow": "এসক্রোতে ৳৮২ হাজার অপেক্ষায়",
+  "৳82K pending escrow": "নিরাপদ পেমেন্টে ৳৮২ হাজার অপেক্ষায়",
   "Active supply": "সক্রিয় ফসল",
   "63 verified lots": "৬৩টি যাচাই করা লট",
   "Avg price lift": "গড় বাড়তি দাম",
@@ -317,17 +325,17 @@ const bn: Record<string, string> = {
   Buyer: "ক্রেতা",
   Crop: "ফসল",
   Value: "মূল্য",
-  Status: "স্ট্যাটাস",
+  Status: "অবস্থা",
   ETA: "সময়",
-  "Matching": "ম্যাচিং চলছে",
-  "Pickup booked": "পিকআপ বুক করা",
+  "Matching": "মিল খোঁজা হচ্ছে",
+  "Pickup booked": "পিকআপ ঠিক হয়েছে",
   "In transit": "পথে আছে",
   "Quality check": "মান যাচাই চলছে",
   "3 farmer groups": "৩টি কৃষক গ্রুপ",
   Today: "আজ",
   "Payout action": "পেমেন্ট অ্যাকশন",
   "Release queue": "টাকা ছাড়ার তালিকা",
-  "Ready after QC": "মান যাচাই শেষে প্রস্তুত",
+  "Ready after QC": "মান যাচাইয়ের পর ছাড়ার জন্য প্রস্তুত",
   "Delivery photo received": "ডেলিভারি ছবি পাওয়া গেছে",
   "Buyer weight confirmed": "ক্রেতা ওজন নিশ্চিত করেছেন",
   "Quality check pending": "মান যাচাই বাকি",
@@ -335,15 +343,18 @@ const bn: Record<string, string> = {
   "Farmer supply": "কৃষকের ফসল",
   "Verified lots": "যাচাই করা লট",
   "Grade lots": "গ্রেড দিন",
-  "Price intelligence": "দামের ইনসাইট",
+  "Price intelligence": "দামের বিশ্লেষণ",
   "Farmer vs market spread": "কৃষকের দাম বনাম বাজারদর",
-  "Logistics board": "লজিস্টিকস বোর্ড",
+  "Logistics board": "ডেলিভারি বোর্ড",
   "Routes in motion": "চলমান রুট",
   Alerts: "আপডেট",
   "Field updates": "মাঠের খবর",
-  "Tomato lot AKL-882 passed weight check.": "টমেটো লট AKL-882-এর ওজন মিলেছে।",
+  "Tomato lot AKL-882 passed weight check.": "টমেটো লট একে-৮৮২-এর ওজন মিলেছে।",
   "Rangpur potato pickup moved to 8:20 PM.": "রংপুরের আলুর পিকআপ রাত ৮:২০-এ নেওয়া হয়েছে।",
   "4 new farmers awaiting verification.": "৪ জন নতুন কৃষক যাচাইয়ের অপেক্ষায়।",
+  lot: "লট",
+  supply: "সরবরাহ",
+  harvest: "ফসল",
   "Order this lot": "এই লট অর্ডার করুন",
   "Ready tomorrow": "আগামীকাল তোলা যাবে",
   "Ready today": "আজই প্রস্তুত",
@@ -704,7 +715,7 @@ function App() {
         >
           {menuOpen ? <X size={21} /> : <Menu size={21} />}
         </button>
-        <NavLink className="brand" to="/" onClick={closeHeaderMenus} aria-label="AmarKrishok home" end>
+        <NavLink className="brand" to="/" onClick={closeHeaderMenus} aria-label={t("AmarKrishok home")} end>
           <span className="brand-mark">
             <Sprout size={22} strokeWidth={2.6} />
           </span>
@@ -916,6 +927,7 @@ function LoginView({
   const location = useLocation();
   const navigate = useNavigate();
   const t = useTranslate();
+  const v = useValueText();
   const params = new URLSearchParams(location.search);
   const queryRole = params.get("role");
   const safeQueryRole = roleOptions.some((option) => option.role === queryRole) ? (queryRole as Role) : "buyer";
@@ -1004,15 +1016,15 @@ function LoginView({
 
         <label className="input-field">
           <span>{t("Full name")}</span>
-          <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Abdul Karim" />
+          <input value={name} onChange={(event) => setName(event.target.value)} placeholder={t("Sample full name")} />
         </label>
         <label className="input-field">
           <span>{t("Mobile number")}</span>
-          <input value={phone} onChange={(event) => setPhone(event.target.value)} inputMode="tel" placeholder="01700000000" />
+          <input value={phone} onChange={(event) => setPhone(event.target.value)} inputMode="tel" placeholder={v("01700000000")} />
         </label>
         <label className="input-field">
           <span>{t("PIN or password")}</span>
-          <input value={password} onChange={(event) => setPassword(event.target.value)} type="password" placeholder="1234" />
+          <input value={password} onChange={(event) => setPassword(event.target.value)} type="password" placeholder={v("1234")} />
           <small>{t("Use any 4+ character PIN for this prototype.")}</small>
         </label>
 
@@ -1048,6 +1060,7 @@ function RegisterView({
 }) {
   const navigate = useNavigate();
   const t = useTranslate();
+  const v = useValueText();
   const roleOption = roleOptions.find((option) => option.role === role) ?? roleOptions[1];
   const RoleIcon = roleOption.icon;
   const [submittedAccount, setSubmittedAccount] = useState<RegisteredAccount | null>(null);
@@ -1154,21 +1167,21 @@ function RegisterView({
         <div className="auth-icon">
           <RoleIcon size={28} />
         </div>
-        <span>{t("Pending verification")}</span>
+        <span>{t("New registration")}</span>
         <h1>{t(title)}</h1>
         <p>{t("Submit your information. Admin will verify it before your account becomes active.")}</p>
 
         <label className="input-field">
           <span>{t("Full name")}</span>
-          <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Abdul Karim" />
+          <input value={name} onChange={(event) => setName(event.target.value)} placeholder={t("Sample full name")} />
         </label>
         <label className="input-field">
           <span>{t("Mobile number")}</span>
-          <input value={phone} onChange={(event) => setPhone(event.target.value)} inputMode="tel" placeholder="01700000000" />
+          <input value={phone} onChange={(event) => setPhone(event.target.value)} inputMode="tel" placeholder={v("01700000000")} />
         </label>
         <label className="input-field">
           <span>{t("PIN or password")}</span>
-          <input value={password} onChange={(event) => setPassword(event.target.value)} type="password" placeholder="1234" />
+          <input value={password} onChange={(event) => setPassword(event.target.value)} type="password" placeholder={v("1234")} />
         </label>
         <label className="input-field">
           <span>{t("Business / farm name")}</span>
@@ -1184,7 +1197,7 @@ function RegisterView({
         </label>
         <label className="input-field">
           <span>{t("NID / trade license")}</span>
-          <input value={identity} onChange={(event) => setIdentity(event.target.value)} placeholder="NID-123456" />
+          <input value={identity} onChange={(event) => setIdentity(event.target.value)} placeholder={t("Sample identity")} />
         </label>
         <label className="input-field">
           <span>{t("Crop interest / supply focus")}</span>
@@ -1248,7 +1261,7 @@ function HomeView({ setView }: { setView: (view: View) => void }) {
         </div>
       </section>
 
-      <section className="metrics-band" aria-label="Platform metrics">
+      <section className="metrics-band" aria-label={t("Platform metrics")}>
         <div>
           <strong>{v("27.4 tons")}</strong>
           <span>{t("active verified supply")}</span>
@@ -1311,7 +1324,7 @@ function HomeView({ setView }: { setView: (view: View) => void }) {
           </div>
         </div>
 
-        <aside className="buyer-card" aria-label="Buyer request">
+        <aside className="buyer-card" aria-label={t("Buyer request")}>
           <div className="buyer-card-header">
             <ShoppingBag size={22} />
             <span>{t("Buyer request")}</span>
@@ -1703,7 +1716,7 @@ function AdminView({
             <div className="supply-list">
               {lots.slice(0, 3).map((lot) => (
                 <article className="supply-item" key={lot.id}>
-                  <img src={lot.image} alt={`${t(lot.crop)} supply`} />
+                  <img src={lot.image} alt={`${t(lot.crop)} ${t("supply")}`} />
                   <div>
                     <h3>{t(lot.crop)}</h3>
                     <span>{t(lot.farmer)}</span>
@@ -1720,7 +1733,7 @@ function AdminView({
                     <strong>{t("Grade")} {t(lot.grade)}</strong>
                     <span>{t(lot.harvest)}</span>
                   </div>
-                  <button className="icon-button" type="button" aria-label={`Approve ${lot.crop} lot`}>
+                  <button className="icon-button" type="button" aria-label={`${t("Approve")} ${t(lot.crop)} ${t("lot")}`}>
                     <BadgeCheck size={19} />
                   </button>
                 </article>
@@ -1744,7 +1757,7 @@ function AdminView({
                     <strong>{t(price.crop)}</strong>
                     <span>{t(price.region)}</span>
                   </div>
-                  <div className="bar-stack" aria-label={`${price.crop} price comparison`}>
+                  <div className="bar-stack" aria-label={`${t(price.crop)} ${t("price comparison")}`}>
                     <span style={{ width: `${(price.farmerAsk / price.market) * 100}%` }} />
                     <span style={{ width: `${(price.wholesale / price.market) * 100}%` }} />
                   </div>
@@ -1827,7 +1840,7 @@ function CropCard({ lot, onOrder }: { lot: CropLot; onOrder: () => void }) {
   const v = useValueText();
   return (
     <article className="crop-card">
-      <img src={lot.image} alt={`${t(lot.crop)} harvest`} />
+      <img src={lot.image} alt={`${t(lot.crop)} ${t("harvest")}`} />
       <div className="crop-card-body">
         <div className="crop-title-row">
           <div>
