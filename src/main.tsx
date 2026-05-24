@@ -494,7 +494,7 @@ const lots: CropLot[] = [
     ask: "৳38/kg",
     grade: "A",
     harvest: "Ready tomorrow",
-    image: "/assets/crops/rice.jpg",
+    image: "/assets/crops/rice.png",
   },
   {
     id: "LOT-386",
