@@ -1058,6 +1058,10 @@ th {
   box-shadow: 0 12px 24px rgba(23, 107, 71, 0.18);
 }
 
+.admin-mobile-nav {
+  display: none;
+}
+
 .trust-summary {
   margin-top: auto;
   padding: 16px;
@@ -1187,6 +1191,16 @@ th {
   grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.65fr);
   gap: 14px;
   align-items: start;
+}
+
+.admin-focused-grid {
+  grid-template-columns: 1fr;
+}
+
+.admin-focused-grid .panel,
+.admin-focused-grid .messages-panel,
+.admin-wide-panel {
+  grid-column: 1 / -1;
 }
 
 .dashboard-grid .panel {
@@ -1612,6 +1626,17 @@ th {
 
   .restored-dashboard .sidebar {
     display: none;
+  }
+
+  .admin-mobile-nav.open {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 14px;
+    padding: 10px;
+    border-radius: 8px;
+    background: #ffffff;
+    box-shadow: inset 0 0 0 1px rgba(23, 39, 31, 0.1);
   }
 
   .mobile-menu {
