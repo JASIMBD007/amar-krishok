@@ -315,8 +315,9 @@ function HomeView({ setView }: { setView: (view: View) => void }) {
           </div>
           <h1>Farmers post crops. Buyers order directly. Admins manage the chain.</h1>
           <p>
-            A mobile-first platform for Bangladesh that brings fair prices,
-            transparent orders, location-based crop search, and admin operations into one place.
+            A direct supply-chain platform for Bangladesh where farmers post
+            harvests, buyers order transparently, logistics partners deliver,
+            and payments stay protected.
           </p>
           <div className="hero-actions">
             <button className="primary-button" type="button" onClick={() => setView("market")}>
