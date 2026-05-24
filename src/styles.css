@@ -195,6 +195,7 @@ button {
   border-radius: 8px;
   color: #26463a;
   background: #f4f7f1;
+  text-decoration: none;
   text-align: left;
 }
 
@@ -705,7 +706,7 @@ button {
 
 .auth-panel {
   display: grid;
-  width: min(100%, 520px);
+  width: min(100%, 620px);
   gap: 14px;
   padding: clamp(20px, 4vw, 32px);
 }
@@ -760,6 +761,25 @@ button {
   flex-wrap: wrap;
   gap: 10px;
   margin-top: 4px;
+}
+
+.registration-summary {
+  display: grid;
+  gap: 4px;
+  padding: 14px;
+  border-radius: 8px;
+  background: #f4f7f1;
+}
+
+.registration-summary span,
+.registration-summary small {
+  color: #64766d;
+  font-size: 0.82rem;
+  font-weight: 760;
+}
+
+.registration-summary strong {
+  color: #183028;
 }
 
 .input-field,
@@ -1214,6 +1234,89 @@ th {
   margin: 16px 0;
 }
 
+.panel-copy {
+  margin: -2px 0 14px;
+  color: #61746a;
+  line-height: 1.55;
+}
+
+.verification-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.verification-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.verification-stats span {
+  min-width: 0;
+  padding: 12px;
+  border-radius: 8px;
+  color: #65776f;
+  background: #f4f7f1;
+  font-size: 0.78rem;
+  font-weight: 760;
+}
+
+.verification-stats strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #183028;
+  font-size: 1.3rem;
+}
+
+.verification-list {
+  display: grid;
+  gap: 10px;
+}
+
+.verification-list > em {
+  padding: 12px;
+  border-radius: 8px;
+  color: #65776f;
+  background: #f4f7f1;
+  font-style: normal;
+  font-weight: 760;
+}
+
+.verification-item {
+  display: grid;
+  gap: 9px;
+  padding: 12px;
+  border: 1px solid rgba(23, 39, 31, 0.08);
+  border-radius: 8px;
+  background: #fbfcf8;
+}
+
+.verification-item strong,
+.verification-item span,
+.verification-item small {
+  display: block;
+}
+
+.verification-item span,
+.verification-item small,
+.verification-item p {
+  color: #66786f;
+  font-size: 0.84rem;
+}
+
+.verification-item p {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+}
+
+.verification-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
 .message-list span {
   display: flex;
   align-items: center;
@@ -1621,6 +1724,11 @@ th {
   }
 
   .dashboard-grid .price-row {
+    grid-template-columns: 1fr;
+  }
+
+  .verification-stats,
+  .verification-actions {
     grid-template-columns: 1fr;
   }
 }
