@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Navigate, NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import {
@@ -42,6 +42,13 @@ import "./styles.css";
 type View = "home" | "market" | "farmer" | "buyer" | "prices" | "admin";
 type Language = "en" | "bn";
 type Role = "admin" | "buyer" | "farmer";
+
+type AuthUser = {
+  name: string;
+  phone: string;
+  role: Role;
+  signedInAt: string;
+};
 
 type CropLot = {
   id: string;
@@ -115,6 +122,27 @@ const bn: Record<string, string> = {
   "Seller / Farmer": "বিক্রেতা / কৃষক",
   "Buyer account": "ক্রেতা অ্যাকাউন্ট",
   "Admin account": "অ্যাডমিন অ্যাকাউন্ট",
+  Logout: "লগআউট",
+  "Signed in as": "লগইন করেছেন",
+  "Secure login": "নিরাপদ লগইন",
+  "Login to continue": "চালিয়ে যেতে লগইন করুন",
+  "Choose your role and sign in to access protected AmarKrishok tools.": "সুরক্ষিত AmarKrishok টুল ব্যবহার করতে আপনার ভূমিকা বেছে নিয়ে লগইন করুন।",
+  Role: "ভূমিকা",
+  "Full name": "পুরো নাম",
+  "Mobile number": "মোবাইল নম্বর",
+  "PIN or password": "PIN বা পাসওয়ার্ড",
+  "Use any 4+ character PIN for this prototype.": "এই প্রোটোটাইপে ৪ বা তার বেশি অক্ষরের যেকোনো PIN ব্যবহার করুন।",
+  "Sign in": "সাইন ইন",
+  "Signing in": "সাইন ইন হচ্ছে",
+  "Please enter your name.": "আপনার নাম লিখুন।",
+  "Please enter a valid mobile number.": "সঠিক মোবাইল নম্বর লিখুন।",
+  "PIN must be at least 4 characters.": "PIN কমপক্ষে ৪ অক্ষরের হতে হবে।",
+  "You need to sign in first.": "আগে লগইন করতে হবে।",
+  "Protected area": "সুরক্ষিত এলাকা",
+  "This page is protected": "এই পেজ সুরক্ষিত",
+  "Your current role cannot open this page.": "আপনার বর্তমান role দিয়ে এই পেজ খোলা যাবে না।",
+  "Switch account": "অ্যাকাউন্ট বদলান",
+  "Go home": "হোমে যান",
   "Language switch": "ভাষা বদল",
   "Open menu": "মেনু খুলুন",
   "Close menu": "মেনু বন্ধ করুন",
@@ -416,6 +444,44 @@ const roleOptions: Array<{ role: Role; label: string; detail: string; view: View
   { role: "farmer", label: "Seller / Farmer", detail: "Farmer app", view: "farmer", icon: Sprout },
 ];
 
+const AUTH_STORAGE_KEY = "amarKrishokAuth";
+
+const roleHomePath: Record<Role, string> = {
+  admin: "/admin",
+  buyer: "/buyer",
+  farmer: "/farmer",
+};
+
+function readStoredUser() {
+  try {
+    const savedUser = window.localStorage.getItem(AUTH_STORAGE_KEY);
+    if (!savedUser) {
+      return null;
+    }
+
+    const user = JSON.parse(savedUser) as AuthUser;
+    return roleOptions.some((option) => option.role === user.role) ? user : null;
+  } catch {
+    return null;
+  }
+}
+
+function roleCanOpenPath(role: Role, path: string) {
+  if (path.startsWith("/admin")) {
+    return role === "admin";
+  }
+
+  if (path.startsWith("/buyer")) {
+    return role === "buyer" || role === "admin";
+  }
+
+  if (path.startsWith("/farmer")) {
+    return role === "farmer" || role === "admin";
+  }
+
+  return true;
+}
+
 const dashboardStats: DashboardStat[] = [
   { label: "GMV today", value: "৳4.82L", detail: "18 orders confirmed", trend: "up" },
   { label: "Farmer payout", value: "৳3.96L", detail: "৳82K pending escrow", trend: "up" },
@@ -467,11 +533,20 @@ function App() {
   const location = useLocation();
   const [query, setQuery] = useState("");
   const [district, setDistrict] = useState("All districts");
-  const [activeRole, setActiveRole] = useState<Role | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(() => readStoredUser());
   const [loginOpen, setLoginOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [language, setLanguage] = useState<Language>("en");
   const t = (text: string) => translate(language, text);
+
+  useEffect(() => {
+    if (user) {
+      window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
+      return;
+    }
+
+    window.localStorage.removeItem(AUTH_STORAGE_KEY);
+  }, [user]);
 
   const filteredLots = useMemo(() => {
     return lots.filter((lot) => {
@@ -489,11 +564,27 @@ function App() {
   };
 
   const chooseRole = (role: Role, targetView: View) => {
-    setActiveRole(role);
-    selectView(targetView);
+    navigate(`/login?role=${role}&next=${encodeURIComponent(routeByView[targetView])}`);
+    setMenuOpen(false);
+    setLoginOpen(false);
   };
 
-  const roleLabel = activeRole ? roleOptions.find((item) => item.role === activeRole)?.label : null;
+  const handleLogin = (nextUser: AuthUser, nextPath: string) => {
+    setUser(nextUser);
+    navigate(nextPath);
+    setMenuOpen(false);
+    setLoginOpen(false);
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    setLoginOpen(false);
+    if (location.pathname === "/admin" || location.pathname === "/buyer" || location.pathname === "/farmer") {
+      navigate("/");
+    }
+  };
+
+  const roleLabel = user ? roleOptions.find((item) => item.role === user.role)?.label : null;
 
   const closeHeaderMenus = () => {
     setMenuOpen(false);
@@ -557,7 +648,14 @@ function App() {
             </button>
             {loginOpen && (
               <div className="login-menu" role="menu">
-                <span>{t("Choose login type")}</span>
+                {user ? (
+                  <div className="signed-in-note">
+                    <span>{t("Signed in as")}</span>
+                    <strong>{user.name}</strong>
+                  </div>
+                ) : (
+                  <span>{t("Choose login type")}</span>
+                )}
                 {roleOptions.map((option) => {
                   const Icon = option.icon;
                   return (
@@ -570,6 +668,15 @@ function App() {
                     </button>
                   );
                 })}
+                {user && (
+                  <button className="role-option danger" type="button" role="menuitem" onClick={handleLogout}>
+                    <X size={18} />
+                    <span>
+                      <strong>{t("Logout")}</strong>
+                      <small>{t("Switch account")}</small>
+                    </span>
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -601,15 +708,170 @@ function App() {
             />
           }
         />
-        <Route path="/farmer" element={<FarmerView />} />
-        <Route path="/buyer" element={<BuyerView />} />
+        <Route
+          path="/farmer"
+          element={
+            <ProtectedRoute allowedRoles={["farmer", "admin"]} user={user}>
+              <FarmerView />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/buyer"
+          element={
+            <ProtectedRoute allowedRoles={["buyer", "admin"]} user={user}>
+              <BuyerView />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/prices" element={<PricesView />} />
-        <Route path="/admin" element={<AdminView />} />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]} user={user}>
+              <AdminView />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/login" element={<LoginView onLogin={handleLogin} user={user} />} />
         <Route path="/market" element={<Navigate to="/marketplace" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </main>
     </LanguageContext.Provider>
+  );
+}
+
+function ProtectedRoute({
+  allowedRoles,
+  children,
+  user,
+}: {
+  allowedRoles: Role[];
+  children: React.ReactNode;
+  user: AuthUser | null;
+}) {
+  const location = useLocation();
+  const t = useTranslate();
+
+  if (!user) {
+    const fallbackRole = allowedRoles[0];
+    return <Navigate to={`/login?role=${fallbackRole}&next=${encodeURIComponent(location.pathname)}`} replace />;
+  }
+
+  if (!allowedRoles.includes(user.role)) {
+    return (
+      <section className="page-wrap auth-layout">
+        <div className="panel auth-panel">
+          <ShieldCheck size={28} />
+          <span>{t("Protected area")}</span>
+          <h1>{t("This page is protected")}</h1>
+          <p>{t("Your current role cannot open this page.")}</p>
+          <div className="auth-actions">
+            <NavLink className="secondary-button" to={`/login?role=${allowedRoles[0]}&next=${encodeURIComponent(location.pathname)}`}>
+              {t("Switch account")}
+            </NavLink>
+            <NavLink className="primary-button" to="/">
+              {t("Go home")}
+            </NavLink>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  return children;
+}
+
+function LoginView({ onLogin, user }: { onLogin: (nextUser: AuthUser, nextPath: string) => void; user: AuthUser | null }) {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const t = useTranslate();
+  const params = new URLSearchParams(location.search);
+  const queryRole = params.get("role");
+  const safeQueryRole = roleOptions.some((option) => option.role === queryRole) ? (queryRole as Role) : "buyer";
+  const queryNext = params.get("next") ?? roleHomePath[safeQueryRole];
+  const safeNext = queryNext.startsWith("/") && !queryNext.startsWith("//") ? queryNext : roleHomePath[safeQueryRole];
+  const [role, setRole] = useState<Role>(safeQueryRole);
+  const [name, setName] = useState(user?.name ?? "");
+  const [phone, setPhone] = useState(user?.phone ?? "");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const roleOption = roleOptions.find((option) => option.role === role) ?? roleOptions[1];
+  const RoleIcon = roleOption.icon;
+
+  const submitLogin = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const cleanName = name.trim();
+    const cleanPhone = phone.trim();
+
+    if (!cleanName) {
+      setError(t("Please enter your name."));
+      return;
+    }
+
+    if (cleanPhone.replace(/\D/g, "").length < 10) {
+      setError(t("Please enter a valid mobile number."));
+      return;
+    }
+
+    if (password.length < 4) {
+      setError(t("PIN must be at least 4 characters."));
+      return;
+    }
+
+    const nextPath = roleCanOpenPath(role, safeNext) ? safeNext : roleHomePath[role];
+    onLogin({ name: cleanName, phone: cleanPhone, role, signedInAt: new Date().toISOString() }, nextPath);
+  };
+
+  return (
+    <section className="page-wrap auth-layout">
+      <form className="panel auth-panel" onSubmit={submitLogin}>
+        <div className="auth-icon">
+          <RoleIcon size={28} />
+        </div>
+        <span>{t("Secure login")}</span>
+        <h1>{t("Login to continue")}</h1>
+        <p>{t("Choose your role and sign in to access protected AmarKrishok tools.")}</p>
+
+        <label className="input-field">
+          <span>{t("Role")}</span>
+          <select value={role} onChange={(event) => setRole(event.target.value as Role)}>
+            {roleOptions.map((option) => (
+              <option key={option.role} value={option.role}>
+                {t(option.label)}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="input-field">
+          <span>{t("Full name")}</span>
+          <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Abdul Karim" />
+        </label>
+        <label className="input-field">
+          <span>{t("Mobile number")}</span>
+          <input value={phone} onChange={(event) => setPhone(event.target.value)} inputMode="tel" placeholder="01700000000" />
+        </label>
+        <label className="input-field">
+          <span>{t("PIN or password")}</span>
+          <input value={password} onChange={(event) => setPassword(event.target.value)} type="password" placeholder="1234" />
+          <small>{t("Use any 4+ character PIN for this prototype.")}</small>
+        </label>
+
+        {error && <p className="auth-error">{error}</p>}
+
+        <div className="auth-actions">
+          <button className="secondary-button" type="button" onClick={() => navigate("/")}>
+            {t("Go home")}
+          </button>
+          <button className="primary-button" type="submit">
+            <LockKeyhole size={17} />
+            {t("Sign in")}
+          </button>
+        </div>
+      </form>
+    </section>
   );
 }
 
