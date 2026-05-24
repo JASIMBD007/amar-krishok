@@ -42,12 +42,31 @@ import "./styles.css";
 type View = "home" | "market" | "farmer" | "buyer" | "prices" | "admin";
 type Language = "en" | "bn";
 type Role = "admin" | "buyer" | "farmer";
+type RegistrationRole = "buyer" | "farmer";
+type AccountStatus = "pending" | "active" | "rejected";
 
 type AuthUser = {
+  accountId?: string;
   name: string;
   phone: string;
   role: Role;
   signedInAt: string;
+};
+
+type RegisteredAccount = {
+  id: string;
+  role: RegistrationRole;
+  status: AccountStatus;
+  name: string;
+  phone: string;
+  password: string;
+  organization: string;
+  district: string;
+  address: string;
+  identity: string;
+  focus: string;
+  submittedAt: string;
+  reviewedAt?: string;
 };
 
 type CropLot = {
@@ -143,6 +162,37 @@ const bn: Record<string, string> = {
   "Your current role cannot open this page.": "আপনার বর্তমান role দিয়ে এই পেজ খোলা যাবে না।",
   "Switch account": "অ্যাকাউন্ট বদলান",
   "Go home": "হোমে যান",
+  Register: "রেজিস্টার",
+  "Register buyer": "ক্রেতা রেজিস্টার",
+  "Register seller": "বিক্রেতা রেজিস্টার",
+  "Create buyer account": "ক্রেতা অ্যাকাউন্ট তৈরি করুন",
+  "Create seller account": "বিক্রেতা অ্যাকাউন্ট তৈরি করুন",
+  "Submit your information. Admin will verify it before your account becomes active.": "আপনার তথ্য জমা দিন। অ্যাকাউন্ট চালু হওয়ার আগে অ্যাডমিন তথ্য যাচাই করবে।",
+  "Business / farm name": "ব্যবসা / খামারের নাম",
+  "Shop, restaurant, company, or farm": "দোকান, রেস্টুরেন্ট, কোম্পানি বা খামার",
+  "Address": "ঠিকানা",
+  "NID / trade license": "NID / ট্রেড লাইসেন্স",
+  "Crop interest / supply focus": "যে ফসল কিনবেন / বিক্রি করবেন",
+  "Tomato, potato, chilli...": "টমেটো, আলু, মরিচ...",
+  "Submit registration": "রেজিস্ট্রেশন জমা দিন",
+  "Registration submitted": "রেজিস্ট্রেশন জমা হয়েছে",
+  "Your account is pending admin verification. You can sign in after approval.": "আপনার অ্যাকাউন্ট অ্যাডমিন যাচাইয়ের অপেক্ষায় আছে। অনুমোদনের পর লগইন করতে পারবেন।",
+  "Back to login": "লগইনে ফিরুন",
+  "Please fill in all registration fields.": "রেজিস্ট্রেশনের সব তথ্য পূরণ করুন।",
+  "An account with this role and phone already exists.": "এই role ও ফোন নম্বর দিয়ে একটি অ্যাকাউন্ট আছে।",
+  "Account not found. Please register first.": "অ্যাকাউন্ট পাওয়া যায়নি। আগে রেজিস্টার করুন।",
+  "Account is waiting for admin verification.": "অ্যাকাউন্ট অ্যাডমিন যাচাইয়ের অপেক্ষায় আছে।",
+  "Registration was not approved. Please contact admin.": "রেজিস্ট্রেশন অনুমোদন হয়নি। অ্যাডমিনের সাথে যোগাযোগ করুন।",
+  "Password does not match.": "পাসওয়ার্ড মিলছে না।",
+  "Pending verification": "যাচাইয়ের অপেক্ষায়",
+  "Account verification": "অ্যাকাউন্ট যাচাই",
+  "Buyer and seller registrations awaiting admin approval.": "ক্রেতা ও বিক্রেতার রেজিস্ট্রেশন অ্যাডমিন অনুমোদনের অপেক্ষায় আছে।",
+  "No pending registrations": "কোনো pending registration নেই",
+  "Approve": "অনুমোদন",
+  "Reject": "রিজেক্ট",
+  "Approved accounts": "অনুমোদিত অ্যাকাউন্ট",
+  "Rejected accounts": "রিজেক্টেড অ্যাকাউন্ট",
+  "Submitted": "জমা হয়েছে",
   "Language switch": "ভাষা বদল",
   "Open menu": "মেনু খুলুন",
   "Close menu": "মেনু বন্ধ করুন",
@@ -445,6 +495,7 @@ const roleOptions: Array<{ role: Role; label: string; detail: string; view: View
 ];
 
 const AUTH_STORAGE_KEY = "amarKrishokAuth";
+const REGISTRATION_STORAGE_KEY = "amarKrishokRegistrations";
 
 const roleHomePath: Record<Role, string> = {
   admin: "/admin",
@@ -464,6 +515,24 @@ function readStoredUser() {
   } catch {
     return null;
   }
+}
+
+function readStoredRegistrations() {
+  try {
+    const savedRegistrations = window.localStorage.getItem(REGISTRATION_STORAGE_KEY);
+    if (!savedRegistrations) {
+      return [];
+    }
+
+    const registrations = JSON.parse(savedRegistrations) as RegisteredAccount[];
+    return registrations.filter((account) => account.role === "buyer" || account.role === "farmer");
+  } catch {
+    return [];
+  }
+}
+
+function makeRegistrationId(role: RegistrationRole) {
+  return `${role.toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
 }
 
 function roleCanOpenPath(role: Role, path: string) {
@@ -534,6 +603,7 @@ function App() {
   const [query, setQuery] = useState("");
   const [district, setDistrict] = useState("All districts");
   const [user, setUser] = useState<AuthUser | null>(() => readStoredUser());
+  const [registrations, setRegistrations] = useState<RegisteredAccount[]>(() => readStoredRegistrations());
   const [loginOpen, setLoginOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [language, setLanguage] = useState<Language>("en");
@@ -547,6 +617,21 @@ function App() {
 
     window.localStorage.removeItem(AUTH_STORAGE_KEY);
   }, [user]);
+
+  useEffect(() => {
+    window.localStorage.setItem(REGISTRATION_STORAGE_KEY, JSON.stringify(registrations));
+  }, [registrations]);
+
+  useEffect(() => {
+    if (!user || user.role === "admin") {
+      return;
+    }
+
+    const account = registrations.find((item) => item.id === user.accountId);
+    if (!account || account.status !== "active") {
+      setUser(null);
+    }
+  }, [registrations, user]);
 
   const filteredLots = useMemo(() => {
     return lots.filter((lot) => {
@@ -574,6 +659,18 @@ function App() {
     navigate(nextPath);
     setMenuOpen(false);
     setLoginOpen(false);
+  };
+
+  const handleRegister = (account: RegisteredAccount) => {
+    setRegistrations((currentRegistrations) => [account, ...currentRegistrations]);
+  };
+
+  const updateRegistrationStatus = (id: string, status: AccountStatus) => {
+    setRegistrations((currentRegistrations) =>
+      currentRegistrations.map((account) =>
+        account.id === id ? { ...account, status, reviewedAt: new Date().toISOString() } : account,
+      ),
+    );
   };
 
   const handleLogout = () => {
@@ -668,6 +765,24 @@ function App() {
                     </button>
                   );
                 })}
+                {!user && (
+                  <>
+                    <NavLink className="role-option" to="/register/buyer" onClick={closeHeaderMenus}>
+                      <ShoppingBag size={18} />
+                      <span>
+                        <strong>{t("Register buyer")}</strong>
+                        <small>{t("Pending verification")}</small>
+                      </span>
+                    </NavLink>
+                    <NavLink className="role-option" to="/register/farmer" onClick={closeHeaderMenus}>
+                      <Sprout size={18} />
+                      <span>
+                        <strong>{t("Register seller")}</strong>
+                        <small>{t("Pending verification")}</small>
+                      </span>
+                    </NavLink>
+                  </>
+                )}
                 {user && (
                   <button className="role-option danger" type="button" role="menuitem" onClick={handleLogout}>
                     <X size={18} />
@@ -729,11 +844,14 @@ function App() {
           path="/admin"
           element={
             <ProtectedRoute allowedRoles={["admin"]} user={user}>
-              <AdminView />
+              <AdminView registrations={registrations} onUpdateRegistration={updateRegistrationStatus} />
             </ProtectedRoute>
           }
         />
-        <Route path="/login" element={<LoginView onLogin={handleLogin} user={user} />} />
+        <Route path="/login" element={<LoginView onLogin={handleLogin} registrations={registrations} user={user} />} />
+        <Route path="/register" element={<Navigate to="/register/buyer" replace />} />
+        <Route path="/register/buyer" element={<RegisterView registrations={registrations} role="buyer" onRegister={handleRegister} />} />
+        <Route path="/register/farmer" element={<RegisterView registrations={registrations} role="farmer" onRegister={handleRegister} />} />
         <Route path="/market" element={<Navigate to="/marketplace" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
@@ -783,7 +901,15 @@ function ProtectedRoute({
   return children;
 }
 
-function LoginView({ onLogin, user }: { onLogin: (nextUser: AuthUser, nextPath: string) => void; user: AuthUser | null }) {
+function LoginView({
+  onLogin,
+  registrations,
+  user,
+}: {
+  onLogin: (nextUser: AuthUser, nextPath: string) => void;
+  registrations: RegisteredAccount[];
+  user: AuthUser | null;
+}) {
   const location = useLocation();
   const navigate = useNavigate();
   const t = useTranslate();
@@ -793,8 +919,8 @@ function LoginView({ onLogin, user }: { onLogin: (nextUser: AuthUser, nextPath: 
   const queryNext = params.get("next") ?? roleHomePath[safeQueryRole];
   const safeNext = queryNext.startsWith("/") && !queryNext.startsWith("//") ? queryNext : roleHomePath[safeQueryRole];
   const [role, setRole] = useState<Role>(safeQueryRole);
-  const [name, setName] = useState(user?.name ?? "");
-  const [phone, setPhone] = useState(user?.phone ?? "");
+  const [name, setName] = useState(user?.role === safeQueryRole ? user.name : "");
+  const [phone, setPhone] = useState(user?.role === safeQueryRole ? user.phone : "");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const roleOption = roleOptions.find((option) => option.role === role) ?? roleOptions[1];
@@ -817,6 +943,34 @@ function LoginView({ onLogin, user }: { onLogin: (nextUser: AuthUser, nextPath: 
 
     if (password.length < 4) {
       setError(t("PIN must be at least 4 characters."));
+      return;
+    }
+
+    if (role !== "admin") {
+      const account = registrations.find((item) => item.role === role && item.phone === cleanPhone);
+
+      if (!account) {
+        setError(t("Account not found. Please register first."));
+        return;
+      }
+
+      if (account.status === "pending") {
+        setError(t("Account is waiting for admin verification."));
+        return;
+      }
+
+      if (account.status === "rejected") {
+        setError(t("Registration was not approved. Please contact admin."));
+        return;
+      }
+
+      if (account.password !== password) {
+        setError(t("Password does not match."));
+        return;
+      }
+
+      const nextPath = roleCanOpenPath(role, safeNext) ? safeNext : roleHomePath[role];
+      onLogin({ accountId: account.id, name: account.name, phone: account.phone, role, signedInAt: new Date().toISOString() }, nextPath);
       return;
     }
 
@@ -865,9 +1019,178 @@ function LoginView({ onLogin, user }: { onLogin: (nextUser: AuthUser, nextPath: 
           <button className="secondary-button" type="button" onClick={() => navigate("/")}>
             {t("Go home")}
           </button>
+          {role !== "admin" && (
+            <NavLink className="secondary-button" to={`/register/${role}`}>
+              {t("Register")}
+            </NavLink>
+          )}
           <button className="primary-button" type="submit">
             <LockKeyhole size={17} />
             {t("Sign in")}
+          </button>
+        </div>
+      </form>
+    </section>
+  );
+}
+
+function RegisterView({
+  onRegister,
+  registrations,
+  role,
+}: {
+  onRegister: (account: RegisteredAccount) => void;
+  registrations: RegisteredAccount[];
+  role: RegistrationRole;
+}) {
+  const navigate = useNavigate();
+  const t = useTranslate();
+  const roleOption = roleOptions.find((option) => option.role === role) ?? roleOptions[1];
+  const RoleIcon = roleOption.icon;
+  const [submittedAccount, setSubmittedAccount] = useState<RegisteredAccount | null>(null);
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [organization, setOrganization] = useState("");
+  const [district, setDistrict] = useState("");
+  const [address, setAddress] = useState("");
+  const [identity, setIdentity] = useState("");
+  const [focus, setFocus] = useState("");
+  const [error, setError] = useState("");
+  const title = role === "buyer" ? "Create buyer account" : "Create seller account";
+
+  const submitRegistration = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const cleanName = name.trim();
+    const cleanPhone = phone.trim();
+    const cleanPassword = password.trim();
+    const cleanOrganization = organization.trim();
+    const cleanDistrict = district.trim();
+    const cleanAddress = address.trim();
+    const cleanIdentity = identity.trim();
+    const cleanFocus = focus.trim();
+
+    if (!cleanName || !cleanPhone || !cleanPassword || !cleanOrganization || !cleanDistrict || !cleanAddress || !cleanIdentity || !cleanFocus) {
+      setError(t("Please fill in all registration fields."));
+      return;
+    }
+
+    if (cleanPhone.replace(/\D/g, "").length < 10) {
+      setError(t("Please enter a valid mobile number."));
+      return;
+    }
+
+    if (cleanPassword.length < 4) {
+      setError(t("PIN must be at least 4 characters."));
+      return;
+    }
+
+    const existingAccount = registrations.find((account) => account.role === role && account.phone === cleanPhone && account.status !== "rejected");
+    if (existingAccount) {
+      setError(t("An account with this role and phone already exists."));
+      return;
+    }
+
+    const nextAccount: RegisteredAccount = {
+      id: makeRegistrationId(role),
+      role,
+      status: "pending",
+      name: cleanName,
+      phone: cleanPhone,
+      password: cleanPassword,
+      organization: cleanOrganization,
+      district: cleanDistrict,
+      address: cleanAddress,
+      identity: cleanIdentity,
+      focus: cleanFocus,
+      submittedAt: new Date().toISOString(),
+    };
+
+    onRegister(nextAccount);
+    setSubmittedAccount(nextAccount);
+    setError("");
+  };
+
+  if (submittedAccount) {
+    return (
+      <section className="page-wrap auth-layout">
+        <div className="panel auth-panel">
+          <div className="auth-icon">
+            <CheckCircle2 size={28} />
+          </div>
+          <span>{t("Pending verification")}</span>
+          <h1>{t("Registration submitted")}</h1>
+          <p>{t("Your account is pending admin verification. You can sign in after approval.")}</p>
+          <div className="registration-summary">
+            <span>{t(roleOption.label)}</span>
+            <strong>{submittedAccount.name}</strong>
+            <small>{submittedAccount.phone}</small>
+          </div>
+          <div className="auth-actions">
+            <NavLink className="secondary-button" to="/">
+              {t("Go home")}
+            </NavLink>
+            <NavLink className="primary-button" to={`/login?role=${role}&next=${encodeURIComponent(roleHomePath[role])}`}>
+              {t("Back to login")}
+            </NavLink>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="page-wrap auth-layout">
+      <form className="panel auth-panel" onSubmit={submitRegistration}>
+        <div className="auth-icon">
+          <RoleIcon size={28} />
+        </div>
+        <span>{t("Pending verification")}</span>
+        <h1>{t(title)}</h1>
+        <p>{t("Submit your information. Admin will verify it before your account becomes active.")}</p>
+
+        <label className="input-field">
+          <span>{t("Full name")}</span>
+          <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Abdul Karim" />
+        </label>
+        <label className="input-field">
+          <span>{t("Mobile number")}</span>
+          <input value={phone} onChange={(event) => setPhone(event.target.value)} inputMode="tel" placeholder="01700000000" />
+        </label>
+        <label className="input-field">
+          <span>{t("PIN or password")}</span>
+          <input value={password} onChange={(event) => setPassword(event.target.value)} type="password" placeholder="1234" />
+        </label>
+        <label className="input-field">
+          <span>{t("Business / farm name")}</span>
+          <input value={organization} onChange={(event) => setOrganization(event.target.value)} placeholder={t("Shop, restaurant, company, or farm")} />
+        </label>
+        <label className="input-field">
+          <span>{t("District")}</span>
+          <input value={district} onChange={(event) => setDistrict(event.target.value)} placeholder={t("Jashore")} />
+        </label>
+        <label className="input-field">
+          <span>{t("Address")}</span>
+          <input value={address} onChange={(event) => setAddress(event.target.value)} placeholder={t("Dhaka North")} />
+        </label>
+        <label className="input-field">
+          <span>{t("NID / trade license")}</span>
+          <input value={identity} onChange={(event) => setIdentity(event.target.value)} placeholder="NID-123456" />
+        </label>
+        <label className="input-field">
+          <span>{t("Crop interest / supply focus")}</span>
+          <input value={focus} onChange={(event) => setFocus(event.target.value)} placeholder={t("Tomato, potato, chilli...")} />
+        </label>
+
+        {error && <p className="auth-error">{error}</p>}
+
+        <div className="auth-actions">
+          <button className="secondary-button" type="button" onClick={() => navigate("/")}>
+            {t("Go home")}
+          </button>
+          <button className="primary-button" type="submit">
+            <ClipboardCheck size={17} />
+            {t("Submit registration")}
           </button>
         </div>
       </form>
@@ -1143,9 +1466,18 @@ function PricesView() {
   );
 }
 
-function AdminView() {
+function AdminView({
+  onUpdateRegistration,
+  registrations,
+}: {
+  onUpdateRegistration: (id: string, status: AccountStatus) => void;
+  registrations: RegisteredAccount[];
+}) {
   const t = useTranslate();
   const v = useValueText();
+  const pendingRegistrations = registrations.filter((account) => account.status === "pending");
+  const activeRegistrations = registrations.filter((account) => account.status === "active");
+  const rejectedRegistrations = registrations.filter((account) => account.status === "rejected");
   return (
     <section className="dashboard-shell restored-dashboard">
       <aside className="sidebar" aria-label={t("Dashboard navigation")}>
@@ -1293,6 +1625,59 @@ function AdminView() {
               {t("Review payouts")}
             </button>
           </aside>
+
+          <section className="panel verification-panel" aria-labelledby="verification-heading">
+            <div className="panel-header">
+              <div>
+                <span>{t("Account verification")}</span>
+                <h2 id="verification-heading">{t("Pending verification")}</h2>
+              </div>
+              <UserRoundCheck size={22} />
+            </div>
+            <p className="panel-copy">{t("Buyer and seller registrations awaiting admin approval.")}</p>
+            <div className="verification-stats">
+              <span>
+                <strong>{v(pendingRegistrations.length)}</strong>
+                {t("Pending verification")}
+              </span>
+              <span>
+                <strong>{v(activeRegistrations.length)}</strong>
+                {t("Approved accounts")}
+              </span>
+              <span>
+                <strong>{v(rejectedRegistrations.length)}</strong>
+                {t("Rejected accounts")}
+              </span>
+            </div>
+            <div className="verification-list">
+              {pendingRegistrations.length === 0 && <em>{t("No pending registrations")}</em>}
+              {pendingRegistrations.map((account) => (
+                <article className="verification-item" key={account.id}>
+                  <div>
+                    <strong>{account.name}</strong>
+                    <span>{t(account.role === "buyer" ? "Buyer" : "Seller / Farmer")}</span>
+                  </div>
+                  <div>
+                    <span>{account.organization}</span>
+                    <small>{account.phone}</small>
+                  </div>
+                  <p>
+                    <MapPin size={14} />
+                    {account.district} · {account.focus}
+                  </p>
+                  <div className="verification-actions">
+                    <button className="secondary-button" type="button" onClick={() => onUpdateRegistration(account.id, "rejected")}>
+                      {t("Reject")}
+                    </button>
+                    <button className="primary-button" type="button" onClick={() => onUpdateRegistration(account.id, "active")}>
+                      <BadgeCheck size={17} />
+                      {t("Approve")}
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
 
           <section className="panel supply-panel" aria-labelledby="supply-heading">
             <div className="panel-header">
