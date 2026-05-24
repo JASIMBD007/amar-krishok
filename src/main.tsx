@@ -460,8 +460,7 @@ const lots: CropLot[] = [
     ask: "৳86/kg",
     grade: "A",
     harvest: "Ready today",
-    image:
-      "https://images.unsplash.com/photo-1583119022894-919a68a3d0e3?auto=format&fit=crop&w=900&q=80",
+    image: "/assets/crops/green-chilli.jpg",
   },
   {
     id: "LOT-640",
