@@ -496,8 +496,7 @@ const lots: CropLot[] = [
     ask: "৳38/kg",
     grade: "A",
     harvest: "Ready tomorrow",
-    image:
-      "https://images.unsplash.com/photo-1750184560313-4c4a569f43fd?auto=format&fit=crop&w=900&q=80",
+    image: "/assets/crops/rice.jpg",
   },
   {
     id: "LOT-386",
@@ -508,8 +507,7 @@ const lots: CropLot[] = [
     ask: "৳29/kg",
     grade: "B+",
     harvest: "Ready today",
-    image:
-      "https://images.unsplash.com/photo-1560951812-58e6bce53149?auto=format&fit=crop&crop=bottom&w=900&h=620&q=80",
+    image: "/assets/crops/eggplant.jpg",
   },
   {
     id: "LOT-274",
@@ -532,8 +530,7 @@ const lots: CropLot[] = [
     ask: "৳72/kg",
     grade: "A",
     harvest: "Ready tomorrow",
-    image:
-      "https://images.unsplash.com/photo-1776883776296-c9f0cb8a92f2?auto=format&fit=crop&w=900&q=80",
+    image: "/assets/crops/mango.jpg",
   },
 ];
 
