@@ -13,6 +13,11 @@
   box-sizing: border-box;
 }
 
+html,
+body {
+  overflow-x: clip;
+}
+
 body {
   margin: 0;
   min-width: 320px;
@@ -32,7 +37,6 @@ button {
 
 .app-shell {
   min-height: 100vh;
-  overflow-x: hidden;
 }
 
 .site-header {
