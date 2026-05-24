@@ -484,8 +484,7 @@ const lots: CropLot[] = [
     ask: "৳63/kg",
     grade: "A-",
     harvest: "Ready in 2 days",
-    image:
-      "https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?auto=format&fit=crop&w=900&q=80",
+    image: "/assets/crops/onion.jpg",
   },
   {
     id: "LOT-418",
