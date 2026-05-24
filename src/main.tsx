@@ -249,11 +249,16 @@ const bn: Record<string, string> = {
   Bogura: "বগুড়া",
   Rangpur: "রংপুর",
   Pabna: "পাবনা",
+  Kushtia: "কুষ্টিয়া",
   Tomato: "টমেটো",
   "Green Chilli": "কাঁচা মরিচ",
   Potato: "আলু",
   Onion: "পেঁয়াজ",
   Chilli: "মরিচ",
+  Rice: "ধান",
+  Eggplant: "বেগুন",
+  Cucumber: "শসা",
+  Mango: "আম",
   "Post a crop lot for direct buyer orders.": "ক্রেতার সরাসরি অর্ডারের জন্য ফসলের লট দিন।",
   "Farmer app": "কৃষক প্যানেল",
   "Crop name": "ফসলের নাম",
@@ -316,7 +321,7 @@ const bn: Record<string, string> = {
   "Farmer payout": "কৃষকের পাওনা",
   "৳82K pending escrow": "নিরাপদ পেমেন্টে ৳৮২ হাজার অপেক্ষায়",
   "Active supply": "সক্রিয় ফসল",
-  "63 verified lots": "৬৩টি যাচাই করা লট",
+  "78 verified lots": "৭৮টি যাচাই করা লট",
   "Avg price lift": "গড় বাড়তি দাম",
   "vs local middleman rate": "স্থানীয় দালালের দামের তুলনায়",
   "Order control": "অর্ডার কন্ট্রোল",
@@ -364,6 +369,10 @@ const bn: Record<string, string> = {
   "420 kg": "৪২০ কেজি",
   "3.6 tons": "৩.৬ টন",
   "1.8 tons": "১.৮ টন",
+  "2.4 tons": "২.৪ টন",
+  "680 kg": "৬৮০ কেজি",
+  "1.5 tons": "১.৫ টন",
+  "950 kg": "৯৫০ কেজি",
   "2.0 tons": "২.০ টন",
   "360 kg": "৩৬০ কেজি",
   "4.5 tons": "৪.৫ টন",
@@ -380,15 +389,21 @@ const bn: Record<string, string> = {
   "Abdul Karim": "আব্দুল করিম",
   "Nayan Mondol": "নয়ন মণ্ডল",
   "Rashed Mia": "রাশেদ মিয়া",
+  "Selim Hossain": "সেলিম হোসেন",
+  "Fatema Khatun": "ফাতেমা খাতুন",
+  "Mizanur Rahman": "মিজানুর রহমান",
+  "Hasina Begum": "হাসিনা বেগম",
   "Bogura - Dhaka": "বগুড়া - ঢাকা",
   "Rangpur - Tejgaon": "রংপুর - তেজগাঁও",
   "Jashore - Dhaka": "যশোর - ঢাকা",
+  "Kushtia - Dhaka": "কুষ্টিয়া - ঢাকা",
   "Hasan Logistics": "হাসান লজিস্টিকস",
   "North Cold Van": "নর্থ কোল্ড ভ্যান",
   "Padma Cargo": "পদ্মা কার্গো",
   "3 lots / 1.1 tons": "৩ লট / ১.১ টন",
   "2 lots / 4.5 tons": "২ লট / ৪.৫ টন",
   "4 lots / 2.8 tons": "৪ লট / ২.৮ টন",
+  "5 lots / 3.4 tons": "৫ লট / ৩.৪ টন",
   "Pickup in 42 min": "৪২ মিনিটে পিকআপ",
   Ambient: "সাধারণ তাপমাত্রা",
   "Awaiting load": "লোডের অপেক্ষায়",
@@ -472,6 +487,54 @@ const lots: CropLot[] = [
     image:
       "https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?auto=format&fit=crop&w=900&q=80",
   },
+  {
+    id: "LOT-418",
+    crop: "Rice",
+    farmer: "Selim Hossain",
+    district: "Kushtia",
+    quantity: "2.4 tons",
+    ask: "৳38/kg",
+    grade: "A",
+    harvest: "Ready tomorrow",
+    image:
+      "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=900&q=80",
+  },
+  {
+    id: "LOT-386",
+    crop: "Eggplant",
+    farmer: "Fatema Khatun",
+    district: "Kushtia",
+    quantity: "680 kg",
+    ask: "৳29/kg",
+    grade: "B+",
+    harvest: "Ready today",
+    image:
+      "https://images.unsplash.com/photo-1604329760661-e71dc83f8f26?auto=format&fit=crop&w=900&q=80",
+  },
+  {
+    id: "LOT-274",
+    crop: "Cucumber",
+    farmer: "Mizanur Rahman",
+    district: "Bogura",
+    quantity: "1.5 tons",
+    ask: "৳24/kg",
+    grade: "A-",
+    harvest: "Ready in 2 days",
+    image:
+      "https://images.unsplash.com/photo-1449300079323-02e209d9d3a6?auto=format&fit=crop&w=900&q=80",
+  },
+  {
+    id: "LOT-193",
+    crop: "Mango",
+    farmer: "Hasina Begum",
+    district: "Rangpur",
+    quantity: "950 kg",
+    ask: "৳72/kg",
+    grade: "A",
+    harvest: "Ready tomorrow",
+    image:
+      "https://images.unsplash.com/photo-1553279768-865429fa0078?auto=format&fit=crop&w=900&q=80",
+  },
 ];
 
 const prices: MarketPrice[] = [
@@ -479,6 +542,10 @@ const prices: MarketPrice[] = [
   { crop: "Potato", district: "Rangpur", farmerAsk: "৳21", wholesale: "৳27", retail: "৳32", trend: "+6%" },
   { crop: "Onion", district: "Pabna", farmerAsk: "৳63", wholesale: "৳74", retail: "৳82", trend: "+11%" },
   { crop: "Chilli", district: "Bogura", farmerAsk: "৳86", wholesale: "৳98", retail: "৳116", trend: "+18%" },
+  { crop: "Rice", district: "Kushtia", farmerAsk: "৳38", wholesale: "৳44", retail: "৳51", trend: "+9%" },
+  { crop: "Eggplant", district: "Kushtia", farmerAsk: "৳29", wholesale: "৳36", retail: "৳44", trend: "+12%" },
+  { crop: "Cucumber", district: "Bogura", farmerAsk: "৳24", wholesale: "৳31", retail: "৳38", trend: "+10%" },
+  { crop: "Mango", district: "Rangpur", farmerAsk: "৳72", wholesale: "৳86", retail: "৳105", trend: "+15%" },
 ];
 
 const orders: Order[] = [
@@ -568,7 +635,7 @@ function roleCanOpenPath(role: Role, path: string) {
 const dashboardStats: DashboardStat[] = [
   { label: "GMV today", value: "৳4.82L", detail: "18 orders confirmed", trend: "up" },
   { label: "Farmer payout", value: "৳3.96L", detail: "৳82K pending escrow", trend: "up" },
-  { label: "Active supply", value: "27.4 tons", detail: "63 verified lots", trend: "steady" },
+  { label: "Active supply", value: "34.1 tons", detail: "78 verified lots", trend: "steady" },
   { label: "Avg price lift", value: "16.8%", detail: "vs local middleman rate", trend: "up" },
 ];
 
@@ -576,6 +643,7 @@ const adminRoutes: AdminRoute[] = [
   { route: "Bogura - Dhaka", driver: "Hasan Logistics", lots: "3 lots / 1.1 tons", status: "Pickup in 42 min", temperature: "Ambient" },
   { route: "Rangpur - Tejgaon", driver: "North Cold Van", lots: "2 lots / 4.5 tons", status: "In transit", temperature: "8°C" },
   { route: "Jashore - Dhaka", driver: "Padma Cargo", lots: "4 lots / 2.8 tons", status: "Awaiting load", temperature: "Ambient" },
+  { route: "Kushtia - Dhaka", driver: "Padma Cargo", lots: "5 lots / 3.4 tons", status: "Awaiting load", temperature: "Ambient" },
 ];
 
 const adminPriceSignals: AdminPriceSignal[] = [
@@ -583,6 +651,10 @@ const adminPriceSignals: AdminPriceSignal[] = [
   { crop: "Potato", region: "Rangpur", farmerAsk: 21, wholesale: 27, market: 32 },
   { crop: "Onion", region: "Pabna", farmerAsk: 63, wholesale: 74, market: 82 },
   { crop: "Chilli", region: "Bogura", farmerAsk: 86, wholesale: 98, market: 116 },
+  { crop: "Rice", region: "Kushtia", farmerAsk: 38, wholesale: 44, market: 51 },
+  { crop: "Eggplant", region: "Kushtia", farmerAsk: 29, wholesale: 36, market: 44 },
+  { crop: "Cucumber", region: "Bogura", farmerAsk: 24, wholesale: 31, market: 38 },
+  { crop: "Mango", region: "Rangpur", farmerAsk: 72, wholesale: 86, market: 105 },
 ];
 
 const adminNavItems = [
@@ -1372,6 +1444,7 @@ function MarketplaceView({
             <option value="Bogura">{t("Bogura")}</option>
             <option value="Rangpur">{t("Rangpur")}</option>
             <option value="Pabna">{t("Pabna")}</option>
+            <option value="Kushtia">{t("Kushtia")}</option>
           </select>
           <ChevronDown size={16} />
         </label>
