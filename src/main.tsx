@@ -252,7 +252,7 @@ function App() {
           </span>
           <span>
             <strong>AmarKrishok</strong>
-            <small>Fair farm trade</small>
+            <small>Direct from Farmer, Fair for All</small>
           </span>
         </button>
 
