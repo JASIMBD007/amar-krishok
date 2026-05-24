@@ -39,6 +39,7 @@ import {
 import "./styles.css";
 
 type View = "home" | "market" | "farmer" | "buyer" | "prices" | "admin";
+type Language = "en" | "bn";
 
 type CropLot = {
   id: string;
@@ -93,6 +94,201 @@ type AdminPriceSignal = {
   wholesale: number;
   market: number;
 };
+
+const bn: Record<string, string> = {
+  Home: "হোম",
+  Marketplace: "বাজার",
+  "Post Crop": "ফসল পোস্ট",
+  Order: "অর্ডার",
+  Prices: "বাজারদর",
+  Admin: "অ্যাডমিন",
+  "Direct from Farmer, Fair for All": "কৃষকের কাছ থেকে সরাসরি, সবার জন্য ন্যায্য",
+  Notifications: "নোটিফিকেশন",
+  "Logged in": "লগইন করা",
+  Login: "লগইন",
+  "Verified farmer-to-buyer marketplace": "যাচাইকৃত কৃষক-থেকে-ক্রেতা বাজার",
+  "Farmers post crops. Buyers order directly. Admins manage the chain.": "কৃষক ফসল পোস্ট করবে। ক্রেতা সরাসরি অর্ডার দেবে। অ্যাডমিন সাপ্লাই চেইন পরিচালনা করবে।",
+  "A direct supply-chain platform for Bangladesh where farmers post harvests, buyers order transparently, logistics partners deliver, and payments stay protected.": "বাংলাদেশের জন্য একটি সরাসরি সাপ্লাই-চেইন প্ল্যাটফর্ম, যেখানে কৃষক ফসল পোস্ট করেন, ক্রেতা স্বচ্ছভাবে অর্ডার দেন, লজিস্টিকস পার্টনার ডেলিভারি করে, এবং পেমেন্ট সুরক্ষিত থাকে।",
+  "Browse crops": "ফসল দেখুন",
+  "Post a crop": "ফসল পোস্ট করুন",
+  "Today's supply": "আজকের সরবরাহ",
+  "Live lots from verified farmers": "যাচাইকৃত কৃষকদের লাইভ ফসল",
+  "active verified supply": "সক্রিয় যাচাইকৃত সরবরাহ",
+  "orders confirmed today": "আজ নিশ্চিত অর্ডার",
+  "average farmer price lift": "কৃষকের গড় মূল্য বৃদ্ধি",
+  "escrow pending release": "এসক্রো ছাড়ের অপেক্ষায়",
+  "Farmer posts crop": "কৃষক ফসল পোস্ট করে",
+  "Crop, district, quantity, grade, harvest date, and asking price.": "ফসল, জেলা, পরিমাণ, গ্রেড, সংগ্রহের তারিখ ও প্রত্যাশিত দাম।",
+  "Buyer orders": "ক্রেতা অর্ডার দেয়",
+  "Retailers and restaurants reserve lots or request bulk supply.": "রিটেইলার ও রেস্টুরেন্ট ফসল বুক করে বা bulk supply চায়।",
+  "Logistics runs": "লজিস্টিকস পরিচালিত হয়",
+  "Pickup, delivery, and proof stay visible to all parties.": "পিকআপ, ডেলিভারি ও প্রমাণ সব পক্ষ দেখতে পারে।",
+  "Admin releases payout": "অ্যাডমিন পেমেন্ট ছাড়ে",
+  "Escrow protects buyers and pays farmers after confirmation.": "এসক্রো ক্রেতাকে সুরক্ষা দেয় এবং নিশ্চিতকরণের পর কৃষককে পেমেন্ট করে।",
+  "Trust layer": "বিশ্বাস স্তর",
+  "Quality, payment, and delivery stay visible.": "গুণমান, পেমেন্ট ও ডেলিভারি দৃশ্যমান থাকে।",
+  "AmarKrishok reduces middleman abuse by keeping lot grading, escrow status, buyer history, and delivery proof in one shared record.": "AmarKrishok ফসলের গ্রেডিং, এসক্রো স্ট্যাটাস, ক্রেতার ইতিহাস ও ডেলিভারি প্রমাণ এক জায়গায় রেখে মধ্যস্বত্বভোগীর অপব্যবহার কমায়।",
+  "Digital quality checklist before pickup": "পিকআপের আগে ডিজিটাল গুণমান চেকলিস্ট",
+  "Delivery milestones with buyer confirmation": "ক্রেতার নিশ্চিতকরণসহ ডেলিভারি ধাপ",
+  "Farmer co-op groups for bulk orders": "বড় অর্ডারের জন্য কৃষক সমবায় গ্রুপ",
+  "Buyer request": "ক্রেতার চাহিদা",
+  "Need 2 tons tomato for Dhaka retail chain": "ঢাকার রিটেইল চেইনের জন্য ২ টন টমেটো দরকার",
+  "Preferred delivery: next morning. Escrow ready after lot approval.": "পছন্দের ডেলিভারি: পরের সকাল। ফসল অনুমোদনের পর এসক্রো প্রস্তুত।",
+  "Match farmers": "কৃষক মিলান",
+  "Search crops by location and reserve directly from farmers.": "লোকেশন অনুযায়ী ফসল খুঁজুন এবং কৃষকের কাছ থেকে সরাসরি বুক করুন।",
+  "Search tomato, potato, farmer...": "টমেটো, আলু, কৃষক খুঁজুন...",
+  "All districts": "সব জেলা",
+  Jashore: "যশোর",
+  Bogura: "বগুড়া",
+  Rangpur: "রংপুর",
+  Pabna: "পাবনা",
+  Tomato: "টমেটো",
+  "Green Chilli": "কাঁচা মরিচ",
+  Potato: "আলু",
+  Onion: "পেঁয়াজ",
+  Chilli: "মরিচ",
+  "Post a crop lot for direct buyer orders.": "সরাসরি ক্রেতার অর্ডারের জন্য ফসলের লট পোস্ট করুন।",
+  "Farmer app": "কৃষক অ্যাপ",
+  "Crop name": "ফসলের নাম",
+  District: "জেলা",
+  Quantity: "পরিমাণ",
+  "Expected price": "প্রত্যাশিত দাম",
+  "Harvest date": "সংগ্রহের তারিখ",
+  Grade: "গ্রেড",
+  Notes: "নোট",
+  "Tomorrow morning": "আগামীকাল সকাল",
+  "Packaging, pickup point, storage condition...": "প্যাকেজিং, পিকআপ পয়েন্ট, সংরক্ষণ অবস্থা...",
+  "Publish crop lot": "ফসলের লট প্রকাশ করুন",
+  "Farmer profile readiness": "কৃষকের প্রোফাইল প্রস্তুতি",
+  "Phone OTP, NID, farm location, and bank/mobile wallet details should be verified before payout.": "পেমেন্টের আগে ফোন OTP, NID, খামারের লোকেশন ও ব্যাংক/মোবাইল ওয়ালেট তথ্য যাচাই করা উচিত।",
+  "Phone verified": "ফোন যাচাই হয়েছে",
+  "Farm location added": "খামারের লোকেশন যোগ হয়েছে",
+  "Wallet verification pending": "ওয়ালেট যাচাই বাকি",
+  "Buyer order": "ক্রেতার অর্ডার",
+  "Place a direct order or bulk request.": "সরাসরি অর্ডার বা bulk request দিন।",
+  "Buyer name": "ক্রেতার নাম",
+  "Restaurant / retailer / family group": "রেস্টুরেন্ট / রিটেইলার / পরিবার গ্রুপ",
+  "Crop needed": "যে ফসল দরকার",
+  "Delivery area": "ডেলিভারি এলাকা",
+  "Target date": "লক্ষ্য তারিখ",
+  "Tomorrow 8 AM": "আগামীকাল সকাল ৮টা",
+  "Offer price": "অফার দাম",
+  "Quality requirement": "গুণমানের চাহিদা",
+  "Grade, packaging, ripeness, delivery notes...": "গ্রেড, প্যাকেজিং, পাকা অবস্থা, ডেলিভারি নোট...",
+  "Submit order request": "অর্ডার রিকোয়েস্ট জমা দিন",
+  "Matched supply": "মিল পাওয়া সরবরাহ",
+  "Current best match: 3 verified tomato lots from Jashore, total 2.9 tons.": "বর্তমান সেরা মিল: যশোরের ৩টি যাচাইকৃত টমেটো লট, মোট ২.৯ টন।",
+  "View matched lots": "মিল পাওয়া লট দেখুন",
+  "Market prices": "বাজারদর",
+  "Daily farmer, wholesale, and retail price signals.": "দৈনিক কৃষক, পাইকারি ও খুচরা দামের সংকেত।",
+  "Farmer ask": "কৃষকের দাম",
+  Wholesale: "পাইকারি",
+  Retail: "খুচরা",
+  "Admin Control": "অ্যাডমিন কন্ট্রোল",
+  "Supply command": "সরবরাহ নিয়ন্ত্রণ",
+  Dashboard: "ড্যাশবোর্ড",
+  Orders: "অর্ডার",
+  "Supply Lots": "সরবরাহ লট",
+  Farmers: "কৃষক",
+  Logistics: "লজিস্টিকস",
+  Payouts: "পেমেন্ট",
+  Settings: "সেটিংস",
+  "Escrow protected": "এসক্রো সুরক্ষিত",
+  "৳82,000 ready for farmer release after buyer confirmation.": "ক্রেতার নিশ্চিতকরণের পর কৃষককে ছাড়ার জন্য ৳৮২,০০০ প্রস্তুত।",
+  "Sunday, May 24": "রবিবার, ২৪ মে",
+  "Operations dashboard": "অপারেশন ড্যাশবোর্ড",
+  "Search order, farmer, district...": "অর্ডার, কৃষক, জেলা খুঁজুন...",
+  "New lot": "নতুন লট",
+  "GMV today": "আজকের GMV",
+  "18 orders confirmed": "১৮টি অর্ডার নিশ্চিত",
+  "Farmer payout": "কৃষকের পেমেন্ট",
+  "৳82K pending escrow": "৳৮২K এসক্রো অপেক্ষমাণ",
+  "Active supply": "সক্রিয় সরবরাহ",
+  "63 verified lots": "৬৩টি যাচাইকৃত লট",
+  "Avg price lift": "গড় মূল্য বৃদ্ধি",
+  "vs local middleman rate": "স্থানীয় দালালের দামের তুলনায়",
+  "Order control": "অর্ডার নিয়ন্ত্রণ",
+  "Buyer demand queue": "ক্রেতার চাহিদা তালিকা",
+  "All orders": "সব অর্ডার",
+  Buyer: "ক্রেতা",
+  Crop: "ফসল",
+  Value: "মূল্য",
+  Status: "স্ট্যাটাস",
+  "Matching": "মিল খোঁজা হচ্ছে",
+  "Pickup booked": "পিকআপ বুকড",
+  "In transit": "পথে আছে",
+  "Quality check": "গুণমান যাচাই",
+  "3 farmer groups": "৩টি কৃষক গ্রুপ",
+  Today: "আজ",
+  "Payout action": "পেমেন্ট কার্যক্রম",
+  "Release queue": "ছাড়ের তালিকা",
+  "Ready after QC": "QC-এর পরে প্রস্তুত",
+  "Delivery photo received": "ডেলিভারি ছবি পাওয়া গেছে",
+  "Buyer weight confirmed": "ক্রেতা ওজন নিশ্চিত করেছে",
+  "Quality check pending": "গুণমান যাচাই বাকি",
+  "Review payouts": "পেমেন্ট রিভিউ করুন",
+  "Farmer supply": "কৃষক সরবরাহ",
+  "Verified lots": "যাচাইকৃত লট",
+  "Grade lots": "লট গ্রেড করুন",
+  "Price intelligence": "দাম বিশ্লেষণ",
+  "Farmer vs market spread": "কৃষক বনাম বাজার দামের পার্থক্য",
+  "Logistics board": "লজিস্টিকস বোর্ড",
+  "Routes in motion": "চলমান রুট",
+  Alerts: "অ্যালার্ট",
+  "Field updates": "মাঠের আপডেট",
+  "Tomato lot AKL-882 passed weight check.": "টমেটো লট AKL-882 ওজন পরীক্ষায় পাস করেছে।",
+  "Rangpur potato pickup moved to 8:20 PM.": "রংপুর আলুর পিকআপ রাত ৮:২০-এ সরানো হয়েছে।",
+  "4 new farmers awaiting verification.": "৪ জন নতুন কৃষক যাচাইয়ের অপেক্ষায়।",
+  "Order this lot": "এই লট অর্ডার করুন",
+  "Ready tomorrow": "আগামীকাল প্রস্তুত",
+  "Ready today": "আজ প্রস্তুত",
+  "Cold stored": "কোল্ড স্টোরে আছে",
+  "Ready in 2 days": "২ দিনে প্রস্তুত",
+  "1.2 tons": "১.২ টন",
+  "420 kg": "৪২০ কেজি",
+  "3.6 tons": "৩.৬ টন",
+  "1.8 tons": "১.৮ টন",
+  "2.0 tons": "২.০ টন",
+  "360 kg": "৩৬০ কেজি",
+  "4.5 tons": "৪.৫ টন",
+  "1.1 tons": "১.১ টন",
+  "Dhaka North": "ঢাকা উত্তর",
+  Banani: "বনানী",
+  Tejgaon: "তেজগাঁও",
+  Mirpur: "মিরপুর",
+  "Shwapno Retail": "স্বপ্ন রিটেইল",
+  "Hotel Sarina": "হোটেল সারিনা",
+  "Agora Warehouse": "আগোরা ওয়্যারহাউস",
+  "B2B Kitchen Co.": "B2B কিচেন কো.",
+  "Mst. Rahima": "মোছা. রহিমা",
+  "Abdul Karim": "আব্দুল করিম",
+  "Nayan Mondol": "নয়ন মণ্ডল",
+  "Rashed Mia": "রাশেদ মিয়া",
+  "Bogura - Dhaka": "বগুড়া - ঢাকা",
+  "Rangpur - Tejgaon": "রংপুর - তেজগাঁও",
+  "Jashore - Dhaka": "যশোর - ঢাকা",
+  "Hasan Logistics": "হাসান লজিস্টিকস",
+  "North Cold Van": "নর্থ কোল্ড ভ্যান",
+  "Padma Cargo": "পদ্মা কার্গো",
+  "3 lots / 1.1 tons": "৩ লট / ১.১ টন",
+  "2 lots / 4.5 tons": "২ লট / ৪.৫ টন",
+  "4 lots / 2.8 tons": "৪ লট / ২.৮ টন",
+  "Pickup in 42 min": "৪২ মিনিটে পিকআপ",
+  Ambient: "সাধারণ তাপমাত্রা",
+  "8°C": "৮°C",
+  "Awaiting load": "লোডের অপেক্ষায়",
+};
+
+const LanguageContext = React.createContext<Language>("en");
+
+function translate(language: Language, text: string) {
+  return language === "bn" ? bn[text] ?? text : text;
+}
+
+function useTranslate() {
+  const language = React.useContext(LanguageContext);
+  return (text: string) => translate(language, text);
+}
 
 const lots: CropLot[] = [
   {
@@ -220,14 +416,17 @@ function App() {
   const [district, setDistrict] = useState("All districts");
   const [loggedIn, setLoggedIn] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [language, setLanguage] = useState<Language>("en");
+  const t = (text: string) => translate(language, text);
 
   const filteredLots = useMemo(() => {
     return lots.filter((lot) => {
-      const textMatch = `${lot.crop} ${lot.farmer} ${lot.district}`.toLowerCase().includes(query.toLowerCase());
+      const haystack = `${lot.crop} ${lot.farmer} ${lot.district} ${t(lot.crop)} ${t(lot.farmer)} ${t(lot.district)}`;
+      const textMatch = haystack.toLowerCase().includes(query.toLowerCase());
       const districtMatch = district === "All districts" || lot.district === district;
       return textMatch && districtMatch;
     });
-  }, [query, district]);
+  }, [query, district, language]);
 
   const selectView = (nextView: View) => {
     setView(nextView);
@@ -235,13 +434,14 @@ function App() {
   };
 
   return (
-    <main className="app-shell">
+    <LanguageContext.Provider value={language}>
+    <main className="app-shell" lang={language === "bn" ? "bn" : "en"}>
       <header className="site-header">
         <button
           className="icon-button mobile-only"
           type="button"
           aria-expanded={menuOpen}
-          aria-label={menuOpen ? "Close menu" : "Open menu"}
+          aria-label={menuOpen ? t("Close menu") : t("Open menu")}
           onClick={() => setMenuOpen((value) => !value)}
         >
           {menuOpen ? <X size={21} /> : <Menu size={21} />}
@@ -252,33 +452,41 @@ function App() {
           </span>
           <span>
             <strong>AmarKrishok</strong>
-            <small>Direct from Farmer, Fair for All</small>
+            <small>{t("Direct from Farmer, Fair for All")}</small>
           </span>
         </button>
 
-        <nav className="main-nav" aria-label="Main navigation">
+        <nav className="main-nav" aria-label={t("Main navigation")}>
           {views.map((item) => (
             <button className={view === item.id ? "active" : ""} key={item.id} type="button" onClick={() => selectView(item.id)}>
-              {item.label}
+              {t(item.label)}
             </button>
           ))}
         </nav>
 
         <div className="header-actions">
-          <button className="icon-button" type="button" aria-label="Notifications">
+          <div className="language-switch" aria-label="Language switch">
+            <button className={language === "en" ? "active" : ""} type="button" onClick={() => setLanguage("en")}>
+              EN
+            </button>
+            <button className={language === "bn" ? "active" : ""} type="button" onClick={() => setLanguage("bn")}>
+              বাংলা
+            </button>
+          </div>
+          <button className="icon-button" type="button" aria-label={t("Notifications")}>
             <Bell size={18} />
           </button>
           <button className="secondary-button" type="button" onClick={() => setLoggedIn((value) => !value)}>
             <LockKeyhole size={17} />
-            {loggedIn ? "Logged in" : "Login"}
+            {loggedIn ? t("Logged in") : t("Login")}
           </button>
         </div>
 
         {menuOpen && (
-          <nav className="mobile-menu-panel" aria-label="Mobile navigation">
+          <nav className="mobile-menu-panel" aria-label={t("Mobile navigation")}>
             {views.map((item) => (
               <button className={view === item.id ? "active" : ""} key={item.id} type="button" onClick={() => selectView(item.id)}>
-                {item.label}
+                {t(item.label)}
               </button>
             ))}
           </nav>
@@ -301,30 +509,30 @@ function App() {
       {view === "prices" && <PricesView />}
       {view === "admin" && <AdminView />}
     </main>
+    </LanguageContext.Provider>
   );
 }
 
 function HomeView({ setView }: { setView: (view: View) => void }) {
+  const t = useTranslate();
   return (
     <>
       <section className="hero-section">
         <div className="hero-copy">
           <div className="status-pill">
             <ShieldCheck size={16} />
-            Verified farmer-to-buyer marketplace
+            {t("Verified farmer-to-buyer marketplace")}
           </div>
-          <h1>Farmers post crops. Buyers order directly. Admins manage the chain.</h1>
+          <h1>{t("Farmers post crops. Buyers order directly. Admins manage the chain.")}</h1>
           <p>
-            A direct supply-chain platform for Bangladesh where farmers post
-            harvests, buyers order transparently, logistics partners deliver,
-            and payments stay protected.
+            {t("A direct supply-chain platform for Bangladesh where farmers post harvests, buyers order transparently, logistics partners deliver, and payments stay protected.")}
           </p>
           <div className="hero-actions">
             <button className="primary-button" type="button" onClick={() => setView("market")}>
-              Browse crops
+              {t("Browse crops")}
             </button>
             <button className="secondary-button large" type="button" onClick={() => setView("farmer")}>
-              Post a crop
+              {t("Post a crop")}
             </button>
           </div>
         </div>
@@ -332,8 +540,8 @@ function HomeView({ setView }: { setView: (view: View) => void }) {
         <div className="market-console">
           <div className="console-header">
             <div>
-              <span>Today&apos;s supply</span>
-              <strong>Live lots from verified farmers</strong>
+              <span>{t("Today's supply")}</span>
+              <strong>{t("Live lots from verified farmers")}</strong>
             </div>
             <ListFilter size={20} />
           </div>
@@ -348,19 +556,19 @@ function HomeView({ setView }: { setView: (view: View) => void }) {
       <section className="metrics-band" aria-label="Platform metrics">
         <div>
           <strong>27.4 tons</strong>
-          <span>active verified supply</span>
+          <span>{t("active verified supply")}</span>
         </div>
         <div>
           <strong>18</strong>
-          <span>orders confirmed today</span>
+          <span>{t("orders confirmed today")}</span>
         </div>
         <div>
           <strong>16.8%</strong>
-          <span>average farmer price lift</span>
+          <span>{t("average farmer price lift")}</span>
         </div>
         <div>
           <strong>৳82K</strong>
-          <span>escrow pending release</span>
+          <span>{t("escrow pending release")}</span>
         </div>
       </section>
 
@@ -375,8 +583,8 @@ function HomeView({ setView }: { setView: (view: View) => void }) {
           return (
             <article className="workflow-card" key={step.title}>
               <Icon size={24} />
-              <h3>{step.title}</h3>
-              <p>{step.text}</p>
+              <h3>{t(step.title)}</h3>
+              <p>{t(step.text)}</p>
             </article>
           );
         })}
@@ -385,27 +593,25 @@ function HomeView({ setView }: { setView: (view: View) => void }) {
       <section className="trust-section" id="trust">
         <div className="trust-panel">
           <div className="section-title trust-title">
-            <span>Trust layer</span>
-            <h1>Quality, payment, and delivery stay visible.</h1>
+            <span>{t("Trust layer")}</span>
+            <h1>{t("Quality, payment, and delivery stay visible.")}</h1>
             <p>
-              AmarKrishok reduces middleman abuse by keeping lot grading,
-              escrow status, buyer history, and delivery proof in one shared
-              record.
+              {t("AmarKrishok reduces middleman abuse by keeping lot grading, escrow status, buyer history, and delivery proof in one shared record.")}
             </p>
           </div>
 
           <div className="trust-list">
             <div>
               <ClipboardCheck size={20} />
-              <span>Digital quality checklist before pickup</span>
+              <span>{t("Digital quality checklist before pickup")}</span>
             </div>
             <div>
               <Clock3 size={20} />
-              <span>Delivery milestones with buyer confirmation</span>
+              <span>{t("Delivery milestones with buyer confirmation")}</span>
             </div>
             <div>
               <HeartHandshake size={20} />
-              <span>Farmer co-op groups for bulk orders</span>
+              <span>{t("Farmer co-op groups for bulk orders")}</span>
             </div>
           </div>
         </div>
@@ -413,12 +619,12 @@ function HomeView({ setView }: { setView: (view: View) => void }) {
         <aside className="buyer-card" aria-label="Buyer request">
           <div className="buyer-card-header">
             <ShoppingBag size={22} />
-            <span>Buyer request</span>
+            <span>{t("Buyer request")}</span>
           </div>
-          <h3>Need 2 tons tomato for Dhaka retail chain</h3>
-          <p>Preferred delivery: next morning. Escrow ready after lot approval.</p>
+          <h3>{t("Need 2 tons tomato for Dhaka retail chain")}</h3>
+          <p>{t("Preferred delivery: next morning. Escrow ready after lot approval.")}</p>
           <button className="primary-button full" type="button" onClick={() => setView("buyer")}>
-            Match farmers
+            {t("Match farmers")}
           </button>
         </aside>
       </section>
@@ -441,22 +647,23 @@ function MarketplaceView({
   setQuery: (value: string) => void;
   setView: (view: View) => void;
 }) {
+  const t = useTranslate();
   return (
     <section className="page-wrap">
       <SectionTitle eyebrow="Marketplace" title="Search crops by location and reserve directly from farmers." />
       <div className="filter-bar">
         <label className="search-field">
           <Search size={18} />
-          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search tomato, potato, farmer..." />
+          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t("Search tomato, potato, farmer...")} />
         </label>
         <label className="select-field">
           <MapPin size={18} />
           <select value={district} onChange={(event) => setDistrict(event.target.value)}>
-            <option>All districts</option>
-            <option>Jashore</option>
-            <option>Bogura</option>
-            <option>Rangpur</option>
-            <option>Pabna</option>
+            <option value="All districts">{t("All districts")}</option>
+            <option value="Jashore">{t("Jashore")}</option>
+            <option value="Bogura">{t("Bogura")}</option>
+            <option value="Rangpur">{t("Rangpur")}</option>
+            <option value="Pabna">{t("Pabna")}</option>
           </select>
           <ChevronDown size={16} />
         </label>
@@ -471,6 +678,7 @@ function MarketplaceView({
 }
 
 function FarmerView() {
+  const t = useTranslate();
   return (
     <section className="page-wrap form-layout">
       <SectionTitle eyebrow="Farmer app" title="Post a crop lot for direct buyer orders." />
@@ -484,22 +692,22 @@ function FarmerView() {
           <Input label="Grade" placeholder="A / B+ / C" />
         </FormGrid>
         <label className="full-field">
-          <span>Notes</span>
-          <textarea placeholder="Packaging, pickup point, storage condition..." />
+          <span>{t("Notes")}</span>
+          <textarea placeholder={t("Packaging, pickup point, storage condition...")} />
         </label>
         <button className="primary-button full" type="button">
           <Plus size={18} />
-          Publish crop lot
+          {t("Publish crop lot")}
         </button>
       </form>
       <aside className="panel side-panel">
         <UserRoundCheck size={24} />
-        <h3>Farmer profile readiness</h3>
-        <p>Phone OTP, NID, farm location, and bank/mobile wallet details should be verified before payout.</p>
+        <h3>{t("Farmer profile readiness")}</h3>
+        <p>{t("Phone OTP, NID, farm location, and bank/mobile wallet details should be verified before payout.")}</p>
         <div className="checklist">
-          <span><CheckCircle2 size={18} /> Phone verified</span>
-          <span><CheckCircle2 size={18} /> Farm location added</span>
-          <span><Clock3 size={18} /> Wallet verification pending</span>
+          <span><CheckCircle2 size={18} /> {t("Phone verified")}</span>
+          <span><CheckCircle2 size={18} /> {t("Farm location added")}</span>
+          <span><Clock3 size={18} /> {t("Wallet verification pending")}</span>
         </div>
       </aside>
     </section>
@@ -507,6 +715,7 @@ function FarmerView() {
 }
 
 function BuyerView() {
+  const t = useTranslate();
   return (
     <section className="page-wrap form-layout">
       <SectionTitle eyebrow="Buyer order" title="Place a direct order or bulk request." />
@@ -520,25 +729,26 @@ function BuyerView() {
           <Input label="Offer price" placeholder="৳42/kg" />
         </FormGrid>
         <label className="full-field">
-          <span>Quality requirement</span>
-          <textarea placeholder="Grade, packaging, ripeness, delivery notes..." />
+          <span>{t("Quality requirement")}</span>
+          <textarea placeholder={t("Grade, packaging, ripeness, delivery notes...")} />
         </label>
         <button className="primary-button full" type="button">
           <ShoppingBag size={18} />
-          Submit order request
+          {t("Submit order request")}
         </button>
       </form>
       <aside className="panel side-panel">
         <Store size={24} />
-        <h3>Matched supply</h3>
-        <p>Current best match: 3 verified tomato lots from Jashore, total 2.9 tons.</p>
-        <button className="secondary-button full" type="button">View matched lots</button>
+        <h3>{t("Matched supply")}</h3>
+        <p>{t("Current best match: 3 verified tomato lots from Jashore, total 2.9 tons.")}</p>
+        <button className="secondary-button full" type="button">{t("View matched lots")}</button>
       </aside>
     </section>
   );
 }
 
 function PricesView() {
+  const t = useTranslate();
   return (
     <section className="page-wrap">
       <SectionTitle eyebrow="Market prices" title="Daily farmer, wholesale, and retail price signals." />
@@ -546,19 +756,19 @@ function PricesView() {
         {prices.map((price) => (
           <div className="price-row" key={`${price.crop}-${price.district}`}>
             <div>
-              <strong>{price.crop}</strong>
-              <span>{price.district}</span>
+              <strong>{t(price.crop)}</strong>
+              <span>{t(price.district)}</span>
             </div>
             <div>
-              <span>Farmer ask</span>
+              <span>{t("Farmer ask")}</span>
               <strong>{price.farmerAsk}/kg</strong>
             </div>
             <div>
-              <span>Wholesale</span>
+              <span>{t("Wholesale")}</span>
               <strong>{price.wholesale}/kg</strong>
             </div>
             <div>
-              <span>Retail</span>
+              <span>{t("Retail")}</span>
               <strong>{price.retail}/kg</strong>
             </div>
             <em>{price.trend}</em>
@@ -570,14 +780,15 @@ function PricesView() {
 }
 
 function AdminView() {
+  const t = useTranslate();
   return (
     <section className="dashboard-shell restored-dashboard">
-      <aside className="sidebar" aria-label="Dashboard navigation">
+      <aside className="sidebar" aria-label={t("Dashboard navigation")}>
         <div className="admin-brand">
           <LayoutDashboard size={22} />
           <div>
-            <strong>Admin Control</strong>
-            <small>Supply command</small>
+            <strong>{t("Admin Control")}</strong>
+            <small>{t("Supply command")}</small>
           </div>
         </div>
 
@@ -587,7 +798,7 @@ function AdminView() {
             return (
               <button className={item.active ? "active" : ""} type="button" key={item.label}>
                 <Icon size={19} />
-                {item.label}
+                {t(item.label)}
               </button>
             );
           })}
@@ -595,33 +806,33 @@ function AdminView() {
 
         <div className="trust-summary">
           <ShieldCheck size={22} />
-          <strong>Escrow protected</strong>
-          <span>৳82,000 ready for farmer release after buyer confirmation.</span>
+          <strong>{t("Escrow protected")}</strong>
+          <span>{t("৳82,000 ready for farmer release after buyer confirmation.")}</span>
         </div>
       </aside>
 
       <div className="workspace dashboard-workspace">
         <header className="dashboard-topbar">
-          <button className="mobile-menu" type="button" aria-label="Open admin navigation">
+          <button className="mobile-menu" type="button" aria-label={t("Open admin navigation")}>
             <Menu size={22} />
           </button>
 
           <div className="page-title">
-            <span>Sunday, May 24</span>
-            <h1>Operations dashboard</h1>
+            <span>{t("Sunday, May 24")}</span>
+            <h1>{t("Operations dashboard")}</h1>
           </div>
 
           <div className="topbar-actions">
             <label className="global-search">
               <Search size={18} />
-              <input value="Search order, farmer, district..." readOnly aria-label="Search dashboard" />
+              <input value={t("Search order, farmer, district...")} readOnly aria-label={t("Search dashboard")} />
             </label>
-            <button className="icon-button" type="button" aria-label="Notifications">
+            <button className="icon-button" type="button" aria-label={t("Notifications")}>
               <Bell size={19} />
             </button>
             <button className="primary-button" type="button">
               <Plus size={18} />
-              New lot
+              {t("New lot")}
             </button>
           </div>
         </header>
@@ -632,9 +843,9 @@ function AdminView() {
               <div className={`trend ${stat.trend}`}>
                 <TrendIcon trend={stat.trend} />
               </div>
-              <span>{stat.label}</span>
+              <span>{t(stat.label)}</span>
               <strong>{stat.value}</strong>
-              <p>{stat.detail}</p>
+              <p>{t(stat.detail)}</p>
             </article>
           ))}
         </section>
@@ -643,11 +854,11 @@ function AdminView() {
           <section className="panel orders-panel" aria-labelledby="orders-heading">
             <div className="panel-header">
               <div>
-                <span>Order control</span>
-                <h2 id="orders-heading">Buyer demand queue</h2>
+                <span>{t("Order control")}</span>
+                <h2 id="orders-heading">{t("Buyer demand queue")}</h2>
               </div>
               <button className="secondary-button" type="button">
-                All orders
+                {t("All orders")}
                 <ChevronDown size={17} />
               </button>
             </div>
@@ -656,12 +867,12 @@ function AdminView() {
               <table>
                 <thead>
                   <tr>
-                    <th>Order</th>
-                    <th>Buyer</th>
-                    <th>Crop</th>
-                    <th>Quantity</th>
-                    <th>Value</th>
-                    <th>Status</th>
+                    <th>{t("Order")}</th>
+                    <th>{t("Buyer")}</th>
+                    <th>{t("Crop")}</th>
+                    <th>{t("Quantity")}</th>
+                    <th>{t("Value")}</th>
+                    <th>{t("Status")}</th>
                     <th>ETA</th>
                   </tr>
                 </thead>
@@ -670,16 +881,16 @@ function AdminView() {
                     <tr key={order.id}>
                       <td>
                         <strong>{order.id}</strong>
-                        <span>{order.destination}</span>
+                        <span>{t(order.destination)}</span>
                       </td>
-                      <td>{order.buyer}</td>
-                      <td>{order.crop}</td>
-                      <td>{order.quantity}</td>
+                      <td>{t(order.buyer)}</td>
+                      <td>{t(order.crop)}</td>
+                      <td>{t(order.quantity)}</td>
                       <td>{order.value}</td>
                       <td>
-                        <em className={`status ${statusClass(order.status)}`}>{order.status}</em>
+                        <em className={`status ${statusClass(order.status)}`}>{t(order.status)}</em>
                       </td>
-                      <td>{order.status === "Matching" ? "3 farmer groups" : "Today"}</td>
+                      <td>{order.status === "Matching" ? t("3 farmer groups") : t("Today")}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -690,65 +901,65 @@ function AdminView() {
           <aside className="panel action-panel" aria-labelledby="release-heading">
             <div className="panel-header">
               <div>
-                <span>Payout action</span>
-                <h2 id="release-heading">Release queue</h2>
+                <span>{t("Payout action")}</span>
+                <h2 id="release-heading">{t("Release queue")}</h2>
               </div>
               <HandCoins size={22} />
             </div>
             <div className="release-amount">
-              <span>Ready after QC</span>
+              <span>{t("Ready after QC")}</span>
               <strong>৳82,000</strong>
             </div>
             <div className="checklist">
               <span>
                 <CheckCircle2 size={18} />
-                Delivery photo received
+                {t("Delivery photo received")}
               </span>
               <span>
                 <CheckCircle2 size={18} />
-                Buyer weight confirmed
+                {t("Buyer weight confirmed")}
               </span>
               <span>
                 <Clock3 size={18} />
-                Quality check pending
+                {t("Quality check pending")}
               </span>
             </div>
             <button className="primary-button full" type="button">
-              Review payouts
+              {t("Review payouts")}
             </button>
           </aside>
 
           <section className="panel supply-panel" aria-labelledby="supply-heading">
             <div className="panel-header">
               <div>
-                <span>Farmer supply</span>
-                <h2 id="supply-heading">Verified lots</h2>
+                <span>{t("Farmer supply")}</span>
+                <h2 id="supply-heading">{t("Verified lots")}</h2>
               </div>
               <button className="secondary-button" type="button">
                 <ClipboardCheck size={17} />
-                Grade lots
+                {t("Grade lots")}
               </button>
             </div>
 
             <div className="supply-list">
               {lots.slice(0, 3).map((lot) => (
                 <article className="supply-item" key={lot.id}>
-                  <img src={lot.image} alt={`${lot.crop} supply`} />
+                  <img src={lot.image} alt={`${t(lot.crop)} supply`} />
                   <div>
-                    <h3>{lot.crop}</h3>
-                    <span>{lot.farmer}</span>
+                    <h3>{t(lot.crop)}</h3>
+                    <span>{t(lot.farmer)}</span>
                     <p>
                       <MapPin size={15} />
-                      {lot.district}
+                      {t(lot.district)}
                     </p>
                   </div>
                   <div>
-                    <strong>{lot.quantity}</strong>
+                    <strong>{t(lot.quantity)}</strong>
                     <span>{lot.ask}</span>
                   </div>
                   <div>
-                    <strong>Grade {lot.grade}</strong>
-                    <span>{lot.harvest}</span>
+                    <strong>{t("Grade")} {lot.grade}</strong>
+                    <span>{t(lot.harvest)}</span>
                   </div>
                   <button className="icon-button" type="button" aria-label={`Approve ${lot.crop} lot`}>
                     <BadgeCheck size={19} />
@@ -761,8 +972,8 @@ function AdminView() {
           <section className="panel price-panel" aria-labelledby="price-heading">
             <div className="panel-header">
               <div>
-                <span>Price intelligence</span>
-                <h2 id="price-heading">Farmer vs market spread</h2>
+                <span>{t("Price intelligence")}</span>
+                <h2 id="price-heading">{t("Farmer vs market spread")}</h2>
               </div>
               <Banknote size={22} />
             </div>
@@ -771,8 +982,8 @@ function AdminView() {
               {adminPriceSignals.map((price) => (
                 <div className="price-row" key={price.crop}>
                   <div className="price-label">
-                    <strong>{price.crop}</strong>
-                    <span>{price.region}</span>
+                    <strong>{t(price.crop)}</strong>
+                    <span>{t(price.region)}</span>
                   </div>
                   <div className="bar-stack" aria-label={`${price.crop} price comparison`}>
                     <span style={{ width: `${(price.farmerAsk / price.market) * 100}%` }} />
@@ -785,11 +996,11 @@ function AdminView() {
             <div className="legend">
               <span>
                 <i className="farmer" />
-                Farmer ask
+                {t("Farmer ask")}
               </span>
               <span>
                 <i className="wholesale" />
-                Wholesale
+                {t("Wholesale")}
               </span>
             </div>
           </section>
@@ -797,8 +1008,8 @@ function AdminView() {
           <section className="panel logistics-panel" aria-labelledby="logistics-heading">
             <div className="panel-header">
               <div>
-                <span>Logistics board</span>
-                <h2 id="logistics-heading">Routes in motion</h2>
+                <span>{t("Logistics board")}</span>
+                <h2 id="logistics-heading">{t("Routes in motion")}</h2>
               </div>
               <Route size={22} />
             </div>
@@ -810,14 +1021,14 @@ function AdminView() {
                     <Truck size={20} />
                   </div>
                   <div>
-                    <h3>{route.route}</h3>
-                    <span>{route.driver}</span>
+                    <h3>{t(route.route)}</h3>
+                    <span>{t(route.driver)}</span>
                   </div>
                   <div>
-                    <strong>{route.lots}</strong>
-                    <span>{route.temperature}</span>
+                    <strong>{t(route.lots)}</strong>
+                    <span>{t(route.temperature)}</span>
                   </div>
-                  <em>{route.status}</em>
+                  <em>{t(route.status)}</em>
                 </article>
               ))}
             </div>
@@ -826,23 +1037,23 @@ function AdminView() {
           <aside className="panel messages-panel" aria-labelledby="messages-heading">
             <div className="panel-header">
               <div>
-                <span>Alerts</span>
-                <h2 id="messages-heading">Field updates</h2>
+                <span>{t("Alerts")}</span>
+                <h2 id="messages-heading">{t("Field updates")}</h2>
               </div>
               <MessageSquareText size={22} />
             </div>
             <div className="message-list">
               <span>
                 <PackageCheck size={18} />
-                Tomato lot AKL-882 passed weight check.
+                {t("Tomato lot AKL-882 passed weight check.")}
               </span>
               <span>
                 <CalendarDays size={18} />
-                Rangpur potato pickup moved to 8:20 PM.
+                {t("Rangpur potato pickup moved to 8:20 PM.")}
               </span>
               <span>
                 <UsersRound size={18} />
-                4 new farmers awaiting verification.
+                {t("4 new farmers awaiting verification.")}
               </span>
             </div>
           </aside>
@@ -853,34 +1064,36 @@ function AdminView() {
 }
 
 function CropCard({ lot, onOrder }: { lot: CropLot; onOrder: () => void }) {
+  const t = useTranslate();
   return (
     <article className="crop-card">
-      <img src={lot.image} alt={`${lot.crop} harvest`} />
+      <img src={lot.image} alt={`${t(lot.crop)} harvest`} />
       <div className="crop-card-body">
         <div className="crop-title-row">
           <div>
-            <h2>{lot.crop}</h2>
-            <p>{lot.farmer}</p>
+            <h2>{t(lot.crop)}</h2>
+            <p>{t(lot.farmer)}</p>
           </div>
           <span>{lot.ask}</span>
         </div>
         <div className="crop-meta">
-          <span><MapPin size={15} /> {lot.district}</span>
-          <span><PackageCheck size={15} /> {lot.quantity}</span>
-          <span><BadgeCheck size={15} /> Grade {lot.grade}</span>
-          <span><CalendarDays size={15} /> {lot.harvest}</span>
+          <span><MapPin size={15} /> {t(lot.district)}</span>
+          <span><PackageCheck size={15} /> {t(lot.quantity)}</span>
+          <span><BadgeCheck size={15} /> {t("Grade")} {lot.grade}</span>
+          <span><CalendarDays size={15} /> {t(lot.harvest)}</span>
         </div>
-        <button className="order-button" type="button" onClick={onOrder}>Order this lot</button>
+        <button className="order-button" type="button" onClick={onOrder}>{t("Order this lot")}</button>
       </div>
     </article>
   );
 }
 
 function SectionTitle({ eyebrow, title }: { eyebrow: string; title: string }) {
+  const t = useTranslate();
   return (
     <div className="section-title">
-      <span>{eyebrow}</span>
-      <h1>{title}</h1>
+      <span>{t(eyebrow)}</span>
+      <h1>{t(title)}</h1>
     </div>
   );
 }
@@ -890,21 +1103,23 @@ function FormGrid({ children }: { children: React.ReactNode }) {
 }
 
 function Input({ label, placeholder }: { label: string; placeholder: string }) {
+  const t = useTranslate();
   return (
     <label className="input-field">
-      <span>{label}</span>
-      <input placeholder={placeholder} />
+      <span>{t(label)}</span>
+      <input placeholder={t(placeholder)} />
     </label>
   );
 }
 
 function StatCard({ icon: Icon, label, value, detail }: { icon: typeof Banknote; label: string; value: string; detail: string }) {
+  const t = useTranslate();
   return (
     <article className="stat-card">
       <Icon size={21} />
-      <span>{label}</span>
+      <span>{t(label)}</span>
       <strong>{value}</strong>
-      <p>{detail}</p>
+      <p>{t(detail)}</p>
     </article>
   );
 }
