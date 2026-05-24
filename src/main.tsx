@@ -165,6 +165,8 @@ const bn: Record<string, string> = {
   Register: "রেজিস্টার",
   "Register buyer": "ক্রেতা রেজিস্টার",
   "Register seller": "বিক্রেতা রেজিস্টার",
+  "New buyer account": "নতুন ক্রেতা অ্যাকাউন্ট",
+  "New seller account": "নতুন বিক্রেতা অ্যাকাউন্ট",
   "Create buyer account": "ক্রেতা অ্যাকাউন্ট তৈরি করুন",
   "Create seller account": "বিক্রেতা অ্যাকাউন্ট তৈরি করুন",
   "Submit your information. Admin will verify it before your account becomes active.": "আপনার তথ্য জমা দিন। অ্যাকাউন্ট চালু হওয়ার আগে অ্যাডমিন তথ্য যাচাই করবে।",
@@ -176,6 +178,7 @@ const bn: Record<string, string> = {
   "Tomato, potato, chilli...": "টমেটো, আলু, মরিচ...",
   "Submit registration": "রেজিস্ট্রেশন জমা দিন",
   "Registration submitted": "রেজিস্ট্রেশন জমা হয়েছে",
+  "Admin verification required": "অ্যাডমিন যাচাই প্রয়োজন",
   "Your account is pending admin verification. You can sign in after approval.": "আপনার অ্যাকাউন্ট অ্যাডমিন যাচাইয়ের অপেক্ষায় আছে। অনুমোদনের পর লগইন করতে পারবেন।",
   "Back to login": "লগইনে ফিরুন",
   "Please fill in all registration fields.": "রেজিস্ট্রেশনের সব তথ্য পূরণ করুন।",
@@ -771,14 +774,14 @@ function App() {
                       <ShoppingBag size={18} />
                       <span>
                         <strong>{t("Register buyer")}</strong>
-                        <small>{t("Pending verification")}</small>
+                        <small>{t("New buyer account")}</small>
                       </span>
                     </NavLink>
                     <NavLink className="role-option" to="/register/farmer" onClick={closeHeaderMenus}>
                       <Sprout size={18} />
                       <span>
                         <strong>{t("Register seller")}</strong>
-                        <small>{t("Pending verification")}</small>
+                        <small>{t("New seller account")}</small>
                       </span>
                     </NavLink>
                   </>
@@ -1118,9 +1121,15 @@ function RegisterView({
           <div className="auth-icon">
             <CheckCircle2 size={28} />
           </div>
-          <span>{t("Pending verification")}</span>
+          <span>{t("Registration submitted")}</span>
           <h1>{t("Registration submitted")}</h1>
-          <p>{t("Your account is pending admin verification. You can sign in after approval.")}</p>
+          <div className="auth-notice pending">
+            <Clock3 size={20} />
+            <div>
+              <strong>{t("Pending verification")}</strong>
+              <p>{t("Your account is pending admin verification. You can sign in after approval.")}</p>
+            </div>
+          </div>
           <div className="registration-summary">
             <span>{t(roleOption.label)}</span>
             <strong>{submittedAccount.name}</strong>

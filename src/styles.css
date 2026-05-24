@@ -756,6 +756,30 @@ button {
   font-weight: 760;
 }
 
+.auth-notice {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 8px;
+}
+
+.auth-notice.pending {
+  color: #176b47;
+  background: #eef5ec;
+}
+
+.auth-notice strong {
+  display: block;
+  color: #183028;
+}
+
+.auth-notice p {
+  margin-top: 3px;
+  color: #687b72;
+}
+
 .auth-actions {
   display: flex;
   flex-wrap: wrap;
