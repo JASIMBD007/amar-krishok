@@ -497,7 +497,7 @@ const lots: CropLot[] = [
     grade: "A",
     harvest: "Ready tomorrow",
     image:
-      "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1750184560313-4c4a569f43fd?auto=format&fit=crop&w=900&q=80",
   },
   {
     id: "LOT-386",
@@ -509,7 +509,7 @@ const lots: CropLot[] = [
     grade: "B+",
     harvest: "Ready today",
     image:
-      "https://images.unsplash.com/photo-1604329760661-e71dc83f8f26?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1560951812-58e6bce53149?auto=format&fit=crop&crop=bottom&w=900&h=620&q=80",
   },
   {
     id: "LOT-274",
@@ -533,7 +533,7 @@ const lots: CropLot[] = [
     grade: "A",
     harvest: "Ready tomorrow",
     image:
-      "https://images.unsplash.com/photo-1553279768-865429fa0078?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1776883776296-c9f0cb8a92f2?auto=format&fit=crop&w=900&q=80",
   },
 ];
 
