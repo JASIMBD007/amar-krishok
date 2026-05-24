@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import ReactDOM from "react-dom/client";
+import { BrowserRouter, Navigate, NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import {
   BadgeCheck,
   Banknote,
@@ -21,7 +22,7 @@ import {
   MessageSquareText,
   PackageCheck,
   Plus,
-  Route,
+  Route as RouteIcon,
   Search,
   Settings,
   ShieldCheck,
@@ -40,6 +41,7 @@ import "./styles.css";
 
 type View = "home" | "market" | "farmer" | "buyer" | "prices" | "admin";
 type Language = "en" | "bn";
+type Role = "admin" | "buyer" | "farmer";
 
 type CropLot = {
   id: string;
@@ -106,6 +108,13 @@ const bn: Record<string, string> = {
   Notifications: "নোটিফিকেশন",
   "Logged in": "লগইন হয়েছে",
   Login: "লগইন",
+  "Choose login type": "লগইন টাইপ বেছে নিন",
+  "Continue as admin": "অ্যাডমিন হিসেবে যান",
+  "Continue as buyer": "ক্রেতা হিসেবে যান",
+  "Continue as farmer": "কৃষক হিসেবে যান",
+  "Seller / Farmer": "বিক্রেতা / কৃষক",
+  "Buyer account": "ক্রেতা অ্যাকাউন্ট",
+  "Admin account": "অ্যাডমিন অ্যাকাউন্ট",
   "Language switch": "ভাষা বদল",
   "Open menu": "মেনু খুলুন",
   "Close menu": "মেনু বন্ধ করুন",
@@ -387,13 +396,24 @@ const orders: Order[] = [
   { id: "AK-2045", buyer: "B2B Kitchen Co.", crop: "Onion", quantity: "1.1 tons", destination: "Mirpur", value: "৳81,400", status: "Quality check" },
 ];
 
-const views: Array<{ id: View; label: string }> = [
-  { id: "home", label: "Home" },
-  { id: "market", label: "Marketplace" },
-  { id: "farmer", label: "Post Crop" },
-  { id: "buyer", label: "Order" },
-  { id: "prices", label: "Prices" },
-  { id: "admin", label: "Admin" },
+const views: Array<{ id: View; label: string; path: string }> = [
+  { id: "home", label: "Home", path: "/" },
+  { id: "market", label: "Marketplace", path: "/marketplace" },
+  { id: "farmer", label: "Post Crop", path: "/farmer" },
+  { id: "buyer", label: "Order", path: "/buyer" },
+  { id: "prices", label: "Prices", path: "/prices" },
+  { id: "admin", label: "Admin", path: "/admin" },
+];
+
+const routeByView = views.reduce<Record<View, string>>((routes, item) => {
+  routes[item.id] = item.path;
+  return routes;
+}, {} as Record<View, string>);
+
+const roleOptions: Array<{ role: Role; label: string; detail: string; view: View; icon: typeof LayoutDashboard }> = [
+  { role: "admin", label: "Admin", detail: "Admin account", view: "admin", icon: LayoutDashboard },
+  { role: "buyer", label: "Buyer", detail: "Buyer account", view: "buyer", icon: ShoppingBag },
+  { role: "farmer", label: "Seller / Farmer", detail: "Farmer app", view: "farmer", icon: Sprout },
 ];
 
 const dashboardStats: DashboardStat[] = [
@@ -443,10 +463,12 @@ function statusClass(status: Order["status"]) {
 }
 
 function App() {
-  const [view, setView] = useState<View>("home");
+  const navigate = useNavigate();
+  const location = useLocation();
   const [query, setQuery] = useState("");
   const [district, setDistrict] = useState("All districts");
-  const [loggedIn, setLoggedIn] = useState(false);
+  const [activeRole, setActiveRole] = useState<Role | null>(null);
+  const [loginOpen, setLoginOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [language, setLanguage] = useState<Language>("en");
   const t = (text: string) => translate(language, text);
@@ -461,8 +483,21 @@ function App() {
   }, [query, district, language]);
 
   const selectView = (nextView: View) => {
-    setView(nextView);
+    navigate(routeByView[nextView]);
     setMenuOpen(false);
+    setLoginOpen(false);
+  };
+
+  const chooseRole = (role: Role, targetView: View) => {
+    setActiveRole(role);
+    selectView(targetView);
+  };
+
+  const roleLabel = activeRole ? roleOptions.find((item) => item.role === activeRole)?.label : null;
+
+  const closeHeaderMenus = () => {
+    setMenuOpen(false);
+    setLoginOpen(false);
   };
 
   return (
@@ -478,7 +513,7 @@ function App() {
         >
           {menuOpen ? <X size={21} /> : <Menu size={21} />}
         </button>
-        <button className="brand" type="button" onClick={() => selectView("home")} aria-label="AmarKrishok home">
+        <NavLink className="brand" to="/" onClick={closeHeaderMenus} aria-label="AmarKrishok home" end>
           <span className="brand-mark">
             <Sprout size={22} strokeWidth={2.6} />
           </span>
@@ -486,13 +521,13 @@ function App() {
             <strong>AmarKrishok</strong>
             <small>{t("Direct from Farmer, Fair for All")}</small>
           </span>
-        </button>
+        </NavLink>
 
         <nav className="main-nav" aria-label={t("Main navigation")}>
           {views.map((item) => (
-            <button className={view === item.id ? "active" : ""} key={item.id} type="button" onClick={() => selectView(item.id)}>
+            <NavLink end={item.path === "/"} key={item.id} to={item.path} onClick={closeHeaderMenus}>
               {t(item.label)}
-            </button>
+            </NavLink>
           ))}
         </nav>
 
@@ -508,38 +543,71 @@ function App() {
           <button className="icon-button" type="button" aria-label={t("Notifications")}>
             <Bell size={18} />
           </button>
-          <button className="secondary-button" type="button" onClick={() => setLoggedIn((value) => !value)}>
-            <LockKeyhole size={17} />
-            {loggedIn ? t("Logged in") : t("Login")}
-          </button>
+          <div className="login-shell">
+            <button
+              className="secondary-button"
+              type="button"
+              aria-expanded={loginOpen}
+              aria-haspopup="menu"
+              onClick={() => setLoginOpen((value) => !value)}
+            >
+              <LockKeyhole size={17} />
+              {roleLabel ? t(roleLabel) : t("Login")}
+              <ChevronDown size={15} />
+            </button>
+            {loginOpen && (
+              <div className="login-menu" role="menu">
+                <span>{t("Choose login type")}</span>
+                {roleOptions.map((option) => {
+                  const Icon = option.icon;
+                  return (
+                    <button className="role-option" key={option.role} type="button" role="menuitem" onClick={() => chooseRole(option.role, option.view)}>
+                      <Icon size={18} />
+                      <span>
+                        <strong>{t(option.label)}</strong>
+                        <small>{t(option.detail)}</small>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
 
         {menuOpen && (
           <nav className="mobile-menu-panel" aria-label={t("Mobile navigation")}>
             {views.map((item) => (
-              <button className={view === item.id ? "active" : ""} key={item.id} type="button" onClick={() => selectView(item.id)}>
+              <NavLink end={item.path === "/"} key={item.id} to={item.path} onClick={closeHeaderMenus}>
                 {t(item.label)}
-              </button>
+              </NavLink>
             ))}
           </nav>
         )}
       </header>
 
-      {view === "home" && <HomeView setView={selectView} />}
-      {view === "market" && (
-        <MarketplaceView
-          district={district}
-          filteredLots={filteredLots}
-          query={query}
-          setDistrict={setDistrict}
-          setQuery={setQuery}
-          setView={selectView}
+      <Routes location={location}>
+        <Route path="/" element={<HomeView setView={selectView} />} />
+        <Route
+          path="/marketplace"
+          element={
+            <MarketplaceView
+              district={district}
+              filteredLots={filteredLots}
+              query={query}
+              setDistrict={setDistrict}
+              setQuery={setQuery}
+              setView={selectView}
+            />
+          }
         />
-      )}
-      {view === "farmer" && <FarmerView />}
-      {view === "buyer" && <BuyerView />}
-      {view === "prices" && <PricesView />}
-      {view === "admin" && <AdminView />}
+        <Route path="/farmer" element={<FarmerView />} />
+        <Route path="/buyer" element={<BuyerView />} />
+        <Route path="/prices" element={<PricesView />} />
+        <Route path="/admin" element={<AdminView />} />
+        <Route path="/market" element={<Navigate to="/marketplace" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </main>
     </LanguageContext.Provider>
   );
@@ -1046,7 +1114,7 @@ function AdminView() {
                 <span>{t("Logistics board")}</span>
                 <h2 id="logistics-heading">{t("Routes in motion")}</h2>
               </div>
-              <Route size={22} />
+              <RouteIcon size={22} />
             </div>
 
             <div className="route-list">
@@ -1163,6 +1231,8 @@ function StatCard({ icon: Icon, label, value, detail }: { icon: typeof Banknote;
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <App />
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
   </React.StrictMode>,
 );
