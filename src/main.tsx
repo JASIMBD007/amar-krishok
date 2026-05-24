@@ -106,6 +106,7 @@ const bn: Record<string, string> = {
   Notifications: "নোটিফিকেশন",
   "Logged in": "লগইন হয়েছে",
   Login: "লগইন",
+  "Language switch": "ভাষা বদল",
   "Open menu": "মেনু খুলুন",
   "Close menu": "মেনু বন্ধ করুন",
   "Main navigation": "প্রধান মেনু",
@@ -163,6 +164,11 @@ const bn: Record<string, string> = {
   "Expected price": "চাওয়া দাম",
   "Harvest date": "ফসল তোলার সময়",
   Grade: "গ্রেড",
+  A: "এ",
+  "B+": "বি+",
+  "A-": "এ-",
+  C: "সি",
+  "A / B+ / C": "এ / বি+ / সি",
   Notes: "অতিরিক্ত তথ্য",
   "Tomorrow morning": "আগামীকাল সকাল",
   "Packaging, pickup point, storage condition...": "প্যাকেজিং, পিকআপ পয়েন্ট, সংরক্ষণের অবস্থা...",
@@ -210,7 +216,7 @@ const bn: Record<string, string> = {
   "GMV today": "আজকের বিক্রি",
   "18 orders confirmed": "১৮টি অর্ডার কনফার্ম",
   "Farmer payout": "কৃষকের পাওনা",
-  "৳82K pending escrow": "এসক্রোতে ৳৮২K অপেক্ষায়",
+  "৳82K pending escrow": "এসক্রোতে ৳৮২ হাজার অপেক্ষায়",
   "Active supply": "সক্রিয় ফসল",
   "63 verified lots": "৬৩টি যাচাই করা লট",
   "Avg price lift": "গড় বাড়তি দাম",
@@ -222,6 +228,7 @@ const bn: Record<string, string> = {
   Crop: "ফসল",
   Value: "মূল্য",
   Status: "স্ট্যাটাস",
+  ETA: "সময়",
   "Matching": "ম্যাচিং চলছে",
   "Pickup booked": "পিকআপ বুক করা",
   "In transit": "পথে আছে",
@@ -230,7 +237,7 @@ const bn: Record<string, string> = {
   Today: "আজ",
   "Payout action": "পেমেন্ট অ্যাকশন",
   "Release queue": "টাকা ছাড়ার তালিকা",
-  "Ready after QC": "QC শেষে প্রস্তুত",
+  "Ready after QC": "মান যাচাই শেষে প্রস্তুত",
   "Delivery photo received": "ডেলিভারি ছবি পাওয়া গেছে",
   "Buyer weight confirmed": "ক্রেতা ওজন নিশ্চিত করেছেন",
   "Quality check pending": "মান যাচাই বাকি",
@@ -267,7 +274,7 @@ const bn: Record<string, string> = {
   "Shwapno Retail": "স্বপ্ন রিটেইল",
   "Hotel Sarina": "হোটেল সারিনা",
   "Agora Warehouse": "আগোরা ওয়্যারহাউস",
-  "B2B Kitchen Co.": "B2B কিচেন কো.",
+  "B2B Kitchen Co.": "বিটুবি কিচেন কো.",
   "Mst. Rahima": "মোছা. রহিমা",
   "Abdul Karim": "আব্দুল করিম",
   "Nayan Mondol": "নয়ন মণ্ডল",
@@ -283,19 +290,36 @@ const bn: Record<string, string> = {
   "4 lots / 2.8 tons": "৪ লট / ২.৮ টন",
   "Pickup in 42 min": "৪২ মিনিটে পিকআপ",
   Ambient: "সাধারণ তাপমাত্রা",
-  "8°C": "৮°C",
   "Awaiting load": "লোডের অপেক্ষায়",
 };
 
 const LanguageContext = React.createContext<Language>("en");
+const banglaDigits = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
+
+function localizeBanglaValue(text: string) {
+  return text
+    .replace(/\d/g, (digit) => banglaDigits[Number(digit)])
+    .replace(/\btons?\b/gi, "টন")
+    .replace(/\bkg\b/gi, "কেজি")
+    .replace(/°C/g, "°সে")
+    .replace(/\bK\b/g, " হাজার")
+    .replace(/\bL\b/g, " লাখ")
+    .replace(/\bAM\b/g, "সকাল")
+    .replace(/\bPM\b/g, "রাত");
+}
 
 function translate(language: Language, text: string) {
-  return language === "bn" ? bn[text] ?? text : text;
+  return language === "bn" ? bn[text] ?? localizeBanglaValue(text) : text;
 }
 
 function useTranslate() {
   const language = React.useContext(LanguageContext);
   return (text: string) => translate(language, text);
+}
+
+function useValueText() {
+  const language = React.useContext(LanguageContext);
+  return (text: string | number) => (language === "bn" ? localizeBanglaValue(String(text)) : String(text));
 }
 
 const lots: CropLot[] = [
@@ -473,7 +497,7 @@ function App() {
         </nav>
 
         <div className="header-actions">
-          <div className="language-switch" aria-label="Language switch">
+          <div className="language-switch" aria-label={t("Language switch")}>
             <button className={language === "en" ? "active" : ""} type="button" onClick={() => setLanguage("en")}>
               EN
             </button>
@@ -523,6 +547,7 @@ function App() {
 
 function HomeView({ setView }: { setView: (view: View) => void }) {
   const t = useTranslate();
+  const v = useValueText();
   return (
     <>
       <section className="hero-section">
@@ -563,19 +588,19 @@ function HomeView({ setView }: { setView: (view: View) => void }) {
 
       <section className="metrics-band" aria-label="Platform metrics">
         <div>
-          <strong>27.4 tons</strong>
+          <strong>{v("27.4 tons")}</strong>
           <span>{t("active verified supply")}</span>
         </div>
         <div>
-          <strong>18</strong>
+          <strong>{v("18")}</strong>
           <span>{t("orders confirmed today")}</span>
         </div>
         <div>
-          <strong>16.8%</strong>
+          <strong>{v("16.8%")}</strong>
           <span>{t("average farmer price lift")}</span>
         </div>
         <div>
-          <strong>৳82K</strong>
+          <strong>{v("৳82K")}</strong>
           <span>{t("escrow pending release")}</span>
         </div>
       </section>
@@ -757,6 +782,7 @@ function BuyerView() {
 
 function PricesView() {
   const t = useTranslate();
+  const v = useValueText();
   return (
     <section className="page-wrap">
       <SectionTitle eyebrow="Market prices" title="Daily farmer, wholesale, and retail price signals." />
@@ -769,17 +795,17 @@ function PricesView() {
             </div>
             <div>
               <span>{t("Farmer ask")}</span>
-              <strong>{price.farmerAsk}/kg</strong>
+              <strong>{v(`${price.farmerAsk}/kg`)}</strong>
             </div>
             <div>
               <span>{t("Wholesale")}</span>
-              <strong>{price.wholesale}/kg</strong>
+              <strong>{v(`${price.wholesale}/kg`)}</strong>
             </div>
             <div>
               <span>{t("Retail")}</span>
-              <strong>{price.retail}/kg</strong>
+              <strong>{v(`${price.retail}/kg`)}</strong>
             </div>
-            <em>{price.trend}</em>
+            <em>{v(price.trend)}</em>
           </div>
         ))}
       </div>
@@ -789,6 +815,7 @@ function PricesView() {
 
 function AdminView() {
   const t = useTranslate();
+  const v = useValueText();
   return (
     <section className="dashboard-shell restored-dashboard">
       <aside className="sidebar" aria-label={t("Dashboard navigation")}>
@@ -845,14 +872,14 @@ function AdminView() {
           </div>
         </header>
 
-        <section className="stats-grid" aria-label="Business metrics">
+        <section className="stats-grid" aria-label={t("Business metrics")}>
           {dashboardStats.map((stat) => (
             <article className="stat-card dashboard-stat" key={stat.label}>
               <div className={`trend ${stat.trend}`}>
                 <TrendIcon trend={stat.trend} />
               </div>
               <span>{t(stat.label)}</span>
-              <strong>{stat.value}</strong>
+              <strong>{v(stat.value)}</strong>
               <p>{t(stat.detail)}</p>
             </article>
           ))}
@@ -881,7 +908,7 @@ function AdminView() {
                     <th>{t("Quantity")}</th>
                     <th>{t("Value")}</th>
                     <th>{t("Status")}</th>
-                    <th>ETA</th>
+                    <th>{t("ETA")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -894,7 +921,7 @@ function AdminView() {
                       <td>{t(order.buyer)}</td>
                       <td>{t(order.crop)}</td>
                       <td>{t(order.quantity)}</td>
-                      <td>{order.value}</td>
+                      <td>{v(order.value)}</td>
                       <td>
                         <em className={`status ${statusClass(order.status)}`}>{t(order.status)}</em>
                       </td>
@@ -916,7 +943,7 @@ function AdminView() {
             </div>
             <div className="release-amount">
               <span>{t("Ready after QC")}</span>
-              <strong>৳82,000</strong>
+              <strong>{v("৳82,000")}</strong>
             </div>
             <div className="checklist">
               <span>
@@ -963,10 +990,10 @@ function AdminView() {
                   </div>
                   <div>
                     <strong>{t(lot.quantity)}</strong>
-                    <span>{lot.ask}</span>
+                    <span>{v(lot.ask)}</span>
                   </div>
                   <div>
-                    <strong>{t("Grade")} {lot.grade}</strong>
+                    <strong>{t("Grade")} {t(lot.grade)}</strong>
                     <span>{t(lot.harvest)}</span>
                   </div>
                   <button className="icon-button" type="button" aria-label={`Approve ${lot.crop} lot`}>
@@ -997,7 +1024,7 @@ function AdminView() {
                     <span style={{ width: `${(price.farmerAsk / price.market) * 100}%` }} />
                     <span style={{ width: `${(price.wholesale / price.market) * 100}%` }} />
                   </div>
-                  <strong>৳{price.market}/kg</strong>
+                  <strong>{v(`৳${price.market}/kg`)}</strong>
                 </div>
               ))}
             </div>
@@ -1073,6 +1100,7 @@ function AdminView() {
 
 function CropCard({ lot, onOrder }: { lot: CropLot; onOrder: () => void }) {
   const t = useTranslate();
+  const v = useValueText();
   return (
     <article className="crop-card">
       <img src={lot.image} alt={`${t(lot.crop)} harvest`} />
@@ -1082,12 +1110,12 @@ function CropCard({ lot, onOrder }: { lot: CropLot; onOrder: () => void }) {
             <h2>{t(lot.crop)}</h2>
             <p>{t(lot.farmer)}</p>
           </div>
-          <span>{lot.ask}</span>
+          <span>{v(lot.ask)}</span>
         </div>
         <div className="crop-meta">
           <span><MapPin size={15} /> {t(lot.district)}</span>
           <span><PackageCheck size={15} /> {t(lot.quantity)}</span>
-          <span><BadgeCheck size={15} /> {t("Grade")} {lot.grade}</span>
+          <span><BadgeCheck size={15} /> {t("Grade")} {t(lot.grade)}</span>
           <span><CalendarDays size={15} /> {t(lot.harvest)}</span>
         </div>
         <button className="order-button" type="button" onClick={onOrder}>{t("Order this lot")}</button>
@@ -1122,11 +1150,12 @@ function Input({ label, placeholder }: { label: string; placeholder: string }) {
 
 function StatCard({ icon: Icon, label, value, detail }: { icon: typeof Banknote; label: string; value: string; detail: string }) {
   const t = useTranslate();
+  const v = useValueText();
   return (
     <article className="stat-card">
       <Icon size={21} />
       <span>{t(label)}</span>
-      <strong>{value}</strong>
+      <strong>{v(value)}</strong>
       <p>{t(detail)}</p>
     </article>
   );
