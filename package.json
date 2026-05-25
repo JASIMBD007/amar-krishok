@@ -4,6 +4,10 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "backend:build": "npm --prefix backend run build",
+    "backend:dev": "npm --prefix backend run dev",
+    "backend:prisma:generate": "npm --prefix backend run prisma:generate",
+    "backend:prisma:migrate": "npm --prefix backend run prisma:migrate",
     "dev": "vite --host 0.0.0.0",
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 0.0.0.0"

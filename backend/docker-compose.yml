@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: amar_krishok
+      POSTGRES_USER: amar_krishok
+      POSTGRES_PASSWORD: amar_krishok
+    ports:
+      - "5432:5432"
+    volumes:
+      - amar_krishok_pg:/var/lib/postgresql/data
+
+volumes:
+  amar_krishok_pg:
