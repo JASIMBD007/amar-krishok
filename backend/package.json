@@ -8,6 +8,7 @@
     "dev": "nest start --watch",
     "format": "prettier --write \"src/**/*.ts\" \"prisma/**/*.prisma\"",
     "prisma:generate": "prisma generate",
+    "prisma:deploy": "prisma migrate deploy",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "start": "node dist/main.js",
