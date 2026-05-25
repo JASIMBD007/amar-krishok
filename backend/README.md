@@ -34,8 +34,7 @@ Render service settings from the blueprint:
 
 ```txt
 Root directory: backend
-Build command: npm ci && npm run prisma:generate && npm run build
-Pre-deploy command: npm run prisma:deploy
+Build command: npm ci && npm run prisma:generate && npm run prisma:deploy && npm run build
 Start command: npm run start:prod
 Health check path: /api/health
 ```
