@@ -1718,14 +1718,19 @@ th {
 
 @media (max-width: 560px) {
   .site-header {
-    grid-template-columns: auto minmax(0, 1fr);
-    row-gap: 10px;
-    padding-inline: 12px;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 8px;
+    padding: 10px 8px;
   }
 
   .brand {
-    width: 100%;
+    gap: 7px;
     min-width: 0;
+  }
+
+  .brand-mark {
+    width: 34px;
+    height: 34px;
   }
 
   .brand > span:last-child {
@@ -1733,8 +1738,13 @@ th {
   }
 
   .brand strong {
-    font-size: 0.96rem;
+    font-size: 0.9rem;
     white-space: nowrap;
+  }
+
+  .site-header > .icon-button.mobile-only {
+    width: 38px;
+    min-height: 38px;
   }
 
   .hero-actions,
@@ -1743,11 +1753,21 @@ th {
   }
 
   .header-actions {
-    grid-column: 1 / -1;
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    justify-content: stretch;
-    width: 100%;
+    grid-column: auto;
+    gap: 5px;
+    justify-content: end;
+    width: auto;
+  }
+
+  .language-switch {
+    min-height: 36px;
+    padding: 2px;
+  }
+
+  .language-switch button {
+    min-width: 39px;
+    padding: 0 4px;
+    font-size: 0.72rem;
   }
 
   .login-shell {
@@ -1755,8 +1775,16 @@ th {
   }
 
   .header-actions .secondary-button {
-    width: 100%;
-    min-width: 92px;
+    gap: 5px;
+    min-width: 86px;
+    min-height: 38px;
+    padding: 0 8px;
+    font-size: 0.88rem;
+  }
+
+  .header-actions .secondary-button svg {
+    width: 14px;
+    height: 14px;
   }
 
   .price-row {
