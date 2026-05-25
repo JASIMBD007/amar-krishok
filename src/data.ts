@@ -1,8 +1,9 @@
-import { LayoutDashboard, Settings, ShoppingBag, Sprout, Truck, UsersRound, WalletCards } from "lucide-react";
+import { LayoutDashboard, MessageSquareText, Settings, ShoppingBag, Sprout, Truck, UsersRound, WalletCards } from "lucide-react";
 import type {
   AdminPriceSignal,
   AdminRoute,
   AdminSection,
+  ChatThread,
   CropLot,
   DashboardStat,
   MarketPrice,
@@ -181,5 +182,52 @@ export const adminNavItems: Array<{ id: AdminSection; label: string; icon: typeo
   { id: "farmers", label: "Farmers", icon: UsersRound },
   { id: "logistics", label: "Logistics", icon: Truck },
   { id: "payouts", label: "Payouts", icon: WalletCards },
+  { id: "chat", label: "Chat", icon: MessageSquareText },
   { id: "settings", label: "Settings", icon: Settings },
+];
+
+export const defaultChatThreads: ChatThread[] = [
+  {
+    id: "farmer-01712000001",
+    participantName: "Abdul Karim",
+    participantPhone: "01712000001",
+    participantRole: "farmer",
+    status: "open",
+    subject: "Payout and lot grading",
+    updatedAt: "2026-05-25T08:40:00.000Z",
+    messages: [
+      {
+        id: "chat-msg-1",
+        createdAt: "2026-05-25T08:30:00.000Z",
+        senderName: "Abdul Karim",
+        senderRole: "farmer",
+        text: "My green chilli lot is ready. When will grading finish?",
+      },
+      {
+        id: "chat-msg-2",
+        createdAt: "2026-05-25T08:40:00.000Z",
+        senderName: "Admin",
+        senderRole: "admin",
+        text: "Quality check is scheduled before noon. You will get payout release status after buyer confirmation.",
+      },
+    ],
+  },
+  {
+    id: "buyer-01713000002",
+    participantName: "Hotel Sarina",
+    participantPhone: "01713000002",
+    participantRole: "buyer",
+    status: "waiting",
+    subject: "Pickup update for chilli order",
+    updatedAt: "2026-05-25T09:05:00.000Z",
+    messages: [
+      {
+        id: "chat-msg-3",
+        createdAt: "2026-05-25T09:05:00.000Z",
+        senderName: "Hotel Sarina",
+        senderRole: "buyer",
+        text: "Can you confirm if the Banani chilli pickup is still today?",
+      },
+    ],
+  },
 ];

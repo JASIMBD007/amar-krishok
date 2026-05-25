@@ -1,9 +1,12 @@
 export type View = "home" | "market" | "farmer" | "buyer" | "prices" | "admin";
-export type AdminSection = "dashboard" | "orders" | "supply" | "farmers" | "logistics" | "payouts" | "settings";
+export type AdminSection = "dashboard" | "orders" | "supply" | "farmers" | "logistics" | "payouts" | "chat" | "settings";
 export type Language = "en" | "bn";
 export type Role = "admin" | "buyer" | "farmer";
 export type RegistrationRole = "buyer" | "farmer";
 export type AccountStatus = "pending" | "active" | "rejected";
+export type ChatParticipantRole = Exclude<Role, "admin">;
+export type ChatSenderRole = Role;
+export type ChatStatus = "open" | "waiting" | "resolved";
 
 export type AuthUser = {
   accountId?: string;
@@ -81,4 +84,23 @@ export type AdminPriceSignal = {
   farmerAsk: number;
   wholesale: number;
   market: number;
+};
+
+export type ChatMessage = {
+  id: string;
+  createdAt: string;
+  senderName: string;
+  senderRole: ChatSenderRole;
+  text: string;
+};
+
+export type ChatThread = {
+  id: string;
+  messages: ChatMessage[];
+  participantName: string;
+  participantPhone: string;
+  participantRole: ChatParticipantRole;
+  status: ChatStatus;
+  subject: string;
+  updatedAt: string;
 };

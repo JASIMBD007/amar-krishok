@@ -1,8 +1,18 @@
 import { CheckCircle2, Clock3, Plus, UserRoundCheck } from "lucide-react";
+import { ChatWidget } from "../chat/ChatWidget";
 import { useTranslate } from "../../i18n";
+import type { AuthUser, ChatThread } from "../../types";
 import { FormGrid, Input, SectionTitle } from "../shared";
 
-export function PostCropPage() {
+export function PostCropPage({
+  chatThreads,
+  onSendChatMessage,
+  user,
+}: {
+  chatThreads: ChatThread[];
+  onSendChatMessage: (user: AuthUser, text: string, subject: string) => void;
+  user: AuthUser | null;
+}) {
   const t = useTranslate();
   return (
     <section className="page-wrap form-layout">
@@ -35,6 +45,12 @@ export function PostCropPage() {
           <span><Clock3 size={18} /> {t("Wallet verification pending")}</span>
         </div>
       </aside>
+      <ChatWidget
+        chatThreads={chatThreads}
+        subject="Crop approval and payout support"
+        user={user}
+        onSendMessage={onSendChatMessage}
+      />
     </section>
   );
 }

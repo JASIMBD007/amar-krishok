@@ -1,8 +1,18 @@
 import { ShoppingBag, Store } from "lucide-react";
+import { ChatWidget } from "../chat/ChatWidget";
 import { useTranslate } from "../../i18n";
+import type { AuthUser, ChatThread } from "../../types";
 import { FormGrid, Input, SectionTitle } from "../shared";
 
-export function OrderPage() {
+export function OrderPage({
+  chatThreads,
+  onSendChatMessage,
+  user,
+}: {
+  chatThreads: ChatThread[];
+  onSendChatMessage: (user: AuthUser, text: string, subject: string) => void;
+  user: AuthUser | null;
+}) {
   const t = useTranslate();
   return (
     <section className="page-wrap form-layout">
@@ -31,6 +41,12 @@ export function OrderPage() {
         <p>{t("Current best match: 3 verified tomato lots from Jashore, total 2.9 tons.")}</p>
         <button className="secondary-button full" type="button">{t("View matched lots")}</button>
       </aside>
+      <ChatWidget
+        chatThreads={chatThreads}
+        subject="Order, delivery, and payment support"
+        user={user}
+        onSendMessage={onSendChatMessage}
+      />
     </section>
   );
 }

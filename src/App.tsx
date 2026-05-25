@@ -11,11 +11,14 @@ import {
 } from "lucide-react";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { LanguageContext, translate } from "./i18n";
-import { lots, roleOptions, routeByView, views } from "./data";
+import { defaultChatThreads, lots, roleOptions, routeByView, views } from "./data";
 import { AdminPage, HomePage, LoginPage, MarketplacePage, OrderPage, PostCropPage, PricesPage, RegisterPage } from "./components/pages";
 import type {
   AccountStatus,
   AuthUser,
+  ChatMessage,
+  ChatParticipantRole,
+  ChatThread,
   Language,
   RegisteredAccount,
   Role,
@@ -24,6 +27,7 @@ import type {
 
 const AUTH_STORAGE_KEY = "amarKrishokAuth";
 const REGISTRATION_STORAGE_KEY = "amarKrishokRegistrations";
+const CHAT_STORAGE_KEY = "amarKrishokChatThreads";
 
 function readStoredUser() {
   try {
@@ -53,6 +57,29 @@ function readStoredRegistrations() {
   }
 }
 
+function readStoredChatThreads() {
+  try {
+    const savedThreads = window.localStorage.getItem(CHAT_STORAGE_KEY);
+    if (!savedThreads) {
+      return defaultChatThreads;
+    }
+
+    const threads = JSON.parse(savedThreads) as ChatThread[];
+    return threads.filter((thread) => thread.participantRole === "buyer" || thread.participantRole === "farmer");
+  } catch {
+    return defaultChatThreads;
+  }
+}
+
+function makeChatMessageId() {
+  return `CHAT-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
+}
+
+function makeChatThreadId(user: AuthUser) {
+  const cleanPhone = user.phone.replace(/\D/g, "") || "unknown";
+  return `${user.role}-${user.accountId ?? cleanPhone}`;
+}
+
 export default function App() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -60,6 +87,7 @@ export default function App() {
   const [district, setDistrict] = useState("All districts");
   const [user, setUser] = useState<AuthUser | null>(() => readStoredUser());
   const [registrations, setRegistrations] = useState<RegisteredAccount[]>(() => readStoredRegistrations());
+  const [chatThreads, setChatThreads] = useState<ChatThread[]>(() => readStoredChatThreads());
   const [loginOpen, setLoginOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [language, setLanguage] = useState<Language>("en");
@@ -77,6 +105,10 @@ export default function App() {
   useEffect(() => {
     window.localStorage.setItem(REGISTRATION_STORAGE_KEY, JSON.stringify(registrations));
   }, [registrations]);
+
+  useEffect(() => {
+    window.localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(chatThreads));
+  }, [chatThreads]);
 
   useEffect(() => {
     if (!user || user.role === "admin") {
@@ -125,6 +157,79 @@ export default function App() {
     setRegistrations((currentRegistrations) =>
       currentRegistrations.map((account) =>
         account.id === id ? { ...account, status, reviewedAt: new Date().toISOString() } : account,
+      ),
+    );
+  };
+
+  const sendUserChatMessage = (sender: AuthUser, text: string, subject: string) => {
+    if (sender.role === "admin") {
+      return;
+    }
+
+    const participantRole: ChatParticipantRole = sender.role;
+    const timestamp = new Date().toISOString();
+    const threadId = makeChatThreadId(sender);
+    const nextMessage: ChatMessage = {
+      id: makeChatMessageId(),
+      createdAt: timestamp,
+      senderName: sender.name,
+      senderRole: sender.role,
+      text,
+    };
+
+    setChatThreads((currentThreads) => {
+      const existingThread = currentThreads.find((thread) => thread.id === threadId);
+      if (!existingThread) {
+        return [
+          {
+            id: threadId,
+            messages: [nextMessage],
+            participantName: sender.name,
+            participantPhone: sender.phone,
+            participantRole,
+            status: "waiting",
+            subject,
+            updatedAt: timestamp,
+          },
+          ...currentThreads,
+        ];
+      }
+
+      return currentThreads.map((thread) =>
+        thread.id === threadId
+          ? {
+              ...thread,
+              messages: [...thread.messages, nextMessage],
+              participantName: sender.name,
+              status: "waiting",
+              subject: thread.subject || subject,
+              updatedAt: timestamp,
+            }
+          : thread,
+      );
+    });
+  };
+
+  const sendAdminChatReply = (threadId: string, text: string) => {
+    const timestamp = new Date().toISOString();
+    const nextMessage: ChatMessage = {
+      id: makeChatMessageId(),
+      createdAt: timestamp,
+      senderName: "Admin",
+      senderRole: "admin",
+      text,
+    };
+
+    setChatThreads((currentThreads) =>
+      currentThreads.map((thread) =>
+        thread.id === threadId
+          ? {
+              ...thread,
+              messages: [...thread.messages, nextMessage],
+              status: "open",
+              updatedAt: timestamp,
+            }
+          : thread,
       ),
     );
   };
@@ -283,7 +388,7 @@ export default function App() {
           path="/farmer"
           element={
             <ProtectedRoute allowedRoles={["farmer", "admin"]} user={user} t={t}>
-              <PostCropPage />
+              <PostCropPage chatThreads={chatThreads} user={user} onSendChatMessage={sendUserChatMessage} />
             </ProtectedRoute>
           }
         />
@@ -291,7 +396,7 @@ export default function App() {
           path="/buyer"
           element={
             <ProtectedRoute allowedRoles={["buyer", "admin"]} user={user} t={t}>
-              <OrderPage />
+              <OrderPage chatThreads={chatThreads} user={user} onSendChatMessage={sendUserChatMessage} />
             </ProtectedRoute>
           }
         />
@@ -300,7 +405,12 @@ export default function App() {
           path="/admin"
           element={
             <ProtectedRoute allowedRoles={["admin"]} user={user} t={t}>
-              <AdminPage registrations={registrations} onUpdateRegistration={updateRegistrationStatus} />
+              <AdminPage
+                chatThreads={chatThreads}
+                registrations={registrations}
+                onAdminReply={sendAdminChatReply}
+                onUpdateRegistration={updateRegistrationStatus}
+              />
             </ProtectedRoute>
           }
         />
