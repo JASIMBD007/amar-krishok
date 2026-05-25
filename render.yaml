@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: amar-krishok-api
+    runtime: node
+    plan: free
+    region: singapore
+    rootDir: backend
+    buildCommand: npm ci && npm run prisma:generate && npm run build
+    preDeployCommand: npm run prisma:deploy
+    startCommand: npm run start:prod
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: CORS_ORIGIN
+        value: https://www.amarkrishok.com,https://amarkrishok.com,https://amarkrishok.netlify.app,http://localhost:5173
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: amar-krishok-db
+          property: connectionString
+
+databases:
+  - name: amar-krishok-db
+    plan: free
+    region: singapore
+    databaseName: amar_krishok
+    user: amar_krishok
