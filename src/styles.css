@@ -1718,28 +1718,44 @@ th {
 
 @media (max-width: 560px) {
   .site-header {
+    grid-template-columns: auto minmax(0, 1fr);
+    row-gap: 10px;
     padding-inline: 12px;
+  }
+
+  .brand {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .brand > span:last-child {
+    min-width: 0;
   }
 
   .brand strong {
     font-size: 0.96rem;
+    white-space: nowrap;
   }
 
   .hero-actions,
-  .hero-actions button,
-  .header-actions .secondary-button {
+  .hero-actions button {
     width: 100%;
   }
 
   .header-actions {
-    justify-content: end;
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    justify-content: stretch;
+    width: 100%;
   }
 
   .login-shell {
-    flex: 1;
+    min-width: 0;
   }
 
   .header-actions .secondary-button {
+    width: 100%;
     min-width: 92px;
   }
 
