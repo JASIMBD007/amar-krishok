@@ -846,6 +846,113 @@ button {
   line-height: 1.65;
 }
 
+.chat-widget {
+  display: grid;
+  grid-column: 2;
+  gap: 14px;
+  padding: 20px;
+}
+
+.chat-widget-header,
+.chat-conversation-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.chat-widget-header span,
+.chat-admin-empty > span,
+.chat-conversation-header span {
+  color: #687b72;
+  font-size: 0.76rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.chat-widget-header h3 {
+  margin: 4px 0 0;
+  font-size: 1.28rem;
+}
+
+.chat-widget-header svg,
+.chat-admin-empty svg {
+  color: #176b47;
+}
+
+.chat-thread-preview,
+.chat-message-list {
+  display: grid;
+  align-content: start;
+  gap: 9px;
+  min-height: 160px;
+  max-height: 330px;
+  overflow: auto;
+  padding: 12px;
+  border-radius: 8px;
+  background: #f5f8f2;
+}
+
+.chat-empty {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #60736b;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.chat-bubble,
+.chat-message {
+  width: fit-content;
+  max-width: min(100%, 520px);
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px rgba(24, 48, 40, 0.08);
+}
+
+.chat-bubble.admin,
+.chat-message.admin {
+  justify-self: end;
+  color: #ffffff;
+  background: #176b47;
+  box-shadow: none;
+}
+
+.chat-bubble strong,
+.chat-message strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.74rem;
+  text-transform: uppercase;
+}
+
+.chat-bubble p,
+.chat-message p {
+  margin: 0;
+  line-height: 1.45;
+}
+
+.chat-compose,
+.admin-chat-reply {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.chat-compose input,
+.admin-chat-reply input {
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid rgba(24, 48, 40, 0.12);
+  border-radius: 8px;
+  outline: 0;
+  color: #243d32;
+  background: #ffffff;
+}
+
 .checklist {
   display: grid;
   gap: 10px;
@@ -1372,6 +1479,117 @@ th {
   color: #176b47;
 }
 
+.admin-chat-panel {
+  display: grid;
+  gap: 16px;
+}
+
+.admin-chat-layout {
+  display: grid;
+  grid-template-columns: minmax(230px, 0.36fr) minmax(0, 1fr);
+  gap: 12px;
+}
+
+.chat-thread-list {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  max-height: 560px;
+  overflow: auto;
+}
+
+.chat-thread-list button {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid rgba(24, 48, 40, 0.1);
+  border-radius: 8px;
+  color: #263f34;
+  background: #f7faf4;
+  text-align: left;
+}
+
+.chat-thread-list button.active,
+.chat-thread-list button:hover {
+  color: #ffffff;
+  background: #176b47;
+}
+
+.chat-thread-list span {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.chat-thread-list em {
+  color: inherit;
+  opacity: 0.72;
+  font-size: 0.72rem;
+  font-style: normal;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.chat-thread-list small {
+  overflow: hidden;
+  color: inherit;
+  opacity: 0.78;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-conversation {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  padding: 12px;
+  border-radius: 8px;
+  background: #fbfcf8;
+  box-shadow: inset 0 0 0 1px rgba(24, 48, 40, 0.08);
+}
+
+.chat-conversation-header {
+  justify-content: start;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(24, 48, 40, 0.09);
+}
+
+.chat-conversation-header svg {
+  color: #176b47;
+}
+
+.chat-conversation-header div {
+  min-width: 0;
+  flex: 1;
+}
+
+.chat-conversation-header strong {
+  display: block;
+}
+
+.chat-conversation-header em {
+  padding: 5px 9px;
+  border-radius: 999px;
+  color: #176b47;
+  background: #e8f3e8;
+  font-style: normal;
+  font-weight: 850;
+}
+
+.chat-admin-empty {
+  display: grid;
+  justify-items: start;
+  gap: 10px;
+  padding: 24px;
+}
+
+.chat-admin-empty h2,
+.chat-admin-empty p {
+  margin: 0;
+}
+
 .supply-list,
 .route-list {
   display: grid;
@@ -1683,6 +1901,10 @@ th {
     grid-template-columns: 1fr;
   }
 
+  .chat-widget {
+    grid-column: 1;
+  }
+
   .listing-grid,
   .market-grid,
   .workflow-section,
@@ -1837,6 +2059,10 @@ th {
     grid-template-columns: 1fr 1fr;
   }
 
+  .admin-chat-layout {
+    grid-template-columns: 1fr;
+  }
+
   .price-snapshot {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -1966,6 +2192,11 @@ th {
   .price-scale {
     display: grid;
     gap: 4px;
+  }
+
+  .chat-compose,
+  .admin-chat-reply {
+    grid-template-columns: 1fr;
   }
 
   .form-panel,

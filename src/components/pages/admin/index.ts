@@ -1,3 +1,4 @@
+export { ChatSection } from "./ChatSection";
 export { DashboardSection } from "./DashboardSection";
 export { FarmersSection } from "./FarmersSection";
 export { LogisticsSection } from "./LogisticsSection";

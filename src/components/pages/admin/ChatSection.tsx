@@ -1,0 +1,116 @@
+import { useMemo, useState } from "react";
+import type { FormEvent } from "react";
+import { MessageSquareText, Send, UserRoundCheck } from "lucide-react";
+import { useTranslate } from "../../../i18n";
+import type { ChatThread } from "../../../types";
+
+export function ChatSection({
+  chatThreads,
+  onAdminReply,
+}: {
+  chatThreads: ChatThread[];
+  onAdminReply: (threadId: string, text: string) => void;
+}) {
+  const t = useTranslate();
+  const sortedThreads = useMemo(
+    () => [...chatThreads].sort((first, second) => new Date(second.updatedAt).getTime() - new Date(first.updatedAt).getTime()),
+    [chatThreads],
+  );
+  const [activeThreadId, setActiveThreadId] = useState(sortedThreads[0]?.id ?? "");
+  const [reply, setReply] = useState("");
+  const activeThread = sortedThreads.find((thread) => thread.id === activeThreadId) ?? sortedThreads[0];
+
+  const submitReply = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const cleanReply = reply.trim();
+
+    if (!activeThread || !cleanReply) {
+      return;
+    }
+
+    onAdminReply(activeThread.id, cleanReply);
+    setReply("");
+  };
+
+  if (sortedThreads.length === 0) {
+    return (
+      <section className="dashboard-grid admin-focused-grid">
+        <section className="panel chat-admin-empty">
+          <MessageSquareText size={24} />
+          <span>{t("Admin chat inbox")}</span>
+          <h2>{t("No conversations yet")}</h2>
+          <p>{t("Buyer and seller messages will appear here.")}</p>
+        </section>
+      </section>
+    );
+  }
+
+  return (
+    <section className="dashboard-grid admin-focused-grid">
+      <section className="panel admin-chat-panel" aria-labelledby="admin-chat-heading">
+        <div className="panel-header">
+          <div>
+            <span>{t("Admin chat inbox")}</span>
+            <h2 id="admin-chat-heading">{t("Buyer and seller conversations")}</h2>
+          </div>
+          <MessageSquareText size={22} />
+        </div>
+
+        <div className="admin-chat-layout">
+          <div className="chat-thread-list" aria-label={t("Conversations")}>
+            {sortedThreads.map((thread) => {
+              const latestMessage = thread.messages[thread.messages.length - 1];
+              return (
+                <button
+                  className={thread.id === activeThread.id ? "active" : ""}
+                  key={thread.id}
+                  type="button"
+                  onClick={() => setActiveThreadId(thread.id)}
+                >
+                  <span>
+                    <strong>{thread.participantName}</strong>
+                    <em>{t(thread.participantRole === "buyer" ? "Buyer" : "Seller / Farmer")}</em>
+                  </span>
+                  <small>{latestMessage?.text ?? t("No messages yet")}</small>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="chat-conversation">
+            <div className="chat-conversation-header">
+              <UserRoundCheck size={20} />
+              <div>
+                <strong>{activeThread.participantName}</strong>
+                <span>{t(activeThread.subject)}</span>
+              </div>
+              <em>{t(activeThread.status)}</em>
+            </div>
+
+            <div className="chat-message-list">
+              {activeThread.messages.map((message) => (
+                <article className={`chat-message ${message.senderRole === "admin" ? "admin" : "participant"}`} key={message.id}>
+                  <strong>{message.senderRole === "admin" ? t("Admin") : message.senderName}</strong>
+                  <p>{message.text}</p>
+                </article>
+              ))}
+            </div>
+
+            <form className="admin-chat-reply" onSubmit={submitReply}>
+              <input
+                value={reply}
+                onChange={(event) => setReply(event.target.value)}
+                placeholder={t("Reply as admin...")}
+                aria-label={t("Reply as admin...")}
+              />
+              <button className="primary-button" type="submit">
+                <Send size={16} />
+                {t("Reply")}
+              </button>
+            </form>
+          </div>
+        </div>
+      </section>
+    </section>
+  );
+}

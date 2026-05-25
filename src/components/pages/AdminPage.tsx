@@ -2,8 +2,9 @@ import { useState } from "react";
 import { Bell, LayoutDashboard, Menu, Plus, Search, ShieldCheck, X } from "lucide-react";
 import { adminNavItems } from "../../data";
 import { useTranslate } from "../../i18n";
-import type { AccountStatus, AdminSection, RegisteredAccount } from "../../types";
+import type { AccountStatus, AdminSection, ChatThread, RegisteredAccount } from "../../types";
 import {
+  ChatSection,
   DashboardSection,
   FarmersSection,
   LogisticsSection,
@@ -14,9 +15,13 @@ import {
 } from "./admin";
 
 export function AdminPage({
+  chatThreads,
+  onAdminReply,
   onUpdateRegistration,
   registrations,
 }: {
+  chatThreads: ChatThread[];
+  onAdminReply: (threadId: string, text: string) => void;
   onUpdateRegistration: (id: string, status: AccountStatus) => void;
   registrations: RegisteredAccount[];
 }) {
@@ -64,6 +69,8 @@ export function AdminPage({
         return <LogisticsSection />;
       case "payouts":
         return <PayoutsSection onOpenSection={openAdminSection} />;
+      case "chat":
+        return <ChatSection chatThreads={chatThreads} onAdminReply={onAdminReply} />;
       case "settings":
         return <SettingsSection />;
       case "dashboard":
