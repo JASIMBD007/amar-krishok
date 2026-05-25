@@ -690,6 +690,16 @@ export function AdminView({
   const activeNavItem = adminNavItems.find((item) => item.id === activeAdminSection) ?? adminNavItems[0];
   const activeTitle = activeAdminSection === "dashboard" ? "Operations dashboard" : activeNavItem.label;
   const activeEyebrow = activeAdminSection === "dashboard" ? "Sunday, May 24" : activeNavItem.label;
+  const averageRetailGap = Math.round(
+    adminPriceSignals.reduce((total, price) => total + ((price.market - price.farmerAsk) / price.market) * 100, 0) /
+      adminPriceSignals.length,
+  );
+  const averageFarmerShare = Math.round(
+    adminPriceSignals.reduce((total, price) => total + (price.farmerAsk / price.market) * 100, 0) / adminPriceSignals.length,
+  );
+  const topSpread = adminPriceSignals.reduce((currentTop, price) =>
+    price.market - price.farmerAsk > currentTop.market - currentTop.farmerAsk ? price : currentTop,
+  );
 
   const openAdminSection = (section: AdminSection) => {
     setActiveAdminSection(section);
@@ -920,20 +930,54 @@ export function AdminView({
         <Banknote size={22} />
       </div>
 
-      <div className="price-bars">
-        {adminPriceSignals.map((price) => (
-          <div className="price-row" key={price.crop}>
-            <div className="price-label">
-              <strong>{t(price.crop)}</strong>
-              <span>{t(price.region)}</span>
-            </div>
-            <div className="bar-stack" aria-label={`${t(price.crop)} ${t("price comparison")}`}>
-              <span style={{ width: `${(price.farmerAsk / price.market) * 100}%` }} />
-              <span style={{ width: `${(price.wholesale / price.market) * 100}%` }} />
-            </div>
-            <strong>{v(`৳${price.market}/kg`)}</strong>
-          </div>
-        ))}
+      <div className="price-snapshot">
+        <div>
+          <span>{t("Avg retail gap")}</span>
+          <strong>{v(`${averageRetailGap}%`)}</strong>
+          <small>{t("Farmer ask to retail")}</small>
+        </div>
+        <div className="featured">
+          <span>{t("Highest opportunity")}</span>
+          <strong>{t(topSpread.crop)}</strong>
+          <small>{v(`+৳${topSpread.market - topSpread.farmerAsk}/kg`)}</small>
+        </div>
+        <div>
+          <span>{t("Farmer share")}</span>
+          <strong>{v(`${averageFarmerShare}%`)}</strong>
+          <small>{t("of retail price")}</small>
+        </div>
+      </div>
+
+      <div className="price-signal-list">
+        {adminPriceSignals.map((price) => {
+          const farmerWidth = (price.farmerAsk / price.market) * 100;
+          const wholesaleWidth = (price.wholesale / price.market) * 100;
+          const retailGap = price.market - price.farmerAsk;
+
+          return (
+            <article className="price-signal-row" key={price.crop}>
+              <div className="price-signal-meta">
+                <strong>{t(price.crop)}</strong>
+                <span>{t(price.region)}</span>
+              </div>
+              <div className="price-signal-chart">
+                <div className="price-scale">
+                  <span>{t("Farmer ask")} {v(`৳${price.farmerAsk}`)}</span>
+                  <span>{t("Wholesale")} {v(`৳${price.wholesale}`)}</span>
+                </div>
+                <div className="bar-stack" aria-label={`${t(price.crop)} ${t("price comparison")}`}>
+                  <span className="farmer-bar" style={{ width: `${farmerWidth}%` }} />
+                  <span className="wholesale-bar" style={{ width: `${wholesaleWidth}%` }} />
+                </div>
+              </div>
+              <div className="price-signal-value">
+                <span>{t("Retail")}</span>
+                <strong>{v(`৳${price.market}/kg`)}</strong>
+                <em>{t("Market gap")} {v(`+৳${retailGap}`)}</em>
+              </div>
+            </article>
+          );
+        })}
       </div>
       <div className="legend">
         <span>
