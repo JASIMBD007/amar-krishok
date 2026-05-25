@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { Navigate, NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import {
   Bell,
@@ -12,105 +12,37 @@ import {
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { FloatingSupportChat } from "./components/chat/FloatingSupportChat";
 import { LanguageContext, translate } from "./i18n";
-import { defaultChatThreads, lots, roleOptions, routeByView, views } from "./data";
+import { lots, roleOptions, routeByView, views } from "./data";
 import { AdminPage, HomePage, LoginPage, MarketplacePage, OrderPage, PostCropPage, PricesPage, RegisterPage } from "./components/pages";
-import type {
-  AccountStatus,
-  AuthUser,
-  ChatMessage,
-  ChatParticipant,
-  ChatParticipantRole,
-  ChatThread,
-  Language,
-  RegisteredAccount,
-  Role,
-  View,
-} from "./types";
-
-const AUTH_STORAGE_KEY = "amarKrishokAuth";
-const REGISTRATION_STORAGE_KEY = "amarKrishokRegistrations";
-const CHAT_STORAGE_KEY = "amarKrishokChatThreads";
-
-function readStoredUser() {
-  try {
-    const savedUser = window.localStorage.getItem(AUTH_STORAGE_KEY);
-    if (!savedUser) {
-      return null;
-    }
-
-    const user = JSON.parse(savedUser) as AuthUser;
-    return roleOptions.some((option) => option.role === user.role) ? user : null;
-  } catch {
-    return null;
-  }
-}
-
-function readStoredRegistrations() {
-  try {
-    const savedRegistrations = window.localStorage.getItem(REGISTRATION_STORAGE_KEY);
-    if (!savedRegistrations) {
-      return [];
-    }
-
-    const registrations = JSON.parse(savedRegistrations) as RegisteredAccount[];
-    return registrations.filter((account) => account.role === "buyer" || account.role === "farmer");
-  } catch {
-    return [];
-  }
-}
-
-function readStoredChatThreads() {
-  try {
-    const savedThreads = window.localStorage.getItem(CHAT_STORAGE_KEY);
-    if (!savedThreads) {
-      return defaultChatThreads;
-    }
-
-    const threads = JSON.parse(savedThreads) as ChatThread[];
-    return threads.filter((thread) => thread.participantRole === "buyer" || thread.participantRole === "farmer" || thread.participantRole === "guest");
-  } catch {
-    return defaultChatThreads;
-  }
-}
-
-function makeChatMessageId() {
-  return `CHAT-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
-}
-
-function makeParticipantChatThreadId(participant: ChatParticipant) {
-  const cleanPhone = participant.phone.replace(/\D/g, "") || "unknown";
-  return `${participant.role}-${participant.id || cleanPhone}`;
-}
+import { useAppStore } from "./store/useAppStore";
+import type { AuthUser, Role, View } from "./types";
 
 export default function App() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [query, setQuery] = useState("");
-  const [district, setDistrict] = useState("All districts");
-  const [user, setUser] = useState<AuthUser | null>(() => readStoredUser());
-  const [registrations, setRegistrations] = useState<RegisteredAccount[]>(() => readStoredRegistrations());
-  const [chatThreads, setChatThreads] = useState<ChatThread[]>(() => readStoredChatThreads());
-  const [loginOpen, setLoginOpen] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [language, setLanguage] = useState<Language>("en");
+  const {
+    addRegistration,
+    chatThreads,
+    closeHeaderMenus,
+    district,
+    language,
+    loginOpen,
+    menuOpen,
+    query,
+    registrations,
+    sendAdminChatReply,
+    sendParticipantChatMessage,
+    sendUserChatMessage,
+    setDistrict,
+    setLanguage,
+    setQuery,
+    setUser,
+    toggleLoginOpen,
+    toggleMenuOpen,
+    updateRegistrationStatus,
+    user,
+  } = useAppStore();
   const t = (text: string) => translate(language, text);
-
-  useEffect(() => {
-    if (user) {
-      window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
-      return;
-    }
-
-    window.localStorage.removeItem(AUTH_STORAGE_KEY);
-  }, [user]);
-
-  useEffect(() => {
-    window.localStorage.setItem(REGISTRATION_STORAGE_KEY, JSON.stringify(registrations));
-  }, [registrations]);
-
-  useEffect(() => {
-    window.localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(chatThreads));
-  }, [chatThreads]);
 
   useEffect(() => {
     if (!user || user.role === "admin") {
@@ -134,138 +66,31 @@ export default function App() {
 
   const selectView = (nextView: View) => {
     navigate(routeByView[nextView]);
-    setMenuOpen(false);
-    setLoginOpen(false);
+    closeHeaderMenus();
   };
 
   const chooseRole = (role: Role, targetView: View) => {
     navigate(`/login?role=${role}&next=${encodeURIComponent(routeByView[targetView])}`);
-    setMenuOpen(false);
-    setLoginOpen(false);
+    closeHeaderMenus();
   };
 
   const handleLogin = (nextUser: AuthUser, nextPath: string) => {
     setUser(nextUser);
     navigate(nextPath);
-    setMenuOpen(false);
-    setLoginOpen(false);
+    closeHeaderMenus();
   };
 
-  const handleRegister = (account: RegisteredAccount) => {
-    setRegistrations((currentRegistrations) => [account, ...currentRegistrations]);
-  };
-
-  const updateRegistrationStatus = (id: string, status: AccountStatus) => {
-    setRegistrations((currentRegistrations) =>
-      currentRegistrations.map((account) =>
-        account.id === id ? { ...account, status, reviewedAt: new Date().toISOString() } : account,
-      ),
-    );
-  };
-
-  const sendParticipantChatMessage = (participant: ChatParticipant, text: string, subject: string) => {
-    const timestamp = new Date().toISOString();
-    const threadId = makeParticipantChatThreadId(participant);
-    const nextMessage: ChatMessage = {
-      id: makeChatMessageId(),
-      createdAt: timestamp,
-      senderName: participant.name,
-      senderRole: participant.role,
-      text,
-    };
-
-    setChatThreads((currentThreads) => {
-      const existingThread = currentThreads.find((thread) => thread.id === threadId);
-      if (!existingThread) {
-        return [
-          {
-            id: threadId,
-            messages: [nextMessage],
-            participantId: participant.id,
-            participantName: participant.name,
-            participantPhone: participant.phone,
-            participantRole: participant.role,
-            status: "waiting",
-            subject,
-            updatedAt: timestamp,
-          },
-          ...currentThreads,
-        ];
-      }
-
-      return currentThreads.map((thread) =>
-        thread.id === threadId
-          ? {
-              ...thread,
-              messages: [...thread.messages, nextMessage],
-              participantId: participant.id,
-              participantName: participant.name,
-              participantPhone: participant.phone,
-              status: "waiting",
-              subject: thread.subject || subject,
-              updatedAt: timestamp,
-            }
-          : thread,
-      );
-    });
-  };
-
-  const sendUserChatMessage = (sender: AuthUser, text: string, subject: string) => {
-    if (sender.role === "admin") {
-      return;
-    }
-
-    const participantRole: ChatParticipantRole = sender.role;
-    sendParticipantChatMessage(
-      {
-        id: sender.accountId ?? (sender.phone.replace(/\D/g, "") || "unknown"),
-        name: sender.name,
-        phone: sender.phone,
-        role: participantRole,
-      },
-      text,
-      subject,
-    );
-  };
-
-  const sendAdminChatReply = (threadId: string, text: string) => {
-    const timestamp = new Date().toISOString();
-    const nextMessage: ChatMessage = {
-      id: makeChatMessageId(),
-      createdAt: timestamp,
-      senderName: "Admin",
-      senderRole: "admin",
-      text,
-    };
-
-    setChatThreads((currentThreads) =>
-      currentThreads.map((thread) =>
-        thread.id === threadId
-          ? {
-              ...thread,
-              messages: [...thread.messages, nextMessage],
-              status: "open",
-              updatedAt: timestamp,
-            }
-          : thread,
-      ),
-    );
-  };
+  const handleRegister = addRegistration;
 
   const handleLogout = () => {
     setUser(null);
-    setLoginOpen(false);
+    closeHeaderMenus();
     if (location.pathname === "/admin" || location.pathname === "/buyer" || location.pathname === "/farmer") {
       navigate("/");
     }
   };
 
   const roleLabel = user ? roleOptions.find((item) => item.role === user.role)?.label : null;
-
-  const closeHeaderMenus = () => {
-    setMenuOpen(false);
-    setLoginOpen(false);
-  };
 
   return (
     <LanguageContext.Provider value={language}>
@@ -276,7 +101,7 @@ export default function App() {
           type="button"
           aria-expanded={menuOpen}
           aria-label={menuOpen ? t("Close menu") : t("Open menu")}
-          onClick={() => setMenuOpen((value) => !value)}
+          onClick={toggleMenuOpen}
         >
           {menuOpen ? <X size={21} /> : <Menu size={21} />}
         </button>
@@ -316,7 +141,7 @@ export default function App() {
               type="button"
               aria-expanded={loginOpen}
               aria-haspopup="menu"
-              onClick={() => setLoginOpen((value) => !value)}
+              onClick={toggleLoginOpen}
             >
               <LockKeyhole size={17} />
               {roleLabel ? t(roleLabel) : t("Login")}
