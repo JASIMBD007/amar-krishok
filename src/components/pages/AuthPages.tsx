@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { CheckCircle2, Clock3, ClipboardCheck, LockKeyhole } from "lucide-react";
-import { roleHomePath, roleOptions } from "../../data";
+import { roleHomePath, roleOptions, serviceDistricts } from "../../data";
 import { useTranslate, useValueText } from "../../i18n";
 import type { AuthUser, RegisteredAccount, RegistrationRole, Role } from "../../types";
 import { makeRegistrationId, roleCanOpenPath } from "./pageHelpers";
@@ -280,7 +280,16 @@ export function RegisterPage({
         </label>
         <label className="input-field">
           <span>{t("District")}</span>
-          <input value={district} onChange={(event) => setDistrict(event.target.value)} placeholder={t("Jashore")} />
+          <select value={district} onChange={(event) => setDistrict(event.target.value)}>
+            <option value="" disabled>
+              {t("Select service district")}
+            </option>
+            {serviceDistricts.map((serviceDistrict) => (
+              <option key={serviceDistrict} value={serviceDistrict}>
+                {t(serviceDistrict)}
+              </option>
+            ))}
+          </select>
         </label>
         <label className="input-field">
           <span>{t("Address")}</span>
