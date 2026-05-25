@@ -123,6 +123,7 @@ const bn: Record<string, string> = {
   "Search crops by location and reserve directly from farmers.": "লোকেশন ধরে ফসল খুঁজুন, কৃষকের কাছ থেকেই বুক করুন।",
   "Search tomato, potato, farmer...": "টমেটো, আলু বা কৃষকের নাম লিখুন...",
   "All districts": "সব জেলা",
+  "Select service district": "সেবা চালু আছে এমন জেলা বেছে নিন",
   Jashore: "যশোর",
   Bogura: "বগুড়া",
   Rangpur: "রংপুর",

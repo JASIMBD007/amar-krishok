@@ -106,6 +106,8 @@ export const lots: CropLot[] = [
   },
 ];
 
+export const serviceDistricts = Array.from(new Set(lots.map((lot) => lot.district)));
+
 export const prices: MarketPrice[] = [
   { crop: "Tomato", district: "Jashore", farmerAsk: "৳34", wholesale: "৳42", retail: "৳48", trend: "+8%" },
   { crop: "Potato", district: "Rangpur", farmerAsk: "৳21", wholesale: "৳27", retail: "৳32", trend: "+6%" },
