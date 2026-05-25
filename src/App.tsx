@@ -10,6 +10,7 @@ import {
   X,
 } from "lucide-react";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { FloatingSupportChat } from "./components/chat/FloatingSupportChat";
 import { LanguageContext, translate } from "./i18n";
 import { defaultChatThreads, lots, roleOptions, routeByView, views } from "./data";
 import { AdminPage, HomePage, LoginPage, MarketplacePage, OrderPage, PostCropPage, PricesPage, RegisterPage } from "./components/pages";
@@ -17,6 +18,7 @@ import type {
   AccountStatus,
   AuthUser,
   ChatMessage,
+  ChatParticipant,
   ChatParticipantRole,
   ChatThread,
   Language,
@@ -65,7 +67,7 @@ function readStoredChatThreads() {
     }
 
     const threads = JSON.parse(savedThreads) as ChatThread[];
-    return threads.filter((thread) => thread.participantRole === "buyer" || thread.participantRole === "farmer");
+    return threads.filter((thread) => thread.participantRole === "buyer" || thread.participantRole === "farmer" || thread.participantRole === "guest");
   } catch {
     return defaultChatThreads;
   }
@@ -75,9 +77,9 @@ function makeChatMessageId() {
   return `CHAT-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
 }
 
-function makeChatThreadId(user: AuthUser) {
-  const cleanPhone = user.phone.replace(/\D/g, "") || "unknown";
-  return `${user.role}-${user.accountId ?? cleanPhone}`;
+function makeParticipantChatThreadId(participant: ChatParticipant) {
+  const cleanPhone = participant.phone.replace(/\D/g, "") || "unknown";
+  return `${participant.role}-${participant.id || cleanPhone}`;
 }
 
 export default function App() {
@@ -161,19 +163,14 @@ export default function App() {
     );
   };
 
-  const sendUserChatMessage = (sender: AuthUser, text: string, subject: string) => {
-    if (sender.role === "admin") {
-      return;
-    }
-
-    const participantRole: ChatParticipantRole = sender.role;
+  const sendParticipantChatMessage = (participant: ChatParticipant, text: string, subject: string) => {
     const timestamp = new Date().toISOString();
-    const threadId = makeChatThreadId(sender);
+    const threadId = makeParticipantChatThreadId(participant);
     const nextMessage: ChatMessage = {
       id: makeChatMessageId(),
       createdAt: timestamp,
-      senderName: sender.name,
-      senderRole: sender.role,
+      senderName: participant.name,
+      senderRole: participant.role,
       text,
     };
 
@@ -184,9 +181,10 @@ export default function App() {
           {
             id: threadId,
             messages: [nextMessage],
-            participantName: sender.name,
-            participantPhone: sender.phone,
-            participantRole,
+            participantId: participant.id,
+            participantName: participant.name,
+            participantPhone: participant.phone,
+            participantRole: participant.role,
             status: "waiting",
             subject,
             updatedAt: timestamp,
@@ -200,7 +198,9 @@ export default function App() {
           ? {
               ...thread,
               messages: [...thread.messages, nextMessage],
-              participantName: sender.name,
+              participantId: participant.id,
+              participantName: participant.name,
+              participantPhone: participant.phone,
               status: "waiting",
               subject: thread.subject || subject,
               updatedAt: timestamp,
@@ -208,6 +208,24 @@ export default function App() {
           : thread,
       );
     });
+  };
+
+  const sendUserChatMessage = (sender: AuthUser, text: string, subject: string) => {
+    if (sender.role === "admin") {
+      return;
+    }
+
+    const participantRole: ChatParticipantRole = sender.role;
+    sendParticipantChatMessage(
+      {
+        id: sender.accountId ?? (sender.phone.replace(/\D/g, "") || "unknown"),
+        name: sender.name,
+        phone: sender.phone,
+        role: participantRole,
+      },
+      text,
+      subject,
+    );
   };
 
   const sendAdminChatReply = (threadId: string, text: string) => {
@@ -421,6 +439,7 @@ export default function App() {
         <Route path="/market" element={<Navigate to="/marketplace" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <FloatingSupportChat chatThreads={chatThreads} user={user} onSendMessage={sendParticipantChatMessage} />
     </main>
     </LanguageContext.Provider>
   );

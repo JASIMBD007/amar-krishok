@@ -4,8 +4,8 @@ export type Language = "en" | "bn";
 export type Role = "admin" | "buyer" | "farmer";
 export type RegistrationRole = "buyer" | "farmer";
 export type AccountStatus = "pending" | "active" | "rejected";
-export type ChatParticipantRole = Exclude<Role, "admin">;
-export type ChatSenderRole = Role;
+export type ChatParticipantRole = RegistrationRole | "guest";
+export type ChatSenderRole = Role | "guest";
 export type ChatStatus = "open" | "waiting" | "resolved";
 
 export type AuthUser = {
@@ -97,10 +97,18 @@ export type ChatMessage = {
 export type ChatThread = {
   id: string;
   messages: ChatMessage[];
+  participantId?: string;
   participantName: string;
   participantPhone: string;
   participantRole: ChatParticipantRole;
   status: ChatStatus;
   subject: string;
   updatedAt: string;
+};
+
+export type ChatParticipant = {
+  id: string;
+  name: string;
+  phone: string;
+  role: ChatParticipantRole;
 };

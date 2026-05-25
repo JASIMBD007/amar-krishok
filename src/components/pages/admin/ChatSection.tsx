@@ -2,7 +2,19 @@ import { useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import { MessageSquareText, Send, UserRoundCheck } from "lucide-react";
 import { useTranslate } from "../../../i18n";
-import type { ChatThread } from "../../../types";
+import type { ChatParticipantRole, ChatThread } from "../../../types";
+
+function getParticipantLabel(role: ChatParticipantRole) {
+  if (role === "buyer") {
+    return "Buyer";
+  }
+
+  if (role === "farmer") {
+    return "Seller / Farmer";
+  }
+
+  return "Guest";
+}
 
 export function ChatSection({
   chatThreads,
@@ -39,7 +51,7 @@ export function ChatSection({
           <MessageSquareText size={24} />
           <span>{t("Admin chat inbox")}</span>
           <h2>{t("No conversations yet")}</h2>
-          <p>{t("Buyer and seller messages will appear here.")}</p>
+          <p>{t("Buyer, seller, and guest messages will appear here.")}</p>
         </section>
       </section>
     );
@@ -51,7 +63,7 @@ export function ChatSection({
         <div className="panel-header">
           <div>
             <span>{t("Admin chat inbox")}</span>
-            <h2 id="admin-chat-heading">{t("Buyer and seller conversations")}</h2>
+            <h2 id="admin-chat-heading">{t("Buyer, seller, and guest conversations")}</h2>
           </div>
           <MessageSquareText size={22} />
         </div>
@@ -69,7 +81,7 @@ export function ChatSection({
                 >
                   <span>
                     <strong>{thread.participantName}</strong>
-                    <em>{t(thread.participantRole === "buyer" ? "Buyer" : "Seller / Farmer")}</em>
+                    <em>{t(getParticipantLabel(thread.participantRole))}</em>
                   </span>
                   <small>{latestMessage?.text ?? t("No messages yet")}</small>
                 </button>
