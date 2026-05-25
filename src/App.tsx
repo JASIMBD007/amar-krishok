@@ -12,7 +12,7 @@ import {
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { LanguageContext, translate } from "./i18n";
 import { lots, roleOptions, routeByView, views } from "./data";
-import { AdminView, BuyerView, FarmerView, HomeView, LoginView, MarketplaceView, PricesView, RegisterView } from "./views";
+import { AdminPage, HomePage, LoginPage, MarketplacePage, OrderPage, PostCropPage, PricesPage, RegisterPage } from "./components/pages";
 import type {
   AccountStatus,
   AuthUser,
@@ -265,11 +265,11 @@ export default function App() {
       </header>
 
       <Routes location={location}>
-        <Route path="/" element={<HomeView setView={selectView} />} />
+        <Route path="/" element={<HomePage setView={selectView} />} />
         <Route
           path="/marketplace"
           element={
-            <MarketplaceView
+            <MarketplacePage
               district={district}
               filteredLots={filteredLots}
               query={query}
@@ -283,7 +283,7 @@ export default function App() {
           path="/farmer"
           element={
             <ProtectedRoute allowedRoles={["farmer", "admin"]} user={user} t={t}>
-              <FarmerView />
+              <PostCropPage />
             </ProtectedRoute>
           }
         />
@@ -291,23 +291,23 @@ export default function App() {
           path="/buyer"
           element={
             <ProtectedRoute allowedRoles={["buyer", "admin"]} user={user} t={t}>
-              <BuyerView />
+              <OrderPage />
             </ProtectedRoute>
           }
         />
-        <Route path="/prices" element={<PricesView />} />
+        <Route path="/prices" element={<PricesPage />} />
         <Route
           path="/admin"
           element={
             <ProtectedRoute allowedRoles={["admin"]} user={user} t={t}>
-              <AdminView registrations={registrations} onUpdateRegistration={updateRegistrationStatus} />
+              <AdminPage registrations={registrations} onUpdateRegistration={updateRegistrationStatus} />
             </ProtectedRoute>
           }
         />
-        <Route path="/login" element={<LoginView onLogin={handleLogin} registrations={registrations} user={user} />} />
+        <Route path="/login" element={<LoginPage onLogin={handleLogin} registrations={registrations} user={user} />} />
         <Route path="/register" element={<Navigate to="/register/buyer" replace />} />
-        <Route path="/register/buyer" element={<RegisterView registrations={registrations} role="buyer" onRegister={handleRegister} />} />
-        <Route path="/register/farmer" element={<RegisterView registrations={registrations} role="farmer" onRegister={handleRegister} />} />
+        <Route path="/register/buyer" element={<RegisterPage registrations={registrations} role="buyer" onRegister={handleRegister} />} />
+        <Route path="/register/farmer" element={<RegisterPage registrations={registrations} role="farmer" onRegister={handleRegister} />} />
         <Route path="/market" element={<Navigate to="/marketplace" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
