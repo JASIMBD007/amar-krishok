@@ -1,5 +1,9 @@
 import { Body, Controller, Get, Post, Query } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
+import { Role } from "@prisma/client";
+import { Auth } from "../auth/decorators/auth.decorator";
+import { CurrentUser } from "../auth/decorators/current-user.decorator";
+import { AuthenticatedUser } from "../auth/types/authenticated-user";
 import { CreateOrderDto } from "./dto/create-order.dto";
 import { OrdersService } from "./orders.service";
 
@@ -8,13 +12,15 @@ import { OrdersService } from "./orders.service";
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
+  @Auth(Role.ADMIN, Role.BUYER)
   @Get()
-  findAll(@Query("buyerId") buyerId?: string) {
-    return this.ordersService.findAll({ buyerId });
+  findAll(@CurrentUser() user: AuthenticatedUser, @Query("buyerId") buyerId?: string) {
+    return this.ordersService.findAll({ buyerId }, user);
   }
 
+  @Auth(Role.ADMIN, Role.BUYER)
   @Post()
-  create(@Body() dto: CreateOrderDto) {
-    return this.ordersService.create(dto);
+  create(@Body() dto: CreateOrderDto, @CurrentUser() user: AuthenticatedUser) {
+    return this.ordersService.create(dto, user);
   }
 }

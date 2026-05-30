@@ -1,5 +1,7 @@
 import { Body, Controller, Get, Param, Post } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
+import { Role } from "@prisma/client";
+import { Auth } from "../auth/decorators/auth.decorator";
 import { ChatService } from "./chat.service";
 import { CreateChatMessageDto, CreateChatThreadDto } from "./dto/chat.dto";
 
@@ -8,6 +10,7 @@ import { CreateChatMessageDto, CreateChatThreadDto } from "./dto/chat.dto";
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
+  @Auth(Role.ADMIN)
   @Get("threads")
   findThreads() {
     return this.chatService.findThreads();
