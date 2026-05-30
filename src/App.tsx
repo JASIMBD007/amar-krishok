@@ -10,6 +10,7 @@ import {
   X,
 } from "lucide-react";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { Seo } from "./components/Seo";
 import { FloatingSupportChat } from "./components/chat/FloatingSupportChat";
 import { LanguageContext, translate } from "./i18n";
 import { lots, roleOptions, routeByView, views } from "./data";
@@ -94,6 +95,7 @@ export default function App() {
 
   return (
     <LanguageContext.Provider value={language}>
+    <Seo language={language} pathname={location.pathname} />
     <main className="app-shell" lang={language === "bn" ? "bn" : "en"}>
       <header className="site-header">
         <button

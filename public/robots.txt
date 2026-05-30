@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /buyer
+Disallow: /farmer
+Disallow: /login
+
+Sitemap: https://www.amarkrishok.com/sitemap.xml
