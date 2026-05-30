@@ -112,7 +112,7 @@ export function LoginPage({
 
         <label className="input-field">
           <span>{t("Full name")}</span>
-          <input value={name} onChange={(event) => setName(event.target.value)} placeholder={role === "admin" ? adminLoginName : t("Sample full name")} />
+          <input value={name} onChange={(event) => setName(event.target.value)} placeholder={role === "admin" ? t("Full name") : t("Sample full name")} />
         </label>
         <label className="input-field">
           <span>{t("Mobile number")}</span>
