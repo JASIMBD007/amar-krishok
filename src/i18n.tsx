@@ -32,6 +32,7 @@ const bn: Record<string, string> = {
   "Sign in": "লগইন",
   "Signing in": "লগইন হচ্ছে",
   "Please enter your name.": "আপনার নাম লিখুন।",
+  "Admin name must be admin_amarkrishok.": "অ্যাডমিন নামে admin_amarkrishok লিখতে হবে।",
   "Please enter a valid mobile number.": "সঠিক মোবাইল নম্বর লিখুন।",
   "PIN must be at least 4 characters.": "পিন কমপক্ষে ৪ অক্ষরের হতে হবে।",
   "You need to sign in first.": "আগে লগইন করতে হবে।",

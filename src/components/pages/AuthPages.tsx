@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { CheckCircle2, Clock3, ClipboardCheck, LockKeyhole } from "lucide-react";
-import { roleHomePath, roleOptions, serviceDistricts } from "../../data";
+import { adminLoginName, roleHomePath, roleOptions, serviceDistricts } from "../../data";
 import { useTranslate, useValueText } from "../../i18n";
 import type { AuthUser, RegisteredAccount, RegistrationRole, Role } from "../../types";
 import { makeRegistrationId, roleCanOpenPath } from "./pageHelpers";
@@ -49,6 +49,11 @@ export function LoginPage({
 
     if (password.length < 4) {
       setError(t("PIN must be at least 4 characters."));
+      return;
+    }
+
+    if (role === "admin" && cleanName !== adminLoginName) {
+      setError(t("Admin name must be admin_amarkrishok."));
       return;
     }
 
@@ -107,7 +112,7 @@ export function LoginPage({
 
         <label className="input-field">
           <span>{t("Full name")}</span>
-          <input value={name} onChange={(event) => setName(event.target.value)} placeholder={t("Sample full name")} />
+          <input value={name} onChange={(event) => setName(event.target.value)} placeholder={role === "admin" ? adminLoginName : t("Sample full name")} />
         </label>
         <label className="input-field">
           <span>{t("Mobile number")}</span>

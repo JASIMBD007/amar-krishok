@@ -3,6 +3,7 @@ import { ConfigService } from "@nestjs/config";
 import { AccountStatus, Role } from "@prisma/client";
 import { hash } from "bcryptjs";
 import { PrismaService } from "../prisma/prisma.service";
+import { getAdminLoginName } from "./admin-login-name";
 
 @Injectable()
 export class AdminBootstrapService implements OnApplicationBootstrap {
@@ -16,7 +17,7 @@ export class AdminBootstrapService implements OnApplicationBootstrap {
   async onApplicationBootstrap() {
     const phone = this.config.get<string>("ADMIN_PHONE")?.trim();
     const password = this.config.get<string>("ADMIN_PASSWORD")?.trim();
-    const name = this.config.get<string>("ADMIN_NAME")?.trim() || "AmarKrishok Admin";
+    const name = getAdminLoginName(this.config);
 
     if (!phone || !password) {
       return;
