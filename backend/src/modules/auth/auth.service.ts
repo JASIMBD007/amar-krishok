@@ -21,6 +21,10 @@ function publicUser(user: User) {
   return safeUser;
 }
 
+function normalizeLoginName(name: string) {
+  return name.trim().replace(/\s+/g, " ").toLowerCase();
+}
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -44,6 +48,17 @@ export class AuthService {
 
     if (!user || !(await compare(dto.password, user.passwordHash))) {
       throw new UnauthorizedException("Invalid phone or password.");
+    }
+
+    if (user.role === Role.ADMIN) {
+      const loginName = dto.name?.trim();
+      if (!loginName) {
+        throw new UnauthorizedException("Admin full name is required.");
+      }
+
+      if (normalizeLoginName(loginName) !== normalizeLoginName(user.name)) {
+        throw new UnauthorizedException("Admin name, phone, or password is invalid.");
+      }
     }
 
     if (user.role !== Role.ADMIN && user.status !== AccountStatus.ACTIVE) {
