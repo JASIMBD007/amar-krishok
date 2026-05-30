@@ -1,5 +1,6 @@
-import { Injectable } from "@nestjs/common";
-import { OrderStatus, Prisma } from "@prisma/client";
+import { BadRequestException, Injectable } from "@nestjs/common";
+import { OrderStatus, Prisma, Role } from "@prisma/client";
+import { AuthenticatedUser } from "../auth/types/authenticated-user";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateOrderDto } from "./dto/create-order.dto";
 
@@ -7,7 +8,7 @@ import { CreateOrderDto } from "./dto/create-order.dto";
 export class OrdersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  findAll(filters: { buyerId?: string }) {
+  findAll(filters: { buyerId?: string }, user: AuthenticatedUser) {
     return this.prisma.order.findMany({
       include: {
         buyer: true,
@@ -16,12 +17,17 @@ export class OrdersService {
       },
       orderBy: { createdAt: "desc" },
       where: {
-        buyerId: filters.buyerId,
+        buyerId: user.role === Role.BUYER ? user.id : filters.buyerId,
       },
     });
   }
 
-  async create(dto: CreateOrderDto) {
+  async create(dto: CreateOrderDto, user: AuthenticatedUser) {
+    const buyerId = user.role === Role.BUYER ? user.id : dto.buyerId;
+    if (!buyerId) {
+      throw new BadRequestException("buyerId is required when an admin creates an order.");
+    }
+
     const district = await this.prisma.district.upsert({
       create: { name: dto.district },
       update: { active: true },
@@ -47,7 +53,7 @@ export class OrdersService {
 
     return this.prisma.order.create({
       data: {
-        buyerId: dto.buyerId,
+        buyerId,
         deliveryAddress: dto.deliveryAddress,
         districtId: district.id,
         items: { create: itemInputs },

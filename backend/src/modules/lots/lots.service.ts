@@ -1,5 +1,6 @@
-import { Injectable } from "@nestjs/common";
-import { LotStatus, Prisma } from "@prisma/client";
+import { BadRequestException, Injectable } from "@nestjs/common";
+import { LotStatus, Prisma, Role } from "@prisma/client";
+import { AuthenticatedUser } from "../auth/types/authenticated-user";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateLotDto } from "./dto/create-lot.dto";
 
@@ -23,7 +24,12 @@ export class LotsService {
     });
   }
 
-  async create(dto: CreateLotDto) {
+  async create(dto: CreateLotDto, user: AuthenticatedUser) {
+    const farmerId = user.role === Role.FARMER ? user.id : dto.farmerId;
+    if (!farmerId) {
+      throw new BadRequestException("farmerId is required when an admin creates a lot.");
+    }
+
     const [crop, district] = await Promise.all([
       this.prisma.crop.upsert({
         create: { name: dto.crop },
@@ -41,7 +47,7 @@ export class LotsService {
       data: {
         cropId: crop.id,
         districtId: district.id,
-        farmerId: dto.farmerId,
+        farmerId,
         grade: dto.grade,
         harvestDate: dto.harvestDate ? new Date(dto.harvestDate) : undefined,
         imageUrl: dto.imageUrl,

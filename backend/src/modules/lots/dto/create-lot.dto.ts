@@ -2,7 +2,8 @@ import { IsDateString, IsNumber, IsOptional, IsString, Min } from "class-validat
 
 export class CreateLotDto {
   @IsString()
-  farmerId!: string;
+  @IsOptional()
+  farmerId?: string;
 
   @IsString()
   crop!: string;

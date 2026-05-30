@@ -1,8 +1,11 @@
 import { Controller, Get, Param, Patch } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
+import { Role } from "@prisma/client";
+import { Auth } from "../auth/decorators/auth.decorator";
 import { AdminService } from "./admin.service";
 
 @ApiTags("admin")
+@Auth(Role.ADMIN)
 @Controller("admin")
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}

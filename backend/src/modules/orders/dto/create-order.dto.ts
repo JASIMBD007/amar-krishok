@@ -20,7 +20,8 @@ export class CreateOrderItemDto {
 
 export class CreateOrderDto {
   @IsString()
-  buyerId!: string;
+  @IsOptional()
+  buyerId?: string;
 
   @IsString()
   district!: string;
