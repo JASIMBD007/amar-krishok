@@ -57,3 +57,4 @@ ADMIN_PASSWORD=your_admin_password
 ```
 
 When `ADMIN_PHONE` and `ADMIN_PASSWORD` are present, the API creates or updates an active admin account on startup.
+Admin login requires the matching full name, phone number, and password.

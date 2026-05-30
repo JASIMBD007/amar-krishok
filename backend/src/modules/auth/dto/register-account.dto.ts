@@ -46,6 +46,10 @@ export class LoginDto {
   @IsIn(["admin", "buyer", "farmer"])
   role!: "admin" | "buyer" | "farmer";
 
+  @IsOptional()
+  @IsString()
+  name?: string;
+
   @IsString()
   @IsNotEmpty()
   phone!: string;
