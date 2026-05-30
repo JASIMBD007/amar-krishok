@@ -51,10 +51,10 @@ DATABASE_URL=provided by Render Postgres
 Optional initial admin bootstrap variables:
 
 ```txt
-ADMIN_NAME=AmarKrishok Admin
+ADMIN_LOGIN_NAME=admin_amarkrishok
 ADMIN_PHONE=your_admin_phone
 ADMIN_PASSWORD=your_admin_password
 ```
 
 When `ADMIN_PHONE` and `ADMIN_PASSWORD` are present, the API creates or updates an active admin account on startup.
-Admin login requires the matching full name, phone number, and password.
+Admin login requires `admin_amarkrishok` as the full name, plus the matching phone number and password.

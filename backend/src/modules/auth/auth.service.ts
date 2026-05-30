@@ -4,6 +4,7 @@ import { AccountStatus, Role, User } from "@prisma/client";
 import { compare, hash } from "bcryptjs";
 import { sign } from "jsonwebtoken";
 import { PrismaService } from "../prisma/prisma.service";
+import { getAdminLoginName } from "./admin-login-name";
 import { LoginDto, RegisterAccountDto } from "./dto/register-account.dto";
 
 function mapLoginRole(role: LoginDto["role"]) {
@@ -56,7 +57,7 @@ export class AuthService {
         throw new UnauthorizedException("Admin full name is required.");
       }
 
-      if (normalizeLoginName(loginName) !== normalizeLoginName(user.name)) {
+      if (normalizeLoginName(loginName) !== normalizeLoginName(getAdminLoginName(this.config))) {
         throw new UnauthorizedException("Admin name, phone, or password is invalid.");
       }
     }
