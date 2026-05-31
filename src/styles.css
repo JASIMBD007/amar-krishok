@@ -357,6 +357,7 @@ button {
 }
 
 .status-pill {
+  justify-self: start;
   min-height: 34px;
   padding: 0 12px;
   border-radius: 999px;
