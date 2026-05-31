@@ -313,8 +313,8 @@ button {
 .section-title h1 {
   margin: 14px 0 14px;
   color: #163225;
-  font-size: clamp(2.25rem, 5vw, 4.9rem);
-  line-height: 1;
+  font-size: clamp(2.05rem, 4.2vw, 4.1rem);
+  line-height: 1.08;
   letter-spacing: 0;
 }
 
@@ -2191,7 +2191,7 @@ th {
   }
 
   .hero-copy h1 {
-    font-size: 2.55rem;
+    font-size: 2.25rem;
   }
 
   .listing-grid,
