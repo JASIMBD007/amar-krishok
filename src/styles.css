@@ -823,6 +823,44 @@ button {
   background: #f8faf5;
 }
 
+.password-control {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  min-height: 48px;
+  margin-top: 3px;
+  border: 1px solid rgba(24, 48, 40, 0.12);
+  border-radius: 8px;
+  background: #f8faf5;
+}
+
+.input-field .password-control input {
+  min-height: 46px;
+  margin-top: 0;
+  padding-right: 6px;
+  border: 0;
+  background: transparent;
+}
+
+.password-toggle {
+  display: inline-grid;
+  width: 42px;
+  height: 42px;
+  margin-right: 3px;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  color: #40584c;
+  background: transparent;
+  cursor: pointer;
+}
+
+.password-toggle:hover,
+.password-toggle:focus-visible {
+  color: #176b47;
+  background: #eaf4ed;
+}
+
 .full-field {
   margin: 14px 0;
 }

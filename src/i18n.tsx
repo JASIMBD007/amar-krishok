@@ -29,6 +29,8 @@ const bn: Record<string, string> = {
   "Mobile number": "মোবাইল নম্বর",
   "PIN or password": "পিন বা পাসওয়ার্ড",
   "Use any 4+ character PIN for this prototype.": "এই ডেমোতে ৪ অক্ষর বা তার বেশি পিন ব্যবহার করুন।",
+  "Show password": "পাসওয়ার্ড দেখান",
+  "Hide password": "পাসওয়ার্ড লুকান",
   "Sign in": "লগইন",
   "Signing in": "লগইন হচ্ছে",
   "Please enter your name.": "আপনার নাম লিখুন।",
