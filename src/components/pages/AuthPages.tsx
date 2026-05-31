@@ -9,23 +9,24 @@ import { makeRegistrationId, roleCanOpenPath } from "./pageHelpers";
 function PasswordField({
   hint,
   onChange,
+  placeholder,
   value,
 }: {
   hint?: string;
   onChange: (value: string) => void;
+  placeholder?: string;
   value: string;
 }) {
   const t = useTranslate();
-  const v = useValueText();
   const [visible, setVisible] = useState(false);
   const ToggleIcon = visible ? EyeOff : Eye;
   const toggleLabel = visible ? "Hide password" : "Show password";
 
   return (
     <label className="input-field">
-      <span>{t("PIN or password")}</span>
+      <span>{t("Password")}</span>
       <div className="password-control">
-        <input value={value} onChange={(event) => onChange(event.target.value)} type={visible ? "text" : "password"} placeholder={v("1234")} />
+        <input value={value} onChange={(event) => onChange(event.target.value)} type={visible ? "text" : "password"} placeholder={placeholder ?? t("Password")} />
         <button className="password-toggle" type="button" aria-label={t(toggleLabel)} aria-pressed={visible} title={t(toggleLabel)} onClick={() => setVisible((current) => !current)}>
           <ToggleIcon size={18} />
         </button>
@@ -77,7 +78,7 @@ export function LoginPage({
     }
 
     if (password.length < 4) {
-      setError(t("PIN must be at least 4 characters."));
+      setError(t("Password must be at least 4 characters."));
       return;
     }
 
@@ -147,7 +148,7 @@ export function LoginPage({
           <span>{t("Mobile number")}</span>
           <input value={phone} onChange={(event) => setPhone(event.target.value)} inputMode="tel" placeholder={v("01700000000")} />
         </label>
-        <PasswordField value={password} onChange={setPassword} hint={t("Use any 4+ character PIN for this prototype.")} />
+        <PasswordField value={password} onChange={setPassword} hint={t("Use any 4+ character password for this prototype.")} />
 
         {error && <p className="auth-error">{error}</p>}
 
@@ -218,7 +219,7 @@ export function RegisterPage({
     }
 
     if (cleanPassword.length < 4) {
-      setError(t("PIN must be at least 4 characters."));
+      setError(t("Password must be at least 4 characters."));
       return;
     }
 
