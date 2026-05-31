@@ -1,10 +1,39 @@
 import React, { useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { CheckCircle2, Clock3, ClipboardCheck, LockKeyhole } from "lucide-react";
+import { CheckCircle2, Clock3, ClipboardCheck, Eye, EyeOff, LockKeyhole } from "lucide-react";
 import { adminLoginName, roleHomePath, roleOptions, serviceDistricts } from "../../data";
 import { useTranslate, useValueText } from "../../i18n";
 import type { AuthUser, RegisteredAccount, RegistrationRole, Role } from "../../types";
 import { makeRegistrationId, roleCanOpenPath } from "./pageHelpers";
+
+function PasswordField({
+  hint,
+  onChange,
+  value,
+}: {
+  hint?: string;
+  onChange: (value: string) => void;
+  value: string;
+}) {
+  const t = useTranslate();
+  const v = useValueText();
+  const [visible, setVisible] = useState(false);
+  const ToggleIcon = visible ? EyeOff : Eye;
+  const toggleLabel = visible ? "Hide password" : "Show password";
+
+  return (
+    <label className="input-field">
+      <span>{t("PIN or password")}</span>
+      <div className="password-control">
+        <input value={value} onChange={(event) => onChange(event.target.value)} type={visible ? "text" : "password"} placeholder={v("1234")} />
+        <button className="password-toggle" type="button" aria-label={t(toggleLabel)} aria-pressed={visible} title={t(toggleLabel)} onClick={() => setVisible((current) => !current)}>
+          <ToggleIcon size={18} />
+        </button>
+      </div>
+      {hint && <small>{hint}</small>}
+    </label>
+  );
+}
 
 export function LoginPage({
   onLogin,
@@ -118,11 +147,7 @@ export function LoginPage({
           <span>{t("Mobile number")}</span>
           <input value={phone} onChange={(event) => setPhone(event.target.value)} inputMode="tel" placeholder={v("01700000000")} />
         </label>
-        <label className="input-field">
-          <span>{t("PIN or password")}</span>
-          <input value={password} onChange={(event) => setPassword(event.target.value)} type="password" placeholder={v("1234")} />
-          <small>{t("Use any 4+ character PIN for this prototype.")}</small>
-        </label>
+        <PasswordField value={password} onChange={setPassword} hint={t("Use any 4+ character PIN for this prototype.")} />
 
         {error && <p className="auth-error">{error}</p>}
 
@@ -275,10 +300,7 @@ export function RegisterPage({
           <span>{t("Mobile number")}</span>
           <input value={phone} onChange={(event) => setPhone(event.target.value)} inputMode="tel" placeholder={v("01700000000")} />
         </label>
-        <label className="input-field">
-          <span>{t("PIN or password")}</span>
-          <input value={password} onChange={(event) => setPassword(event.target.value)} type="password" placeholder={v("1234")} />
-        </label>
+        <PasswordField value={password} onChange={setPassword} />
         <label className="input-field">
           <span>{t("Business / farm name")}</span>
           <input value={organization} onChange={(event) => setOrganization(event.target.value)} placeholder={t("Shop, restaurant, company, or farm")} />
