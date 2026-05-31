@@ -15,7 +15,7 @@ export function HomePage({ setView }: { setView: (view: View) => void }) {
             <ShieldCheck size={16} />
             {t("Verified farmer-to-buyer marketplace")}
           </div>
-          <h1>{t("Farmers post crops. Buyers order directly. Admins manage the chain.")}</h1>
+          <h1>{t("Farmers post crops. Buyers order directly. Our team coordinates the chain.")}</h1>
           <p>
             {t("A direct supply-chain platform for Bangladesh where farmers post harvests, buyers order transparently, logistics partners deliver, and payments stay protected.")}
           </p>

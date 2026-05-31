@@ -94,7 +94,7 @@ const bn: Record<string, string> = {
   "Business metrics": "ব্যবসার হিসাব",
   "Platform metrics": "প্ল্যাটফর্মের হিসাব",
   "Verified farmer-to-buyer marketplace": "যাচাই করা কৃষক ও ক্রেতার সরাসরি বাজার",
-  "Farmers post crops. Buyers order directly. Admins manage the chain.": "কৃষক ফসলের তথ্য দেবেন। ক্রেতা সরাসরি অর্ডার করবেন। অ্যাডমিন পুরো প্রক্রিয়া সামলাবে।",
+  "Farmers post crops. Buyers order directly. Our team coordinates the chain.": "কৃষক ফসলের তথ্য দেবেন। ক্রেতা সরাসরি অর্ডার করবেন। আমাদের টিম পুরো প্রক্রিয়া সমন্বয় করবে।",
   "A direct supply-chain platform for Bangladesh where farmers post harvests, buyers order transparently, logistics partners deliver, and payments stay protected.": "বাংলাদেশের কৃষিপণ্যের জন্য সরাসরি সাপ্লাই-চেইন প্ল্যাটফর্ম: কৃষক ফসল দেন, ক্রেতা স্বচ্ছভাবে অর্ডার করেন, ডেলিভারি পার্টনার পৌঁছে দেয়, আর পেমেন্ট নিরাপদে থাকে।",
   "Browse crops": "ফসল দেখুন",
   "Post a crop": "ফসল পোস্ট করুন",
