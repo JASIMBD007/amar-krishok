@@ -12,8 +12,6 @@ import type {
   View,
 } from "./types";
 
-export const adminLoginName = "admin_amarkrishok";
-
 export const lots: CropLot[] = [
   {
     id: "LOT-882",

@@ -10,6 +10,7 @@ export type ChatStatus = "open" | "waiting" | "resolved";
 
 export type AuthUser = {
   accountId?: string;
+  accessToken?: string;
   name: string;
   phone: string;
   role: Role;
