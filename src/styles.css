@@ -300,13 +300,20 @@ button {
   display: grid;
   grid-template-columns: minmax(300px, 0.78fr) minmax(620px, 1.22fr);
   gap: clamp(24px, 4vw, 54px);
-  align-items: center;
+  align-items: start;
+  min-height: clamp(680px, 38vw, 750px);
   padding: clamp(34px, 6vw, 78px) clamp(16px, 4vw, 56px) 34px;
   background:
     linear-gradient(120deg, rgba(246, 244, 238, 0.98) 0%, rgba(246, 244, 238, 0.84) 46%, rgba(232, 239, 224, 0.5) 100%),
     url("https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1800&q=80");
   background-position: center;
   background-size: cover;
+}
+
+.hero-copy {
+  display: grid;
+  align-content: start;
+  margin-top: clamp(38px, 3.2vw, 56px);
 }
 
 .hero-copy h1,
@@ -325,8 +332,13 @@ button {
   text-wrap: balance;
 }
 
+.hero-copy h1 {
+  min-height: clamp(245px, 15vw, 300px);
+}
+
 .hero-copy p {
   max-width: 650px;
+  min-height: 5.35rem;
   margin: 0;
   color: #465e54;
   font-size: 1.05rem;
@@ -468,6 +480,28 @@ button {
   font-weight: 850;
 }
 
+@media (min-width: 1161px) {
+  .market-console .console-header {
+    min-height: 50px;
+    align-items: flex-start;
+  }
+
+  .listing-grid.compact .crop-card {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    min-height: 498px;
+  }
+
+  .listing-grid.compact .crop-card-body {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+  }
+
+  .listing-grid.compact .crop-meta {
+    align-content: start;
+  }
+}
+
 .metrics-band,
 .workflow-section,
 .page-wrap {
@@ -487,7 +521,7 @@ button {
 }
 
 .metrics-band div {
-  min-height: 116px;
+  min-height: 136px;
   padding: 22px;
   background: #183028;
   color: #ffffff;
@@ -2060,6 +2094,19 @@ th {
   .dashboard-shell,
   .trust-section {
     grid-template-columns: 1fr;
+  }
+
+  .hero-section {
+    min-height: auto;
+  }
+
+  .hero-copy {
+    margin-top: 0;
+  }
+
+  .hero-copy h1,
+  .hero-copy p {
+    min-height: 0;
   }
 
   .chat-widget {
