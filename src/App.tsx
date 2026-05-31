@@ -46,6 +46,11 @@ export default function App() {
   const t = (text: string) => translate(language, text);
 
   useEffect(() => {
+    if (user?.role === "admin" && !user.accessToken) {
+      setUser(null);
+      return;
+    }
+
     if (!user || user.role === "admin") {
       return;
     }

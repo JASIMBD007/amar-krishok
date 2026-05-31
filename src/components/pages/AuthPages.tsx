@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { CheckCircle2, Clock3, ClipboardCheck, Eye, EyeOff, LockKeyhole } from "lucide-react";
-import { adminLoginName, roleHomePath, roleOptions, serviceDistricts } from "../../data";
+import { loginWithApi, AuthRequestError } from "../../api/auth";
+import { roleHomePath, roleOptions, serviceDistricts } from "../../data";
 import { useTranslate, useValueText } from "../../i18n";
 import type { AuthUser, RegisteredAccount, RegistrationRole, Role } from "../../types";
 import { makeRegistrationId, roleCanOpenPath } from "./pageHelpers";
@@ -36,6 +37,10 @@ function PasswordField({
   );
 }
 
+function normalizeAuthName(value: string) {
+  return value.trim().replace(/\s+/g, " ").toLowerCase();
+}
+
 export function LoginPage({
   onLogin,
   registrations,
@@ -59,10 +64,11 @@ export function LoginPage({
   const [phone, setPhone] = useState(user?.role === safeQueryRole ? user.phone : "");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const roleOption = roleOptions.find((option) => option.role === role) ?? roleOptions[1];
   const RoleIcon = roleOption.icon;
 
-  const submitLogin = (event: React.FormEvent<HTMLFormElement>) => {
+  const submitLogin = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const cleanName = name.trim();
     const cleanPhone = phone.trim();
@@ -82,41 +88,41 @@ export function LoginPage({
       return;
     }
 
-    if (role === "admin" && cleanName !== adminLoginName) {
-      setError(t("Admin name must be admin_amarkrishok."));
+    if (role === "admin") {
+      setIsSubmitting(true);
+      setError("");
+
+      try {
+        const nextPath = roleCanOpenPath(role, safeNext) ? safeNext : roleHomePath[role];
+        onLogin(await loginWithApi({ name: cleanName, password, phone: cleanPhone, role }), nextPath);
+      } catch (apiError) {
+        setError(t(apiError instanceof AuthRequestError ? apiError.message : "Login service is unavailable. Please try again."));
+      } finally {
+        setIsSubmitting(false);
+      }
+
       return;
     }
 
-    if (role !== "admin") {
-      const account = registrations.find((item) => item.role === role && item.phone === cleanPhone);
+    const account = registrations.find((item) => item.role === role && item.phone === cleanPhone);
 
-      if (!account) {
-        setError(t("Account not found. Please register first."));
-        return;
-      }
+    if (!account || normalizeAuthName(account.name) !== normalizeAuthName(cleanName) || account.password !== password) {
+      setError(t("Name, mobile number, or password is incorrect."));
+      return;
+    }
 
-      if (account.status === "pending") {
-        setError(t("Account is waiting for admin verification."));
-        return;
-      }
+    if (account.status === "pending") {
+      setError(t("Account is waiting for admin verification."));
+      return;
+    }
 
-      if (account.status === "rejected") {
-        setError(t("Registration was not approved. Please contact admin."));
-        return;
-      }
-
-      if (account.password !== password) {
-        setError(t("Password does not match."));
-        return;
-      }
-
-      const nextPath = roleCanOpenPath(role, safeNext) ? safeNext : roleHomePath[role];
-      onLogin({ accountId: account.id, name: account.name, phone: account.phone, role, signedInAt: new Date().toISOString() }, nextPath);
+    if (account.status === "rejected") {
+      setError(t("Registration was not approved. Please contact admin."));
       return;
     }
 
     const nextPath = roleCanOpenPath(role, safeNext) ? safeNext : roleHomePath[role];
-    onLogin({ name: cleanName, phone: cleanPhone, role, signedInAt: new Date().toISOString() }, nextPath);
+    onLogin({ accountId: account.id, name: account.name, phone: account.phone, role, signedInAt: new Date().toISOString() }, nextPath);
   };
 
   return (
@@ -148,7 +154,7 @@ export function LoginPage({
           <span>{t("Mobile number")}</span>
           <input value={phone} onChange={(event) => setPhone(event.target.value)} inputMode="tel" placeholder={v("01700000000")} />
         </label>
-        <PasswordField value={password} onChange={setPassword} hint={t("Use any 4+ character password for this prototype.")} />
+        <PasswordField value={password} onChange={setPassword} />
 
         {error && <p className="auth-error">{error}</p>}
 
@@ -161,9 +167,9 @@ export function LoginPage({
               {t("Register")}
             </NavLink>
           )}
-          <button className="primary-button" type="submit">
+          <button className="primary-button" type="submit" disabled={isSubmitting}>
             <LockKeyhole size={17} />
-            {t("Sign in")}
+            {t(isSubmitting ? "Signing in" : "Sign in")}
           </button>
         </div>
       </form>

@@ -17,7 +17,7 @@ export function ProtectedRoute({
 }) {
   const location = useLocation();
 
-  if (!user) {
+  if (!user || (allowedRoles.includes("admin") && user.role === "admin" && !user.accessToken)) {
     const fallbackRole = allowedRoles[0];
     return <Navigate to={`/login?role=${fallbackRole}&next=${encodeURIComponent(location.pathname)}`} replace />;
   }
