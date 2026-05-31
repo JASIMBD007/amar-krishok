@@ -73,8 +73,6 @@ const bn: Record<string, string> = {
   "Account verification": "অ্যাকাউন্ট যাচাই",
   "Buyer and seller registrations awaiting admin approval.": "ক্রেতা ও বিক্রেতার নিবন্ধন অ্যাডমিন অনুমোদনের অপেক্ষায় আছে।",
   "No pending registrations": "অপেক্ষায় থাকা কোনো নিবন্ধন নেই",
-  "Previous lots": "আগের লট",
-  "Next lots": "পরের লট",
   "Approve": "অনুমোদন করুন",
   "Reject": "বাতিল করুন",
   "Approved accounts": "অনুমোদিত অ্যাকাউন্ট",
