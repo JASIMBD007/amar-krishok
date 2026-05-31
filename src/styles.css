@@ -418,6 +418,40 @@ button {
   gap: 14px;
 }
 
+.hero-lot-carousel {
+  position: relative;
+}
+
+.lot-carousel-arrow {
+  position: absolute;
+  top: 50%;
+  z-index: 3;
+  display: inline-grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 1px solid rgba(24, 48, 40, 0.12);
+  border-radius: 999px;
+  color: #176b47;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 12px 28px rgba(24, 48, 40, 0.16);
+  transform: translateY(-50%);
+}
+
+.lot-carousel-arrow.previous {
+  left: -21px;
+}
+
+.lot-carousel-arrow.next {
+  right: -21px;
+}
+
+.lot-carousel-arrow:hover,
+.lot-carousel-arrow:focus-visible {
+  color: #ffffff;
+  background: #176b47;
+}
+
 .market-grid {
   grid-template-columns: repeat(4, minmax(220px, 1fr));
 }

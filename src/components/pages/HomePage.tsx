@@ -1,4 +1,5 @@
-import { Clock3, ClipboardCheck, HeartHandshake, ListFilter, ShieldCheck, ShoppingBag, Sprout, Truck, WalletCards } from "lucide-react";
+import { useMemo, useState } from "react";
+import { ChevronLeft, ChevronRight, Clock3, ClipboardCheck, HeartHandshake, ListFilter, ShieldCheck, ShoppingBag, Sprout, Truck, WalletCards } from "lucide-react";
 import { lots } from "../../data";
 import { useTranslate, useValueText } from "../../i18n";
 import type { View } from "../../types";
@@ -7,6 +8,20 @@ import { CropCard } from "../shared";
 export function HomePage({ setView }: { setView: (view: View) => void }) {
   const t = useTranslate();
   const v = useValueText();
+  const [lotStart, setLotStart] = useState(0);
+  const hasLotCarousel = lots.length > 3;
+  const visibleLots = useMemo(() => {
+    if (!hasLotCarousel) {
+      return lots;
+    }
+
+    return Array.from({ length: 3 }, (_, index) => lots[(lotStart + index) % lots.length]);
+  }, [hasLotCarousel, lotStart]);
+
+  const moveLots = (direction: -1 | 1) => {
+    setLotStart((current) => (current + direction + lots.length) % lots.length);
+  };
+
   return (
     <>
       <section className="hero-section">
@@ -37,10 +52,22 @@ export function HomePage({ setView }: { setView: (view: View) => void }) {
             </div>
             <ListFilter size={20} />
           </div>
-          <div className="listing-grid compact">
-            {lots.slice(0, 3).map((lot) => (
-              <CropCard lot={lot} key={lot.id} onOrder={() => setView("buyer")} t={t} v={v} />
-            ))}
+          <div className="hero-lot-carousel">
+            {hasLotCarousel && (
+              <button className="lot-carousel-arrow previous" type="button" aria-label={t("Previous lots")} onClick={() => moveLots(-1)}>
+                <ChevronLeft size={22} />
+              </button>
+            )}
+            <div className="listing-grid compact">
+              {visibleLots.map((lot) => (
+                <CropCard lot={lot} key={lot.id} onOrder={() => setView("buyer")} t={t} v={v} />
+              ))}
+            </div>
+            {hasLotCarousel && (
+              <button className="lot-carousel-arrow next" type="button" aria-label={t("Next lots")} onClick={() => moveLots(1)}>
+                <ChevronRight size={22} />
+              </button>
+            )}
           </div>
         </div>
       </section>
