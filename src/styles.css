@@ -318,6 +318,13 @@ button {
   letter-spacing: 0;
 }
 
+.app-shell[lang="bn"] .hero-copy h1 {
+  max-width: 760px;
+  font-size: clamp(2.05rem, 4.1vw, 3.85rem);
+  line-height: 1.18;
+  text-wrap: balance;
+}
+
 .hero-copy p {
   max-width: 650px;
   margin: 0;
