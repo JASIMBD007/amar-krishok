@@ -1850,6 +1850,193 @@ th {
   min-width: 0;
 }
 
+.notification-shell {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.notification-button {
+  position: relative;
+}
+
+.notification-badge {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  display: inline-grid;
+  min-width: 20px;
+  min-height: 20px;
+  place-items: center;
+  padding: 0 5px;
+  border: 2px solid #ffffff;
+  border-radius: 999px;
+  color: #ffffff;
+  background: #b85b35;
+  font-size: 0.68rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.notification-panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 45;
+  display: grid;
+  gap: 12px;
+  width: min(390px, calc(100vw - 28px));
+  padding: 14px;
+  border: 1px solid rgba(24, 48, 40, 0.12);
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 24px 70px rgba(24, 48, 40, 0.18);
+}
+
+.notification-panel::before {
+  position: absolute;
+  top: -6px;
+  right: 17px;
+  width: 12px;
+  height: 12px;
+  border-top: 1px solid rgba(24, 48, 40, 0.12);
+  border-left: 1px solid rgba(24, 48, 40, 0.12);
+  background: #ffffff;
+  content: "";
+  transform: rotate(45deg);
+}
+
+.notification-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.notification-panel-header span {
+  display: block;
+  color: #687b70;
+  font-size: 0.72rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.notification-panel-header strong {
+  display: block;
+  margin-top: 2px;
+  color: #183028;
+  font-size: 1.08rem;
+}
+
+.notification-list {
+  display: grid;
+  gap: 8px;
+  max-height: min(58vh, 540px);
+  overflow: auto;
+}
+
+.notification-list > em {
+  padding: 18px;
+  border-radius: 8px;
+  color: #687b70;
+  background: #f3f6ef;
+  font-style: normal;
+  font-weight: 800;
+  text-align: center;
+}
+
+.notification-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: flex-start;
+  width: 100%;
+  padding: 11px;
+  border: 1px solid rgba(24, 48, 40, 0.09);
+  border-radius: 8px;
+  color: #183028;
+  background: #fbfcf8;
+  cursor: pointer;
+  text-align: left;
+}
+
+.notification-item:hover {
+  border-color: rgba(23, 107, 71, 0.26);
+  background: #f2f8f2;
+}
+
+.notification-item.reviewed {
+  opacity: 0.72;
+}
+
+.notification-item-icon {
+  display: inline-grid;
+  width: 34px;
+  min-height: 34px;
+  place-items: center;
+  border-radius: 8px;
+  color: #176b47;
+  background: #e8f3e8;
+}
+
+.notification-item.urgent .notification-item-icon {
+  color: #8a2a1b;
+  background: #f8e5df;
+}
+
+.notification-item.warning .notification-item-icon {
+  color: #76500d;
+  background: #f7edd9;
+}
+
+.notification-item.success .notification-item-icon {
+  color: #176b47;
+  background: #e2f4e5;
+}
+
+.notification-item-copy {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.notification-item-copy strong,
+.notification-item-copy small,
+.notification-item-copy em {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.notification-item-copy strong {
+  color: #183028;
+  font-size: 0.92rem;
+}
+
+.notification-item-copy small {
+  display: -webkit-box;
+  color: #5f7169;
+  font-size: 0.8rem;
+  line-height: 1.35;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.notification-item-copy em {
+  color: #176b47;
+  font-size: 0.72rem;
+  font-style: normal;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.notification-dot {
+  width: 9px;
+  height: 9px;
+  margin-top: 7px;
+  border-radius: 999px;
+  background: #b85b35;
+  box-shadow: 0 0 0 4px rgba(184, 91, 53, 0.13);
+}
+
 .global-search {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
@@ -2701,6 +2888,10 @@ th {
     justify-content: flex-end;
   }
 
+  .notification-panel {
+    width: min(360px, calc(100vw - 28px));
+  }
+
   .global-search {
     order: 3;
     width: 100%;
@@ -2940,6 +3131,18 @@ th {
 
   .topbar-actions .primary-button {
     flex: 1;
+  }
+
+  .notification-panel {
+    position: fixed;
+    top: 128px;
+    right: 14px;
+    left: 14px;
+    width: auto;
+  }
+
+  .notification-panel::before {
+    display: none;
   }
 
   .dashboard-grid .price-row {
