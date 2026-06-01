@@ -1,9 +1,9 @@
-import { useState } from "react";
-import { BadgeCheck, Clock3, MapPin, Pencil, ShoppingBag, XCircle } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Plus } from "lucide-react";
 import type { AdminAccountPayload } from "../../../api/auth";
 import { useTranslate, useValueText } from "../../../i18n";
 import type { AccountStatus, RegisteredAccount } from "../../../types";
-import { AccountManagementForm } from "./AccountManagementForm";
+import { AccountDirectoryTable, AccountModal, AdminSnackbar, DeleteConfirmModal, type AdminToast } from "./AccountManagementTools";
 
 export function BuyersSection({
   onCreateAccount,
@@ -22,11 +22,56 @@ export function BuyersSection({
 }) {
   const t = useTranslate();
   const v = useValueText();
+  const [accountModalOpen, setAccountModalOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<RegisteredAccount | null>(null);
   const [editingBuyer, setEditingBuyer] = useState<RegisteredAccount | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [toast, setToast] = useState<AdminToast | null>(null);
   const buyers = registrations.filter((account) => account.role === "buyer");
   const pendingBuyers = buyers.filter((account) => account.status === "pending");
   const activeBuyers = buyers.filter((account) => account.status === "active");
   const rejectedBuyers = buyers.filter((account) => account.status === "rejected");
+
+  useEffect(() => {
+    if (!toast) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => setToast(null), 3200);
+    return () => window.clearTimeout(timer);
+  }, [toast]);
+
+  const openCreateModal = () => {
+    setEditingBuyer(null);
+    setAccountModalOpen(true);
+  };
+
+  const openEditModal = (buyer: RegisteredAccount) => {
+    setEditingBuyer(buyer);
+    setAccountModalOpen(true);
+  };
+
+  const closeAccountModal = () => {
+    setAccountModalOpen(false);
+    setEditingBuyer(null);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) {
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      await onDeleteAccount(deleteTarget.id);
+      setToast({ message: "Account deleted.", tone: "success" });
+      setDeleteTarget(null);
+    } catch (apiError) {
+      setToast({ message: apiError instanceof Error ? apiError.message : "Account action failed.", tone: "error" });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <section className="dashboard-grid admin-focused-grid">
@@ -36,18 +81,13 @@ export function BuyersSection({
             <span>{t("Buyer accounts")}</span>
             <h2 id="buyers-heading">{t("Registered buyers")}</h2>
           </div>
-          <ShoppingBag size={22} />
+          <button className="primary-button" type="button" onClick={openCreateModal}>
+            <Plus size={17} />
+            {t("Create buyer")}
+          </button>
         </div>
         <p className="panel-copy">{t("See buyer registrations, verification status, business details, and demand focus.")}</p>
         {verificationError && <p className="auth-error">{t(verificationError)}</p>}
-        <AccountManagementForm
-          editingAccount={editingBuyer}
-          onCancelEdit={() => setEditingBuyer(null)}
-          onCreateAccount={onCreateAccount}
-          onDeleteAccount={onDeleteAccount}
-          onUpdateAccount={onUpdateAccount}
-          role="buyer"
-        />
 
         <div className="verification-stats">
           <span>
@@ -68,52 +108,26 @@ export function BuyersSection({
           </span>
         </div>
 
-        <div className="verification-list">
-          {buyers.length === 0 && <em>{t("No buyer registrations yet")}</em>}
-          {buyers.map((buyer) => (
-            <article className="verification-item buyer-directory-item" key={buyer.id}>
-              <div>
-                <strong>{buyer.name}</strong>
-                <span>{t("Buyer")}</span>
-              </div>
-              <div>
-                <span>{buyer.organization || t("Business not added")}</span>
-                <small>{buyer.phone}</small>
-              </div>
-              <p>
-                <MapPin size={14} />
-                {buyer.district || t("District not added")} · {buyer.focus || t("Demand focus not added")}
-              </p>
-              <div className="admin-data-line">
-                <span className="admin-data-chip">{t("Order records")}: {v(buyer.orderCount ?? 0)}</span>
-                <span className="admin-data-chip">{t("Value")}: {v(`৳${Math.round(buyer.orderValue ?? 0).toLocaleString("en-US")}`)}</span>
-                {buyer.latestOrderSummary && <span className="admin-data-chip">{t("Latest order")}: {buyer.latestOrderSummary}</span>}
-              </div>
-              <div className={`account-status-chip ${buyer.status}`}>
-                {buyer.status === "active" && <BadgeCheck size={16} />}
-                {buyer.status === "pending" && <Clock3 size={16} />}
-                {buyer.status === "rejected" && <XCircle size={16} />}
-                {t(buyer.status)}
-              </div>
-              {buyer.status === "pending" && (
-                <div className="verification-actions">
-                  <button className="secondary-button" type="button" onClick={() => onUpdateRegistration(buyer.id, "rejected")}>
-                    {t("Reject")}
-                  </button>
-                  <button className="primary-button" type="button" onClick={() => onUpdateRegistration(buyer.id, "active")}>
-                    <BadgeCheck size={17} />
-                    {t("Approve")}
-                  </button>
-                </div>
-              )}
-              <button className="secondary-button compact-action" type="button" onClick={() => setEditingBuyer(buyer)}>
-                <Pencil size={16} />
-                {t("Edit")}
-              </button>
-            </article>
-          ))}
-        </div>
+        <AccountDirectoryTable
+          accounts={buyers}
+          emptyText="No buyer registrations yet"
+          onDelete={setDeleteTarget}
+          onEdit={openEditModal}
+          onUpdateRegistration={onUpdateRegistration}
+          role="buyer"
+        />
       </section>
+      <AccountModal
+        editingAccount={editingBuyer}
+        onClose={closeAccountModal}
+        onCreateAccount={onCreateAccount}
+        onNotify={setToast}
+        onUpdateAccount={onUpdateAccount}
+        open={accountModalOpen}
+        role="buyer"
+      />
+      <DeleteConfirmModal account={deleteTarget} isDeleting={isDeleting} onClose={() => setDeleteTarget(null)} onConfirm={confirmDelete} />
+      <AdminSnackbar toast={toast} onClose={() => setToast(null)} />
     </section>
   );
 }
