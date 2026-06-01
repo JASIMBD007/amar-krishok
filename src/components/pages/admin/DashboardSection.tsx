@@ -1,3 +1,4 @@
+import type { BackendOrder } from "../../../api/auth";
 import type { AccountStatus, AdminSection, RegisteredAccount } from "../../../types";
 import {
   LogisticsPanel,
@@ -13,11 +14,15 @@ import {
 export function DashboardSection({
   onOpenSection,
   onUpdateRegistration,
+  backendOrders,
+  orderError,
   registrations,
   verificationError,
 }: {
+  backendOrders?: BackendOrder[] | null;
   onOpenSection: (section: AdminSection) => void;
   onUpdateRegistration: (id: string, status: AccountStatus) => void;
+  orderError?: string;
   registrations: RegisteredAccount[];
   verificationError?: string;
 }) {
@@ -25,7 +30,7 @@ export function DashboardSection({
     <>
       <StatsPanel />
       <section className="dashboard-grid">
-        <OrdersPanel onOpenSection={onOpenSection} />
+        <OrdersPanel backendOrders={backendOrders} onOpenSection={onOpenSection} orderError={orderError} />
         <PayoutPanel onOpenSection={onOpenSection} />
         <VerificationPanel registrations={registrations} onUpdateRegistration={onUpdateRegistration} verificationError={verificationError} />
         <SupplyPanel onOpenSection={onOpenSection} />

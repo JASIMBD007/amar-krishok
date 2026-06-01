@@ -3,7 +3,8 @@ import { BadgeCheck, CalendarClock, CheckCircle2, ClipboardList, MapPin, Package
 import { ApiRequestError, createBuyerOrder, fetchMyOrders, type BackendOrder } from "../../api/auth";
 import { lots, serviceDistricts } from "../../data";
 import { useTranslate, useValueText } from "../../i18n";
-import type { AuthUser, ChatThread } from "../../types";
+import type { AuthUser, ChatThread, RegisteredAccount } from "../../types";
+import { AccountProfilePanel } from "../account/AccountProfilePanel";
 import { ChatWidget } from "../chat/ChatWidget";
 import { FormGrid, SectionTitle } from "../shared";
 
@@ -80,10 +81,12 @@ function orderCropLabel(order: BackendOrder) {
 
 export function OrderPage({
   chatThreads,
+  onProfileSaved,
   onSendChatMessage,
   user,
 }: {
   chatThreads: ChatThread[];
+  onProfileSaved: (account: RegisteredAccount) => void;
   onSendChatMessage: (user: AuthUser, text: string, subject: string) => void;
   user: AuthUser | null;
 }) {
@@ -324,6 +327,8 @@ export function OrderPage({
           ))}
         </div>
       </section>
+
+      <AccountProfilePanel user={user} onProfileSaved={onProfileSaved} />
 
       <ChatWidget
         chatThreads={chatThreads}

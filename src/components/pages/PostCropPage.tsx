@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { BadgeCheck, CheckCircle2, Clock3, PackageCheck, Plus, Sprout, UserRoundCheck } from "lucide-react";
 import { ApiRequestError, createCropLot, fetchMyCropLots, type BackendCropLot } from "../../api/auth";
+import { AccountProfilePanel } from "../account/AccountProfilePanel";
 import { ChatWidget } from "../chat/ChatWidget";
 import { serviceDistricts } from "../../data";
 import { useTranslate, useValueText } from "../../i18n";
-import type { AuthUser, ChatThread } from "../../types";
+import type { AuthUser, ChatThread, RegisteredAccount } from "../../types";
 import { FormGrid, SectionTitle } from "../shared";
 
 type CropLotForm = {
@@ -56,10 +57,12 @@ function formatHarvestDate(value: string | null) {
 
 export function PostCropPage({
   chatThreads,
+  onProfileSaved,
   onSendChatMessage,
   user,
 }: {
   chatThreads: ChatThread[];
+  onProfileSaved: (account: RegisteredAccount) => void;
   onSendChatMessage: (user: AuthUser, text: string, subject: string) => void;
   user: AuthUser | null;
 }) {
@@ -264,6 +267,8 @@ export function PostCropPage({
           ))}
         </div>
       </section>
+
+      <AccountProfilePanel user={user} onProfileSaved={onProfileSaved} />
 
       <ChatWidget
         chatThreads={chatThreads}
