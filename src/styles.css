@@ -740,6 +740,111 @@ button {
   gap: 14px;
 }
 
+.seller-overview {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.seller-overview article {
+  display: grid;
+  gap: 8px;
+  min-height: 120px;
+  padding: 18px;
+  border: 1px solid rgba(24, 48, 40, 0.12);
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 16px 44px rgba(24, 48, 40, 0.08);
+}
+
+.seller-overview svg,
+.backend-status-pill svg {
+  color: #176b47;
+}
+
+.seller-overview span {
+  color: #697d72;
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.seller-overview strong {
+  color: #183028;
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.backend-status-pill {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  padding: 9px 12px;
+  border: 1px solid rgba(23, 107, 71, 0.16);
+  border-radius: 999px;
+  color: #176b47;
+  background: #edf7ee;
+  font-size: 0.84rem;
+  font-weight: 850;
+}
+
+.seller-lots-panel {
+  grid-column: 1 / -1;
+  padding: 20px;
+}
+
+.seller-lot-list {
+  display: grid;
+  gap: 10px;
+}
+
+.seller-lot-list > em {
+  padding: 18px;
+  border-radius: 8px;
+  color: #62766b;
+  background: #f4f7f1;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.seller-lot-item {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(140px, 0.8fr) minmax(150px, 0.8fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 14px;
+  border: 1px solid rgba(24, 48, 40, 0.1);
+  border-radius: 8px;
+  background: #fbfcf8;
+}
+
+.seller-lot-item strong,
+.seller-lot-item span {
+  display: block;
+}
+
+.seller-lot-item strong {
+  color: #183028;
+}
+
+.seller-lot-item span {
+  margin-top: 4px;
+  color: #6b7c73;
+  font-size: 0.84rem;
+}
+
+.seller-lot-item em {
+  justify-self: end;
+  padding: 7px 10px;
+  border-radius: 999px;
+  color: #176b47;
+  background: #e8f3e8;
+  font-style: normal;
+  font-weight: 850;
+}
+
 .auth-layout {
   display: grid;
   min-height: calc(100vh - 72px);
@@ -2121,6 +2226,14 @@ th {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .seller-lot-item {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .seller-lot-item em {
+    justify-self: start;
+  }
+
   .sidebar {
     min-height: auto;
     border-right: 0;
@@ -2249,6 +2362,8 @@ th {
   .workflow-section,
   .trust-section,
   .stats-grid,
+  .seller-overview,
+  .seller-lot-item,
   .form-grid {
     grid-template-columns: 1fr;
   }

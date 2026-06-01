@@ -14,10 +14,12 @@ export function DashboardSection({
   onOpenSection,
   onUpdateRegistration,
   registrations,
+  verificationError,
 }: {
   onOpenSection: (section: AdminSection) => void;
   onUpdateRegistration: (id: string, status: AccountStatus) => void;
   registrations: RegisteredAccount[];
+  verificationError?: string;
 }) {
   return (
     <>
@@ -25,7 +27,7 @@ export function DashboardSection({
       <section className="dashboard-grid">
         <OrdersPanel onOpenSection={onOpenSection} />
         <PayoutPanel onOpenSection={onOpenSection} />
-        <VerificationPanel registrations={registrations} onUpdateRegistration={onUpdateRegistration} />
+        <VerificationPanel registrations={registrations} onUpdateRegistration={onUpdateRegistration} verificationError={verificationError} />
         <SupplyPanel onOpenSection={onOpenSection} />
         <PricePanel />
         <LogisticsPanel />

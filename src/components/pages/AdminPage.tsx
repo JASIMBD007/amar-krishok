@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Bell, LayoutDashboard, Menu, Plus, Search, ShieldCheck, X } from "lucide-react";
+import { ApiRequestError, fetchPendingVerifications, updateBackendVerification } from "../../api/auth";
 import { adminNavItems } from "../../data";
 import { useTranslate } from "../../i18n";
-import type { AccountStatus, AdminSection, ChatThread, RegisteredAccount } from "../../types";
+import type { AccountStatus, AdminSection, AuthUser, ChatThread, RegisteredAccount } from "../../types";
 import {
   ChatSection,
   DashboardSection,
@@ -19,18 +20,54 @@ export function AdminPage({
   onAdminReply,
   onUpdateRegistration,
   registrations,
+  user,
 }: {
   chatThreads: ChatThread[];
   onAdminReply: (threadId: string, text: string) => void;
   onUpdateRegistration: (id: string, status: AccountStatus) => void;
   registrations: RegisteredAccount[];
+  user: AuthUser | null;
 }) {
   const t = useTranslate();
   const [activeAdminSection, setActiveAdminSection] = useState<AdminSection>("dashboard");
   const [adminMenuOpen, setAdminMenuOpen] = useState(false);
+  const [backendRegistrations, setBackendRegistrations] = useState<RegisteredAccount[] | null>(null);
+  const [verificationError, setVerificationError] = useState("");
   const activeNavItem = adminNavItems.find((item) => item.id === activeAdminSection) ?? adminNavItems[0];
   const activeTitle = activeAdminSection === "dashboard" ? "Operations dashboard" : activeNavItem.label;
   const activeEyebrow = activeAdminSection === "dashboard" ? "Sunday, May 24" : activeNavItem.label;
+  const effectiveRegistrations = backendRegistrations ?? registrations;
+
+  useEffect(() => {
+    if (user?.role !== "admin" || !user.accessToken) {
+      return;
+    }
+
+    fetchPendingVerifications(user.accessToken)
+      .then((nextRegistrations) => {
+        setBackendRegistrations(nextRegistrations);
+        setVerificationError("");
+      })
+      .catch((error) => {
+        setVerificationError(error instanceof ApiRequestError ? error.message : "Backend service is unavailable. Please try again.");
+      });
+  }, [user?.accessToken, user?.role]);
+
+  const updateRegistration = (id: string, status: AccountStatus) => {
+    if (!user?.accessToken) {
+      onUpdateRegistration(id, status);
+      return;
+    }
+
+    updateBackendVerification(user.accessToken, id, status)
+      .then(() => {
+        setBackendRegistrations((current) => current?.filter((account) => account.id !== id) ?? null);
+        setVerificationError("");
+      })
+      .catch((error) => {
+        setVerificationError(error instanceof ApiRequestError ? error.message : "Backend service is unavailable. Please try again.");
+      });
+  };
 
   const openAdminSection = (section: AdminSection) => {
     setActiveAdminSection(section);
@@ -64,7 +101,7 @@ export function AdminPage({
       case "supply":
         return <SupplyLotsSection onOpenSection={openAdminSection} />;
       case "farmers":
-        return <FarmersSection registrations={registrations} onUpdateRegistration={onUpdateRegistration} />;
+        return <FarmersSection registrations={effectiveRegistrations} onUpdateRegistration={updateRegistration} verificationError={verificationError} />;
       case "logistics":
         return <LogisticsSection />;
       case "payouts":
@@ -78,8 +115,9 @@ export function AdminPage({
         return (
           <DashboardSection
             onOpenSection={openAdminSection}
-            registrations={registrations}
-            onUpdateRegistration={onUpdateRegistration}
+            registrations={effectiveRegistrations}
+            onUpdateRegistration={updateRegistration}
+            verificationError={verificationError}
           />
         );
     }

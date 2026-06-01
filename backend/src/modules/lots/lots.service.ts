@@ -4,23 +4,45 @@ import { AuthenticatedUser } from "../auth/types/authenticated-user";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateLotDto } from "./dto/create-lot.dto";
 
+const lotInclude = {
+  crop: true,
+  district: true,
+  farmer: {
+    select: {
+      createdAt: true,
+      focus: true,
+      id: true,
+      name: true,
+      organization: true,
+      reviewedAt: true,
+      role: true,
+      status: true,
+      updatedAt: true,
+    },
+  },
+} satisfies Prisma.CropLotInclude;
+
 @Injectable()
 export class LotsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findAll(filters: { crop?: string; district?: string }) {
     return this.prisma.cropLot.findMany({
-      include: {
-        crop: true,
-        district: true,
-        farmer: true,
-      },
+      include: lotInclude,
       orderBy: { createdAt: "desc" },
       where: {
         crop: filters.crop ? { name: { contains: filters.crop, mode: "insensitive" } } : undefined,
         district: filters.district ? { name: filters.district } : undefined,
         status: LotStatus.ACTIVE,
       },
+    });
+  }
+
+  async findMine(user: AuthenticatedUser) {
+    return this.prisma.cropLot.findMany({
+      include: lotInclude,
+      orderBy: { createdAt: "desc" },
+      where: user.role === Role.FARMER ? { farmerId: user.id } : undefined,
     });
   }
 
@@ -56,11 +78,7 @@ export class LotsService {
         quantityKg: new Prisma.Decimal(dto.quantityKg),
         status: LotStatus.ACTIVE,
       },
-      include: {
-        crop: true,
-        district: true,
-        farmer: true,
-      },
+      include: lotInclude,
     });
   }
 }
