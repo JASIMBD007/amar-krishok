@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { Plus, RotateCcw, Save, Trash2 } from "lucide-react";
+import { Plus, Save } from "lucide-react";
 import type { AdminAccountPayload } from "../../../api/auth";
 import { serviceDistricts } from "../../../data";
 import { useTranslate } from "../../../i18n";
@@ -32,31 +32,27 @@ const emptyForm: AccountFormState = {
 
 export function AccountManagementForm({
   editingAccount,
-  onCancelEdit,
   onCreateAccount,
-  onDeleteAccount,
+  onDone,
+  onError,
   onUpdateAccount,
   role,
 }: {
   editingAccount: RegisteredAccount | null;
-  onCancelEdit: () => void;
   onCreateAccount: (payload: AdminAccountPayload) => Promise<void>;
-  onDeleteAccount: (id: string) => Promise<void>;
+  onDone: (message: string) => void;
+  onError: (message: string) => void;
   onUpdateAccount: (id: string, payload: Partial<AdminAccountPayload>) => Promise<void>;
   role: RegistrationRole;
 }) {
   const t = useTranslate();
   const [form, setForm] = useState<AccountFormState>(emptyForm);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isEditing = Boolean(editingAccount);
 
   useEffect(() => {
     if (!editingAccount) {
       setForm(emptyForm);
-      setError("");
-      setSuccess("");
       return;
     }
 
@@ -71,8 +67,6 @@ export function AccountManagementForm({
       phone: editingAccount.phone,
       status: editingAccount.status,
     });
-    setError("");
-    setSuccess("");
   }, [editingAccount]);
 
   const updateField = (field: keyof AccountFormState, value: string) => {
@@ -81,20 +75,18 @@ export function AccountManagementForm({
 
   const submitForm = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setSuccess("");
 
     if (!form.name.trim() || !form.phone.trim() || !form.organization.trim() || !form.district.trim() || !form.address.trim() || !form.identity.trim() || !form.focus.trim()) {
-      setError("Please fill in all account fields.");
+      onError("Please fill in all account fields.");
       return;
     }
 
     if (!isEditing && form.password.length < 4) {
-      setError("Password must be at least 4 characters.");
+      onError("Password must be at least 4 characters.");
       return;
     }
 
     setIsSubmitting(true);
-    setError("");
 
     try {
       if (editingAccount) {
@@ -110,7 +102,7 @@ export function AccountManagementForm({
           role,
           status: form.status,
         });
-        setSuccess("Account updated.");
+        onDone("Account updated.");
       } else {
         await onCreateAccount({
           address: form.address.trim(),
@@ -125,31 +117,10 @@ export function AccountManagementForm({
           status: form.status,
         });
         setForm(emptyForm);
-        setSuccess("Account created.");
+        onDone("Account created.");
       }
     } catch (apiError) {
-      setError(apiError instanceof Error ? apiError.message : "Account action failed.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const deleteAccount = async () => {
-    if (!editingAccount) {
-      return;
-    }
-
-    setIsSubmitting(true);
-    setError("");
-    setSuccess("");
-
-    try {
-      await onDeleteAccount(editingAccount.id);
-      setForm(emptyForm);
-      onCancelEdit();
-      setSuccess("Account deleted.");
-    } catch (apiError) {
-      setError(apiError instanceof Error ? apiError.message : "Account action failed.");
+      onError(apiError instanceof Error ? apiError.message : "Account action failed.");
     } finally {
       setIsSubmitting(false);
     }
@@ -157,19 +128,6 @@ export function AccountManagementForm({
 
   return (
     <form className="account-management-form" onSubmit={submitForm}>
-      <div className="account-management-title">
-        <div>
-          <span>{t(isEditing ? "Edit account" : "Create account")}</span>
-          <strong>{t(role === "buyer" ? "Buyer / customer" : "Seller / farmer")}</strong>
-        </div>
-        {isEditing && (
-          <button className="secondary-button" type="button" onClick={onCancelEdit}>
-            <RotateCcw size={16} />
-            {t("New account")}
-          </button>
-        )}
-      </div>
-
       <FormGrid>
         <label className="input-field">
           <span>{t("Full name")}</span>
@@ -221,19 +179,11 @@ export function AccountManagementForm({
         <span>{t("Crop interest / supply focus")}</span>
         <textarea value={form.focus} onChange={(event) => updateField("focus", event.target.value)} placeholder={t("Tomato, potato, chilli...")} />
       </label>
-      {error && <p className="auth-error">{t(error)}</p>}
-      {success && <p className="auth-notice">{t(success)}</p>}
       <div className="account-management-actions">
         <button className="primary-button" type="submit" disabled={isSubmitting}>
           {isEditing ? <Save size={17} /> : <Plus size={17} />}
           {t(isEditing ? "Update account" : "Create account")}
         </button>
-        {isEditing && (
-          <button className="secondary-button danger-button" type="button" disabled={isSubmitting} onClick={deleteAccount}>
-            <Trash2 size={17} />
-            {t("Delete account")}
-          </button>
-        )}
       </div>
     </form>
   );
