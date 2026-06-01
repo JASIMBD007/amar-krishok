@@ -180,6 +180,7 @@ export const adminPriceSignals: AdminPriceSignal[] = [
 export const adminNavItems: Array<{ id: AdminSection; label: string; icon: typeof LayoutDashboard }> = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { id: "orders", label: "Orders", icon: ShoppingBag },
+  { id: "buyers", label: "Buyers", icon: UsersRound },
   { id: "supply", label: "Supply Lots", icon: Sprout },
   { id: "farmers", label: "Farmers", icon: UsersRound },
   { id: "logistics", label: "Logistics", icon: Truck },

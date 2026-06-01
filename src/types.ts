@@ -1,5 +1,5 @@
 export type View = "home" | "market" | "farmer" | "buyer" | "prices" | "admin";
-export type AdminSection = "dashboard" | "orders" | "supply" | "farmers" | "logistics" | "payouts" | "chat" | "settings";
+export type AdminSection = "dashboard" | "orders" | "buyers" | "supply" | "farmers" | "logistics" | "payouts" | "chat" | "settings";
 export type Language = "en" | "bn";
 export type Role = "admin" | "buyer" | "farmer";
 export type RegistrationRole = "buyer" | "farmer";

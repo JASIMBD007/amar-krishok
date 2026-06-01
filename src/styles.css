@@ -1693,7 +1693,7 @@ th {
 
 .verification-stats {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 8px;
 }
 
@@ -1761,6 +1761,39 @@ th {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
+}
+
+.buyer-directory-item {
+  grid-template-columns: minmax(170px, 1fr) minmax(170px, 1fr) minmax(210px, 1.2fr) auto auto;
+  align-items: center;
+}
+
+.account-status-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: 6px;
+  min-height: 34px;
+  padding: 0 11px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 850;
+  text-transform: capitalize;
+}
+
+.account-status-chip.active {
+  color: #176b47;
+  background: #e1f2e3;
+}
+
+.account-status-chip.pending {
+  color: #81530e;
+  background: #fbecd2;
+}
+
+.account-status-chip.rejected {
+  color: #9b2f1d;
+  background: #f8e3de;
 }
 
 .message-list span {
@@ -2573,7 +2606,8 @@ th {
   }
 
   .verification-stats,
-  .verification-actions {
+  .verification-actions,
+  .buyer-directory-item {
     grid-template-columns: 1fr;
   }
 }

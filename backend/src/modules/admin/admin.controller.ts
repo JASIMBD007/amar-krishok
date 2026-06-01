@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Patch } from "@nestjs/common";
+import { Controller, Get, Param, Patch, Query } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
 import { Role } from "@prisma/client";
 import { Auth } from "../auth/decorators/auth.decorator";
@@ -13,6 +13,11 @@ export class AdminController {
   @Get("verifications")
   pendingVerifications() {
     return this.adminService.pendingVerifications();
+  }
+
+  @Get("accounts")
+  accounts(@Query("role") role?: string, @Query("status") status?: string) {
+    return this.adminService.accounts({ role, status });
   }
 
   @Patch("verifications/:id/approve")
