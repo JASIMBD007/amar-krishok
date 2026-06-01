@@ -1,6 +1,51 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
-import { AccountStatus, Role } from "@prisma/client";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { AccountStatus, Prisma, Role } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
+
+const accountSelect = {
+  address: true,
+  createdAt: true,
+  district: { select: { name: true } },
+  focus: true,
+  id: true,
+  identity: true,
+  name: true,
+  organization: true,
+  phone: true,
+  reviewedAt: true,
+  role: true,
+  status: true,
+  updatedAt: true,
+} satisfies Prisma.UserSelect;
+
+function accountRole(value?: string) {
+  if (!value) {
+    return undefined;
+  }
+
+  if (value === "buyer") {
+    return Role.BUYER;
+  }
+
+  if (value === "farmer") {
+    return Role.FARMER;
+  }
+
+  throw new BadRequestException("Unsupported account role.");
+}
+
+function accountStatus(value?: string) {
+  if (!value) {
+    return undefined;
+  }
+
+  const status = value.toUpperCase();
+  if (status === AccountStatus.PENDING || status === AccountStatus.ACTIVE || status === AccountStatus.REJECTED) {
+    return status;
+  }
+
+  throw new BadRequestException("Unsupported account status.");
+}
 
 @Injectable()
 export class AdminService {
@@ -8,11 +53,25 @@ export class AdminService {
 
   pendingVerifications() {
     return this.prisma.user.findMany({
-      include: { district: true },
       orderBy: { createdAt: "desc" },
+      select: accountSelect,
       where: {
         role: { in: [Role.BUYER, Role.FARMER] },
         status: AccountStatus.PENDING,
+      },
+    });
+  }
+
+  accounts(filters: { role?: string; status?: string }) {
+    const role = accountRole(filters.role);
+    const status = accountStatus(filters.status);
+
+    return this.prisma.user.findMany({
+      orderBy: { createdAt: "desc" },
+      select: accountSelect,
+      where: {
+        role: role ?? { in: [Role.BUYER, Role.FARMER] },
+        status,
       },
     });
   }
@@ -28,6 +87,7 @@ export class AdminService {
         reviewedAt: new Date(),
         status: action === "approve" ? AccountStatus.ACTIVE : AccountStatus.REJECTED,
       },
+      select: accountSelect,
       where: { id },
     });
   }

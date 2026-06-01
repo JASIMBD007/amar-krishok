@@ -224,6 +224,17 @@ export async function fetchPendingVerifications(accessToken: string) {
   return users.map(toRegisteredAccount).filter((account) => account.role === "buyer" || account.role === "farmer");
 }
 
+export async function fetchAdminAccounts(accessToken: string, role?: RegistrationRole) {
+  const params = new URLSearchParams();
+  if (role) {
+    params.set("role", role);
+  }
+
+  const query = params.toString();
+  const users = await apiRequest<ApiUser[]>(`/api/admin/accounts${query ? `?${query}` : ""}`, { accessToken });
+  return users.map(toRegisteredAccount).filter((account) => account.role === "buyer" || account.role === "farmer");
+}
+
 export async function updateBackendVerification(accessToken: string, id: string, status: AccountStatus) {
   const action = status === "active" ? "approve" : "reject";
   const user = await apiRequest<ApiUser>(`/api/admin/verifications/${id}/${action}`, {

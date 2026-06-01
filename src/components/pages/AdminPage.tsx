@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { Bell, LayoutDashboard, Menu, Plus, Search, ShieldCheck, X } from "lucide-react";
-import { ApiRequestError, fetchPendingVerifications, updateBackendVerification } from "../../api/auth";
+import { ApiRequestError, fetchAdminAccounts, updateBackendVerification } from "../../api/auth";
 import { adminNavItems } from "../../data";
 import { useTranslate } from "../../i18n";
 import type { AccountStatus, AdminSection, AuthUser, ChatThread, RegisteredAccount } from "../../types";
 import {
+  BuyersSection,
   ChatSection,
   DashboardSection,
   FarmersSection,
@@ -43,7 +44,7 @@ export function AdminPage({
       return;
     }
 
-    fetchPendingVerifications(user.accessToken)
+    fetchAdminAccounts(user.accessToken)
       .then((nextRegistrations) => {
         setBackendRegistrations(nextRegistrations);
         setVerificationError("");
@@ -98,6 +99,8 @@ export function AdminPage({
     switch (activeAdminSection) {
       case "orders":
         return <OrdersSection onOpenSection={openAdminSection} />;
+      case "buyers":
+        return <BuyersSection registrations={effectiveRegistrations} onUpdateRegistration={updateRegistration} verificationError={verificationError} />;
       case "supply":
         return <SupplyLotsSection onOpenSection={openAdminSection} />;
       case "farmers":
