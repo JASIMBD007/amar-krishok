@@ -66,6 +66,11 @@ export function BuyersSection({
                 <MapPin size={14} />
                 {buyer.district || t("District not added")} · {buyer.focus || t("Demand focus not added")}
               </p>
+              <div className="admin-data-line">
+                <span className="admin-data-chip">{t("Order records")}: {v(buyer.orderCount ?? 0)}</span>
+                <span className="admin-data-chip">{t("Value")}: {v(`৳${Math.round(buyer.orderValue ?? 0).toLocaleString("en-US")}`)}</span>
+                {buyer.latestOrderSummary && <span className="admin-data-chip">{t("Latest order")}: {buyer.latestOrderSummary}</span>}
+              </div>
               <div className={`account-status-chip ${buyer.status}`}>
                 {buyer.status === "active" && <BadgeCheck size={16} />}
                 {buyer.status === "pending" && <Clock3 size={16} />}

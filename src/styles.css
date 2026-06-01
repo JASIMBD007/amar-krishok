@@ -826,7 +826,8 @@ button {
 }
 
 .seller-lots-panel,
-.buyer-dashboard-panel {
+.buyer-dashboard-panel,
+.profile-panel {
   grid-column: 1 / -1;
   padding: 20px;
 }
@@ -934,6 +935,24 @@ button {
   color: #176b47;
   font-style: normal;
   font-weight: 900;
+}
+
+.admin-data-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.admin-data-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 9px;
+  border-radius: 999px;
+  color: #176b47;
+  background: #e8f3e8;
+  font-size: 0.76rem;
+  font-weight: 850;
 }
 
 .auth-layout {

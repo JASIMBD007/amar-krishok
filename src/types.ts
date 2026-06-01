@@ -31,6 +31,14 @@ export type RegisteredAccount = {
   focus: string;
   submittedAt: string;
   reviewedAt?: string;
+  cropLotCount?: number;
+  cropLotQuantityKg?: number;
+  latestLotStatus?: string;
+  latestLotSummary?: string;
+  orderCount?: number;
+  orderValue?: number;
+  latestOrderStatus?: string;
+  latestOrderSummary?: string;
 };
 
 export type CropLot = {

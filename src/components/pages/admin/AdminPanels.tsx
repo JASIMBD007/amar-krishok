@@ -20,12 +20,53 @@ import {
   UsersRound,
   WalletCards,
 } from "lucide-react";
+import type { BackendOrder } from "../../../api/auth";
 import { adminPriceSignals, adminRoutes, dashboardStats, lots, orders } from "../../../data";
 import { useTranslate, useValueText } from "../../../i18n";
 import type { AccountStatus, AdminSection, RegisteredAccount } from "../../../types";
 import { statusClass, TrendIcon } from "../pageHelpers";
 
 type OpenAdminSection = (section: AdminSection) => void;
+type OrderRow = {
+  buyer: string;
+  crop: string;
+  destination: string;
+  eta: string;
+  id: string;
+  quantity: string;
+  status: string;
+  value: string;
+};
+
+function numericValue(value: string | number) {
+  const numberValue = Number(value);
+  return Number.isFinite(numberValue) ? numberValue : 0;
+}
+
+function formatMoney(value: string | number) {
+  return `৳${Math.round(numericValue(value)).toLocaleString("en-US")}`;
+}
+
+function backendQuantity(order: BackendOrder) {
+  return order.items.reduce((total, item) => total + numericValue(item.quantityKg), 0);
+}
+
+function formatOrderQuantity(value: number) {
+  if (value >= 1000) {
+    return `${(value / 1000).toFixed(value % 1000 === 0 ? 0 : 1)} tons`;
+  }
+
+  return `${value.toLocaleString("en-US")} kg`;
+}
+
+function formatBackendStatus(status: string) {
+  const label = status.toLowerCase().replaceAll("_", " ");
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
+function backendStatusClass(status: string) {
+  return status.toLowerCase().replaceAll("_", "-");
+}
 
 export function StatsPanel() {
   const t = useTranslate();
@@ -47,9 +88,40 @@ export function StatsPanel() {
   );
 }
 
-export function OrdersPanel({ onOpenSection, wide = false }: { onOpenSection: OpenAdminSection; wide?: boolean }) {
+export function OrdersPanel({
+  backendOrders,
+  onOpenSection,
+  orderError,
+  wide = false,
+}: {
+  backendOrders?: BackendOrder[] | null;
+  onOpenSection: OpenAdminSection;
+  orderError?: string;
+  wide?: boolean;
+}) {
   const t = useTranslate();
   const v = useValueText();
+  const displayOrders: OrderRow[] = backendOrders?.length
+    ? backendOrders.map((order) => ({
+        buyer: order.buyer.organization || order.buyer.name,
+        crop: order.items.map((item) => item.crop.name).join(", ") || "Crop request",
+        destination: order.deliveryAddress,
+        eta: order.targetDate ? new Intl.DateTimeFormat("en", { day: "numeric", month: "short" }).format(new Date(order.targetDate)) : "Target date pending",
+        id: order.id,
+        quantity: formatOrderQuantity(backendQuantity(order)),
+        status: formatBackendStatus(order.status),
+        value: formatMoney(order.totalValue),
+      }))
+    : orders.map((order) => ({
+        buyer: order.buyer,
+        crop: order.crop,
+        destination: order.destination,
+        eta: order.status === "Matching" ? "3 farmer groups" : "Today",
+        id: order.id,
+        quantity: order.quantity,
+        status: order.status,
+        value: order.value,
+      }));
 
   return (
     <section className={`panel orders-panel ${wide ? "admin-wide-panel" : ""}`} aria-labelledby="orders-heading">
@@ -63,6 +135,7 @@ export function OrdersPanel({ onOpenSection, wide = false }: { onOpenSection: Op
           <ChevronDown size={17} />
         </button>
       </div>
+      {orderError && <p className="auth-error">{t(orderError)}</p>}
 
       <div className="table-wrap">
         <table>
@@ -78,7 +151,7 @@ export function OrdersPanel({ onOpenSection, wide = false }: { onOpenSection: Op
             </tr>
           </thead>
           <tbody>
-            {orders.map((order) => (
+            {displayOrders.map((order) => (
               <tr key={order.id}>
                 <td>
                   <strong>{order.id}</strong>
@@ -89,9 +162,9 @@ export function OrdersPanel({ onOpenSection, wide = false }: { onOpenSection: Op
                 <td>{t(order.quantity)}</td>
                 <td>{v(order.value)}</td>
                 <td>
-                  <em className={`status ${statusClass(order.status)}`}>{t(order.status)}</em>
+                  <em className={`status ${backendOrders?.length ? backendStatusClass(order.status) : statusClass(order.status as never)}`}>{t(order.status)}</em>
                 </td>
-                <td>{order.status === "Matching" ? t("3 farmer groups") : t("Today")}</td>
+                <td>{t(order.eta)}</td>
               </tr>
             ))}
           </tbody>
@@ -420,8 +493,22 @@ export function MessagesPanel() {
   );
 }
 
-export function FarmerDirectoryPanel() {
+function formatQuantityKg(value?: number) {
+  if (!value) {
+    return "0 kg";
+  }
+
+  if (value >= 1000) {
+    return `${(value / 1000).toFixed(value % 1000 === 0 ? 0 : 1)} tons`;
+  }
+
+  return `${value.toLocaleString("en-US")} kg`;
+}
+
+export function FarmerDirectoryPanel({ registrations = [] }: { registrations?: RegisteredAccount[] }) {
   const t = useTranslate();
+  const v = useValueText();
+  const farmers = registrations.filter((account) => account.role === "farmer");
 
   return (
     <section className="panel verification-panel admin-wide-panel" aria-labelledby="farmer-directory-heading">
@@ -433,7 +520,28 @@ export function FarmerDirectoryPanel() {
         <UsersRound size={22} />
       </div>
       <div className="verification-list">
-        {lots.map((lot) => (
+        {farmers.length > 0 ? farmers.map((farmer) => (
+          <article className="verification-item farmer-directory-item" key={farmer.id}>
+            <div>
+              <strong>{farmer.name}</strong>
+              <span>{t("Seller / Farmer")}</span>
+            </div>
+            <div>
+              <span>{farmer.organization || t("Business not added")}</span>
+              <small>{farmer.phone}</small>
+            </div>
+            <p>
+              <Sprout size={14} />
+              {farmer.district || t("District not added")} · {farmer.focus || t("Supply focus")}
+            </p>
+            <div className="admin-data-line">
+              <span className="admin-data-chip">{t("Lot records")}: {v(farmer.cropLotCount ?? 0)}</span>
+              <span className="admin-data-chip">{t("Quantity")}: {t(formatQuantityKg(farmer.cropLotQuantityKg))}</span>
+              {farmer.latestLotSummary && <span className="admin-data-chip">{t("Latest lot")}: {farmer.latestLotSummary}</span>}
+            </div>
+            <div className={`account-status-chip ${farmer.status}`}>{t(farmer.status)}</div>
+          </article>
+        )) : lots.map((lot) => (
           <article className="verification-item farmer-directory-item" key={`${lot.farmer}-${lot.crop}`}>
             <div>
               <strong>{t(lot.farmer)}</strong>

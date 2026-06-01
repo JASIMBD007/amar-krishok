@@ -13,7 +13,7 @@ export function FarmersSection({
   return (
     <section className="dashboard-grid admin-focused-grid">
       <VerificationPanel registrations={registrations} onUpdateRegistration={onUpdateRegistration} verificationError={verificationError} wide />
-      <FarmerDirectoryPanel />
+      <FarmerDirectoryPanel registrations={registrations} />
     </section>
   );
 }

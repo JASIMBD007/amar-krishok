@@ -17,7 +17,7 @@ import { LanguageContext, translate } from "./i18n";
 import { lots, roleOptions, routeByView, views } from "./data";
 import { AdminPage, HomePage, LoginPage, MarketplacePage, OrderPage, PostCropPage, PricesPage, RegisterPage } from "./components/pages";
 import { useAppStore } from "./store/useAppStore";
-import type { AuthUser, Role, View } from "./types";
+import type { AuthUser, RegisteredAccount, Role, View } from "./types";
 
 export default function App() {
   const navigate = useNavigate();
@@ -99,6 +99,14 @@ export default function App() {
   };
 
   const handleRegister = addRegistration;
+
+  const handleProfileSaved = (account: RegisteredAccount) => {
+    if (!user || user.accountId !== account.id) {
+      return;
+    }
+
+    setUser({ ...user, name: account.name });
+  };
 
   const handleLogout = () => {
     setUser(null);
@@ -250,7 +258,7 @@ export default function App() {
           path="/farmer"
           element={
             <ProtectedRoute allowedRoles={["farmer", "admin"]} user={user} t={t}>
-              <PostCropPage chatThreads={chatThreads} user={user} onSendChatMessage={sendUserChatMessage} />
+              <PostCropPage chatThreads={chatThreads} user={user} onProfileSaved={handleProfileSaved} onSendChatMessage={sendUserChatMessage} />
             </ProtectedRoute>
           }
         />
@@ -258,7 +266,7 @@ export default function App() {
           path="/buyer"
           element={
             <ProtectedRoute allowedRoles={["buyer", "admin"]} user={user} t={t}>
-              <OrderPage chatThreads={chatThreads} user={user} onSendChatMessage={sendUserChatMessage} />
+              <OrderPage chatThreads={chatThreads} user={user} onProfileSaved={handleProfileSaved} onSendChatMessage={sendUserChatMessage} />
             </ProtectedRoute>
           }
         />

@@ -22,6 +22,27 @@ type ApiUser = {
   district?: {
     name: string;
   } | null;
+  _count?: {
+    cropLots?: number;
+    orders?: number;
+  };
+  cropLots?: Array<{
+    crop: { name: string };
+    district: { name: string };
+    grade: string;
+    id: string;
+    pricePerKg: string | number;
+    quantityKg: string | number;
+    status: string;
+  }>;
+  orders?: Array<{
+    deliveryAddress: string;
+    district: { name: string };
+    id: string;
+    items: Array<{ crop: { name: string }; quantityKg: string | number }>;
+    status: string;
+    totalValue: string | number;
+  }>;
 };
 
 type LoginResponse = {
@@ -96,6 +117,15 @@ export type CreateOrderPayload = {
   targetDate?: string;
 };
 
+export type UpdateProfilePayload = {
+  address: string;
+  district: string;
+  focus: string;
+  identity: string;
+  name: string;
+  organization: string;
+};
+
 type RegisterAccountPayload = {
   address: string;
   district: string;
@@ -119,6 +149,11 @@ const apiStatusToAccountStatus: Record<ApiAccountStatus, AccountStatus> = {
   PENDING: "pending",
   REJECTED: "rejected",
 };
+
+function numericValue(value: string | number | undefined) {
+  const numberValue = Number(value);
+  return Number.isFinite(numberValue) ? numberValue : 0;
+}
 
 export class AuthRequestError extends Error {
   constructor(message: string) {
@@ -182,13 +217,23 @@ function toAuthUser(data: LoginResponse): AuthUser {
 }
 
 export function toRegisteredAccount(user: ApiUser): RegisteredAccount {
+  const latestOrder = user.orders?.[0];
+  const latestLot = user.cropLots?.[0];
   return {
     address: user.address ?? "",
+    cropLotCount: user._count?.cropLots ?? user.cropLots?.length ?? 0,
+    cropLotQuantityKg: user.cropLots?.reduce((total, lot) => total + numericValue(lot.quantityKg), 0) ?? 0,
     district: user.district?.name ?? "",
     focus: user.focus ?? "",
     id: user.id,
     identity: user.identity ?? "",
+    latestLotStatus: latestLot?.status,
+    latestLotSummary: latestLot ? `${latestLot.crop.name} · ${latestLot.district.name}` : undefined,
+    latestOrderStatus: latestOrder?.status,
+    latestOrderSummary: latestOrder ? `${latestOrder.id} · ${latestOrder.deliveryAddress}` : undefined,
     name: user.name,
+    orderCount: user._count?.orders ?? user.orders?.length ?? 0,
+    orderValue: user.orders?.reduce((total, order) => total + numericValue(order.totalValue), 0) ?? 0,
     organization: user.organization ?? "",
     password: "",
     phone: user.phone,
@@ -265,6 +310,18 @@ export function createBuyerOrder(accessToken: string, payload: CreateOrderPayloa
     body: JSON.stringify(payload),
     method: "POST",
   });
+}
+
+export async function fetchMyProfile(accessToken: string) {
+  return toRegisteredAccount(await apiRequest<ApiUser>("/api/account/me", { accessToken }));
+}
+
+export async function updateMyProfile(accessToken: string, payload: UpdateProfilePayload) {
+  return toRegisteredAccount(await apiRequest<ApiUser>("/api/account/me", {
+    accessToken,
+    body: JSON.stringify(payload),
+    method: "PATCH",
+  }));
 }
 
 export async function fetchPendingVerifications(accessToken: string) {

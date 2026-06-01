@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Bell, LayoutDashboard, Menu, Plus, Search, ShieldCheck, X } from "lucide-react";
-import { ApiRequestError, fetchAdminAccounts, updateBackendVerification } from "../../api/auth";
+import { ApiRequestError, fetchAdminAccounts, fetchMyOrders, updateBackendVerification, type BackendOrder } from "../../api/auth";
 import { adminNavItems } from "../../data";
 import { useTranslate } from "../../i18n";
 import type { AccountStatus, AdminSection, AuthUser, ChatThread, RegisteredAccount } from "../../types";
@@ -32,7 +32,9 @@ export function AdminPage({
   const t = useTranslate();
   const [activeAdminSection, setActiveAdminSection] = useState<AdminSection>("dashboard");
   const [adminMenuOpen, setAdminMenuOpen] = useState(false);
+  const [backendOrders, setBackendOrders] = useState<BackendOrder[] | null>(null);
   const [backendRegistrations, setBackendRegistrations] = useState<RegisteredAccount[] | null>(null);
+  const [orderError, setOrderError] = useState("");
   const [verificationError, setVerificationError] = useState("");
   const activeNavItem = adminNavItems.find((item) => item.id === activeAdminSection) ?? adminNavItems[0];
   const activeTitle = activeAdminSection === "dashboard" ? "Operations dashboard" : activeNavItem.label;
@@ -44,13 +46,17 @@ export function AdminPage({
       return;
     }
 
-    fetchAdminAccounts(user.accessToken)
-      .then((nextRegistrations) => {
+    Promise.all([fetchAdminAccounts(user.accessToken), fetchMyOrders(user.accessToken)])
+      .then(([nextRegistrations, nextOrders]) => {
         setBackendRegistrations(nextRegistrations);
+        setBackendOrders(nextOrders);
+        setOrderError("");
         setVerificationError("");
       })
       .catch((error) => {
-        setVerificationError(error instanceof ApiRequestError ? error.message : "Backend service is unavailable. Please try again.");
+        const message = error instanceof ApiRequestError ? error.message : "Backend service is unavailable. Please try again.";
+        setOrderError(message);
+        setVerificationError(message);
       });
   }, [user?.accessToken, user?.role]);
 
@@ -98,7 +104,7 @@ export function AdminPage({
   const renderActiveSection = () => {
     switch (activeAdminSection) {
       case "orders":
-        return <OrdersSection onOpenSection={openAdminSection} />;
+        return <OrdersSection backendOrders={backendOrders} onOpenSection={openAdminSection} orderError={orderError} />;
       case "buyers":
         return <BuyersSection registrations={effectiveRegistrations} onUpdateRegistration={updateRegistration} verificationError={verificationError} />;
       case "supply":
@@ -118,6 +124,8 @@ export function AdminPage({
         return (
           <DashboardSection
             onOpenSection={openAdminSection}
+            backendOrders={backendOrders}
+            orderError={orderError}
             registrations={effectiveRegistrations}
             onUpdateRegistration={updateRegistration}
             verificationError={verificationError}

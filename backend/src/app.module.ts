@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
+import { AccountModule } from "./modules/account/account.module";
 import { AdminModule } from "./modules/admin/admin.module";
 import { AuthModule } from "./modules/auth/auth.module";
 import { ChatModule } from "./modules/chat/chat.module";
@@ -15,6 +16,7 @@ import { PrismaModule } from "./modules/prisma/prisma.module";
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
     HealthModule,
+    AccountModule,
     AuthModule,
     AdminModule,
     DistrictsModule,
