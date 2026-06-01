@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { ChatStatus, Role } from "@prisma/client";
+import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { ApiChatRole, CreateChatMessageDto, CreateChatThreadDto } from "./dto/chat.dto";
 
@@ -16,7 +17,10 @@ function toPrismaRole(role: ApiChatRole) {
 
 @Injectable()
 export class ChatService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly notifications: NotificationsService,
+    private readonly prisma: PrismaService,
+  ) {}
 
   findThreads() {
     return this.prisma.chatThread.findMany({
@@ -25,8 +29,8 @@ export class ChatService {
     });
   }
 
-  createThread(dto: CreateChatThreadDto) {
-    return this.prisma.chatThread.create({
+  async createThread(dto: CreateChatThreadDto) {
+    const thread = await this.prisma.chatThread.create({
       data: {
         messages: {
           create: {
@@ -45,6 +49,13 @@ export class ChatService {
       },
       include: { messages: true },
     });
+
+    await this.notifications.notifyAdmins({
+      body: `${dto.participantName}: ${dto.message}`,
+      title: "New chat message",
+    });
+
+    return thread;
   }
 
   async createMessage(threadId: string, dto: CreateChatMessageDto) {
@@ -53,7 +64,7 @@ export class ChatService {
       throw new NotFoundException("Chat thread not found.");
     }
 
-    return this.prisma.chatThread.update({
+    const updatedThread = await this.prisma.chatThread.update({
       data: {
         messages: {
           create: {
@@ -68,5 +79,14 @@ export class ChatService {
       include: { messages: { orderBy: { createdAt: "asc" } } },
       where: { id: threadId },
     });
+
+    if (dto.senderRole !== "admin") {
+      await this.notifications.notifyAdmins({
+        body: `${dto.senderName}: ${dto.text}`,
+        title: "New chat message",
+      });
+    }
+
+    return updatedThread;
   }
 }

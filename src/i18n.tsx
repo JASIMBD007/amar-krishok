@@ -29,6 +29,8 @@ const bn: Record<string, string> = {
   "Logistics queue is getting busy": "লজিস্টিকস চাপ বাড়ছে",
   "Order sync issue": "অর্ডার সিঙ্ক সমস্যা",
   "Account sync issue": "অ্যাকাউন্ট সিঙ্ক সমস্যা",
+  "Notification sync issue": "নোটিফিকেশন সিঙ্ক সমস্যা",
+  "New supply lot posted": "নতুন ফসলের লট পোস্ট হয়েছে",
   "Backend service": "ব্যাকএন্ড সার্ভিস",
   "Check delivery proof, buyer confirmation, and farmer payout release.": "ডেলিভারি প্রমাণ, ক্রেতার নিশ্চিতকরণ এবং কৃষকের টাকা ছাড় দেখুন।",
   "Review pickup windows before dispatch timing slips.": "ডিসপ্যাচ দেরি হওয়ার আগে পিকআপ সময়গুলো দেখে নিন।",

@@ -2,6 +2,8 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from "@nestj
 import { ApiTags } from "@nestjs/swagger";
 import { Role } from "@prisma/client";
 import { Auth } from "../auth/decorators/auth.decorator";
+import { CurrentUser } from "../auth/decorators/current-user.decorator";
+import { AuthenticatedUser } from "../auth/types/authenticated-user";
 import { AdminService } from "./admin.service";
 import { AdminCreateAccountDto, AdminUpdateAccountDto } from "./dto/account-management.dto";
 
@@ -14,6 +16,21 @@ export class AdminController {
   @Get("verifications")
   pendingVerifications() {
     return this.adminService.pendingVerifications();
+  }
+
+  @Get("notifications")
+  notifications(@CurrentUser() user: AuthenticatedUser) {
+    return this.adminService.notifications(user.id);
+  }
+
+  @Patch("notifications/:id/read")
+  markNotificationRead(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string) {
+    return this.adminService.markNotificationRead(user.id, id);
+  }
+
+  @Patch("notifications/read-all")
+  markAllNotificationsRead(@CurrentUser() user: AuthenticatedUser) {
+    return this.adminService.markAllNotificationsRead(user.id);
   }
 
   @Get("accounts")

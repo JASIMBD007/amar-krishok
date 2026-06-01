@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { OrderStatus, Prisma, Role } from "@prisma/client";
 import { AuthenticatedUser } from "../auth/types/authenticated-user";
+import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateOrderDto } from "./dto/create-order.dto";
 
@@ -28,7 +29,10 @@ const orderInclude = {
 
 @Injectable()
 export class OrdersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly notifications: NotificationsService,
+    private readonly prisma: PrismaService,
+  ) {}
 
   findAll(filters: { buyerId?: string }, user: AuthenticatedUser) {
     return this.prisma.order.findMany({
@@ -69,7 +73,7 @@ export class OrdersService {
     );
     const totalValue = dto.items.reduce((sum, item) => sum + item.quantityKg * item.offeredPricePerKg, 0);
 
-    return this.prisma.order.create({
+    const order = await this.prisma.order.create({
       data: {
         buyerId,
         deliveryAddress: dto.deliveryAddress,
@@ -82,5 +86,12 @@ export class OrdersService {
       },
       include: orderInclude,
     });
+
+    await this.notifications.notifyAdmins({
+      body: `${order.buyer.name} · ${order.items.map((item) => item.crop.name).join(", ")} · ${order.district.name}`,
+      title: "Order request needs review",
+    });
+
+    return order;
   }
 }

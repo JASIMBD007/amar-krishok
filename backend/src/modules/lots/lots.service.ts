@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { LotStatus, Prisma, Role } from "@prisma/client";
 import { AuthenticatedUser } from "../auth/types/authenticated-user";
+import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateLotDto } from "./dto/create-lot.dto";
 
@@ -24,7 +25,10 @@ const lotInclude = {
 
 @Injectable()
 export class LotsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly notifications: NotificationsService,
+    private readonly prisma: PrismaService,
+  ) {}
 
   async findAll(filters: { crop?: string; district?: string }) {
     return this.prisma.cropLot.findMany({
@@ -65,7 +69,7 @@ export class LotsService {
       }),
     ]);
 
-    return this.prisma.cropLot.create({
+    const lot = await this.prisma.cropLot.create({
       data: {
         cropId: crop.id,
         districtId: district.id,
@@ -80,5 +84,12 @@ export class LotsService {
       },
       include: lotInclude,
     });
+
+    await this.notifications.notifyAdmins({
+      body: `${lot.farmer.name} · ${lot.crop.name} · ${lot.district.name}`,
+      title: "New supply lot posted",
+    });
+
+    return lot;
   }
 }

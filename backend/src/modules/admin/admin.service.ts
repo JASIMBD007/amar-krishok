@@ -1,6 +1,7 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { AccountStatus, Prisma, Role } from "@prisma/client";
 import { hash } from "bcryptjs";
+import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { AdminCreateAccountDto, AdminUpdateAccountDto } from "./dto/account-management.dto";
 
@@ -77,7 +78,10 @@ function accountStatus(value?: string) {
 
 @Injectable()
 export class AdminService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly notificationsService: NotificationsService,
+    private readonly prisma: PrismaService,
+  ) {}
 
   pendingVerifications() {
     return this.prisma.user.findMany({
@@ -88,6 +92,18 @@ export class AdminService {
         status: AccountStatus.PENDING,
       },
     });
+  }
+
+  notifications(userId: string) {
+    return this.notificationsService.listForUser(userId);
+  }
+
+  markNotificationRead(userId: string, id: string) {
+    return this.notificationsService.markRead(userId, id);
+  }
+
+  markAllNotificationsRead(userId: string) {
+    return this.notificationsService.markAllRead(userId);
   }
 
   accounts(filters: { role?: string; status?: string }) {

@@ -1,17 +1,21 @@
-import { Bell, CheckCircle2, MessageSquareText, ServerCrash, ShoppingBag, Truck, UserRoundCheck, WalletCards } from "lucide-react";
+import { Bell, CheckCircle2, MessageSquareText, ServerCrash, ShoppingBag, Sprout, Truck, UserRoundCheck, WalletCards } from "lucide-react";
 import { useTranslate, useValueText } from "../../../i18n";
 import type { AdminSection } from "../../../types";
 
 export type AdminNotificationTone = "info" | "success" | "urgent" | "warning";
 
+export type AdminNotificationType = "account" | "chat" | "logistics" | "order" | "payout" | "supply" | "system";
+
 export type AdminNotification = {
   body: string;
+  createdAt?: string;
   id: string;
   meta: string;
+  readAt?: string | null;
   section: AdminSection;
   title: string;
   tone: AdminNotificationTone;
-  type: "account" | "chat" | "logistics" | "order" | "payout" | "system";
+  type: AdminNotificationType;
 };
 
 const notificationIcons = {
@@ -20,6 +24,7 @@ const notificationIcons = {
   logistics: Truck,
   order: ShoppingBag,
   payout: WalletCards,
+  supply: Sprout,
   system: ServerCrash,
 };
 
@@ -40,7 +45,7 @@ export function AdminNotifications({
 }) {
   const t = useTranslate();
   const v = useValueText();
-  const unreadCount = notifications.filter((notification) => !reviewedIds.includes(notification.id)).length;
+  const unreadCount = notifications.filter((notification) => !notification.readAt && !reviewedIds.includes(notification.id)).length;
 
   return (
     <div className="notification-shell">
@@ -66,7 +71,7 @@ export function AdminNotifications({
             {notifications.length === 0 && <em>{t("No admin notifications right now")}</em>}
             {notifications.map((notification) => {
               const Icon = notificationIcons[notification.type];
-              const isReviewed = reviewedIds.includes(notification.id);
+              const isReviewed = Boolean(notification.readAt) || reviewedIds.includes(notification.id);
 
               return (
                 <button className={`notification-item ${notification.tone} ${isReviewed ? "reviewed" : ""}`} key={notification.id} type="button" onClick={() => onOpenNotification(notification)}>
