@@ -12,6 +12,7 @@ import {
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { Seo } from "./components/Seo";
 import { FloatingSupportChat } from "./components/chat/FloatingSupportChat";
+import { roleCanOpenPath } from "./components/pages/pageHelpers";
 import { LanguageContext, translate } from "./i18n";
 import { lots, roleOptions, routeByView, views } from "./data";
 import { AdminPage, HomePage, LoginPage, MarketplacePage, OrderPage, PostCropPage, PricesPage, RegisterPage } from "./components/pages";
@@ -80,7 +81,14 @@ export default function App() {
   };
 
   const chooseRole = (role: Role, targetView: View) => {
-    navigate(`/login?role=${role}&next=${encodeURIComponent(routeByView[targetView])}`);
+    const targetPath = routeByView[targetView];
+    if (user && roleCanOpenPath(user.role, targetPath)) {
+      navigate(targetPath);
+      closeHeaderMenus();
+      return;
+    }
+
+    navigate(`/login?role=${role}&next=${encodeURIComponent(targetPath)}`);
     closeHeaderMenus();
   };
 
