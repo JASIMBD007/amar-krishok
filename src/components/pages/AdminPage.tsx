@@ -4,11 +4,15 @@ import {
   ApiRequestError,
   createAdminAccount,
   deleteAdminAccount,
+  fetchAdminNotifications,
   fetchAdminAccounts,
   fetchMyOrders,
+  markAdminNotificationRead,
+  markAllAdminNotificationsRead,
   updateAdminAccount,
   updateBackendVerification,
   type AdminAccountPayload,
+  type BackendAdminNotification,
   type BackendOrder,
 } from "../../api/auth";
 import { adminNavItems } from "../../data";
@@ -25,7 +29,36 @@ import {
   SettingsSection,
   SupplyLotsSection,
 } from "./admin";
-import { AdminNotifications, type AdminNotification } from "./admin/AdminNotifications";
+import { AdminNotifications, type AdminNotification, type AdminNotificationTone, type AdminNotificationType } from "./admin/AdminNotifications";
+
+const notificationTones: AdminNotificationTone[] = ["info", "success", "urgent", "warning"];
+const notificationTypes: AdminNotificationType[] = ["account", "chat", "logistics", "order", "payout", "supply", "system"];
+
+function isAdminSection(value: string): value is AdminSection {
+  return adminNavItems.some((item) => item.id === value);
+}
+
+function isNotificationTone(value: string): value is AdminNotificationTone {
+  return notificationTones.includes(value as AdminNotificationTone);
+}
+
+function isNotificationType(value: string): value is AdminNotificationType {
+  return notificationTypes.includes(value as AdminNotificationType);
+}
+
+function toAdminNotification(notification: BackendAdminNotification): AdminNotification {
+  return {
+    body: notification.body,
+    createdAt: notification.createdAt,
+    id: notification.id,
+    meta: notification.meta,
+    readAt: notification.readAt,
+    section: isAdminSection(notification.section) ? notification.section : "settings",
+    title: notification.title,
+    tone: isNotificationTone(notification.tone) ? notification.tone : "info",
+    type: isNotificationType(notification.type) ? notification.type : "system",
+  };
+}
 
 function getLatestParticipantMessage(thread: ChatThread) {
   return [...thread.messages].reverse().find((message) => message.senderRole !== "admin");
@@ -62,15 +95,29 @@ function makeAdminNotifications({
   orders,
   orderError,
   registrations,
+  notificationError,
   verificationError,
 }: {
   chatThreads: ChatThread[];
   orders: BackendOrder[] | null;
+  notificationError: string;
   orderError: string;
   registrations: RegisteredAccount[];
   verificationError: string;
 }) {
   const notifications: AdminNotification[] = [];
+
+  if (notificationError) {
+    notifications.push({
+      body: notificationError,
+      id: `system-notifications-${notificationError}`,
+      meta: "Backend service",
+      section: "settings",
+      title: "Notification sync issue",
+      tone: "urgent",
+      type: "system",
+    });
+  }
 
   if (orderError) {
     notifications.push({
@@ -195,8 +242,10 @@ export function AdminPage({
   const [adminMenuOpen, setAdminMenuOpen] = useState(false);
   const [backendOrders, setBackendOrders] = useState<BackendOrder[] | null>(null);
   const [backendRegistrations, setBackendRegistrations] = useState<RegisteredAccount[] | null>(null);
+  const [backendNotifications, setBackendNotifications] = useState<AdminNotification[] | null>(null);
   const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
   const [reviewedNotificationIds, setReviewedNotificationIds] = useState<string[]>([]);
+  const [notificationError, setNotificationError] = useState("");
   const [orderError, setOrderError] = useState("");
   const [verificationError, setVerificationError] = useState("");
   const activeNavItem = adminNavItems.find((item) => item.id === activeAdminSection) ?? adminNavItems[0];
@@ -207,16 +256,19 @@ export function AdminPage({
     () =>
       makeAdminNotifications({
         chatThreads,
+        notificationError,
         orders: backendOrders,
         orderError,
         registrations: effectiveRegistrations,
         verificationError,
       }),
-    [backendOrders, chatThreads, effectiveRegistrations, orderError, verificationError],
+    [backendOrders, chatThreads, effectiveRegistrations, notificationError, orderError, verificationError],
   );
+  const activeNotifications = backendNotifications ?? adminNotifications;
 
   useEffect(() => {
     if (user?.role !== "admin" || !user.accessToken) {
+      setBackendNotifications(null);
       return;
     }
 
@@ -231,6 +283,16 @@ export function AdminPage({
         const message = error instanceof ApiRequestError ? error.message : "Backend service is unavailable. Please try again.";
         setOrderError(message);
         setVerificationError(message);
+      });
+
+    fetchAdminNotifications(user.accessToken)
+      .then((notifications) => {
+        setBackendNotifications(notifications.map(toAdminNotification));
+        setNotificationError("");
+      })
+      .catch((error) => {
+        setBackendNotifications(null);
+        setNotificationError(error instanceof ApiRequestError ? error.message : "Backend service is unavailable. Please try again.");
       });
   }, [user?.accessToken, user?.role]);
 
@@ -288,12 +350,40 @@ export function AdminPage({
 
   const openNotification = (notification: AdminNotification) => {
     setReviewedNotificationIds((current) => (current.includes(notification.id) ? current : [...current, notification.id]));
+
+    if (user?.accessToken && backendNotifications?.some((item) => item.id === notification.id) && !notification.readAt) {
+      const optimisticReadAt = new Date().toISOString();
+      setBackendNotifications((current) =>
+        current?.map((item) => (item.id === notification.id ? { ...item, readAt: optimisticReadAt } : item)) ?? current,
+      );
+      markAdminNotificationRead(user.accessToken, notification.id)
+        .then((updatedNotification) => {
+          setBackendNotifications((current) =>
+            current?.map((item) => (item.id === notification.id ? toAdminNotification(updatedNotification) : item)) ?? current,
+          );
+          setNotificationError("");
+        })
+        .catch((error) => {
+          setNotificationError(error instanceof ApiRequestError ? error.message : "Backend service is unavailable. Please try again.");
+        });
+    }
+
     setNotificationPanelOpen(false);
     openAdminSection(notification.section);
   };
 
   const markAllNotificationsReviewed = () => {
-    setReviewedNotificationIds((current) => Array.from(new Set([...current, ...adminNotifications.map((notification) => notification.id)])));
+    setReviewedNotificationIds((current) => Array.from(new Set([...current, ...activeNotifications.map((notification) => notification.id)])));
+
+    if (user?.accessToken && backendNotifications) {
+      const optimisticReadAt = new Date().toISOString();
+      setBackendNotifications((current) => current?.map((notification) => ({ ...notification, readAt: notification.readAt ?? optimisticReadAt })) ?? current);
+      markAllAdminNotificationsRead(user.accessToken)
+        .then(() => setNotificationError(""))
+        .catch((error) => {
+          setNotificationError(error instanceof ApiRequestError ? error.message : "Backend service is unavailable. Please try again.");
+        });
+    }
   };
 
   const renderAdminNav = (className = "side-nav") => (
@@ -410,7 +500,7 @@ export function AdminPage({
               <input value={t("Search order, farmer, district...")} readOnly aria-label={t("Search dashboard")} />
             </label>
             <AdminNotifications
-              notifications={adminNotifications}
+              notifications={activeNotifications}
               onMarkAllReviewed={markAllNotificationsReviewed}
               onOpenNotification={openNotification}
               onToggle={() => setNotificationPanelOpen((value) => !value)}

@@ -3,6 +3,7 @@ import { ConfigService } from "@nestjs/config";
 import { AccountStatus, Role, User } from "@prisma/client";
 import { compare, hash } from "bcryptjs";
 import { sign } from "jsonwebtoken";
+import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { getAdminLoginName } from "./admin-login-name";
 import { LoginDto, RegisterAccountDto } from "./dto/register-account.dto";
@@ -30,6 +31,7 @@ function normalizeLoginName(name: string) {
 export class AuthService {
   constructor(
     private readonly config: ConfigService,
+    private readonly notifications: NotificationsService,
     private readonly prisma: PrismaService,
   ) {}
 
@@ -110,6 +112,11 @@ export class AuthService {
         buyerProfile: role === Role.BUYER ? { create: { buyerType: dto.buyerType } } : undefined,
         farmerProfile: role === Role.FARMER ? { create: { farmSize: dto.farmSize } } : undefined,
       },
+    });
+
+    await this.notifications.notifyAdmins({
+      body: `${user.name} · ${dto.district || dto.organization || dto.phone}`,
+      title: role === Role.BUYER ? "Buyer verification request" : "Farmer verification request",
     });
 
     return {

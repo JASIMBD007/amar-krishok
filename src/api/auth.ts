@@ -133,6 +133,18 @@ export type AdminAccountPayload = UpdateProfilePayload & {
   status: AccountStatus;
 };
 
+export type BackendAdminNotification = {
+  body: string;
+  createdAt: string;
+  id: string;
+  meta: string;
+  readAt: string | null;
+  section: string;
+  title: string;
+  tone: string;
+  type: string;
+};
+
 type RegisterAccountPayload = {
   address: string;
   district: string;
@@ -345,6 +357,24 @@ export async function fetchAdminAccounts(accessToken: string, role?: Registratio
   const query = params.toString();
   const users = await apiRequest<ApiUser[]>(`/api/admin/accounts${query ? `?${query}` : ""}`, { accessToken });
   return users.map(toRegisteredAccount).filter((account) => account.role === "buyer" || account.role === "farmer");
+}
+
+export function fetchAdminNotifications(accessToken: string) {
+  return apiRequest<BackendAdminNotification[]>("/api/admin/notifications", { accessToken });
+}
+
+export function markAdminNotificationRead(accessToken: string, id: string) {
+  return apiRequest<BackendAdminNotification>(`/api/admin/notifications/${id}/read`, {
+    accessToken,
+    method: "PATCH",
+  });
+}
+
+export function markAllAdminNotificationsRead(accessToken: string) {
+  return apiRequest<{ count: number }>("/api/admin/notifications/read-all", {
+    accessToken,
+    method: "PATCH",
+  });
 }
 
 export async function createAdminAccount(accessToken: string, payload: AdminAccountPayload) {
