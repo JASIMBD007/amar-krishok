@@ -11,6 +11,7 @@ import {
   MapPin,
   MessageSquareText,
   PackageCheck,
+  Pencil,
   Route as RouteIcon,
   Settings,
   ShieldCheck,
@@ -505,7 +506,13 @@ function formatQuantityKg(value?: number) {
   return `${value.toLocaleString("en-US")} kg`;
 }
 
-export function FarmerDirectoryPanel({ registrations = [] }: { registrations?: RegisteredAccount[] }) {
+export function FarmerDirectoryPanel({
+  onEditAccount,
+  registrations = [],
+}: {
+  onEditAccount?: (account: RegisteredAccount) => void;
+  registrations?: RegisteredAccount[];
+}) {
   const t = useTranslate();
   const v = useValueText();
   const farmers = registrations.filter((account) => account.role === "farmer");
@@ -540,6 +547,12 @@ export function FarmerDirectoryPanel({ registrations = [] }: { registrations?: R
               {farmer.latestLotSummary && <span className="admin-data-chip">{t("Latest lot")}: {farmer.latestLotSummary}</span>}
             </div>
             <div className={`account-status-chip ${farmer.status}`}>{t(farmer.status)}</div>
+            {onEditAccount && (
+              <button className="secondary-button compact-action" type="button" onClick={() => onEditAccount(farmer)}>
+                <Pencil size={16} />
+                {t("Edit")}
+              </button>
+            )}
           </article>
         )) : lots.map((lot) => (
           <article className="verification-item farmer-directory-item" key={`${lot.farmer}-${lot.crop}`}>

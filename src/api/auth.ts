@@ -126,6 +126,13 @@ export type UpdateProfilePayload = {
   organization: string;
 };
 
+export type AdminAccountPayload = UpdateProfilePayload & {
+  password?: string;
+  phone: string;
+  role: RegistrationRole;
+  status: AccountStatus;
+};
+
 type RegisterAccountPayload = {
   address: string;
   district: string;
@@ -338,6 +345,31 @@ export async function fetchAdminAccounts(accessToken: string, role?: Registratio
   const query = params.toString();
   const users = await apiRequest<ApiUser[]>(`/api/admin/accounts${query ? `?${query}` : ""}`, { accessToken });
   return users.map(toRegisteredAccount).filter((account) => account.role === "buyer" || account.role === "farmer");
+}
+
+export async function createAdminAccount(accessToken: string, payload: AdminAccountPayload) {
+  const user = await apiRequest<ApiUser>("/api/admin/accounts", {
+    accessToken,
+    body: JSON.stringify(payload),
+    method: "POST",
+  });
+  return toRegisteredAccount(user);
+}
+
+export async function updateAdminAccount(accessToken: string, id: string, payload: Partial<AdminAccountPayload>) {
+  const user = await apiRequest<ApiUser>(`/api/admin/accounts/${id}`, {
+    accessToken,
+    body: JSON.stringify(payload),
+    method: "PATCH",
+  });
+  return toRegisteredAccount(user);
+}
+
+export async function deleteAdminAccount(accessToken: string, id: string) {
+  return apiRequest<{ id: string }>(`/api/admin/accounts/${id}`, {
+    accessToken,
+    method: "DELETE",
+  });
 }
 
 export async function updateBackendVerification(accessToken: string, id: string, status: AccountStatus) {
