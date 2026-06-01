@@ -142,10 +142,12 @@ export function PayoutPanel({ onOpenSection, wide = false }: { onOpenSection: Op
 export function VerificationPanel({
   onUpdateRegistration,
   registrations,
+  verificationError,
   wide = false,
 }: {
   onUpdateRegistration: (id: string, status: AccountStatus) => void;
   registrations: RegisteredAccount[];
+  verificationError?: string;
   wide?: boolean;
 }) {
   const t = useTranslate();
@@ -164,6 +166,7 @@ export function VerificationPanel({
         <UserRoundCheck size={22} />
       </div>
       <p className="panel-copy">{t("Buyer and seller registrations awaiting admin approval.")}</p>
+      {verificationError && <p className="auth-error">{t(verificationError)}</p>}
       <div className="verification-stats">
         <span>
           <strong>{v(pendingRegistrations.length)}</strong>

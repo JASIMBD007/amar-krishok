@@ -55,6 +55,10 @@ export default function App() {
       return;
     }
 
+    if (user.accessToken) {
+      return;
+    }
+
     const account = registrations.find((item) => item.id === user.accountId);
     if (!account || account.status !== "active") {
       setUser(null);
@@ -260,14 +264,15 @@ export default function App() {
                 registrations={registrations}
                 onAdminReply={sendAdminChatReply}
                 onUpdateRegistration={updateRegistrationStatus}
+                user={user}
               />
             </ProtectedRoute>
           }
         />
-        <Route path="/login" element={<LoginPage onLogin={handleLogin} registrations={registrations} user={user} />} />
+        <Route path="/login" element={<LoginPage onLogin={handleLogin} user={user} />} />
         <Route path="/register" element={<Navigate to="/register/buyer" replace />} />
-        <Route path="/register/buyer" element={<RegisterPage registrations={registrations} role="buyer" onRegister={handleRegister} />} />
-        <Route path="/register/farmer" element={<RegisterPage registrations={registrations} role="farmer" onRegister={handleRegister} />} />
+        <Route path="/register/buyer" element={<RegisterPage role="buyer" onRegister={handleRegister} />} />
+        <Route path="/register/farmer" element={<RegisterPage role="farmer" onRegister={handleRegister} />} />
         <Route path="/market" element={<Navigate to="/marketplace" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

@@ -18,6 +18,12 @@ export class LotsController {
   }
 
   @Auth(Role.ADMIN, Role.FARMER)
+  @Get("mine")
+  findMine(@CurrentUser() user: AuthenticatedUser) {
+    return this.lotsService.findMine(user);
+  }
+
+  @Auth(Role.ADMIN, Role.FARMER)
   @Post()
   create(@Body() dto: CreateLotDto, @CurrentUser() user: AuthenticatedUser) {
     return this.lotsService.create(dto, user);

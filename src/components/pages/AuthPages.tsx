@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { CheckCircle2, Clock3, ClipboardCheck, Eye, EyeOff, LockKeyhole } from "lucide-react";
-import { loginWithApi, AuthRequestError } from "../../api/auth";
+import { ApiRequestError, loginWithApi, AuthRequestError, registerAccountWithApi } from "../../api/auth";
 import { roleHomePath, roleOptions, serviceDistricts } from "../../data";
 import { useTranslate, useValueText } from "../../i18n";
 import type { AuthUser, RegisteredAccount, RegistrationRole, Role } from "../../types";
-import { makeRegistrationId, roleCanOpenPath } from "./pageHelpers";
+import { roleCanOpenPath } from "./pageHelpers";
 
 function PasswordField({
   hint,
@@ -37,17 +37,11 @@ function PasswordField({
   );
 }
 
-function normalizeAuthName(value: string) {
-  return value.trim().replace(/\s+/g, " ").toLowerCase();
-}
-
 export function LoginPage({
   onLogin,
-  registrations,
   user,
 }: {
   onLogin: (nextUser: AuthUser, nextPath: string) => void;
-  registrations: RegisteredAccount[];
   user: AuthUser | null;
 }) {
   const location = useLocation();
@@ -88,41 +82,17 @@ export function LoginPage({
       return;
     }
 
-    if (role === "admin") {
-      setIsSubmitting(true);
-      setError("");
+    setIsSubmitting(true);
+    setError("");
 
-      try {
-        const nextPath = roleCanOpenPath(role, safeNext) ? safeNext : roleHomePath[role];
-        onLogin(await loginWithApi({ name: cleanName, password, phone: cleanPhone, role }), nextPath);
-      } catch (apiError) {
-        setError(t(apiError instanceof AuthRequestError ? apiError.message : "Login service is unavailable. Please try again."));
-      } finally {
-        setIsSubmitting(false);
-      }
-
-      return;
+    try {
+      const nextPath = roleCanOpenPath(role, safeNext) ? safeNext : roleHomePath[role];
+      onLogin(await loginWithApi({ name: cleanName, password, phone: cleanPhone, role }), nextPath);
+    } catch (apiError) {
+      setError(t(apiError instanceof AuthRequestError ? apiError.message : "Login service is unavailable. Please try again."));
+    } finally {
+      setIsSubmitting(false);
     }
-
-    const account = registrations.find((item) => item.role === role && item.phone === cleanPhone);
-
-    if (!account || normalizeAuthName(account.name) !== normalizeAuthName(cleanName) || account.password !== password) {
-      setError(t("Name, mobile number, or password is incorrect."));
-      return;
-    }
-
-    if (account.status === "pending") {
-      setError(t("Account is waiting for admin verification."));
-      return;
-    }
-
-    if (account.status === "rejected") {
-      setError(t("Registration was not approved. Please contact admin."));
-      return;
-    }
-
-    const nextPath = roleCanOpenPath(role, safeNext) ? safeNext : roleHomePath[role];
-    onLogin({ accountId: account.id, name: account.name, phone: account.phone, role, signedInAt: new Date().toISOString() }, nextPath);
   };
 
   return (
@@ -179,11 +149,9 @@ export function LoginPage({
 
 export function RegisterPage({
   onRegister,
-  registrations,
   role,
 }: {
   onRegister: (account: RegisteredAccount) => void;
-  registrations: RegisteredAccount[];
   role: RegistrationRole;
 }) {
   const navigate = useNavigate();
@@ -201,6 +169,7 @@ export function RegisterPage({
   const [identity, setIdentity] = useState("");
   const [focus, setFocus] = useState("");
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const title = role === "buyer" ? "Create buyer account" : "Create seller account";
 
   const submitRegistration = (event: React.FormEvent<HTMLFormElement>) => {
@@ -229,30 +198,28 @@ export function RegisterPage({
       return;
     }
 
-    const existingAccount = registrations.find((account) => account.role === role && account.phone === cleanPhone && account.status !== "rejected");
-    if (existingAccount) {
-      setError(t("An account with this role and phone already exists."));
-      return;
-    }
-
-    const nextAccount: RegisteredAccount = {
-      id: makeRegistrationId(role),
-      role,
-      status: "pending",
-      name: cleanName,
-      phone: cleanPhone,
-      password: cleanPassword,
-      organization: cleanOrganization,
-      district: cleanDistrict,
-      address: cleanAddress,
-      identity: cleanIdentity,
-      focus: cleanFocus,
-      submittedAt: new Date().toISOString(),
-    };
-
-    onRegister(nextAccount);
-    setSubmittedAccount(nextAccount);
+    setIsSubmitting(true);
     setError("");
+
+    registerAccountWithApi({
+      address: cleanAddress,
+      district: cleanDistrict,
+      focus: cleanFocus,
+      identity: cleanIdentity,
+      name: cleanName,
+      organization: cleanOrganization,
+      password: cleanPassword,
+      phone: cleanPhone,
+      role,
+    })
+      .then((nextAccount) => {
+        onRegister(nextAccount);
+        setSubmittedAccount(nextAccount);
+      })
+      .catch((apiError) => {
+        setError(t(apiError instanceof ApiRequestError ? apiError.message : "Backend service is unavailable. Please try again."));
+      })
+      .finally(() => setIsSubmitting(false));
   };
 
   if (submittedAccount) {
@@ -344,9 +311,9 @@ export function RegisterPage({
           <button className="secondary-button" type="button" onClick={() => navigate("/")}>
             {t("Go home")}
           </button>
-          <button className="primary-button" type="submit">
+          <button className="primary-button" type="submit" disabled={isSubmitting}>
             <ClipboardCheck size={17} />
-            {t("Submit registration")}
+            {t(isSubmitting ? "Submitting" : "Submit registration")}
           </button>
         </div>
       </form>
