@@ -1,18 +1,28 @@
-import { BadgeCheck, Clock3, MapPin, ShoppingBag, XCircle } from "lucide-react";
+import { useState } from "react";
+import { BadgeCheck, Clock3, MapPin, Pencil, ShoppingBag, XCircle } from "lucide-react";
+import type { AdminAccountPayload } from "../../../api/auth";
 import { useTranslate, useValueText } from "../../../i18n";
 import type { AccountStatus, RegisteredAccount } from "../../../types";
+import { AccountManagementForm } from "./AccountManagementForm";
 
 export function BuyersSection({
+  onCreateAccount,
+  onDeleteAccount,
+  onUpdateAccount,
   onUpdateRegistration,
   registrations,
   verificationError,
 }: {
+  onCreateAccount: (payload: AdminAccountPayload) => Promise<void>;
+  onDeleteAccount: (id: string) => Promise<void>;
+  onUpdateAccount: (id: string, payload: Partial<AdminAccountPayload>) => Promise<void>;
   onUpdateRegistration: (id: string, status: AccountStatus) => void;
   registrations: RegisteredAccount[];
   verificationError?: string;
 }) {
   const t = useTranslate();
   const v = useValueText();
+  const [editingBuyer, setEditingBuyer] = useState<RegisteredAccount | null>(null);
   const buyers = registrations.filter((account) => account.role === "buyer");
   const pendingBuyers = buyers.filter((account) => account.status === "pending");
   const activeBuyers = buyers.filter((account) => account.status === "active");
@@ -30,6 +40,14 @@ export function BuyersSection({
         </div>
         <p className="panel-copy">{t("See buyer registrations, verification status, business details, and demand focus.")}</p>
         {verificationError && <p className="auth-error">{t(verificationError)}</p>}
+        <AccountManagementForm
+          editingAccount={editingBuyer}
+          onCancelEdit={() => setEditingBuyer(null)}
+          onCreateAccount={onCreateAccount}
+          onDeleteAccount={onDeleteAccount}
+          onUpdateAccount={onUpdateAccount}
+          role="buyer"
+        />
 
         <div className="verification-stats">
           <span>
@@ -88,6 +106,10 @@ export function BuyersSection({
                   </button>
                 </div>
               )}
+              <button className="secondary-button compact-action" type="button" onClick={() => setEditingBuyer(buyer)}>
+                <Pencil size={16} />
+                {t("Edit")}
+              </button>
             </article>
           ))}
         </div>

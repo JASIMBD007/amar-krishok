@@ -1,6 +1,16 @@
 import { useEffect, useState } from "react";
 import { Bell, LayoutDashboard, Menu, Plus, Search, ShieldCheck, X } from "lucide-react";
-import { ApiRequestError, fetchAdminAccounts, fetchMyOrders, updateBackendVerification, type BackendOrder } from "../../api/auth";
+import {
+  ApiRequestError,
+  createAdminAccount,
+  deleteAdminAccount,
+  fetchAdminAccounts,
+  fetchMyOrders,
+  updateAdminAccount,
+  updateBackendVerification,
+  type AdminAccountPayload,
+  type BackendOrder,
+} from "../../api/auth";
 import { adminNavItems } from "../../data";
 import { useTranslate } from "../../i18n";
 import type { AccountStatus, AdminSection, AuthUser, ChatThread, RegisteredAccount } from "../../types";
@@ -67,13 +77,43 @@ export function AdminPage({
     }
 
     updateBackendVerification(user.accessToken, id, status)
-      .then(() => {
-        setBackendRegistrations((current) => current?.filter((account) => account.id !== id) ?? null);
+      .then((account) => {
+        setBackendRegistrations((current) => (current ?? registrations).map((item) => (item.id === id ? account : item)));
         setVerificationError("");
       })
       .catch((error) => {
         setVerificationError(error instanceof ApiRequestError ? error.message : "Backend service is unavailable. Please try again.");
       });
+  };
+
+  const createManagedAccount = async (payload: AdminAccountPayload) => {
+    if (!user?.accessToken) {
+      throw new Error("Backend service is unavailable. Please try again.");
+    }
+
+    const account = await createAdminAccount(user.accessToken, payload);
+    setBackendRegistrations((current) => [account, ...(current ?? registrations)]);
+    setVerificationError("");
+  };
+
+  const updateManagedAccount = async (id: string, payload: Partial<AdminAccountPayload>) => {
+    if (!user?.accessToken) {
+      throw new Error("Backend service is unavailable. Please try again.");
+    }
+
+    const account = await updateAdminAccount(user.accessToken, id, payload);
+    setBackendRegistrations((current) => (current ?? registrations).map((item) => (item.id === id ? account : item)));
+    setVerificationError("");
+  };
+
+  const deleteManagedAccount = async (id: string) => {
+    if (!user?.accessToken) {
+      throw new Error("Backend service is unavailable. Please try again.");
+    }
+
+    await deleteAdminAccount(user.accessToken, id);
+    setBackendRegistrations((current) => (current ?? registrations).filter((item) => item.id !== id));
+    setVerificationError("");
   };
 
   const openAdminSection = (section: AdminSection) => {
@@ -106,11 +146,29 @@ export function AdminPage({
       case "orders":
         return <OrdersSection backendOrders={backendOrders} onOpenSection={openAdminSection} orderError={orderError} />;
       case "buyers":
-        return <BuyersSection registrations={effectiveRegistrations} onUpdateRegistration={updateRegistration} verificationError={verificationError} />;
+        return (
+          <BuyersSection
+            registrations={effectiveRegistrations}
+            onCreateAccount={createManagedAccount}
+            onDeleteAccount={deleteManagedAccount}
+            onUpdateAccount={updateManagedAccount}
+            onUpdateRegistration={updateRegistration}
+            verificationError={verificationError}
+          />
+        );
       case "supply":
         return <SupplyLotsSection onOpenSection={openAdminSection} />;
       case "farmers":
-        return <FarmersSection registrations={effectiveRegistrations} onUpdateRegistration={updateRegistration} verificationError={verificationError} />;
+        return (
+          <FarmersSection
+            registrations={effectiveRegistrations}
+            onCreateAccount={createManagedAccount}
+            onDeleteAccount={deleteManagedAccount}
+            onUpdateAccount={updateManagedAccount}
+            onUpdateRegistration={updateRegistration}
+            verificationError={verificationError}
+          />
+        );
       case "logistics":
         return <LogisticsSection />;
       case "payouts":
