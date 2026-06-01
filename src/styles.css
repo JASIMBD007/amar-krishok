@@ -740,14 +740,16 @@ button {
   gap: 14px;
 }
 
-.seller-overview {
+.seller-overview,
+.buyer-overview {
   grid-column: 1 / -1;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
 }
 
-.seller-overview article {
+.seller-overview article,
+.buyer-overview article {
   display: grid;
   gap: 8px;
   min-height: 120px;
@@ -759,17 +761,20 @@ button {
 }
 
 .seller-overview svg,
+.buyer-overview svg,
 .backend-status-pill svg {
   color: #176b47;
 }
 
-.seller-overview span {
+.seller-overview span,
+.buyer-overview span {
   color: #697d72;
   font-size: 0.86rem;
   font-weight: 800;
 }
 
-.seller-overview strong {
+.seller-overview strong,
+.buyer-overview strong {
   color: #183028;
   font-size: 1.75rem;
   line-height: 1;
@@ -790,17 +795,50 @@ button {
   font-weight: 850;
 }
 
-.seller-lots-panel {
+.buyer-profile-strip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding: 12px;
+  border: 1px solid rgba(24, 48, 40, 0.1);
+  border-radius: 8px;
+  background: #f6f9f3;
+}
+
+.buyer-profile-strip svg {
+  color: #176b47;
+}
+
+.buyer-profile-strip span,
+.buyer-profile-strip strong {
+  display: block;
+}
+
+.buyer-profile-strip span {
+  color: #687b70;
+  font-size: 0.82rem;
+  font-weight: 850;
+}
+
+.buyer-profile-strip strong {
+  color: #183028;
+}
+
+.seller-lots-panel,
+.buyer-dashboard-panel {
   grid-column: 1 / -1;
   padding: 20px;
 }
 
-.seller-lot-list {
+.seller-lot-list,
+.buyer-dashboard-list {
   display: grid;
   gap: 10px;
 }
 
-.seller-lot-list > em {
+.seller-lot-list > em,
+.buyer-dashboard-list > em {
   padding: 18px;
   border-radius: 8px;
   color: #62766b;
@@ -809,7 +847,8 @@ button {
   font-weight: 800;
 }
 
-.seller-lot-item {
+.seller-lot-item,
+.buyer-order-item {
   display: grid;
   grid-template-columns: minmax(180px, 1fr) minmax(140px, 0.8fr) minmax(150px, 0.8fr) auto;
   gap: 14px;
@@ -821,15 +860,19 @@ button {
 }
 
 .seller-lot-item strong,
-.seller-lot-item span {
+.seller-lot-item span,
+.buyer-order-item strong,
+.buyer-order-item span {
   display: block;
 }
 
-.seller-lot-item strong {
+.seller-lot-item strong,
+.buyer-order-item strong {
   color: #183028;
 }
 
-.seller-lot-item span {
+.seller-lot-item span,
+.buyer-order-item span {
   margin-top: 4px;
   color: #6b7c73;
   font-size: 0.84rem;
@@ -843,6 +886,54 @@ button {
   background: #e8f3e8;
   font-style: normal;
   font-weight: 850;
+}
+
+.buyer-supply-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.buyer-supply-item {
+  display: grid;
+  grid-template-columns: 86px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid rgba(24, 48, 40, 0.1);
+  border-radius: 8px;
+  background: #fbfcf8;
+}
+
+.buyer-supply-item img {
+  width: 86px;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.buyer-supply-item strong,
+.buyer-supply-item span {
+  display: block;
+}
+
+.buyer-supply-item strong {
+  color: #183028;
+}
+
+.buyer-supply-item span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 5px;
+  color: #6b7c73;
+  font-size: 0.84rem;
+}
+
+.buyer-supply-item em {
+  color: #176b47;
+  font-style: normal;
+  font-weight: 900;
 }
 
 .auth-layout {
@@ -1652,6 +1743,21 @@ th {
   background: #f0e7f2;
 }
 
+.status.pending {
+  color: #5f6d20;
+  background: #f1f4dc;
+}
+
+.status.completed {
+  color: #176b47;
+  background: #e5f5e7;
+}
+
+.status.cancelled {
+  color: #8a2a1b;
+  background: #f8e5df;
+}
+
 .release-amount {
   padding: 18px;
   border-radius: 8px;
@@ -2259,11 +2365,13 @@ th {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .seller-lot-item {
+  .seller-lot-item,
+  .buyer-order-item {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .seller-lot-item em {
+  .seller-lot-item em,
+  .buyer-order-item em {
     justify-self: start;
   }
 
@@ -2396,7 +2504,10 @@ th {
   .trust-section,
   .stats-grid,
   .seller-overview,
+  .buyer-overview,
+  .buyer-supply-grid,
   .seller-lot-item,
+  .buyer-order-item,
   .form-grid {
     grid-template-columns: 1fr;
   }
@@ -2496,6 +2607,19 @@ th {
   .hero-actions,
   .hero-actions button {
     width: 100%;
+  }
+
+  .buyer-supply-item {
+    grid-template-columns: 70px minmax(0, 1fr);
+  }
+
+  .buyer-supply-item img {
+    width: 70px;
+  }
+
+  .buyer-supply-item em {
+    grid-column: 2;
+    justify-self: start;
   }
 
   .header-actions {

@@ -4,17 +4,35 @@ import { AuthenticatedUser } from "../auth/types/authenticated-user";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateOrderDto } from "./dto/create-order.dto";
 
+const orderInclude = {
+  buyer: {
+    select: {
+      address: true,
+      createdAt: true,
+      district: { select: { name: true } },
+      focus: true,
+      id: true,
+      identity: true,
+      name: true,
+      organization: true,
+      phone: true,
+      reviewedAt: true,
+      role: true,
+      status: true,
+      updatedAt: true,
+    },
+  },
+  district: true,
+  items: { include: { crop: true, cropLot: true } },
+} satisfies Prisma.OrderInclude;
+
 @Injectable()
 export class OrdersService {
   constructor(private readonly prisma: PrismaService) {}
 
   findAll(filters: { buyerId?: string }, user: AuthenticatedUser) {
     return this.prisma.order.findMany({
-      include: {
-        buyer: true,
-        district: true,
-        items: { include: { crop: true, cropLot: true } },
-      },
+      include: orderInclude,
       orderBy: { createdAt: "desc" },
       where: {
         buyerId: user.role === Role.BUYER ? user.id : filters.buyerId,
@@ -62,11 +80,7 @@ export class OrdersService {
         targetDate: dto.targetDate ? new Date(dto.targetDate) : undefined,
         totalValue: new Prisma.Decimal(totalValue),
       },
-      include: {
-        buyer: true,
-        district: true,
-        items: { include: { crop: true, cropLot: true } },
-      },
+      include: orderInclude,
     });
   }
 }

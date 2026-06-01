@@ -60,6 +60,42 @@ export type CreateCropLotPayload = {
   quantityKg: number;
 };
 
+export type BackendOrderItem = {
+  id: string;
+  crop: { name: string };
+  cropLotId: string | null;
+  offeredPricePerKg: string | number;
+  quantityKg: string | number;
+};
+
+export type BackendOrder = {
+  id: string;
+  buyer: ApiUser;
+  createdAt: string;
+  deliveryAddress: string;
+  district: { name: string };
+  items: BackendOrderItem[];
+  notes: string | null;
+  status: string;
+  targetDate: string | null;
+  totalValue: string | number;
+  updatedAt: string;
+};
+
+export type CreateOrderPayload = {
+  buyerId?: string;
+  deliveryAddress: string;
+  district: string;
+  items: Array<{
+    crop: string;
+    cropLotId?: string;
+    offeredPricePerKg: number;
+    quantityKg: number;
+  }>;
+  notes?: string;
+  targetDate?: string;
+};
+
 type RegisterAccountPayload = {
   address: string;
   district: string;
@@ -213,6 +249,18 @@ export function fetchMyCropLots(accessToken: string) {
 
 export function createCropLot(accessToken: string, payload: CreateCropLotPayload) {
   return apiRequest<BackendCropLot>("/api/lots", {
+    accessToken,
+    body: JSON.stringify(payload),
+    method: "POST",
+  });
+}
+
+export function fetchMyOrders(accessToken: string) {
+  return apiRequest<BackendOrder[]>("/api/orders", { accessToken });
+}
+
+export function createBuyerOrder(accessToken: string, payload: CreateOrderPayload) {
+  return apiRequest<BackendOrder>("/api/orders", {
     accessToken,
     body: JSON.stringify(payload),
     method: "POST",
