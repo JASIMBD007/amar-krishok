@@ -7,6 +7,8 @@ export type AccountStatus = "pending" | "active" | "rejected";
 export type ChatParticipantRole = RegistrationRole | "guest";
 export type ChatSenderRole = Role | "guest";
 export type ChatStatus = "open" | "waiting" | "resolved";
+export type NotificationTone = "info" | "success" | "urgent" | "warning";
+export type NotificationType = "account" | "chat" | "logistics" | "order" | "payout" | "supply" | "system";
 
 export type AuthUser = {
   accountId?: string;
@@ -120,4 +122,16 @@ export type ChatParticipant = {
   name: string;
   phone: string;
   role: ChatParticipantRole;
+};
+
+export type AppNotification = {
+  body: string;
+  createdAt?: string;
+  href?: string;
+  id: string;
+  meta: string;
+  readAt?: string | null;
+  title: string;
+  tone: NotificationTone;
+  type: NotificationType;
 };

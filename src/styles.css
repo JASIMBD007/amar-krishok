@@ -2843,6 +2843,10 @@ th {
     display: none;
   }
 
+  .header-actions .notification-button {
+    display: inline-flex;
+  }
+
   .language-switch button {
     min-width: 44px;
   }
@@ -3063,6 +3067,11 @@ th {
   .header-actions .secondary-button svg {
     width: 14px;
     height: 14px;
+  }
+
+  .header-actions .notification-button {
+    width: 38px;
+    min-height: 38px;
   }
 
   .price-row {

@@ -85,6 +85,11 @@ export class ChatService {
         body: `${dto.senderName}: ${dto.text}`,
         title: "New chat message",
       });
+    } else if (thread.participantRole !== Role.GUEST) {
+      await this.notifications.notifyUser(thread.participantId, {
+        body: `${dto.senderName}: ${dto.text}`,
+        title: "Admin replied to chat",
+      });
     }
 
     return updatedThread;

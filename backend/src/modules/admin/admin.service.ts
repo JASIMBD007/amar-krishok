@@ -236,7 +236,7 @@ export class AdminService {
       throw new NotFoundException("Registration not found.");
     }
 
-    return this.prisma.user.update({
+    const updatedUser = await this.prisma.user.update({
       data: {
         reviewedAt: new Date(),
         status: action === "approve" ? AccountStatus.ACTIVE : AccountStatus.REJECTED,
@@ -244,6 +244,16 @@ export class AdminService {
       select: accountSelect,
       where: { id },
     });
+
+    await this.notificationsService.notifyUser(updatedUser.id, {
+      body:
+        action === "approve"
+          ? "Your AmarKrishok account is active. You can now log in and use your dashboard."
+          : "Your registration was reviewed. Please contact AmarKrishok support for the next step.",
+      title: action === "approve" ? "Account verified" : "Account review update",
+    });
+
+    return updatedUser;
   }
 
   async dashboard() {

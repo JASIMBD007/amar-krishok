@@ -89,6 +89,10 @@ export class LotsService {
       body: `${lot.farmer.name} · ${lot.crop.name} · ${lot.district.name}`,
       title: "New supply lot posted",
     });
+    await this.notifications.notifyUser(lot.farmerId, {
+      body: `${lot.crop.name} · ${lot.district.name} · ${lot.quantityKg} kg listed at ৳${lot.pricePerKg}/kg`,
+      title: "Crop lot published",
+    });
 
     return lot;
   }

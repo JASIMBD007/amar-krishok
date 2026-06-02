@@ -118,6 +118,10 @@ export class AuthService {
       body: `${user.name} · ${dto.district || dto.organization || dto.phone}`,
       title: role === Role.BUYER ? "Buyer verification request" : "Farmer verification request",
     });
+    await this.notifications.notifyUser(user.id, {
+      body: `${dto.organization || user.name} · ${dto.district || dto.phone}`,
+      title: "Registration received",
+    });
 
     return {
       message: "Registration submitted for admin verification.",
