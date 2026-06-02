@@ -146,6 +146,16 @@ export type BackendNotification = {
 };
 export type BackendAdminNotification = BackendNotification;
 
+export type BackendUploadedFile = {
+  createdAt: string;
+  id: string;
+  key: string;
+  mimeType: string;
+  ownerId: string | null;
+  size: number;
+  url: string;
+};
+
 type RegisterAccountPayload = {
   address: string;
   district: string;
@@ -342,6 +352,35 @@ export async function updateMyProfile(accessToken: string, payload: UpdateProfil
     body: JSON.stringify(payload),
     method: "PATCH",
   }));
+}
+
+export async function uploadFile(accessToken: string, file: File, purpose: "crop-lot-image" | "identity-document") {
+  const body = new FormData();
+  body.append("file", file);
+  body.append("purpose", purpose);
+
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}/api/uploads`, {
+      body,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      method: "POST",
+    });
+  } catch {
+    throw new ApiRequestError("Backend service is unavailable. Please try again.");
+  }
+
+  if (!response.ok) {
+    throw new ApiRequestError((await readApiMessage(response)) ?? "File upload failed.", response.status);
+  }
+
+  const uploadedFile = (await response.json()) as BackendUploadedFile;
+  return {
+    ...uploadedFile,
+    url: uploadedFile.url.startsWith("http") ? uploadedFile.url : `${API_BASE_URL}${uploadedFile.url}`,
+  };
 }
 
 export async function fetchPendingVerifications(accessToken: string) {

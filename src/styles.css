@@ -832,6 +832,83 @@ button {
   padding: 20px;
 }
 
+.organized-profile-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.profile-summary-header {
+  align-items: flex-start;
+}
+
+.profile-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.profile-summary-grid article,
+.profile-readiness-row span {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  padding: 13px;
+  border-radius: 8px;
+  background: #f4f7f1;
+}
+
+.profile-summary-grid article span {
+  color: #687b70;
+  font-size: 0.76rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.profile-summary-grid article strong {
+  overflow: hidden;
+  color: #183028;
+  font-size: 1rem;
+  text-overflow: ellipsis;
+}
+
+.profile-summary-grid article a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  width: fit-content;
+  color: #176b47;
+  font-size: 0.8rem;
+  font-weight: 850;
+  text-decoration: none;
+}
+
+.profile-readiness-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.profile-readiness-row span {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  color: #40584c;
+  font-weight: 850;
+}
+
+.profile-readiness-row svg {
+  color: #176b47;
+}
+
+.profile-edit-modal {
+  width: min(780px, 100%);
+}
+
+.modal-action-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
 .seller-lot-list,
 .buyer-dashboard-list {
   display: grid;
@@ -1276,6 +1353,29 @@ button {
   border: 1px solid rgba(24, 48, 40, 0.12);
   border-radius: 8px;
   background: #f8faf5;
+}
+
+.input-field input[type="file"] {
+  display: grid;
+  align-items: center;
+  padding: 12px;
+}
+
+.upload-field em,
+.upload-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 2px;
+  color: #60766b;
+  font-size: 0.8rem;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.upload-field svg,
+.upload-note svg {
+  color: #176b47;
 }
 
 .password-control {
@@ -2850,6 +2950,10 @@ th {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .profile-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .orders-panel,
   .supply-panel,
   .logistics-panel {
@@ -3164,6 +3268,16 @@ th {
 
   .dashboard-workspace {
     padding: 14px;
+  }
+
+  .profile-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-summary-header,
+  .modal-action-row {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .dashboard-topbar {

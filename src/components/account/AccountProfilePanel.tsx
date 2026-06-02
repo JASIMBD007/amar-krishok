@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { LockKeyhole, Save, UserRoundCog } from "lucide-react";
-import { ApiRequestError, fetchMyProfile, updateMyProfile, type UpdateProfilePayload } from "../../api/auth";
+import { BadgeCheck, ExternalLink, FileImage, LockKeyhole, PencilLine, Save, Upload, UserRoundCog, X } from "lucide-react";
+import { ApiRequestError, fetchMyProfile, updateMyProfile, uploadFile, type UpdateProfilePayload } from "../../api/auth";
 import { serviceDistricts } from "../../data";
 import { useTranslate } from "../../i18n";
 import type { AuthUser, RegisteredAccount } from "../../types";
@@ -15,6 +15,10 @@ const emptyProfile: UpdateProfilePayload = {
   organization: "",
 };
 
+function isLinkedDocument(value: string) {
+  return value.startsWith("http://") || value.startsWith("https://") || value.startsWith("/api/uploads/") || value.startsWith("/uploads/");
+}
+
 export function AccountProfilePanel({
   onProfileSaved,
   user,
@@ -24,11 +28,15 @@ export function AccountProfilePanel({
 }) {
   const t = useTranslate();
   const [profile, setProfile] = useState<UpdateProfilePayload>(emptyProfile);
+  const [draftProfile, setDraftProfile] = useState<UpdateProfilePayload>(emptyProfile);
+  const [identityFile, setIdentityFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const canEditProfile = user?.role === "buyer" || user?.role === "farmer";
+  const documentLink = isLinkedDocument(profile.identity) ? profile.identity : "";
 
   useEffect(() => {
     if (!user?.accessToken || !canEditProfile) {
@@ -38,14 +46,16 @@ export function AccountProfilePanel({
     setIsLoading(true);
     fetchMyProfile(user.accessToken)
       .then((account) => {
-        setProfile({
+        const nextProfile = {
           address: account.address,
           district: account.district,
           focus: account.focus,
           identity: account.identity,
           name: account.name,
           organization: account.organization,
-        });
+        };
+        setProfile(nextProfile);
+        setDraftProfile(nextProfile);
         setError("");
       })
       .catch((apiError) => {
@@ -55,10 +65,29 @@ export function AccountProfilePanel({
   }, [canEditProfile, user?.accessToken]);
 
   const updateField = (field: keyof UpdateProfilePayload, value: string) => {
-    setProfile((current) => ({ ...current, [field]: value }));
+    setDraftProfile((current) => ({ ...current, [field]: value }));
   };
 
-  const saveProfile = (event: FormEvent<HTMLFormElement>) => {
+  const openEditModal = () => {
+    setDraftProfile(profile);
+    setIdentityFile(null);
+    setError("");
+    setSuccess("");
+    setIsModalOpen(true);
+  };
+
+  const closeEditModal = () => {
+    if (isSaving) {
+      return;
+    }
+
+    setDraftProfile(profile);
+    setIdentityFile(null);
+    setError("");
+    setIsModalOpen(false);
+  };
+
+  const saveProfile = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setSuccess("");
 
@@ -67,7 +96,7 @@ export function AccountProfilePanel({
       return;
     }
 
-    if (!profile.name.trim() || !profile.organization.trim() || !profile.district.trim() || !profile.address.trim() || !profile.identity.trim() || !profile.focus.trim()) {
+    if (!draftProfile.name.trim() || !draftProfile.organization.trim() || !draftProfile.district.trim() || !draftProfile.address.trim() || (!draftProfile.identity.trim() && !identityFile) || !draftProfile.focus.trim()) {
       setError("Please fill in all profile fields.");
       return;
     }
@@ -75,30 +104,35 @@ export function AccountProfilePanel({
     setIsSaving(true);
     setError("");
 
-    updateMyProfile(user.accessToken, {
-      address: profile.address.trim(),
-      district: profile.district.trim(),
-      focus: profile.focus.trim(),
-      identity: profile.identity.trim(),
-      name: profile.name.trim(),
-      organization: profile.organization.trim(),
-    })
-      .then((account) => {
-        setProfile({
-          address: account.address,
-          district: account.district,
-          focus: account.focus,
-          identity: account.identity,
-          name: account.name,
-          organization: account.organization,
-        });
-        onProfileSaved(account);
-        setSuccess("Profile updated.");
-      })
-      .catch((apiError) => {
-        setError(apiError instanceof ApiRequestError ? apiError.message : "Could not update profile.");
-      })
-      .finally(() => setIsSaving(false));
+    try {
+      const uploadedIdentity = identityFile ? await uploadFile(user.accessToken, identityFile, "identity-document") : null;
+      const account = await updateMyProfile(user.accessToken, {
+        address: draftProfile.address.trim(),
+        district: draftProfile.district.trim(),
+        focus: draftProfile.focus.trim(),
+        identity: uploadedIdentity?.url ?? draftProfile.identity.trim(),
+        name: draftProfile.name.trim(),
+        organization: draftProfile.organization.trim(),
+      });
+      const nextProfile = {
+        address: account.address,
+        district: account.district,
+        focus: account.focus,
+        identity: account.identity,
+        name: account.name,
+        organization: account.organization,
+      };
+      setProfile(nextProfile);
+      setDraftProfile(nextProfile);
+      setIdentityFile(null);
+      onProfileSaved(account);
+      setSuccess("Profile updated.");
+      setIsModalOpen(false);
+    } catch (apiError) {
+      setError(apiError instanceof ApiRequestError ? apiError.message : "Could not update profile.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   if (!canEditProfile) {
@@ -117,56 +151,132 @@ export function AccountProfilePanel({
   }
 
   return (
-    <form className="panel profile-panel" onSubmit={saveProfile}>
-      <div className="panel-header">
+    <section className="panel profile-panel organized-profile-panel">
+      <div className="panel-header profile-summary-header">
         <div>
           <span>{t("My profile")}</span>
-          <h2>{t("Edit account information")}</h2>
+          <h2>{t("Account information")}</h2>
         </div>
-        <UserRoundCog size={22} />
+        <button className="secondary-button" type="button" onClick={openEditModal} disabled={isLoading}>
+          <PencilLine size={17} />
+          {t("Edit profile")}
+        </button>
       </div>
+
       <p className="panel-copy">{t("You can update profile information. Orders and crop lot records stay read-only.")}</p>
-      <FormGrid>
-        <label className="input-field">
-          <span>{t("Full name")}</span>
-          <input value={profile.name} onChange={(event) => updateField("name", event.target.value)} placeholder={t("Sample full name")} />
-        </label>
-        <label className="input-field">
-          <span>{t("Business / farm name")}</span>
-          <input value={profile.organization} onChange={(event) => updateField("organization", event.target.value)} placeholder={t("Shop, restaurant, company, or farm")} />
-        </label>
-        <label className="input-field">
-          <span>{t("District")}</span>
-          <select value={profile.district} onChange={(event) => updateField("district", event.target.value)}>
-            <option value="" disabled>
-              {t("Select service district")}
-            </option>
-            {serviceDistricts.map((district) => (
-              <option key={district} value={district}>
-                {t(district)}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="input-field">
-          <span>{t("Address")}</span>
-          <input value={profile.address} onChange={(event) => updateField("address", event.target.value)} placeholder={t("Dhaka North")} />
-        </label>
-        <label className="input-field">
-          <span>{t("NID / trade license")}</span>
-          <input value={profile.identity} onChange={(event) => updateField("identity", event.target.value)} placeholder={t("Sample identity")} />
-        </label>
-        <label className="input-field">
-          <span>{t("Crop interest / supply focus")}</span>
-          <input value={profile.focus} onChange={(event) => updateField("focus", event.target.value)} placeholder={t("Tomato, potato, chilli...")} />
-        </label>
-      </FormGrid>
-      {error && <p className="auth-error">{t(error)}</p>}
       {success && <p className="auth-notice">{t(success)}</p>}
-      <button className="primary-button full" type="submit" disabled={isLoading || isSaving}>
-        <Save size={18} />
-        {t(isSaving ? "Saving profile" : "Save profile")}
-      </button>
-    </form>
+      {error && !isModalOpen && <p className="auth-error">{t(error)}</p>}
+
+      <div className="profile-summary-grid" aria-label={t("My profile")}>
+        <article>
+          <span>{t("Full name")}</span>
+          <strong>{profile.name || user?.name || t("Not provided")}</strong>
+        </article>
+        <article>
+          <span>{t("Business / farm name")}</span>
+          <strong>{profile.organization || t("Not provided")}</strong>
+        </article>
+        <article>
+          <span>{t("District")}</span>
+          <strong>{profile.district ? t(profile.district) : t("Not provided")}</strong>
+        </article>
+        <article>
+          <span>{t("Address")}</span>
+          <strong>{profile.address || t("Not provided")}</strong>
+        </article>
+        <article>
+          <span>{t("NID / trade license")}</span>
+          <strong>{profile.identity ? t("Uploaded document saved") : t("No document uploaded")}</strong>
+          {documentLink && (
+            <a href={documentLink} target="_blank" rel="noreferrer">
+              <ExternalLink size={14} />
+              {t("View document")}
+            </a>
+          )}
+        </article>
+        <article>
+          <span>{t("Crop interest / supply focus")}</span>
+          <strong>{profile.focus || t("Not provided")}</strong>
+        </article>
+      </div>
+
+      <div className="profile-readiness-row">
+        <span>
+          <BadgeCheck size={18} />
+          {profile.identity ? t("Document ready for admin review") : t("Upload NID or trade license")}
+        </span>
+        <span>
+          <UserRoundCog size={18} />
+          {isLoading ? t("Loading profile") : t("Profile details synced with backend")}
+        </span>
+      </div>
+
+      {isModalOpen && (
+        <div className="admin-modal-backdrop" role="presentation">
+          <form className="admin-modal profile-edit-modal" onSubmit={saveProfile}>
+            <div className="admin-modal-header">
+              <div>
+                <span>{t("My profile")}</span>
+                <h2>{t("Edit account information")}</h2>
+              </div>
+              <button className="icon-button" type="button" aria-label={t("Close modal")} onClick={closeEditModal}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <FormGrid>
+              <label className="input-field">
+                <span>{t("Full name")}</span>
+                <input value={draftProfile.name} onChange={(event) => updateField("name", event.target.value)} placeholder={t("Sample full name")} />
+              </label>
+              <label className="input-field">
+                <span>{t("Business / farm name")}</span>
+                <input value={draftProfile.organization} onChange={(event) => updateField("organization", event.target.value)} placeholder={t("Shop, restaurant, company, or farm")} />
+              </label>
+              <label className="input-field">
+                <span>{t("District")}</span>
+                <select value={draftProfile.district} onChange={(event) => updateField("district", event.target.value)}>
+                  <option value="" disabled>
+                    {t("Select service district")}
+                  </option>
+                  {serviceDistricts.map((district) => (
+                    <option key={district} value={district}>
+                      {t(district)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="input-field">
+                <span>{t("Address")}</span>
+                <input value={draftProfile.address} onChange={(event) => updateField("address", event.target.value)} placeholder={t("Dhaka North")} />
+              </label>
+              <label className="input-field upload-field">
+                <span>{t("NID / trade license image")}</span>
+                <input accept="image/*,application/pdf" onChange={(event) => setIdentityFile(event.target.files?.[0] ?? null)} type="file" />
+                <em>
+                  <FileImage size={16} />
+                  {identityFile?.name ?? (draftProfile.identity ? t("Existing document kept") : t("Choose an image or PDF"))}
+                </em>
+              </label>
+              <label className="input-field">
+                <span>{t("Crop interest / supply focus")}</span>
+                <input value={draftProfile.focus} onChange={(event) => updateField("focus", event.target.value)} placeholder={t("Tomato, potato, chilli...")} />
+              </label>
+            </FormGrid>
+
+            {error && <p className="auth-error">{t(error)}</p>}
+            <div className="modal-action-row">
+              <button className="secondary-button" type="button" onClick={closeEditModal} disabled={isSaving}>
+                {t("Cancel")}
+              </button>
+              <button className="primary-button" type="submit" disabled={isLoading || isSaving}>
+                {identityFile ? <Upload size={18} /> : <Save size={18} />}
+                {t(isSaving ? "Saving profile" : "Save profile")}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+    </section>
   );
 }

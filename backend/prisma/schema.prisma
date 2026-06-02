@@ -312,8 +312,10 @@ model UploadedFile {
   ownerId   String?
   url       String
   key       String
+  purpose   String?
   mimeType  String
   size      Int
+  content   Bytes?
   createdAt DateTime @default(now())
   owner     User?    @relation(fields: [ownerId], references: [id])
 }
