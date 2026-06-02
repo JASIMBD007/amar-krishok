@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { BadgeCheck, CheckCircle2, Clock3, PackageCheck, Plus, Sprout, UserRoundCheck } from "lucide-react";
-import { ApiRequestError, createCropLot, fetchMyCropLots, type BackendCropLot } from "../../api/auth";
+import { BadgeCheck, CheckCircle2, Clock3, FileImage, PackageCheck, Plus, Sprout, Upload, UserRoundCheck } from "lucide-react";
+import { ApiRequestError, createCropLot, fetchMyCropLots, uploadFile, type BackendCropLot } from "../../api/auth";
 import { AccountProfilePanel } from "../account/AccountProfilePanel";
 import { ChatWidget } from "../chat/ChatWidget";
 import { serviceDistricts } from "../../data";
@@ -13,7 +13,6 @@ type CropLotForm = {
   district: string;
   grade: string;
   harvestDate: string;
-  imageUrl: string;
   notes: string;
   pricePerKg: string;
   quantityKg: string;
@@ -24,7 +23,6 @@ const emptyForm: CropLotForm = {
   district: "",
   grade: "",
   harvestDate: "",
-  imageUrl: "",
   notes: "",
   pricePerKg: "",
   quantityKg: "",
@@ -70,6 +68,7 @@ export function PostCropPage({
   const v = useValueText();
   const [backendLots, setBackendLots] = useState<BackendCropLot[]>([]);
   const [form, setForm] = useState<CropLotForm>(emptyForm);
+  const [cropImageFile, setCropImageFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [error, setError] = useState("");
@@ -112,6 +111,7 @@ export function PostCropPage({
       setError("Please sign in again to post a backend lot.");
       return;
     }
+    const accessToken = user.accessToken;
 
     const quantityKg = Number(form.quantityKg);
     const pricePerKg = Number(form.pricePerKg);
@@ -128,19 +128,23 @@ export function PostCropPage({
     setIsPublishing(true);
     setError("");
 
-    createCropLot(user.accessToken, {
-      crop: form.crop.trim(),
-      district: form.district.trim(),
-      grade: form.grade.trim(),
-      harvestDate: form.harvestDate || undefined,
-      imageUrl: form.imageUrl.trim() || undefined,
-      notes: form.notes.trim() || undefined,
-      pricePerKg,
-      quantityKg,
-    })
+    (async () => {
+      const uploadedCropImage = cropImageFile ? await uploadFile(accessToken, cropImageFile, "crop-lot-image") : null;
+      return createCropLot(accessToken, {
+        crop: form.crop.trim(),
+        district: form.district.trim(),
+        grade: form.grade.trim(),
+        harvestDate: form.harvestDate || undefined,
+        imageUrl: uploadedCropImage?.url,
+        notes: form.notes.trim() || undefined,
+        pricePerKg,
+        quantityKg,
+      });
+    })()
       .then((lot) => {
         setBackendLots((current) => [lot, ...current]);
         setForm(emptyForm);
+        setCropImageFile(null);
         setSuccess("Published to backend.");
       })
       .catch((apiError) => {
@@ -211,8 +215,12 @@ export function PostCropPage({
             <input value={form.grade} onChange={(event) => updateField("grade", event.target.value)} placeholder={t("A / B+ / C")} />
           </label>
           <label className="input-field">
-            <span>{t("Image URL")}</span>
-            <input value={form.imageUrl} onChange={(event) => updateField("imageUrl", event.target.value)} placeholder="https://..." />
+            <span>{t("Crop image")}</span>
+            <input accept="image/*" onChange={(event) => setCropImageFile(event.target.files?.[0] ?? null)} type="file" />
+            <em className="upload-note">
+              <FileImage size={16} />
+              {cropImageFile?.name ?? t("Choose crop image")}
+            </em>
           </label>
         </FormGrid>
         <label className="full-field">
@@ -222,7 +230,7 @@ export function PostCropPage({
         {error && <p className="auth-error">{t(error)}</p>}
         {success && <p className="auth-notice">{t(success)}</p>}
         <button className="primary-button full" type="submit" disabled={isPublishing}>
-          <Plus size={18} />
+          {cropImageFile ? <Upload size={18} /> : <Plus size={18} />}
           {t(isPublishing ? "Publishing" : "Publish crop lot")}
         </button>
       </form>

@@ -11,6 +11,7 @@ import { MarketPricesModule } from "./modules/market-prices/market-prices.module
 import { NotificationsModule } from "./modules/notifications/notifications.module";
 import { OrdersModule } from "./modules/orders/orders.module";
 import { PrismaModule } from "./modules/prisma/prisma.module";
+import { UploadsModule } from "./modules/uploads/uploads.module";
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { PrismaModule } from "./modules/prisma/prisma.module";
     NotificationsModule,
     MarketPricesModule,
     ChatModule,
+    UploadsModule,
   ],
 })
 export class AppModule {}
