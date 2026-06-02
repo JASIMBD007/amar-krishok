@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { BadgeCheck, CheckCircle2, Clock3, FileImage, PackageCheck, Plus, Sprout, Upload, UserRoundCheck } from "lucide-react";
+import { BadgeCheck, CheckCircle2, Clock3, FileImage, ListChecks, PackageCheck, Plus, Sprout, Upload, UserRoundCheck } from "lucide-react";
 import { ApiRequestError, createCropLot, fetchMyCropLots, uploadFile, type BackendCropLot } from "../../api/auth";
 import { AccountProfilePanel } from "../account/AccountProfilePanel";
-import { ChatWidget } from "../chat/ChatWidget";
 import { serviceDistricts } from "../../data";
 import { useTranslate, useValueText } from "../../i18n";
-import type { AuthUser, ChatThread, RegisteredAccount } from "../../types";
-import { FormGrid, SectionTitle } from "../shared";
+import type { AuthUser, RegisteredAccount } from "../../types";
+import { FormGrid } from "../shared";
 
 type CropLotForm = {
   crop: string;
@@ -54,14 +53,10 @@ function formatHarvestDate(value: string | null) {
 }
 
 export function PostCropPage({
-  chatThreads,
   onProfileSaved,
-  onSendChatMessage,
   user,
 }: {
-  chatThreads: ChatThread[];
   onProfileSaved: (account: RegisteredAccount) => void;
-  onSendChatMessage: (user: AuthUser, text: string, subject: string) => void;
   user: AuthUser | null;
 }) {
   const t = useTranslate();
@@ -154,8 +149,24 @@ export function PostCropPage({
   };
 
   return (
-    <section className="page-wrap form-layout seller-dashboard">
-      <SectionTitle eyebrow="Seller dashboard" title="Manage your crop lots, backend listings, and admin support from one place." t={t} />
+    <section className="page-wrap form-layout seller-dashboard farmer-workspace">
+      <section className="farmer-dashboard-hero">
+        <div>
+          <span>{t("Farmer workspace")}</span>
+          <h1>{t("Post crops, track lots, and keep your profile ready.")}</h1>
+          <p>{t("Add harvest details, upload a crop photo, and keep your documents ready so buyers and admins can move faster.")}</p>
+        </div>
+        <div className="farmer-quick-actions" aria-label={t("Farmer quick actions")}>
+          <a className="primary-button" href="#publish-crop">
+            <Plus size={18} />
+            {t("Post new crop")}
+          </a>
+          <a className="secondary-button" href="#published-lots">
+            <ListChecks size={18} />
+            {t("View my lots")}
+          </a>
+        </div>
+      </section>
 
       <section className="seller-overview" aria-label={t("Seller backend metrics")}>
         <article>
@@ -175,10 +186,17 @@ export function PostCropPage({
         </article>
       </section>
 
-      <form className="panel form-panel" onSubmit={submitLot}>
-        <div className="backend-status-pill">
-          <CheckCircle2 size={17} />
-          {t("Backend connected")}
+      <form className="panel form-panel farmer-form-panel" id="publish-crop" onSubmit={submitLot}>
+        <div className="panel-header farmer-form-heading">
+          <div>
+            <span>{t("Crop listing")}</span>
+            <h2>{t("Publish a crop lot")}</h2>
+            <p>{t("Keep the required fields short and accurate. You can add packaging or pickup details in notes.")}</p>
+          </div>
+          <div className="backend-status-pill">
+            <CheckCircle2 size={17} />
+            {t("Backend connected")}
+          </div>
         </div>
         <FormGrid>
           <label className="input-field">
@@ -234,10 +252,12 @@ export function PostCropPage({
           {t(isPublishing ? "Publishing" : "Publish crop lot")}
         </button>
       </form>
-      <aside className="panel side-panel">
-        <UserRoundCheck size={24} />
-        <h3>{t("Farmer profile readiness")}</h3>
-        <p>{t("Phone OTP, NID, farm location, and bank/mobile wallet details should be verified before payout.")}</p>
+      <aside className="panel side-panel farmer-action-panel">
+        <div className="farmer-panel-icon">
+          <UserRoundCheck size={24} />
+        </div>
+        <h3>{t("Profile readiness")}</h3>
+        <p>{t("Keep these items complete so the team can approve lots and release payouts without delay.")}</p>
         <div className="checklist">
           <span><CheckCircle2 size={18} /> {t("Phone verified")}</span>
           <span><CheckCircle2 size={18} /> {t("Farm location added")}</span>
@@ -245,11 +265,12 @@ export function PostCropPage({
         </div>
       </aside>
 
-      <section className="panel seller-lots-panel">
+      <section className="panel seller-lots-panel farmer-lots-panel" id="published-lots">
         <div className="panel-header">
           <div>
             <span>{t("Backend lots")}</span>
             <h2>{t("Your published crop lots")}</h2>
+            <p>{t("Track the lots already sent to the marketplace. Order changes stay read-only for farmers.")}</p>
           </div>
           <Sprout size={22} />
         </div>
@@ -277,13 +298,6 @@ export function PostCropPage({
       </section>
 
       <AccountProfilePanel user={user} onProfileSaved={onProfileSaved} />
-
-      <ChatWidget
-        chatThreads={chatThreads}
-        subject="Crop approval and payout support"
-        user={user}
-        onSendMessage={onSendChatMessage}
-      />
     </section>
   );
 }

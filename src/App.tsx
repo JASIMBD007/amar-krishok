@@ -394,7 +394,7 @@ export default function App() {
           path="/farmer"
           element={
             <ProtectedRoute allowedRoles={["farmer", "admin"]} user={user} t={t}>
-              <PostCropPage chatThreads={chatThreads} user={user} onProfileSaved={handleProfileSaved} onSendChatMessage={sendUserChatMessage} />
+              <PostCropPage user={user} onProfileSaved={handleProfileSaved} />
             </ProtectedRoute>
           }
         />

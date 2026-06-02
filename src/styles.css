@@ -727,6 +727,58 @@ button {
   grid-column: 1 / -1;
 }
 
+.farmer-workspace {
+  gap: 16px;
+}
+
+.farmer-dashboard-hero {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 18px;
+  padding: 24px;
+  border: 1px solid rgba(24, 48, 40, 0.1);
+  border-radius: 8px;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.96), rgba(242, 248, 238, 0.92)),
+    radial-gradient(circle at top right, rgba(23, 107, 71, 0.12), transparent 36%);
+  box-shadow: 0 18px 50px rgba(24, 48, 40, 0.08);
+}
+
+.farmer-dashboard-hero span,
+.farmer-form-heading span,
+.farmer-lots-panel .panel-header span {
+  color: #176b47;
+  font-size: 0.8rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.farmer-dashboard-hero h1 {
+  max-width: 760px;
+  margin: 8px 0 10px;
+  color: #183028;
+  font-size: clamp(1.85rem, 3vw, 3rem);
+  line-height: 1.08;
+}
+
+.farmer-dashboard-hero p,
+.farmer-form-heading p,
+.farmer-lots-panel .panel-header p {
+  max-width: 720px;
+  margin: 0;
+  color: #60736b;
+  line-height: 1.55;
+}
+
+.farmer-quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
 .form-panel,
 .side-panel,
 .price-table,
@@ -780,6 +832,29 @@ button {
   line-height: 1;
 }
 
+.farmer-workspace .seller-overview article {
+  min-height: 104px;
+}
+
+.farmer-form-panel,
+.farmer-lots-panel,
+.organized-profile-panel {
+  scroll-margin-top: 104px;
+}
+
+.farmer-form-panel {
+  align-self: stretch;
+}
+
+.farmer-form-heading {
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.farmer-form-heading .backend-status-pill {
+  margin-bottom: 0;
+}
+
 .backend-status-pill {
   display: inline-flex;
   width: fit-content;
@@ -830,6 +905,31 @@ button {
 .profile-panel {
   grid-column: 1 / -1;
   padding: 20px;
+}
+
+.farmer-action-panel {
+  position: sticky;
+  top: 96px;
+  display: grid;
+  gap: 14px;
+}
+
+.farmer-panel-icon {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border-radius: 8px;
+  color: #176b47;
+  background: #e8f3e8;
+}
+
+.farmer-action-panel h3 {
+  margin: 0;
+}
+
+.farmer-action-panel p {
+  margin: 0;
 }
 
 .organized-profile-panel {
@@ -2883,6 +2983,10 @@ th {
     grid-template-columns: 1fr;
   }
 
+  .farmer-action-panel {
+    position: static;
+  }
+
   .hero-section {
     min-height: auto;
   }
@@ -3049,6 +3153,14 @@ th {
 
   .hero-copy h1 {
     font-size: 2.25rem;
+  }
+
+  .farmer-dashboard-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .farmer-quick-actions {
+    justify-content: flex-start;
   }
 
   .listing-grid,
@@ -3257,6 +3369,18 @@ th {
   .floating-chat-button {
     min-height: 52px;
     padding: 0 15px;
+  }
+
+  .farmer-dashboard-hero {
+    padding: 18px;
+  }
+
+  .farmer-dashboard-hero h1 {
+    font-size: 1.8rem;
+  }
+
+  .farmer-quick-actions {
+    display: grid;
   }
 
   .form-panel,
