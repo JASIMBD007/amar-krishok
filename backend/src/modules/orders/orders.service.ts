@@ -91,6 +91,16 @@ export class OrdersService {
       body: `${order.buyer.name} · ${order.items.map((item) => item.crop.name).join(", ")} · ${order.district.name}`,
       title: "Order request needs review",
     });
+    await this.notifications.notifyUser(order.buyerId, {
+      body: `${order.items.map((item) => item.crop.name).join(", ")} · ${order.district.name} · ${order.status}`,
+      title: "Order request received",
+    });
+
+    const farmerIds = order.items.map((item) => item.cropLot?.farmerId).filter((farmerId): farmerId is string => Boolean(farmerId));
+    await this.notifications.notifyUsers(farmerIds, {
+      body: `${order.buyer.name} requested ${order.items.map((item) => item.crop.name).join(", ")}.`,
+      title: "New order for your lot",
+    });
 
     return order;
   }

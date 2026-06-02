@@ -133,7 +133,7 @@ export type AdminAccountPayload = UpdateProfilePayload & {
   status: AccountStatus;
 };
 
-export type BackendAdminNotification = {
+export type BackendNotification = {
   body: string;
   createdAt: string;
   id: string;
@@ -144,6 +144,7 @@ export type BackendAdminNotification = {
   tone: string;
   type: string;
 };
+export type BackendAdminNotification = BackendNotification;
 
 type RegisterAccountPayload = {
   address: string;
@@ -372,6 +373,24 @@ export function markAdminNotificationRead(accessToken: string, id: string) {
 
 export function markAllAdminNotificationsRead(accessToken: string) {
   return apiRequest<{ count: number }>("/api/admin/notifications/read-all", {
+    accessToken,
+    method: "PATCH",
+  });
+}
+
+export function fetchNotifications(accessToken: string) {
+  return apiRequest<BackendNotification[]>("/api/notifications", { accessToken });
+}
+
+export function markNotificationRead(accessToken: string, id: string) {
+  return apiRequest<BackendNotification>(`/api/notifications/${id}/read`, {
+    accessToken,
+    method: "PATCH",
+  });
+}
+
+export function markAllNotificationsRead(accessToken: string) {
+  return apiRequest<{ count: number }>("/api/notifications/read-all", {
     accessToken,
     method: "PATCH",
   });

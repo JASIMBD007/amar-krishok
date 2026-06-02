@@ -1,7 +1,6 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Navigate, NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import {
-  Bell,
   ChevronDown,
   LockKeyhole,
   Menu,
@@ -9,15 +8,27 @@ import {
   Sprout,
   X,
 } from "lucide-react";
+import {
+  ApiRequestError,
+  fetchMyCropLots,
+  fetchMyOrders,
+  fetchNotifications,
+  markAllNotificationsRead,
+  markNotificationRead,
+  type BackendCropLot,
+  type BackendOrder,
+} from "./api/auth";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { Seo } from "./components/Seo";
 import { FloatingSupportChat } from "./components/chat/FloatingSupportChat";
+import { NotificationCenter } from "./components/notifications/NotificationCenter";
+import { makeRoleNotifications, mergeNotifications, toAppNotification } from "./components/notifications/roleNotifications";
 import { roleCanOpenPath } from "./components/pages/pageHelpers";
 import { LanguageContext, translate } from "./i18n";
 import { lots, roleOptions, routeByView, views } from "./data";
 import { AdminPage, HomePage, LoginPage, MarketplacePage, OrderPage, PostCropPage, PricesPage, RegisterPage } from "./components/pages";
 import { useAppStore } from "./store/useAppStore";
-import type { AuthUser, RegisteredAccount, Role, View } from "./types";
+import type { AppNotification, AuthUser, RegisteredAccount, Role, View } from "./types";
 
 export default function App() {
   const navigate = useNavigate();
@@ -45,6 +56,17 @@ export default function App() {
     user,
   } = useAppStore();
   const t = (text: string) => translate(language, text);
+  const [backendNotifications, setBackendNotifications] = useState<AppNotification[] | null>(null);
+  const [notificationOrders, setNotificationOrders] = useState<BackendOrder[]>([]);
+  const [notificationLots, setNotificationLots] = useState<BackendCropLot[]>([]);
+  const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
+  const [notificationError, setNotificationError] = useState("");
+  const [reviewedNotificationIds, setReviewedNotificationIds] = useState<string[]>([]);
+
+  const closeAllHeaderMenus = () => {
+    closeHeaderMenus();
+    setNotificationPanelOpen(false);
+  };
 
   useEffect(() => {
     if (user?.role === "admin" && !user.accessToken) {
@@ -75,27 +97,126 @@ export default function App() {
     });
   }, [query, district, language]);
 
+  useEffect(() => {
+    if (!user?.accessToken) {
+      setBackendNotifications(null);
+      setNotificationOrders([]);
+      setNotificationLots([]);
+      setNotificationError("");
+      setNotificationPanelOpen(false);
+      return;
+    }
+
+    const accessToken = user.accessToken;
+    setReviewedNotificationIds([]);
+
+    fetchNotifications(accessToken)
+      .then((notifications) => {
+        setBackendNotifications(notifications.map((notification) => toAppNotification(notification, user.role)));
+        setNotificationError("");
+      })
+      .catch((error) => {
+        setBackendNotifications(null);
+        setNotificationError(error instanceof ApiRequestError ? error.message : "Backend service is unavailable. Please try again.");
+      });
+
+    if (user.role === "buyer" || user.role === "admin") {
+      fetchMyOrders(accessToken)
+        .then((orders) => setNotificationOrders(orders))
+        .catch(() => setNotificationOrders([]));
+    } else {
+      setNotificationOrders([]);
+    }
+
+    if (user.role === "farmer" || user.role === "admin") {
+      fetchMyCropLots(accessToken)
+        .then((cropLots) => setNotificationLots(cropLots))
+        .catch(() => setNotificationLots([]));
+    } else {
+      setNotificationLots([]);
+    }
+  }, [user?.accessToken, user?.role]);
+
+  const fallbackNotifications = useMemo(
+    () =>
+      makeRoleNotifications({
+        chatThreads,
+        lots: notificationLots,
+        notificationError,
+        orders: notificationOrders,
+        registrations,
+        user,
+      }),
+    [chatThreads, notificationError, notificationLots, notificationOrders, registrations, user],
+  );
+  const activeNotifications = useMemo(
+    () => mergeNotifications(backendNotifications, fallbackNotifications),
+    [backendNotifications, fallbackNotifications],
+  );
+
   const selectView = (nextView: View) => {
     navigate(routeByView[nextView]);
-    closeHeaderMenus();
+    closeAllHeaderMenus();
   };
 
   const chooseRole = (role: Role, targetView: View) => {
     const targetPath = routeByView[targetView];
     if (user && roleCanOpenPath(user.role, targetPath)) {
       navigate(targetPath);
-      closeHeaderMenus();
+      closeAllHeaderMenus();
       return;
     }
 
     navigate(`/login?role=${role}&next=${encodeURIComponent(targetPath)}`);
-    closeHeaderMenus();
+    closeAllHeaderMenus();
+  };
+
+  const openNotification = (notification: AppNotification) => {
+    setReviewedNotificationIds((current) => (current.includes(notification.id) ? current : [...current, notification.id]));
+
+    if (user?.accessToken && backendNotifications?.some((item) => item.id === notification.id) && !notification.readAt) {
+      const optimisticReadAt = new Date().toISOString();
+      setBackendNotifications((current) =>
+        current?.map((item) => (item.id === notification.id ? { ...item, readAt: optimisticReadAt } : item)) ?? current,
+      );
+      markNotificationRead(user.accessToken, notification.id)
+        .then((updatedNotification) => {
+          setBackendNotifications((current) =>
+            current?.map((item) => (item.id === notification.id ? toAppNotification(updatedNotification, user.role) : item)) ?? current,
+          );
+          setNotificationError("");
+        })
+        .catch((error) => {
+          setNotificationError(error instanceof ApiRequestError ? error.message : "Backend service is unavailable. Please try again.");
+        });
+    }
+
+    setNotificationPanelOpen(false);
+    closeAllHeaderMenus();
+
+    if (notification.href) {
+      navigate(notification.href);
+    }
+  };
+
+  const markAllNotificationsReviewed = () => {
+    setReviewedNotificationIds((current) => Array.from(new Set([...current, ...activeNotifications.map((notification) => notification.id)])));
+
+    if (!user?.accessToken || !backendNotifications) {
+      return;
+    }
+
+    const optimisticReadAt = new Date().toISOString();
+    setBackendNotifications((current) => current?.map((notification) => ({ ...notification, readAt: notification.readAt ?? optimisticReadAt })) ?? current);
+    markAllNotificationsRead(user.accessToken).catch((error) => {
+      setNotificationError(error instanceof ApiRequestError ? error.message : "Backend service is unavailable. Please try again.");
+    });
   };
 
   const handleLogin = (nextUser: AuthUser, nextPath: string) => {
     setUser(nextUser);
     navigate(nextPath);
-    closeHeaderMenus();
+    closeAllHeaderMenus();
   };
 
   const handleRegister = addRegistration;
@@ -110,7 +231,7 @@ export default function App() {
 
   const handleLogout = () => {
     setUser(null);
-    closeHeaderMenus();
+    closeAllHeaderMenus();
     if (location.pathname === "/admin" || location.pathname === "/buyer" || location.pathname === "/farmer") {
       navigate("/");
     }
@@ -128,11 +249,14 @@ export default function App() {
           type="button"
           aria-expanded={menuOpen}
           aria-label={menuOpen ? t("Close menu") : t("Open menu")}
-          onClick={toggleMenuOpen}
+          onClick={() => {
+            setNotificationPanelOpen(false);
+            toggleMenuOpen();
+          }}
         >
           {menuOpen ? <X size={21} /> : <Menu size={21} />}
         </button>
-        <NavLink className="brand" to="/" onClick={closeHeaderMenus} aria-label={t("AmarKrishok home")} end>
+        <NavLink className="brand" to="/" onClick={closeAllHeaderMenus} aria-label={t("AmarKrishok home")} end>
           <span className="brand-mark">
             <Sprout size={22} strokeWidth={2.6} />
           </span>
@@ -144,7 +268,7 @@ export default function App() {
 
         <nav className="main-nav" aria-label={t("Main navigation")}>
           {views.map((item) => (
-            <NavLink end={item.path === "/"} key={item.id} to={item.path} onClick={closeHeaderMenus}>
+            <NavLink end={item.path === "/"} key={item.id} to={item.path} onClick={closeAllHeaderMenus}>
               {t(item.label)}
             </NavLink>
           ))}
@@ -159,16 +283,28 @@ export default function App() {
               বাংলা
             </button>
           </div>
-          <button className="icon-button" type="button" aria-label={t("Notifications")}>
-            <Bell size={18} />
-          </button>
+          <NotificationCenter
+            emptyLabel={user ? "No notifications right now" : "Sign in to see notifications"}
+            notifications={user ? activeNotifications : []}
+            onMarkAllReviewed={markAllNotificationsReviewed}
+            onOpenNotification={openNotification}
+            onToggle={() => {
+              closeHeaderMenus();
+              setNotificationPanelOpen((value) => !value);
+            }}
+            open={notificationPanelOpen}
+            reviewedIds={reviewedNotificationIds}
+          />
           <div className="login-shell">
             <button
               className="secondary-button"
               type="button"
               aria-expanded={loginOpen}
               aria-haspopup="menu"
-              onClick={toggleLoginOpen}
+              onClick={() => {
+                setNotificationPanelOpen(false);
+                toggleLoginOpen();
+              }}
             >
               <LockKeyhole size={17} />
               {roleLabel ? t(roleLabel) : t("Login")}
@@ -198,14 +334,14 @@ export default function App() {
                 })}
                 {!user && (
                   <>
-                    <NavLink className="role-option" to="/register/buyer" onClick={closeHeaderMenus}>
+                    <NavLink className="role-option" to="/register/buyer" onClick={closeAllHeaderMenus}>
                       <ShoppingBag size={18} />
                       <span>
                         <strong>{t("Register buyer")}</strong>
                         <small>{t("New buyer account")}</small>
                       </span>
                     </NavLink>
-                    <NavLink className="role-option" to="/register/farmer" onClick={closeHeaderMenus}>
+                    <NavLink className="role-option" to="/register/farmer" onClick={closeAllHeaderMenus}>
                       <Sprout size={18} />
                       <span>
                         <strong>{t("Register seller")}</strong>
@@ -231,7 +367,7 @@ export default function App() {
         {menuOpen && (
           <nav className="mobile-menu-panel" aria-label={t("Mobile navigation")}>
             {views.map((item) => (
-              <NavLink end={item.path === "/"} key={item.id} to={item.path} onClick={closeHeaderMenus}>
+              <NavLink end={item.path === "/"} key={item.id} to={item.path} onClick={closeAllHeaderMenus}>
                 {t(item.label)}
               </NavLink>
             ))}
