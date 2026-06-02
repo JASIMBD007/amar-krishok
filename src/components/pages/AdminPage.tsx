@@ -12,8 +12,9 @@ import {
   type AdminAccountPayload,
   type BackendOrder,
 } from "../../api/auth";
+import { countAdminChatAttention } from "../chat/chatUnread";
 import { adminNavItems } from "../../data";
-import { useTranslate } from "../../i18n";
+import { useTranslate, useValueText } from "../../i18n";
 import type { AccountStatus, AdminSection, AuthUser, ChatThread, RegisteredAccount } from "../../types";
 import {
   BuyersSection,
@@ -46,6 +47,7 @@ export function AdminPage({
   user: AuthUser | null;
 }) {
   const t = useTranslate();
+  const v = useValueText();
   const location = useLocation();
   const navigate = useNavigate();
   const [activeAdminSection, setActiveAdminSection] = useState<AdminSection>("dashboard");
@@ -58,6 +60,7 @@ export function AdminPage({
   const activeTitle = activeAdminSection === "dashboard" ? "Operations dashboard" : activeNavItem.label;
   const activeEyebrow = activeAdminSection === "dashboard" ? "Sunday, May 24" : activeNavItem.label;
   const effectiveRegistrations = backendRegistrations ?? registrations;
+  const adminChatBadgeCount = countAdminChatAttention(chatThreads);
 
   useEffect(() => {
     const nextSection = sectionFromSearch(location.search);
@@ -157,7 +160,12 @@ export function AdminPage({
             onClick={() => openAdminSection(item.id)}
           >
             <Icon size={19} />
-            {t(item.label)}
+            <span className="side-nav-label">{t(item.label)}</span>
+            {item.id === "chat" && adminChatBadgeCount > 0 && (
+              <span className="chat-nav-badge" aria-label={t("Unread chat messages")}>
+                {v(adminChatBadgeCount)}
+              </span>
+            )}
           </button>
         );
       })}

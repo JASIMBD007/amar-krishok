@@ -1,8 +1,9 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import { MessageCircle, Send, ShieldCheck, X } from "lucide-react";
 import { useTranslate, useValueText } from "../../i18n";
 import type { AuthUser, ChatParticipant, ChatThread } from "../../types";
+import { countUnseenAdminReplies, getAdminReplyIds, readSeenChatMessageIds, saveSeenChatMessageIds } from "./chatUnread";
 
 const GUEST_ID_STORAGE_KEY = "amarKrishokGuestChatId";
 const GUEST_NAME_STORAGE_KEY = "amarKrishokGuestChatName";
@@ -57,6 +58,7 @@ export function FloatingSupportChat({
   const [guestPhone, setGuestPhone] = useState(() => readStoredValue(GUEST_PHONE_STORAGE_KEY));
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [seenMessageIds, setSeenMessageIds] = useState<string[]>(() => readSeenChatMessageIds());
 
   const participant = useMemo<ChatParticipant | null>(() => {
     if (user?.role === "admin") {
@@ -89,7 +91,21 @@ export function FloatingSupportChat({
       )
     : null;
   const visibleMessages = thread?.messages.slice(-5) ?? [];
+  const adminReplyIds = useMemo(() => getAdminReplyIds(thread), [thread]);
+  const unreadReplyCount = isOpen ? 0 : countUnseenAdminReplies(thread, seenMessageIds);
   const needsGuestInfo = !user;
+
+  useEffect(() => {
+    if (!isOpen || adminReplyIds.length === 0) {
+      return;
+    }
+
+    setSeenMessageIds((currentIds) => {
+      const nextIds = Array.from(new Set([...currentIds, ...adminReplyIds]));
+      saveSeenChatMessageIds(nextIds);
+      return nextIds;
+    });
+  }, [adminReplyIds, isOpen]);
 
   const saveGuestContact = () => {
     try {
@@ -197,6 +213,11 @@ export function FloatingSupportChat({
       <button className="floating-chat-button" type="button" aria-label={t("Chat with admin")} onClick={() => setIsOpen((value) => !value)}>
         <MessageCircle size={25} />
         <span>{t("Chat")}</span>
+        {unreadReplyCount > 0 && (
+          <strong className="floating-chat-badge" aria-label={t("Unread chat messages")}>
+            {v(unreadReplyCount)}
+          </strong>
+        )}
       </button>
     </aside>
   );

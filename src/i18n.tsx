@@ -18,6 +18,7 @@ const bn: Record<string, string> = {
   "Mark all reviewed": "সব দেখা হয়েছে",
   "No admin notifications right now": "এখন কোনো অ্যাডমিন নোটিফিকেশন নেই",
   "Unread notification": "নতুন নোটিফিকেশন",
+  "Unread chat messages": "নতুন চ্যাট মেসেজ",
   "New chat message": "নতুন চ্যাট মেসেজ",
   "Buyer chat": "ক্রেতার চ্যাট",
   "Farmer chat": "কৃষকের চ্যাট",

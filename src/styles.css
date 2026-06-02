@@ -1544,6 +1544,7 @@ button {
 }
 
 .floating-chat-button {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 9px;
@@ -1555,6 +1556,25 @@ button {
   background: #176b47;
   box-shadow: 0 16px 36px rgba(23, 107, 71, 0.32);
   font-weight: 900;
+}
+
+.floating-chat-badge,
+.chat-nav-badge {
+  display: inline-grid;
+  min-width: 22px;
+  min-height: 22px;
+  place-items: center;
+  padding: 0 6px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.floating-chat-badge {
+  margin-left: 2px;
+  color: #176b47;
+  background: #ffffff;
 }
 
 .floating-chat-button:hover {
@@ -1765,6 +1785,24 @@ th {
   color: #52665b;
   background: transparent;
   font-weight: 760;
+}
+
+.side-nav-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chat-nav-badge {
+  margin-left: auto;
+  color: #ffffff;
+  background: #b85b35;
+}
+
+.side-nav button.active .chat-nav-badge,
+.side-nav button:hover .chat-nav-badge {
+  color: #176b47;
+  background: #ffffff;
 }
 
 .side-nav button.active,
