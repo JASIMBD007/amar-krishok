@@ -1900,9 +1900,27 @@ button {
   color: #176b47;
 }
 
+.stat-card-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+}
+
+.stat-card-label svg {
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+.stat-card-label span {
+  line-height: 1;
+}
+
 .stat-card strong {
   display: block;
-  margin-top: 12px;
+  margin-top: 14px;
   font-size: clamp(1.5rem, 2.6vw, 2.1rem);
 }
 
