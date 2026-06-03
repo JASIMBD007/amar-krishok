@@ -23,6 +23,10 @@ export class RegisterAccountDto {
 
   @IsString()
   @IsNotEmpty()
+  upazilla!: string;
+
+  @IsString()
+  @IsNotEmpty()
   address!: string;
 
   @IsString()

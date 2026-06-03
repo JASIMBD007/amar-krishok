@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Plus, Save } from "lucide-react";
 import type { AdminAccountPayload } from "../../../api/auth";
-import { serviceDistricts } from "../../../data";
+import { getUpazillasForDistrict, serviceDistricts } from "../../../data";
 import { useTranslate } from "../../../i18n";
 import type { AccountStatus, RegisteredAccount, RegistrationRole } from "../../../types";
 import { FormGrid } from "../../shared";
@@ -9,6 +9,7 @@ import { FormGrid } from "../../shared";
 type AccountFormState = {
   address: string;
   district: string;
+  upazilla: string;
   focus: string;
   identity: string;
   name: string;
@@ -21,6 +22,7 @@ type AccountFormState = {
 const emptyForm: AccountFormState = {
   address: "",
   district: "",
+  upazilla: "",
   focus: "",
   identity: "",
   name: "",
@@ -49,6 +51,7 @@ export function AccountManagementForm({
   const [form, setForm] = useState<AccountFormState>(emptyForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isEditing = Boolean(editingAccount);
+  const availableUpazillas = getUpazillasForDistrict(form.district);
 
   useEffect(() => {
     if (!editingAccount) {
@@ -59,6 +62,7 @@ export function AccountManagementForm({
     setForm({
       address: editingAccount.address,
       district: editingAccount.district,
+      upazilla: editingAccount.upazilla,
       focus: editingAccount.focus,
       identity: editingAccount.identity,
       name: editingAccount.name,
@@ -70,13 +74,13 @@ export function AccountManagementForm({
   }, [editingAccount]);
 
   const updateField = (field: keyof AccountFormState, value: string) => {
-    setForm((current) => ({ ...current, [field]: value }));
+    setForm((current) => ({ ...current, [field]: value, ...(field === "district" ? { upazilla: "" } : {}) }));
   };
 
   const submitForm = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!form.name.trim() || !form.phone.trim() || !form.organization.trim() || !form.district.trim() || !form.address.trim() || !form.identity.trim() || !form.focus.trim()) {
+    if (!form.name.trim() || !form.phone.trim() || !form.organization.trim() || !form.district.trim() || !form.upazilla.trim() || !form.address.trim() || !form.identity.trim() || !form.focus.trim()) {
       onError("Please fill in all account fields.");
       return;
     }
@@ -93,6 +97,7 @@ export function AccountManagementForm({
         await onUpdateAccount(editingAccount.id, {
           address: form.address.trim(),
           district: form.district.trim(),
+          upazilla: form.upazilla.trim(),
           focus: form.focus.trim(),
           identity: form.identity.trim(),
           name: form.name.trim(),
@@ -107,6 +112,7 @@ export function AccountManagementForm({
         await onCreateAccount({
           address: form.address.trim(),
           district: form.district.trim(),
+          upazilla: form.upazilla.trim(),
           focus: form.focus.trim(),
           identity: form.identity.trim(),
           name: form.name.trim(),
@@ -162,6 +168,19 @@ export function AccountManagementForm({
             {serviceDistricts.map((district) => (
               <option key={district} value={district}>
                 {t(district)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="input-field">
+          <span>{t("Upazilla")}</span>
+          <select value={form.upazilla} onChange={(event) => updateField("upazilla", event.target.value)} disabled={!form.district}>
+            <option value="" disabled>
+              {t(form.district ? "Select upazilla" : "Select district first")}
+            </option>
+            {availableUpazillas.map((upazilla) => (
+              <option key={upazilla} value={upazilla}>
+                {t(upazilla)}
               </option>
             ))}
           </select>

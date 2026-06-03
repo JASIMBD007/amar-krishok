@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { ArrayNotEmpty, IsDateString, IsNumber, IsOptional, IsString, Min, ValidateNested } from "class-validator";
+import { ArrayNotEmpty, IsDateString, IsNotEmpty, IsNumber, IsOptional, IsString, Min, ValidateNested } from "class-validator";
 
 export class CreateOrderItemDto {
   @IsString()
@@ -25,6 +25,10 @@ export class CreateOrderDto {
 
   @IsString()
   district!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  upazilla!: string;
 
   @IsString()
   deliveryAddress!: string;

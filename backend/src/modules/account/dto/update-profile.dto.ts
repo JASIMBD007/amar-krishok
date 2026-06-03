@@ -16,6 +16,10 @@ export class UpdateProfileDto {
 
   @IsString()
   @IsOptional()
+  upazilla?: string;
+
+  @IsString()
+  @IsOptional()
   address?: string;
 
   @IsString()

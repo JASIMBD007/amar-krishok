@@ -20,6 +20,7 @@ const orderInclude = {
       reviewedAt: true,
       role: true,
       status: true,
+      upazilla: true,
       updatedAt: true,
     },
   },
@@ -83,16 +84,17 @@ export class OrdersService {
         status: OrderStatus.PENDING,
         targetDate: dto.targetDate ? new Date(dto.targetDate) : undefined,
         totalValue: new Prisma.Decimal(totalValue),
+        upazilla: dto.upazilla,
       },
       include: orderInclude,
     });
 
     await this.notifications.notifyAdmins({
-      body: `${order.buyer.name} · ${order.items.map((item) => item.crop.name).join(", ")} · ${order.district.name}`,
+      body: `${order.buyer.name} · ${order.items.map((item) => item.crop.name).join(", ")} · ${order.upazilla || order.district.name}`,
       title: "Order request needs review",
     });
     await this.notifications.notifyUser(order.buyerId, {
-      body: `${order.items.map((item) => item.crop.name).join(", ")} · ${order.district.name} · ${order.status}`,
+      body: `${order.items.map((item) => item.crop.name).join(", ")} · ${order.upazilla || order.district.name} · ${order.status}`,
       title: "Order request received",
     });
 

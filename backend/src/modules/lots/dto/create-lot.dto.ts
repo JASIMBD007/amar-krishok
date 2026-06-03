@@ -1,4 +1,4 @@
-import { IsDateString, IsNumber, IsOptional, IsString, Min } from "class-validator";
+import { IsDateString, IsIn, IsNotEmpty, IsNumber, IsOptional, IsString, Min } from "class-validator";
 
 export class CreateLotDto {
   @IsString()
@@ -11,6 +11,10 @@ export class CreateLotDto {
   @IsString()
   district!: string;
 
+  @IsString()
+  @IsNotEmpty()
+  upazilla!: string;
+
   @IsNumber()
   @Min(0.01)
   quantityKg!: number;
@@ -19,7 +23,7 @@ export class CreateLotDto {
   @Min(0.01)
   pricePerKg!: number;
 
-  @IsString()
+  @IsIn(["A", "B", "C"])
   grade!: string;
 
   @IsDateString()

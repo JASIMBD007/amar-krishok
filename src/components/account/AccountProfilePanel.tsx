@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { ExternalLink, FileImage, LockKeyhole, PencilLine, Save, Upload, X } from "lucide-react";
 import { ApiRequestError, fetchMyProfile, updateMyProfile, uploadFile, type UpdateProfilePayload } from "../../api/auth";
-import { serviceDistricts } from "../../data";
+import { getUpazillasForDistrict, serviceDistricts } from "../../data";
 import { useTranslate } from "../../i18n";
 import type { AuthUser, RegisteredAccount } from "../../types";
 import { FormGrid } from "../shared";
@@ -9,6 +9,7 @@ import { FormGrid } from "../shared";
 const emptyProfile: UpdateProfilePayload = {
   address: "",
   district: "",
+  upazilla: "",
   focus: "",
   identity: "",
   name: "",
@@ -37,6 +38,7 @@ export function AccountProfilePanel({
   const [success, setSuccess] = useState("");
   const canEditProfile = user?.role === "buyer" || user?.role === "farmer";
   const documentLink = isLinkedDocument(profile.identity) ? profile.identity : "";
+  const availableUpazillas = getUpazillasForDistrict(draftProfile.district);
 
   useEffect(() => {
     if (!user?.accessToken || !canEditProfile) {
@@ -49,6 +51,7 @@ export function AccountProfilePanel({
         const nextProfile = {
           address: account.address,
           district: account.district,
+          upazilla: account.upazilla,
           focus: account.focus,
           identity: account.identity,
           name: account.name,
@@ -65,7 +68,7 @@ export function AccountProfilePanel({
   }, [canEditProfile, user?.accessToken]);
 
   const updateField = (field: keyof UpdateProfilePayload, value: string) => {
-    setDraftProfile((current) => ({ ...current, [field]: value }));
+    setDraftProfile((current) => ({ ...current, [field]: value, ...(field === "district" ? { upazilla: "" } : {}) }));
   };
 
   const openEditModal = () => {
@@ -96,7 +99,7 @@ export function AccountProfilePanel({
       return;
     }
 
-    if (!draftProfile.name.trim() || !draftProfile.organization.trim() || !draftProfile.district.trim() || !draftProfile.address.trim() || (!draftProfile.identity.trim() && !identityFile) || !draftProfile.focus.trim()) {
+    if (!draftProfile.name.trim() || !draftProfile.organization.trim() || !draftProfile.district.trim() || !draftProfile.upazilla.trim() || !draftProfile.address.trim() || (!draftProfile.identity.trim() && !identityFile) || !draftProfile.focus.trim()) {
       setError("Please fill in all profile fields.");
       return;
     }
@@ -109,6 +112,7 @@ export function AccountProfilePanel({
       const account = await updateMyProfile(user.accessToken, {
         address: draftProfile.address.trim(),
         district: draftProfile.district.trim(),
+        upazilla: draftProfile.upazilla.trim(),
         focus: draftProfile.focus.trim(),
         identity: uploadedIdentity?.url ?? draftProfile.identity.trim(),
         name: draftProfile.name.trim(),
@@ -117,6 +121,7 @@ export function AccountProfilePanel({
       const nextProfile = {
         address: account.address,
         district: account.district,
+        upazilla: account.upazilla,
         focus: account.focus,
         identity: account.identity,
         name: account.name,
@@ -185,6 +190,10 @@ export function AccountProfilePanel({
           <strong>{profile.district ? t(profile.district) : t("Not provided")}</strong>
         </article>
         <article>
+          <span>{t("Upazilla")}</span>
+          <strong>{profile.upazilla ? t(profile.upazilla) : t("Not provided")}</strong>
+        </article>
+        <article>
           <span>{t("Address")}</span>
           <strong>{profile.address || t("Not provided")}</strong>
         </article>
@@ -235,6 +244,19 @@ export function AccountProfilePanel({
                   {serviceDistricts.map((district) => (
                     <option key={district} value={district}>
                       {t(district)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="input-field">
+                <span>{t("Upazilla")}</span>
+                <select value={draftProfile.upazilla} onChange={(event) => updateField("upazilla", event.target.value)} disabled={!draftProfile.district}>
+                  <option value="" disabled>
+                    {t(draftProfile.district ? "Select upazilla" : "Select district first")}
+                  </option>
+                  {availableUpazillas.map((upazilla) => (
+                    <option key={upazilla} value={upazilla}>
+                      {t(upazilla)}
                     </option>
                   ))}
                 </select>

@@ -72,6 +72,7 @@ model User {
   identity          String?
   focus             String?
   districtId        String?
+  upazilla          String?
   createdAt         DateTime              @default(now())
   updatedAt         DateTime              @updatedAt
   reviewedAt        DateTime?
@@ -140,6 +141,7 @@ model CropLot {
   farmerId       String
   cropId         String
   districtId     String
+  upazilla       String?
   quantityKg     Decimal        @db.Decimal(12, 2)
   pricePerKg     Decimal        @db.Decimal(12, 2)
   grade          String
@@ -164,6 +166,7 @@ model Order {
   id              String         @id @default(cuid())
   buyerId         String
   districtId      String
+  upazilla        String?
   status          OrderStatus    @default(PENDING)
   deliveryAddress String
   targetDate      DateTime?

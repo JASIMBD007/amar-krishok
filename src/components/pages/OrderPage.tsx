@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { BadgeCheck, CalendarClock, CheckCircle2, ClipboardList, MapPin, PackageCheck, Plus, ShieldCheck, ShoppingBag, Store, WalletCards } from "lucide-react";
 import { ApiRequestError, createBuyerOrder, fetchMyOrders, type BackendOrder } from "../../api/auth";
-import { lots, serviceDistricts } from "../../data";
+import { getUpazillasForDistrict, lots, serviceDistricts } from "../../data";
 import { useTranslate, useValueText } from "../../i18n";
 import type { AuthUser, ChatThread, RegisteredAccount } from "../../types";
 import { AccountProfilePanel } from "../account/AccountProfilePanel";
@@ -12,6 +12,7 @@ type BuyerOrderForm = {
   crop: string;
   deliveryAddress: string;
   district: string;
+  upazilla: string;
   notes: string;
   offeredPricePerKg: string;
   quantityKg: string;
@@ -22,6 +23,7 @@ const emptyOrderForm: BuyerOrderForm = {
   crop: "",
   deliveryAddress: "",
   district: "",
+  upazilla: "",
   notes: "",
   offeredPricePerKg: "",
   quantityKg: "",
@@ -98,6 +100,7 @@ export function OrderPage({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const availableUpazillas = getUpazillasForDistrict(form.district);
   const matchedLots = lots.slice(0, 3);
   const activeOrders = useMemo(
     () => backendOrders.filter((order) => !["COMPLETED", "CANCELLED"].includes(order.status)),
@@ -126,7 +129,7 @@ export function OrderPage({
   }, [user?.accessToken]);
 
   const updateField = (field: keyof BuyerOrderForm, value: string) => {
-    setForm((current) => ({ ...current, [field]: value }));
+    setForm((current) => ({ ...current, [field]: value, ...(field === "district" ? { upazilla: "" } : {}) }));
   };
 
   const submitOrder = (event: FormEvent<HTMLFormElement>) => {
@@ -145,8 +148,8 @@ export function OrderPage({
 
     const quantityKg = Number(form.quantityKg);
     const offeredPricePerKg = Number(form.offeredPricePerKg);
-    if (!form.crop.trim() || !form.district.trim() || !form.deliveryAddress.trim() || !quantityKg || !offeredPricePerKg) {
-      setError("Please fill in crop, district, delivery address, quantity, and offer price.");
+    if (!form.crop.trim() || !form.district.trim() || !form.upazilla.trim() || !form.deliveryAddress.trim() || !quantityKg || !offeredPricePerKg) {
+      setError("Please fill in crop, district, upazilla, delivery address, quantity, and offer price.");
       return;
     }
 
@@ -161,6 +164,7 @@ export function OrderPage({
     createBuyerOrder(user.accessToken, {
       deliveryAddress: form.deliveryAddress.trim(),
       district: form.district.trim(),
+      upazilla: form.upazilla.trim(),
       items: [
         {
           crop: form.crop.trim(),
@@ -235,6 +239,19 @@ export function OrderPage({
             </select>
           </label>
           <label className="input-field">
+            <span>{t("Upazilla")}</span>
+            <select value={form.upazilla} onChange={(event) => updateField("upazilla", event.target.value)} disabled={!form.district}>
+              <option value="" disabled>
+                {t(form.district ? "Select upazilla" : "Select district first")}
+              </option>
+              {availableUpazillas.map((upazilla) => (
+                <option key={upazilla} value={upazilla}>
+                  {t(upazilla)}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="input-field">
             <span>{t("Quantity (kg)")}</span>
             <input value={form.quantityKg} min="1" onChange={(event) => updateField("quantityKg", event.target.value)} placeholder="2000" type="number" />
           </label>
@@ -293,7 +310,7 @@ export function OrderPage({
               </div>
               <div>
                 <strong>{v(formatQuantityKg(orderQuantity(order)))}</strong>
-                <span>{t(order.district.name)}</span>
+                <span>{t(order.upazilla || order.district.name)}</span>
               </div>
               <div>
                 <strong>{v(formatCurrency(order.totalValue))}</strong>

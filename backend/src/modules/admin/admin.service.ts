@@ -25,6 +25,7 @@ const accountSelect = {
       pricePerKg: true,
       quantityKg: true,
       status: true,
+      upazilla: true,
     },
     take: 3,
   },
@@ -37,6 +38,7 @@ const accountSelect = {
       items: { select: { crop: { select: { name: true } }, quantityKg: true } },
       status: true,
       totalValue: true,
+      upazilla: true,
     },
     take: 3,
   },
@@ -44,6 +46,7 @@ const accountSelect = {
   reviewedAt: true,
   role: true,
   status: true,
+  upazilla: true,
   updatedAt: true,
 } satisfies Prisma.UserSelect;
 
@@ -156,6 +159,7 @@ export class AdminService {
         reviewedAt: status === AccountStatus.PENDING ? undefined : new Date(),
         role,
         status,
+        upazilla: dto.upazilla,
       },
       select: accountSelect,
     });
@@ -186,6 +190,7 @@ export class AdminService {
       phone: dto.phone?.trim(),
       reviewedAt: status ? new Date() : undefined,
       status,
+      upazilla: dto.upazilla?.trim(),
     };
 
     if (dto.password) {
