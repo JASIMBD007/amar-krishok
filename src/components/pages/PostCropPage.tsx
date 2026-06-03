@@ -234,26 +234,34 @@ export function PostCropPage({
 
         <section className="stats-grid farmer-stats-grid" aria-label={t("Seller backend metrics")}>
           <article className="panel stat-card dashboard-stat">
-            <PackageCheck size={20} />
-            <span>{t("Active lots")}</span>
+            <div className="stat-card-label">
+              <PackageCheck size={20} />
+              <span>{t("Active lots")}</span>
+            </div>
             <strong>{v(backendLots.length)}</strong>
             <p>{t("Ready for buyer requests")}</p>
           </article>
           <article className="panel stat-card dashboard-stat">
-            <Sprout size={20} />
-            <span>{t("Listed quantity")}</span>
+            <div className="stat-card-label">
+              <Sprout size={20} />
+              <span>{t("Listed quantity")}</span>
+            </div>
             <strong>{v(formatQuantity(totalQuantityKg))}</strong>
             <p>{t("From your active lots")}</p>
           </article>
           <article className="panel stat-card dashboard-stat">
-            <BadgeCheck size={20} />
-            <span>{t("Average ask")}</span>
+            <div className="stat-card-label">
+              <BadgeCheck size={20} />
+              <span>{t("Average ask")}</span>
+            </div>
             <strong>{v(`৳${averageAsk}/kg`)}</strong>
             <p>{t("Based on listed price")}</p>
           </article>
           <article className="panel stat-card dashboard-stat">
-            <WalletCards size={20} />
-            <span>{t("Estimated payout")}</span>
+            <div className="stat-card-label">
+              <WalletCards size={20} />
+              <span>{t("Estimated payout")}</span>
+            </div>
             <strong>{v(formatMoney(estimatedPayout))}</strong>
             <p>{t("After buyer confirmation")}</p>
           </article>
