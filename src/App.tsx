@@ -222,11 +222,11 @@ export default function App() {
   const handleRegister = addRegistration;
 
   const handleProfileSaved = (account: RegisteredAccount) => {
-    if (!user || user.accountId !== account.id) {
-      return;
-    }
+    addRegistration(account);
 
-    setUser({ ...user, name: account.name });
+    if (user?.accountId === account.id) {
+      setUser({ ...user, name: account.name });
+    }
   };
 
   const handleLogout = () => {
