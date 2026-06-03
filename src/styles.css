@@ -2349,6 +2349,157 @@ th {
   padding: 18px;
 }
 
+.farmer-dashboard-shell {
+  background:
+    radial-gradient(circle at 82% 5%, rgba(23, 107, 71, 0.08), transparent 28%),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.76), rgba(255, 255, 255, 0)),
+    #eef2ed;
+}
+
+.farmer-sidebar .admin-brand strong {
+  color: #176b47;
+}
+
+.farmer-dashboard-topbar {
+  align-items: flex-start;
+}
+
+.farmer-dashboard-topbar .page-title h1 {
+  max-width: 720px;
+}
+
+.farmer-topbar-actions .secondary-button,
+.farmer-topbar-actions .primary-button {
+  min-height: 48px;
+}
+
+.farmer-dashboard-grid {
+  grid-template-columns: minmax(0, 1.45fr) minmax(310px, 0.55fr);
+  align-items: start;
+}
+
+.farmer-main-column,
+.farmer-right-rail {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+  align-content: start;
+}
+
+.farmer-right-rail {
+  position: sticky;
+  top: 94px;
+}
+
+.farmer-rail-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.farmer-rail-header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.farmer-rail-header svg {
+  color: #176b47;
+}
+
+.farmer-rail-header span {
+  display: block;
+  color: #687b70;
+  font-size: 0.76rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.farmer-rail-header h3 {
+  margin: 3px 0 0;
+  color: #183028;
+  font-size: 1.25rem;
+  line-height: 1.12;
+}
+
+.farmer-rail-panel p {
+  margin: 0;
+  color: #62756b;
+  line-height: 1.5;
+}
+
+.checklist.compact {
+  display: grid;
+  gap: 8px;
+}
+
+.farmer-mini-list {
+  display: grid;
+  gap: 8px;
+}
+
+.farmer-mini-list span,
+.checklist.compact span {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 9px;
+  align-items: center;
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: #3d5449;
+  background: #f3f7f0;
+  font-weight: 780;
+}
+
+.farmer-mini-list svg,
+.checklist.compact svg {
+  color: #176b47;
+}
+
+.farmer-payout-card {
+  padding: 16px;
+}
+
+.farmer-payout-card strong {
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+}
+
+.farmer-latest-lot {
+  display: grid;
+  gap: 5px;
+  padding: 14px;
+  border: 1px solid rgba(24, 48, 40, 0.1);
+  border-radius: 8px;
+  background: #fbfcf8;
+}
+
+.farmer-latest-lot strong,
+.farmer-latest-lot span,
+.farmer-latest-lot em {
+  display: block;
+}
+
+.farmer-latest-lot span {
+  color: #68796f;
+  font-size: 0.88rem;
+}
+
+.farmer-latest-lot em {
+  width: fit-content;
+  margin-top: 5px;
+  padding: 6px 9px;
+  border-radius: 999px;
+  color: #176b47;
+  background: #e5f5e7;
+  font-style: normal;
+  font-weight: 850;
+}
+
+#farmer-profile .profile-panel {
+  margin: 0;
+}
+
 .orders-panel,
 .supply-panel,
 .logistics-panel {
@@ -3046,11 +3197,24 @@ th {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
+  .farmer-side-nav {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
   .trust-summary {
     display: none;
   }
 
   .dashboard-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .farmer-dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .farmer-right-rail {
+    position: static;
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -3216,6 +3380,10 @@ th {
 
   .dashboard-grid,
   .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .farmer-right-rail {
     grid-template-columns: 1fr;
   }
 
