@@ -169,7 +169,16 @@ export const useAppStore = create<AppStore>()(
       query: "",
       registrations: readStoredRegistrations(),
       user: readStoredUser(),
-      addRegistration: (account) => set((state) => ({ registrations: [account, ...state.registrations] })),
+      addRegistration: (account) =>
+        set((state) => {
+          const exists = state.registrations.some((item) => item.id === account.id);
+
+          return {
+            registrations: exists
+              ? state.registrations.map((item) => (item.id === account.id ? account : item))
+              : [account, ...state.registrations],
+          };
+        }),
       closeHeaderMenus: () => set({ loginOpen: false, menuOpen: false }),
       sendAdminChatReply: (threadId, text) => {
         const timestamp = new Date().toISOString();
