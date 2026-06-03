@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { BadgeCheck, ExternalLink, FileImage, LockKeyhole, PencilLine, Save, Upload, UserRoundCog, X } from "lucide-react";
+import { ExternalLink, FileImage, LockKeyhole, PencilLine, Save, Upload, X } from "lucide-react";
 import { ApiRequestError, fetchMyProfile, updateMyProfile, uploadFile, type UpdateProfilePayload } from "../../api/auth";
 import { serviceDistricts } from "../../data";
 import { useTranslate } from "../../i18n";
@@ -173,6 +173,10 @@ export function AccountProfilePanel({
           <strong>{profile.name || user?.name || t("Not provided")}</strong>
         </article>
         <article>
+          <span>{t("Verified phone")}</span>
+          <strong>{user?.phone || t("Not provided")}</strong>
+        </article>
+        <article>
           <span>{t("Business / farm name")}</span>
           <strong>{profile.organization || t("Not provided")}</strong>
         </article>
@@ -198,17 +202,6 @@ export function AccountProfilePanel({
           <span>{t("Crop interest / supply focus")}</span>
           <strong>{profile.focus || t("Not provided")}</strong>
         </article>
-      </div>
-
-      <div className="profile-readiness-row">
-        <span>
-          <BadgeCheck size={18} />
-          {profile.identity ? t("Document ready for admin review") : t("Upload NID or trade license")}
-        </span>
-        <span>
-          <UserRoundCog size={18} />
-          {isLoading ? t("Loading profile") : t("Profile details synced with backend")}
-        </span>
       </div>
 
       {isModalOpen && (
@@ -258,7 +251,7 @@ export function AccountProfilePanel({
                   {identityFile?.name ?? (draftProfile.identity ? t("Existing document kept") : t("Choose an image or PDF"))}
                 </em>
               </label>
-              <label className="input-field">
+              <label className="input-field profile-focus-field">
                 <span>{t("Crop interest / supply focus")}</span>
                 <input value={draftProfile.focus} onChange={(event) => updateField("focus", event.target.value)} placeholder={t("Tomato, potato, chilli...")} />
               </label>

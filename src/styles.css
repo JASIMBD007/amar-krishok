@@ -1003,6 +1003,14 @@ button {
   width: min(780px, 100%);
 }
 
+.profile-edit-modal .form-grid {
+  align-items: start;
+}
+
+.profile-focus-field {
+  align-self: start;
+}
+
 .modal-action-row {
   display: flex;
   justify-content: flex-end;

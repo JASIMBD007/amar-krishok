@@ -264,10 +264,6 @@ export function PostCropPage({
                   <h2>{t("Publish a crop lot")}</h2>
                   <p>{t("Keep the required fields short and accurate. You can add packaging or pickup details in notes.")}</p>
                 </div>
-                <div className="backend-status-pill">
-                  <CheckCircle2 size={17} />
-                  {t("Backend connected")}
-                </div>
               </div>
               <FormGrid>
                 <label className="input-field">
@@ -301,7 +297,16 @@ export function PostCropPage({
                 </label>
                 <label className="input-field">
                   <span>{t("Grade")}</span>
-                  <input value={form.grade} onChange={(event) => updateField("grade", event.target.value)} placeholder={t("A / B+ / C")} />
+                  <select value={form.grade} onChange={(event) => updateField("grade", event.target.value)}>
+                    <option value="" disabled>
+                      {t("Select grade")}
+                    </option>
+                    {["A", "A-", "B+", "B", "C"].map((grade) => (
+                      <option key={grade} value={grade}>
+                        {t(grade)}
+                      </option>
+                    ))}
+                  </select>
                 </label>
                 <label className="input-field">
                   <span>{t("Crop image")}</span>
