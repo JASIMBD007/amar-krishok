@@ -18,6 +18,7 @@ const lotInclude = {
       reviewedAt: true,
       role: true,
       status: true,
+      upazilla: true,
       updatedAt: true,
     },
   },
@@ -81,16 +82,17 @@ export class LotsService {
         pricePerKg: new Prisma.Decimal(dto.pricePerKg),
         quantityKg: new Prisma.Decimal(dto.quantityKg),
         status: LotStatus.ACTIVE,
+        upazilla: dto.upazilla,
       },
       include: lotInclude,
     });
 
     await this.notifications.notifyAdmins({
-      body: `${lot.farmer.name} · ${lot.crop.name} · ${lot.district.name}`,
+      body: `${lot.farmer.name} · ${lot.crop.name} · ${lot.upazilla || lot.district.name}`,
       title: "New supply lot posted",
     });
     await this.notifications.notifyUser(lot.farmerId, {
-      body: `${lot.crop.name} · ${lot.district.name} · ${lot.quantityKg} kg listed at ৳${lot.pricePerKg}/kg`,
+      body: `${lot.crop.name} · ${lot.upazilla || lot.district.name} · ${lot.quantityKg} kg listed at ৳${lot.pricePerKg}/kg`,
       title: "Crop lot published",
     });
 

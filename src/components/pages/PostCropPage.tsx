@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { ApiRequestError, createCropLot, fetchMyCropLots, uploadFile, type BackendCropLot } from "../../api/auth";
 import { AccountProfilePanel } from "../account/AccountProfilePanel";
-import { serviceDistricts } from "../../data";
+import { getUpazillasForDistrict, serviceDistricts } from "../../data";
 import { useTranslate, useValueText } from "../../i18n";
 import type { AuthUser, RegisteredAccount } from "../../types";
 import { FormGrid } from "../shared";
@@ -26,6 +26,7 @@ import { FormGrid } from "../shared";
 type CropLotForm = {
   crop: string;
   district: string;
+  upazilla: string;
   grade: string;
   harvestDate: string;
   notes: string;
@@ -36,6 +37,7 @@ type CropLotForm = {
 const emptyForm: CropLotForm = {
   crop: "",
   district: "",
+  upazilla: "",
   grade: "",
   harvestDate: "",
   notes: "",
@@ -96,6 +98,7 @@ export function PostCropPage({
   const [isPublishing, setIsPublishing] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const availableUpazillas = getUpazillasForDistrict(form.district);
   const totalQuantityKg = useMemo(() => backendLots.reduce((total, lot) => total + numericValue(lot.quantityKg), 0), [backendLots]);
   const averageAsk = useMemo(() => {
     if (!backendLots.length) {
@@ -125,7 +128,7 @@ export function PostCropPage({
   }, [user?.accessToken]);
 
   const updateField = (field: keyof CropLotForm, value: string) => {
-    setForm((current) => ({ ...current, [field]: value }));
+    setForm((current) => ({ ...current, [field]: value, ...(field === "district" ? { upazilla: "" } : {}) }));
   };
 
   const scrollToSection = (sectionId: string) => {
@@ -144,8 +147,8 @@ export function PostCropPage({
 
     const quantityKg = Number(form.quantityKg);
     const pricePerKg = Number(form.pricePerKg);
-    if (!form.crop.trim() || !form.district.trim() || !form.grade.trim() || !quantityKg || !pricePerKg) {
-      setError("Please fill in crop, district, quantity, price, and grade.");
+    if (!form.crop.trim() || !form.district.trim() || !form.upazilla.trim() || !form.grade.trim() || !quantityKg || !pricePerKg) {
+      setError("Please fill in crop, district, upazilla, quantity, price, and grade.");
       return;
     }
 
@@ -168,6 +171,7 @@ export function PostCropPage({
         notes: form.notes.trim() || undefined,
         pricePerKg,
         quantityKg,
+        upazilla: form.upazilla.trim(),
       });
     })()
       .then((lot) => {
@@ -284,6 +288,19 @@ export function PostCropPage({
                   </select>
                 </label>
                 <label className="input-field">
+                  <span>{t("Upazilla")}</span>
+                  <select value={form.upazilla} onChange={(event) => updateField("upazilla", event.target.value)} disabled={!form.district}>
+                    <option value="" disabled>
+                      {t(form.district ? "Select upazilla" : "Select district first")}
+                    </option>
+                    {availableUpazillas.map((upazilla) => (
+                      <option key={upazilla} value={upazilla}>
+                        {t(upazilla)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="input-field">
                   <span>{t("Quantity (kg)")}</span>
                   <input value={form.quantityKg} min="1" onChange={(event) => updateField("quantityKg", event.target.value)} placeholder="1200" type="number" />
                 </label>
@@ -301,7 +318,7 @@ export function PostCropPage({
                     <option value="" disabled>
                       {t("Select grade")}
                     </option>
-                    {["A", "A-", "B+", "B", "C"].map((grade) => (
+                    {["A", "B", "C"].map((grade) => (
                       <option key={grade} value={grade}>
                         {t(grade)}
                       </option>
@@ -345,7 +362,7 @@ export function PostCropPage({
                   <article className="seller-lot-item" key={lot.id}>
                     <div>
                       <strong>{t(lot.crop.name)}</strong>
-                      <span>{t(lot.district.name)}</span>
+                      <span>{t(lot.upazilla || lot.district.name)}</span>
                     </div>
                     <div>
                       <strong>{v(formatQuantity(lot.quantityKg))}</strong>
@@ -431,7 +448,7 @@ export function PostCropPage({
               {latestLot ? (
                 <div className="farmer-latest-lot">
                   <strong>{t(latestLot.crop.name)}</strong>
-                  <span>{t(latestLot.district.name)} · {v(formatQuantity(latestLot.quantityKg))}</span>
+                  <span>{t(latestLot.upazilla || latestLot.district.name)} · {v(formatQuantity(latestLot.quantityKg))}</span>
                   <em>{t(latestLot.status)}</em>
                 </div>
               ) : (

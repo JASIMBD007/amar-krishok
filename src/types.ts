@@ -28,6 +28,7 @@ export type RegisteredAccount = {
   password: string;
   organization: string;
   district: string;
+  upazilla: string;
   address: string;
   identity: string;
   focus: string;
@@ -48,6 +49,7 @@ export type CropLot = {
   crop: string;
   farmer: string;
   district: string;
+  upazilla?: string;
   quantity: string;
   ask: string;
   grade: string;

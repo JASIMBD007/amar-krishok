@@ -30,6 +30,10 @@ export class AdminCreateAccountDto {
 
   @IsString()
   @IsNotEmpty()
+  upazilla!: string;
+
+  @IsString()
+  @IsNotEmpty()
   address!: string;
 
   @IsString()
@@ -66,6 +70,10 @@ export class AdminUpdateAccountDto {
   @IsString()
   @IsOptional()
   district?: string;
+
+  @IsString()
+  @IsOptional()
+  upazilla?: string;
 
   @IsString()
   @IsOptional()

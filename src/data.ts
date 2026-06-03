@@ -18,9 +18,10 @@ export const lots: CropLot[] = [
     crop: "Tomato",
     farmer: "Mst. Rahima",
     district: "Jashore",
+    upazilla: "Jashore Sadar",
     quantity: "1.2 tons",
     ask: "৳34/kg",
-    grade: "B+",
+    grade: "B",
     harvest: "Ready tomorrow",
     image:
       "https://images.unsplash.com/photo-1592841200221-a6898f307baa?auto=format&fit=crop&w=900&q=80",
@@ -30,6 +31,7 @@ export const lots: CropLot[] = [
     crop: "Green Chilli",
     farmer: "Abdul Karim",
     district: "Bogura",
+    upazilla: "Bogura Sadar",
     quantity: "420 kg",
     ask: "৳86/kg",
     grade: "A",
@@ -41,6 +43,7 @@ export const lots: CropLot[] = [
     crop: "Potato",
     farmer: "Nayan Mondol",
     district: "Rangpur",
+    upazilla: "Rangpur Sadar",
     quantity: "3.6 tons",
     ask: "৳21/kg",
     grade: "A",
@@ -53,9 +56,10 @@ export const lots: CropLot[] = [
     crop: "Onion",
     farmer: "Rashed Mia",
     district: "Pabna",
+    upazilla: "Pabna Sadar",
     quantity: "1.8 tons",
     ask: "৳63/kg",
-    grade: "A-",
+    grade: "A",
     harvest: "Ready in 2 days",
     image: "/assets/crops/onion.jpg",
   },
@@ -64,6 +68,7 @@ export const lots: CropLot[] = [
     crop: "Rice",
     farmer: "Selim Hossain",
     district: "Kushtia",
+    upazilla: "Kushtia Sadar",
     quantity: "2.4 tons",
     ask: "৳38/kg",
     grade: "A",
@@ -75,9 +80,10 @@ export const lots: CropLot[] = [
     crop: "Eggplant",
     farmer: "Fatema Khatun",
     district: "Kushtia",
+    upazilla: "Kumarkhali",
     quantity: "680 kg",
     ask: "৳29/kg",
-    grade: "B+",
+    grade: "B",
     harvest: "Ready today",
     image: "/assets/crops/eggplant.jpg",
   },
@@ -86,9 +92,10 @@ export const lots: CropLot[] = [
     crop: "Cucumber",
     farmer: "Mizanur Rahman",
     district: "Bogura",
+    upazilla: "Sherpur",
     quantity: "1.5 tons",
     ask: "৳24/kg",
-    grade: "A-",
+    grade: "A",
     harvest: "Ready in 2 days",
     image:
       "https://images.unsplash.com/photo-1449300079323-02e209d9d3a6?auto=format&fit=crop&w=900&q=80",
@@ -98,6 +105,7 @@ export const lots: CropLot[] = [
     crop: "Mango",
     farmer: "Hasina Begum",
     district: "Rangpur",
+    upazilla: "Mithapukur",
     quantity: "950 kg",
     ask: "৳72/kg",
     grade: "A",
@@ -107,6 +115,18 @@ export const lots: CropLot[] = [
 ];
 
 export const serviceDistricts = Array.from(new Set(lots.map((lot) => lot.district)));
+
+export const serviceUpazillas: Record<string, string[]> = {
+  Bogura: ["Bogura Sadar", "Shibganj", "Sherpur", "Gabtali", "Dhunat", "Sariakandi", "Sonatala", "Adamdighi"],
+  Jashore: ["Jashore Sadar", "Chaugachha", "Jhikargacha", "Keshabpur", "Manirampur", "Bagharpara", "Abhaynagar", "Sharsha"],
+  Kushtia: ["Kushtia Sadar", "Kumarkhali", "Khoksa", "Mirpur", "Bheramara", "Daulatpur"],
+  Pabna: ["Pabna Sadar", "Ishwardi", "Bera", "Santhia", "Sujanagar", "Chatmohar", "Bhangura", "Faridpur", "Atgharia"],
+  Rangpur: ["Rangpur Sadar", "Mithapukur", "Pirgacha", "Gangachara", "Kaunia", "Badarganj", "Taraganj", "Pirganj"],
+};
+
+export function getUpazillasForDistrict(district: string) {
+  return serviceUpazillas[district] ?? [];
+}
 
 export const prices: MarketPrice[] = [
   { crop: "Tomato", district: "Jashore", farmerAsk: "৳34", wholesale: "৳42", retail: "৳48", trend: "+8%" },

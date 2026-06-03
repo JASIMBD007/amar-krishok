@@ -269,7 +269,7 @@ export function VerificationPanel({
             </div>
             <p>
               <MapPin size={14} />
-              {account.district} · {account.focus}
+              {account.upazilla || account.district} · {account.focus}
             </p>
             <div className="verification-actions">
               <button className="secondary-button" type="button" onClick={() => onUpdateRegistration(account.id, "rejected")}>
@@ -321,7 +321,7 @@ export function SupplyPanel({
               <span>{t(lot.farmer)}</span>
               <p>
                 <MapPin size={15} />
-                {t(lot.district)}
+                {t(lot.upazilla || lot.district)}
               </p>
             </div>
             <div>
@@ -539,7 +539,7 @@ export function FarmerDirectoryPanel({
             </div>
             <p>
               <Sprout size={14} />
-              {farmer.district || t("District not added")} · {farmer.focus || t("Supply focus")}
+              {farmer.upazilla || farmer.district || t("District not added")} · {farmer.focus || t("Supply focus")}
             </p>
             <div className="admin-data-line">
               <span className="admin-data-chip">{t("Lot records")}: {v(farmer.cropLotCount ?? 0)}</span>
@@ -562,7 +562,7 @@ export function FarmerDirectoryPanel({
             </div>
             <div>
               <span>{t("Farm coverage")}</span>
-              <small>{t(lot.district)}</small>
+              <small>{t(lot.upazilla || lot.district)}</small>
             </div>
             <p>
               <Sprout size={14} />

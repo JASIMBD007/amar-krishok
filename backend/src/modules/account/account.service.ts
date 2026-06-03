@@ -17,6 +17,7 @@ const profileSelect = {
   reviewedAt: true,
   role: true,
   status: true,
+  upazilla: true,
   updatedAt: true,
 } satisfies Prisma.UserSelect;
 
@@ -38,6 +39,7 @@ export class AccountService {
       identity: dto.identity?.trim(),
       name: dto.name?.trim(),
       organization: dto.organization?.trim(),
+      upazilla: dto.upazilla?.trim(),
     };
 
     if (dto.district?.trim()) {

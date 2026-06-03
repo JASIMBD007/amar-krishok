@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { CheckCircle2, Clock3, ClipboardCheck, Eye, EyeOff, LockKeyhole } from "lucide-react";
 import { ApiRequestError, loginWithApi, AuthRequestError, registerAccountWithApi } from "../../api/auth";
-import { roleHomePath, roleOptions, serviceDistricts } from "../../data";
+import { getUpazillasForDistrict, roleHomePath, roleOptions, serviceDistricts } from "../../data";
 import { useTranslate, useValueText } from "../../i18n";
 import type { AuthUser, RegisteredAccount, RegistrationRole, Role } from "../../types";
 import { roleCanOpenPath } from "./pageHelpers";
@@ -165,12 +165,14 @@ export function RegisterPage({
   const [password, setPassword] = useState("");
   const [organization, setOrganization] = useState("");
   const [district, setDistrict] = useState("");
+  const [upazilla, setUpazilla] = useState("");
   const [address, setAddress] = useState("");
   const [identity, setIdentity] = useState("");
   const [focus, setFocus] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const title = role === "buyer" ? "Create buyer account" : "Create seller account";
+  const availableUpazillas = getUpazillasForDistrict(district);
 
   const submitRegistration = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -179,11 +181,12 @@ export function RegisterPage({
     const cleanPassword = password.trim();
     const cleanOrganization = organization.trim();
     const cleanDistrict = district.trim();
+    const cleanUpazilla = upazilla.trim();
     const cleanAddress = address.trim();
     const cleanIdentity = identity.trim();
     const cleanFocus = focus.trim();
 
-    if (!cleanName || !cleanPhone || !cleanPassword || !cleanOrganization || !cleanDistrict || !cleanAddress || !cleanIdentity || !cleanFocus) {
+    if (!cleanName || !cleanPhone || !cleanPassword || !cleanOrganization || !cleanDistrict || !cleanUpazilla || !cleanAddress || !cleanIdentity || !cleanFocus) {
       setError(t("Please fill in all registration fields."));
       return;
     }
@@ -204,6 +207,7 @@ export function RegisterPage({
     registerAccountWithApi({
       address: cleanAddress,
       district: cleanDistrict,
+      upazilla: cleanUpazilla,
       focus: cleanFocus,
       identity: cleanIdentity,
       name: cleanName,
@@ -281,13 +285,29 @@ export function RegisterPage({
         </label>
         <label className="input-field">
           <span>{t("District")}</span>
-          <select value={district} onChange={(event) => setDistrict(event.target.value)}>
+          <select value={district} onChange={(event) => {
+            setDistrict(event.target.value);
+            setUpazilla("");
+          }}>
             <option value="" disabled>
               {t("Select service district")}
             </option>
             {serviceDistricts.map((serviceDistrict) => (
               <option key={serviceDistrict} value={serviceDistrict}>
                 {t(serviceDistrict)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="input-field">
+          <span>{t("Upazilla")}</span>
+          <select value={upazilla} onChange={(event) => setUpazilla(event.target.value)} disabled={!district}>
+            <option value="" disabled>
+              {t(district ? "Select upazilla" : "Select district first")}
+            </option>
+            {availableUpazillas.map((serviceUpazilla) => (
+              <option key={serviceUpazilla} value={serviceUpazilla}>
+                {t(serviceUpazilla)}
               </option>
             ))}
           </select>

@@ -198,7 +198,10 @@ export function AccountDirectoryTable({
                 <span>{account.phone}</span>
               </td>
               <td>{account.organization || t("Business not added")}</td>
-              <td>{account.district || t("District not added")}</td>
+              <td>
+                <strong>{account.district || t("District not added")}</strong>
+                <span>{account.upazilla || t("Upazilla not added")}</span>
+              </td>
               <td>{account.focus || t(isBuyer ? "Demand focus not added" : "Supply focus not added")}</td>
               <td>
                 {isBuyer ? (

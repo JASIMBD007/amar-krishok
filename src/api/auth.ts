@@ -17,6 +17,7 @@ type ApiUser = {
   address?: string | null;
   identity?: string | null;
   focus?: string | null;
+  upazilla?: string | null;
   createdAt?: string;
   reviewedAt?: string | null;
   district?: {
@@ -29,6 +30,7 @@ type ApiUser = {
   cropLots?: Array<{
     crop: { name: string };
     district: { name: string };
+    upazilla?: string | null;
     grade: string;
     id: string;
     pricePerKg: string | number;
@@ -38,6 +40,7 @@ type ApiUser = {
   orders?: Array<{
     deliveryAddress: string;
     district: { name: string };
+    upazilla?: string | null;
     id: string;
     items: Array<{ crop: { name: string }; quantityKg: string | number }>;
     status: string;
@@ -58,6 +61,7 @@ export type BackendCropLot = {
   id: string;
   crop: { name: string };
   district: { name: string };
+  upazilla: string | null;
   farmer: ApiLotFarmer;
   grade: string;
   harvestDate: string | null;
@@ -73,6 +77,7 @@ export type BackendCropLot = {
 export type CreateCropLotPayload = {
   crop: string;
   district: string;
+  upazilla: string;
   grade: string;
   harvestDate?: string;
   imageUrl?: string;
@@ -95,6 +100,7 @@ export type BackendOrder = {
   createdAt: string;
   deliveryAddress: string;
   district: { name: string };
+  upazilla: string | null;
   items: BackendOrderItem[];
   notes: string | null;
   status: string;
@@ -107,6 +113,7 @@ export type CreateOrderPayload = {
   buyerId?: string;
   deliveryAddress: string;
   district: string;
+  upazilla: string;
   items: Array<{
     crop: string;
     cropLotId?: string;
@@ -120,6 +127,7 @@ export type CreateOrderPayload = {
 export type UpdateProfilePayload = {
   address: string;
   district: string;
+  upazilla: string;
   focus: string;
   identity: string;
   name: string;
@@ -159,6 +167,7 @@ export type BackendUploadedFile = {
 type RegisterAccountPayload = {
   address: string;
   district: string;
+  upazilla: string;
   focus: string;
   identity: string;
   name: string;
@@ -254,13 +263,14 @@ export function toRegisteredAccount(user: ApiUser): RegisteredAccount {
     cropLotCount: user._count?.cropLots ?? user.cropLots?.length ?? 0,
     cropLotQuantityKg: user.cropLots?.reduce((total, lot) => total + numericValue(lot.quantityKg), 0) ?? 0,
     district: user.district?.name ?? "",
+    upazilla: user.upazilla ?? "",
     focus: user.focus ?? "",
     id: user.id,
     identity: user.identity ?? "",
     latestLotStatus: latestLot?.status,
-    latestLotSummary: latestLot ? `${latestLot.crop.name} · ${latestLot.district.name}` : undefined,
+    latestLotSummary: latestLot ? `${latestLot.crop.name} · ${latestLot.upazilla || latestLot.district.name}` : undefined,
     latestOrderStatus: latestOrder?.status,
-    latestOrderSummary: latestOrder ? `${latestOrder.id} · ${latestOrder.deliveryAddress}` : undefined,
+    latestOrderSummary: latestOrder ? `${latestOrder.id} · ${latestOrder.upazilla || latestOrder.deliveryAddress}` : undefined,
     name: user.name,
     orderCount: user._count?.orders ?? user.orders?.length ?? 0,
     orderValue: user.orders?.reduce((total, order) => total + numericValue(order.totalValue), 0) ?? 0,

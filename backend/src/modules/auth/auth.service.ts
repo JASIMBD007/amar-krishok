@@ -109,17 +109,18 @@ export class AuthService {
         phone: dto.phone,
         role,
         status: AccountStatus.PENDING,
+        upazilla: dto.upazilla,
         buyerProfile: role === Role.BUYER ? { create: { buyerType: dto.buyerType } } : undefined,
         farmerProfile: role === Role.FARMER ? { create: { farmSize: dto.farmSize } } : undefined,
       },
     });
 
     await this.notifications.notifyAdmins({
-      body: `${user.name} · ${dto.district || dto.organization || dto.phone}`,
+      body: `${user.name} · ${dto.upazilla || dto.district || dto.organization || dto.phone}`,
       title: role === Role.BUYER ? "Buyer verification request" : "Farmer verification request",
     });
     await this.notifications.notifyUser(user.id, {
-      body: `${dto.organization || user.name} · ${dto.district || dto.phone}`,
+      body: `${dto.organization || user.name} · ${dto.upazilla || dto.district || dto.phone}`,
       title: "Registration received",
     });
 
