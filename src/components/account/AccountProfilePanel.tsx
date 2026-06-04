@@ -265,14 +265,21 @@ export function AccountProfilePanel({
                 <span>{t("Address")}</span>
                 <input value={draftProfile.address} onChange={(event) => updateField("address", event.target.value)} placeholder={t("Dhaka North")} />
               </label>
-              <label className="input-field upload-field">
+              <div className="input-field upload-field">
                 <span>{t("NID / trade license image")}</span>
-                <input accept="image/*,application/pdf" onChange={(event) => setIdentityFile(event.target.files?.[0] ?? null)} type="file" />
+                <div className="file-picker-row">
+                  <label className="file-picker-button">
+                    <input className="hidden-file-input" accept="image/*,application/pdf" onChange={(event) => setIdentityFile(event.target.files?.[0] ?? null)} type="file" />
+                    <FileImage size={16} />
+                    {t("Choose file")}
+                  </label>
+                  <span className="file-picker-name">{identityFile?.name ?? (draftProfile.identity ? t("Existing document kept") : t("No file chosen"))}</span>
+                </div>
                 <em>
                   <FileImage size={16} />
                   {identityFile?.name ?? (draftProfile.identity ? t("Existing document kept") : t("Choose an image or PDF"))}
                 </em>
-              </label>
+              </div>
               <label className="input-field profile-focus-field">
                 <span>{t("Crop interest / supply focus")}</span>
                 <input value={draftProfile.focus} onChange={(event) => updateField("focus", event.target.value)} placeholder={t("Tomato, potato, chilli...")} />

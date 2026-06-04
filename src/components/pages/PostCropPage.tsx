@@ -19,8 +19,9 @@ import {
 import { ApiRequestError, createCropLot, fetchMyCropLots, uploadFile, type BackendCropLot } from "../../api/auth";
 import { AccountProfilePanel } from "../account/AccountProfilePanel";
 import { getUpazillasForDistrict, serviceDistricts } from "../../data";
-import { useTranslate, useValueText } from "../../i18n";
+import { useLanguage, useTranslate, useValueText } from "../../i18n";
 import type { AuthUser, RegisteredAccount } from "../../types";
+import { dateInputType, formatLocalizedDate, normalizeDateInput } from "../../utils/dateInput";
 import { FormGrid } from "../shared";
 
 type CropLotForm = {
@@ -74,14 +75,6 @@ function formatMoney(value: number) {
   return `৳${Math.round(value).toLocaleString("en-US")}`;
 }
 
-function formatHarvestDate(value: string | null) {
-  if (!value) {
-    return "Ready date not set";
-  }
-
-  return new Intl.DateTimeFormat("en", { day: "numeric", month: "short", year: "numeric" }).format(new Date(value));
-}
-
 export function PostCropPage({
   onProfileSaved,
   user,
@@ -89,6 +82,7 @@ export function PostCropPage({
   onProfileSaved: (account: RegisteredAccount) => void;
   user: AuthUser | null;
 }) {
+  const language = useLanguage();
   const t = useTranslate();
   const v = useValueText();
   const [backendLots, setBackendLots] = useState<BackendCropLot[]>([]);
@@ -166,7 +160,7 @@ export function PostCropPage({
         crop: form.crop.trim(),
         district: form.district.trim(),
         grade: form.grade.trim(),
-        harvestDate: form.harvestDate || undefined,
+        harvestDate: normalizeDateInput(form.harvestDate) || undefined,
         imageUrl: uploadedCropImage?.url,
         notes: form.notes.trim() || undefined,
         pricePerKg,
@@ -318,7 +312,13 @@ export function PostCropPage({
                 </label>
                 <label className="input-field">
                   <span>{t("Harvest date")}</span>
-                  <input value={form.harvestDate} onChange={(event) => updateField("harvestDate", event.target.value)} type="date" />
+                  <input
+                    value={form.harvestDate}
+                    inputMode={language === "bn" ? "numeric" : undefined}
+                    onChange={(event) => updateField("harvestDate", event.target.value)}
+                    placeholder={language === "bn" ? t("Date format example") : undefined}
+                    type={dateInputType(language)}
+                  />
                 </label>
                 <label className="input-field">
                   <span>{t("Grade")}</span>
@@ -333,14 +333,21 @@ export function PostCropPage({
                     ))}
                   </select>
                 </label>
-                <label className="input-field">
+                <div className="input-field upload-field">
                   <span>{t("Crop image")}</span>
-                  <input accept="image/*" onChange={(event) => setCropImageFile(event.target.files?.[0] ?? null)} type="file" />
+                  <div className="file-picker-row">
+                    <label className="file-picker-button">
+                      <input className="hidden-file-input" accept="image/*" onChange={(event) => setCropImageFile(event.target.files?.[0] ?? null)} type="file" />
+                      <FileImage size={16} />
+                      {t("Choose file")}
+                    </label>
+                    <span className="file-picker-name">{cropImageFile?.name ?? t("No file chosen")}</span>
+                  </div>
                   <em className="upload-note">
                     <FileImage size={16} />
                     {cropImageFile?.name ?? t("Choose crop image")}
                   </em>
-                </label>
+                </div>
               </FormGrid>
               <label className="full-field">
                 <span>{t("Notes")}</span>
@@ -378,7 +385,7 @@ export function PostCropPage({
                     </div>
                     <div>
                       <strong>{t("Grade")} {t(lot.grade)}</strong>
-                      <span>{t(formatHarvestDate(lot.harvestDate))}</span>
+                      <span>{formatLocalizedDate(lot.harvestDate, language, t("Ready date not set"))}</span>
                     </div>
                     <em>{t(lot.status)}</em>
                   </article>

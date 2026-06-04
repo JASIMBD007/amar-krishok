@@ -23,8 +23,9 @@ import {
 } from "lucide-react";
 import type { BackendOrder } from "../../../api/auth";
 import { adminPriceSignals, adminRoutes, dashboardStats, lots, orders } from "../../../data";
-import { useTranslate, useValueText } from "../../../i18n";
+import { useLanguage, useTranslate, useValueText } from "../../../i18n";
 import type { AccountStatus, AdminSection, RegisteredAccount } from "../../../types";
+import { formatLocalizedDate } from "../../../utils/dateInput";
 import { statusClass, TrendIcon } from "../pageHelpers";
 
 type OpenAdminSection = (section: AdminSection) => void;
@@ -100,6 +101,7 @@ export function OrdersPanel({
   orderError?: string;
   wide?: boolean;
 }) {
+  const language = useLanguage();
   const t = useTranslate();
   const v = useValueText();
   const displayOrders: OrderRow[] = backendOrders?.length
@@ -107,7 +109,7 @@ export function OrdersPanel({
         buyer: order.buyer.organization || order.buyer.name,
         crop: order.items.map((item) => item.crop.name).join(", ") || "Crop request",
         destination: order.deliveryAddress,
-        eta: order.targetDate ? new Intl.DateTimeFormat("en", { day: "numeric", month: "short" }).format(new Date(order.targetDate)) : "Target date pending",
+        eta: formatLocalizedDate(order.targetDate, language, "Target date pending", { day: "numeric", month: "short" }),
         id: order.id,
         quantity: formatOrderQuantity(backendQuantity(order)),
         status: formatBackendStatus(order.status),
