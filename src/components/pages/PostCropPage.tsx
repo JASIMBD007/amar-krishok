@@ -312,9 +312,7 @@ export function PostCropPage({
                 </label>
                 <label className="input-field">
                   <span>{t("Harvest date")}</span>
-                  <div className={`date-input-shell ${language === "bn" && !form.harvestDate ? "show-placeholder" : ""}`} data-placeholder={t("Date format example")}>
-                    <input value={form.harvestDate} onChange={(event) => updateField("harvestDate", event.target.value)} type="date" />
-                  </div>
+                  <input value={form.harvestDate} onChange={(event) => updateField("harvestDate", event.target.value)} type="date" />
                 </label>
                 <label className="input-field">
                   <span>{t("Grade")}</span>
