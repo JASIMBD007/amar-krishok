@@ -5,26 +5,12 @@ import { compare, hash } from "bcryptjs";
 import { sign } from "jsonwebtoken";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
-import { getAdminLoginName } from "./admin-login-name";
 import { LoginDto, RegisterAccountDto } from "./dto/register-account.dto";
-
-function mapLoginRole(role: LoginDto["role"]) {
-  const roleMap = {
-    admin: Role.ADMIN,
-    buyer: Role.BUYER,
-    farmer: Role.FARMER,
-  } satisfies Record<LoginDto["role"], Role>;
-
-  return roleMap[role];
-}
+import { normalizeUsername } from "./username";
 
 function publicUser(user: User) {
   const { passwordHash: _passwordHash, ...safeUser } = user;
   return safeUser;
-}
-
-function normalizeLoginName(name: string) {
-  return name.trim().replace(/\s+/g, " ").toLowerCase();
 }
 
 @Injectable()
@@ -44,24 +30,13 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
-    const role = mapLoginRole(dto.role);
+    const username = normalizeUsername(dto.username);
     const user = await this.prisma.user.findUnique({
-      where: { phone_role: { phone: dto.phone, role } },
+      where: { username },
     });
 
     if (!user || !(await compare(dto.password, user.passwordHash))) {
-      throw new UnauthorizedException("Invalid phone or password.");
-    }
-
-    if (user.role === Role.ADMIN) {
-      const loginName = dto.name?.trim();
-      if (!loginName) {
-        throw new UnauthorizedException("Admin full name is required.");
-      }
-
-      if (normalizeLoginName(loginName) !== normalizeLoginName(getAdminLoginName(this.config))) {
-        throw new UnauthorizedException("Admin name, phone, or password is invalid.");
-      }
+      throw new UnauthorizedException("Invalid username or password.");
     }
 
     if (user.role !== Role.ADMIN && user.status !== AccountStatus.ACTIVE) {
@@ -78,9 +53,17 @@ export class AuthService {
   }
 
   private async registerAccount(role: typeof Role.BUYER | typeof Role.FARMER, dto: RegisterAccountDto) {
-    const existingUser = await this.prisma.user.findUnique({
-      where: { phone_role: { phone: dto.phone, role } },
-    });
+    const username = normalizeUsername(dto.username);
+    const [existingUsername, existingUser] = await Promise.all([
+      this.prisma.user.findUnique({ where: { username } }),
+      this.prisma.user.findUnique({
+        where: { phone_role: { phone: dto.phone, role } },
+      }),
+    ]);
+
+    if (existingUsername && existingUsername.id !== existingUser?.id) {
+      throw new ConflictException("This username is already taken.");
+    }
 
     if (existingUser && existingUser.status !== AccountStatus.REJECTED) {
       throw new ConflictException("An account with this role and phone already exists.");
@@ -110,6 +93,7 @@ export class AuthService {
         role,
         status: AccountStatus.PENDING,
         upazilla: dto.upazilla,
+        username,
         buyerProfile: role === Role.BUYER ? { create: { buyerType: dto.buyerType } } : undefined,
         farmerProfile: role === Role.FARMER ? { create: { farmSize: dto.farmSize } } : undefined,
       },

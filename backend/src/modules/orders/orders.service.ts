@@ -22,6 +22,7 @@ const orderInclude = {
       status: true,
       upazilla: true,
       updatedAt: true,
+      username: true,
     },
   },
   district: true,

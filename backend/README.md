@@ -52,10 +52,10 @@ DATABASE_URL=Neon Postgres connection string, managed in the Render dashboard
 Optional initial admin bootstrap variables:
 
 ```txt
-ADMIN_LOGIN_NAME=admin_amarkrishok
+ADMIN_USERNAME=admin_amarkrishok
 ADMIN_PHONE=your_admin_phone
 ADMIN_PASSWORD=your_admin_password
 ```
 
 When `ADMIN_PHONE` and `ADMIN_PASSWORD` are present, the API creates or updates an active admin account on startup.
-Admin login requires `admin_amarkrishok` as the full name, plus the matching phone number and password.
+Admin login uses `ADMIN_USERNAME` and `ADMIN_PASSWORD`; phone remains contact information.

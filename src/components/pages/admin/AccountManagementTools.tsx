@@ -195,6 +195,7 @@ export function AccountDirectoryTable({
             <tr key={account.id}>
               <td>
                 <strong>{account.name}</strong>
+                <span>@{account.username}</span>
                 <span>{account.phone}</span>
               </td>
               <td>{account.organization || t("Business not added")}</td>

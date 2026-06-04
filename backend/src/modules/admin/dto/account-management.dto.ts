@@ -1,4 +1,4 @@
-import { IsIn, IsNotEmpty, IsOptional, IsString, MinLength } from "class-validator";
+import { IsIn, IsNotEmpty, IsOptional, IsString, Matches, MinLength } from "class-validator";
 
 export class AdminCreateAccountDto {
   @IsIn(["buyer", "farmer"])
@@ -7,6 +7,13 @@ export class AdminCreateAccountDto {
   @IsIn(["pending", "active", "rejected"])
   @IsOptional()
   status?: "pending" | "active" | "rejected";
+
+  @IsString()
+  @IsNotEmpty()
+  @Matches(/^[a-zA-Z0-9._-]{3,32}$/, {
+    message: "Username can use 3-32 letters, numbers, dots, underscores, or hyphens.",
+  })
+  username!: string;
 
   @IsString()
   @IsNotEmpty()
@@ -49,6 +56,13 @@ export class AdminUpdateAccountDto {
   @IsIn(["pending", "active", "rejected"])
   @IsOptional()
   status?: "pending" | "active" | "rejected";
+
+  @IsString()
+  @IsOptional()
+  @Matches(/^[a-zA-Z0-9._-]{3,32}$/, {
+    message: "Username can use 3-32 letters, numbers, dots, underscores, or hyphens.",
+  })
+  username?: string;
 
   @IsString()
   @IsOptional()

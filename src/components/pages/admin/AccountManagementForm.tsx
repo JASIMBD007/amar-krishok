@@ -17,6 +17,7 @@ type AccountFormState = {
   password: string;
   phone: string;
   status: AccountStatus;
+  username: string;
 };
 
 const emptyForm: AccountFormState = {
@@ -30,6 +31,7 @@ const emptyForm: AccountFormState = {
   password: "",
   phone: "",
   status: "active",
+  username: "",
 };
 
 export function AccountManagementForm({
@@ -70,6 +72,7 @@ export function AccountManagementForm({
       password: "",
       phone: editingAccount.phone,
       status: editingAccount.status,
+      username: editingAccount.username,
     });
   }, [editingAccount]);
 
@@ -80,8 +83,13 @@ export function AccountManagementForm({
   const submitForm = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!form.name.trim() || !form.phone.trim() || !form.organization.trim() || !form.district.trim() || !form.upazilla.trim() || !form.address.trim() || !form.identity.trim() || !form.focus.trim()) {
+    if (!form.username.trim() || !form.name.trim() || !form.phone.trim() || !form.organization.trim() || !form.district.trim() || !form.upazilla.trim() || !form.address.trim() || !form.identity.trim() || !form.focus.trim()) {
       onError("Please fill in all account fields.");
+      return;
+    }
+
+    if (!/^[a-zA-Z0-9._-]{3,32}$/.test(form.username.trim())) {
+      onError("Please enter a valid username.");
       return;
     }
 
@@ -106,6 +114,7 @@ export function AccountManagementForm({
           phone: form.phone.trim(),
           role,
           status: form.status,
+          username: form.username.trim().toLowerCase(),
         });
         onDone("Account updated.");
       } else {
@@ -121,6 +130,7 @@ export function AccountManagementForm({
           phone: form.phone.trim(),
           role,
           status: form.status,
+          username: form.username.trim().toLowerCase(),
         });
         setForm(emptyForm);
         onDone("Account created.");
@@ -135,6 +145,10 @@ export function AccountManagementForm({
   return (
     <form className="account-management-form" onSubmit={submitForm}>
       <FormGrid>
+        <label className="input-field">
+          <span>{t("Username")}</span>
+          <input value={form.username} onChange={(event) => updateField("username", event.target.value)} placeholder={t("Account username")} />
+        </label>
         <label className="input-field">
           <span>{t("Full name")}</span>
           <input value={form.name} onChange={(event) => updateField("name", event.target.value)} placeholder={t("Sample full name")} />

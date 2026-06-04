@@ -3,6 +3,7 @@ import { AccountStatus, Prisma, Role } from "@prisma/client";
 import { hash } from "bcryptjs";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
+import { normalizeUsername } from "../auth/username";
 import { AdminCreateAccountDto, AdminUpdateAccountDto } from "./dto/account-management.dto";
 
 const accountSelect = {
@@ -48,6 +49,7 @@ const accountSelect = {
   status: true,
   upazilla: true,
   updatedAt: true,
+  username: true,
 } satisfies Prisma.UserSelect;
 
 function accountRole(value?: string) {
@@ -129,9 +131,16 @@ export class AdminService {
       throw new BadRequestException("Unsupported account role.");
     }
 
-    const existingUser = await this.prisma.user.findUnique({
-      where: { phone_role: { phone: dto.phone, role } },
-    });
+    const username = normalizeUsername(dto.username);
+    const [existingUsername, existingUser] = await Promise.all([
+      this.prisma.user.findUnique({ where: { username } }),
+      this.prisma.user.findUnique({
+        where: { phone_role: { phone: dto.phone, role } },
+      }),
+    ]);
+    if (existingUsername) {
+      throw new ConflictException("This username is already taken.");
+    }
     if (existingUser) {
       throw new ConflictException("An account with this role and phone already exists.");
     }
@@ -160,6 +169,7 @@ export class AdminService {
         role,
         status,
         upazilla: dto.upazilla,
+        username,
       },
       select: accountSelect,
     });
@@ -180,6 +190,13 @@ export class AdminService {
       }
     }
 
+    if (dto.username && normalizeUsername(dto.username) !== user.username) {
+      const existingUsername = await this.prisma.user.findUnique({ where: { username: normalizeUsername(dto.username) } });
+      if (existingUsername) {
+        throw new ConflictException("This username is already taken.");
+      }
+    }
+
     const status = accountStatus(dto.status);
     const data: Prisma.UserUpdateInput = {
       address: dto.address?.trim(),
@@ -191,6 +208,7 @@ export class AdminService {
       reviewedAt: status ? new Date() : undefined,
       status,
       upazilla: dto.upazilla?.trim(),
+      username: dto.username ? normalizeUsername(dto.username) : undefined,
     };
 
     if (dto.password) {

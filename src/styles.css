@@ -1352,6 +1352,11 @@ button {
   padding: clamp(20px, 4vw, 32px);
 }
 
+.register-panel {
+  width: min(100%, 980px);
+  gap: 18px;
+}
+
 .auth-icon {
   display: grid;
   width: 54px;
@@ -1445,6 +1450,55 @@ button {
 
 .registration-summary strong {
   color: #183028;
+}
+
+.registration-sections {
+  display: grid;
+  gap: 14px;
+}
+
+.auth-form-section {
+  display: grid;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid rgba(24, 48, 40, 0.1);
+  border-radius: 8px;
+  background: #fbfcf8;
+}
+
+.auth-section-heading {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  color: #176b47;
+}
+
+.auth-section-heading strong,
+.auth-section-heading span {
+  display: block;
+}
+
+.auth-section-heading strong {
+  color: #183028;
+  font-size: 1rem;
+}
+
+.auth-section-heading span {
+  margin-top: 2px;
+  color: #60746a;
+  font-size: 0.86rem;
+  font-weight: 680;
+}
+
+.registration-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.registration-wide-field {
+  grid-column: 1 / -1;
 }
 
 .input-field,
@@ -3594,8 +3648,13 @@ th {
   .buyer-supply-grid,
   .seller-lot-item,
   .buyer-order-item,
+  .registration-grid,
   .form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .registration-wide-field {
+    grid-column: auto;
   }
 
   .metrics-band {

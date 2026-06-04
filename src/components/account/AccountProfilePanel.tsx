@@ -178,6 +178,10 @@ export function AccountProfilePanel({
           <strong>{profile.name || user?.name || t("Not provided")}</strong>
         </article>
         <article>
+          <span>{t("Username")}</span>
+          <strong>{user?.username || t("Not provided")}</strong>
+        </article>
+        <article>
           <span>{t("Verified phone")}</span>
           <strong>{user?.phone || t("Not provided")}</strong>
         </article>
