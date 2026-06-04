@@ -2,8 +2,9 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { BadgeCheck, CalendarClock, CheckCircle2, ClipboardList, MapPin, PackageCheck, Plus, ShieldCheck, ShoppingBag, Store, WalletCards } from "lucide-react";
 import { ApiRequestError, createBuyerOrder, fetchMyOrders, type BackendOrder } from "../../api/auth";
 import { getUpazillasForDistrict, lots, serviceDistricts } from "../../data";
-import { useTranslate, useValueText } from "../../i18n";
+import { useLanguage, useTranslate, useValueText } from "../../i18n";
 import type { AuthUser, ChatThread, RegisteredAccount } from "../../types";
+import { dateInputType, formatLocalizedDate, normalizeDateInput } from "../../utils/dateInput";
 import { AccountProfilePanel } from "../account/AccountProfilePanel";
 import { ChatWidget } from "../chat/ChatWidget";
 import { FormGrid, SectionTitle } from "../shared";
@@ -56,14 +57,6 @@ function formatCurrency(value: string | number) {
   return `৳${Math.round(amount).toLocaleString("en-US")}`;
 }
 
-function formatOrderDate(value: string | null) {
-  if (!value) {
-    return "Target date pending";
-  }
-
-  return new Intl.DateTimeFormat("en", { day: "numeric", month: "short", year: "numeric" }).format(new Date(value));
-}
-
 function formatStatus(status: string) {
   const label = status.toLowerCase().replaceAll("_", " ");
   return label.charAt(0).toUpperCase() + label.slice(1);
@@ -92,6 +85,7 @@ export function OrderPage({
   onSendChatMessage: (user: AuthUser, text: string, subject: string) => void;
   user: AuthUser | null;
 }) {
+  const language = useLanguage();
   const t = useTranslate();
   const v = useValueText();
   const [backendOrders, setBackendOrders] = useState<BackendOrder[]>([]);
@@ -173,7 +167,7 @@ export function OrderPage({
         },
       ],
       notes: form.notes.trim() || undefined,
-      targetDate: form.targetDate || undefined,
+      targetDate: normalizeDateInput(form.targetDate) || undefined,
     })
       .then((order) => {
         setBackendOrders((current) => [order, ...current]);
@@ -261,7 +255,13 @@ export function OrderPage({
           </label>
           <label className="input-field">
             <span>{t("Target date")}</span>
-            <input value={form.targetDate} onChange={(event) => updateField("targetDate", event.target.value)} type="date" />
+            <input
+              value={form.targetDate}
+              inputMode={language === "bn" ? "numeric" : undefined}
+              onChange={(event) => updateField("targetDate", event.target.value)}
+              placeholder={language === "bn" ? t("Date format example") : undefined}
+              type={dateInputType(language)}
+            />
           </label>
           <label className="input-field">
             <span>{t("Delivery area")}</span>
@@ -314,7 +314,7 @@ export function OrderPage({
               </div>
               <div>
                 <strong>{v(formatCurrency(order.totalValue))}</strong>
-                <span>{t(formatOrderDate(order.targetDate))}</span>
+                <span>{formatLocalizedDate(order.targetDate, language, t("Target date pending"))}</span>
               </div>
               <em className={`status ${statusClassName(order.status)}`}>{t(formatStatus(order.status))}</em>
             </article>
