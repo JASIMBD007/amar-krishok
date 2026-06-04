@@ -4,11 +4,12 @@ import {
   CalendarClock,
   CheckCircle2,
   ClipboardList,
+  ClipboardPlus,
   LayoutDashboard,
   ListChecks,
   MapPin,
   PackageCheck,
-  Plus,
+  SendHorizontal,
   ShieldCheck,
   ShoppingBag,
   Store,
@@ -251,7 +252,7 @@ export function OrderPage({
               {t("My orders")}
             </button>
             <button className="primary-button" onClick={() => scrollToSection("buyer-order-form")} type="button">
-              <Plus size={18} />
+              <ClipboardPlus size={18} />
               {t("New order")}
             </button>
           </div>
@@ -365,7 +366,7 @@ export function OrderPage({
               {error && <p className="auth-error">{t(error)}</p>}
               {success && <p className="auth-notice">{t(success)}</p>}
               <button className="primary-button full" type="submit" disabled={isSubmitting || user?.role === "admin"}>
-                <Plus size={18} />
+                <SendHorizontal size={18} />
                 {t(isSubmitting ? "Submitting" : "Submit order request")}
               </button>
             </form>
@@ -488,7 +489,7 @@ export function OrderPage({
                 <p>{t("Create your first order request to start tracking delivery.")}</p>
               )}
               <button className="primary-button full" onClick={() => scrollToSection("buyer-order-form")} type="button">
-                <Plus size={18} />
+                <ClipboardPlus size={18} />
                 {t("New order")}
               </button>
             </section>
