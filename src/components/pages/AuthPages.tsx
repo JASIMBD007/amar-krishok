@@ -93,12 +93,10 @@ export function LoginPage({
         </div>
         <span>{t("Secure login")}</span>
         <h1>{t("Login to continue")}</h1>
-        <p>{t("Enter your username and password. AmarKrishok will open the right dashboard automatically.")}</p>
 
         <label className="input-field">
           <span>{t("Username")}</span>
           <input autoComplete="username" value={username} onChange={(event) => setUsername(event.target.value)} placeholder={t("Account username")} />
-          <small>{t("Use the username created during registration.")}</small>
         </label>
         <PasswordField value={password} onChange={setPassword} placeholder={t("Password")} />
 
