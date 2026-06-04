@@ -17,10 +17,3 @@ services:
         generateValue: true
       - key: DATABASE_URL
         sync: false
-
-databases:
-  - name: amar-krishok-db
-    plan: free
-    region: singapore
-    databaseName: amar_krishok
-    user: amar_krishok
