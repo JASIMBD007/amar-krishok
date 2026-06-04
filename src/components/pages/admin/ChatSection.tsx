@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import { MessageSquareText, Send, UserRoundCheck } from "lucide-react";
 import { useTranslate } from "../../../i18n";
@@ -19,9 +19,11 @@ function getParticipantLabel(role: ChatParticipantRole) {
 export function ChatSection({
   chatThreads,
   onAdminReply,
+  onThreadOpen,
 }: {
   chatThreads: ChatThread[];
   onAdminReply: (threadId: string, text: string) => void;
+  onThreadOpen: (threadId: string) => void;
 }) {
   const t = useTranslate();
   const sortedThreads = useMemo(
@@ -31,6 +33,12 @@ export function ChatSection({
   const [activeThreadId, setActiveThreadId] = useState(sortedThreads[0]?.id ?? "");
   const [reply, setReply] = useState("");
   const activeThread = sortedThreads.find((thread) => thread.id === activeThreadId) ?? sortedThreads[0];
+
+  useEffect(() => {
+    if (activeThread?.status === "waiting") {
+      onThreadOpen(activeThread.id);
+    }
+  }, [activeThread?.id, activeThread?.status, onThreadOpen]);
 
   const submitReply = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();

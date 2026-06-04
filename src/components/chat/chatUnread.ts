@@ -31,6 +31,6 @@ export function countUnseenAdminReplies(thread: ChatThread | null | undefined, s
 export function countAdminChatAttention(chatThreads: ChatThread[]) {
   return chatThreads.filter((thread) => {
     const latestMessage = thread.messages[thread.messages.length - 1];
-    return thread.status === "waiting" || latestMessage?.senderRole !== "admin";
+    return thread.status === "waiting" && latestMessage?.senderRole !== "admin";
   }).length;
 }

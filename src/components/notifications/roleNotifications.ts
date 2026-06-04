@@ -147,7 +147,7 @@ export function makeRoleNotifications({
 
   if (user.role === "admin") {
     [...chatThreads]
-      .filter((thread) => thread.status === "waiting" || thread.messages[thread.messages.length - 1]?.senderRole !== "admin")
+      .filter((thread) => thread.status === "waiting" && thread.messages[thread.messages.length - 1]?.senderRole !== "admin")
       .sort((first, second) => new Date(second.updatedAt).getTime() - new Date(first.updatedAt).getTime())
       .slice(0, 4)
       .forEach((thread) => {

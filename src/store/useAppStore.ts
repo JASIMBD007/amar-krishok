@@ -144,6 +144,7 @@ type AppStore = {
   user: AuthUser | null;
   addRegistration: (account: RegisteredAccount) => void;
   closeHeaderMenus: () => void;
+  markChatThreadOpen: (threadId: string) => void;
   sendAdminChatReply: (threadId: string, text: string) => void;
   sendParticipantChatMessage: (participant: ChatParticipant, text: string, subject: string) => void;
   sendUserChatMessage: (sender: AuthUser, text: string, subject: string) => void;
@@ -180,6 +181,12 @@ export const useAppStore = create<AppStore>()(
           };
         }),
       closeHeaderMenus: () => set({ loginOpen: false, menuOpen: false }),
+      markChatThreadOpen: (threadId) =>
+        set((state) => ({
+          chatThreads: state.chatThreads.map((thread) =>
+            thread.id === threadId && thread.status === "waiting" ? { ...thread, status: "open" } : thread,
+          ),
+        })),
       sendAdminChatReply: (threadId, text) => {
         const timestamp = new Date().toISOString();
         const nextMessage: ChatMessage = {

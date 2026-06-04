@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
-import { Notification, Role } from "@prisma/client";
+import { AccountStatus, Notification, Role } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 
 type NotificationInput = {
@@ -55,6 +55,26 @@ function toNotification(notification: Notification) {
   };
 }
 
+function notificationAccountRole(title: string) {
+  if (title === "Buyer verification request") {
+    return Role.BUYER;
+  }
+
+  if (title === "Farmer verification request") {
+    return Role.FARMER;
+  }
+
+  return null;
+}
+
+function notificationSubject(body: string) {
+  return body.split(/[·:]/)[0]?.trim() ?? "";
+}
+
+function normalizedSubject(value: string) {
+  return value.trim().replace(/\s+/g, " ").toLowerCase();
+}
+
 @Injectable()
 export class NotificationsService {
   constructor(private readonly prisma: PrismaService) {}
@@ -105,7 +125,8 @@ export class NotificationsService {
       where: { userId },
     });
 
-    return notifications.map(toNotification);
+    const resolvedNotifications = await this.resolveReviewedNotifications(notifications);
+    return resolvedNotifications.map(toNotification);
   }
 
   async markRead(userId: string, id: string) {
@@ -127,5 +148,69 @@ export class NotificationsService {
       data: { readAt: new Date() },
       where: { readAt: null, userId },
     });
+  }
+
+  async markVerificationRequestNotificationsReviewed(account: { name: string; role: Role }) {
+    if (account.role !== Role.BUYER && account.role !== Role.FARMER) {
+      return { count: 0 };
+    }
+
+    return this.prisma.notification.updateMany({
+      data: { readAt: new Date() },
+      where: {
+        body: { contains: account.name },
+        readAt: null,
+        title: account.role === Role.BUYER ? "Buyer verification request" : "Farmer verification request",
+        user: { role: Role.ADMIN },
+      },
+    });
+  }
+
+  private async resolveReviewedNotifications(notifications: Notification[]) {
+    const pendingRequestNotifications = notifications.filter((notification) => !notification.readAt && notificationAccountRole(notification.title));
+
+    if (pendingRequestNotifications.length === 0) {
+      return notifications;
+    }
+
+    const accountSubjects = pendingRequestNotifications
+      .map((notification) => ({
+        name: notificationSubject(notification.body),
+        notification,
+        role: notificationAccountRole(notification.title),
+      }))
+      .filter((item): item is { name: string; notification: Notification; role: typeof Role.BUYER | typeof Role.FARMER } => Boolean(item.role && item.name));
+
+    if (accountSubjects.length === 0) {
+      return notifications;
+    }
+
+    const reviewedAccounts = await this.prisma.user.findMany({
+      select: { name: true, role: true },
+      where: {
+        OR: accountSubjects.map((item) => ({
+          name: item.name,
+          role: item.role,
+          status: { not: AccountStatus.PENDING },
+        })),
+      },
+    });
+
+    const reviewedAccountKeys = new Set(reviewedAccounts.map((account) => `${account.role}:${normalizedSubject(account.name)}`));
+    const reviewedNotificationIds = accountSubjects
+      .filter((item) => reviewedAccountKeys.has(`${item.role}:${normalizedSubject(item.name)}`))
+      .map((item) => item.notification.id);
+
+    if (reviewedNotificationIds.length === 0) {
+      return notifications;
+    }
+
+    const reviewedAt = new Date();
+    await this.prisma.notification.updateMany({
+      data: { readAt: reviewedAt },
+      where: { id: { in: reviewedNotificationIds }, readAt: null },
+    });
+
+    return notifications.map((notification) => (reviewedNotificationIds.includes(notification.id) ? { ...notification, readAt: reviewedAt } : notification));
   }
 }

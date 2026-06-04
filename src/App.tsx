@@ -30,6 +30,41 @@ import { AdminPage, HomePage, LoginPage, MarketplacePage, OrderPage, PostCropPag
 import { useAppStore } from "./store/useAppStore";
 import type { AppNotification, AuthUser, RegisteredAccount, Role, View } from "./types";
 
+const REVIEWED_NOTIFICATIONS_STORAGE_KEY = "amarKrishokReviewedNotifications";
+
+function reviewedNotificationKey(user: AuthUser) {
+  return `${user.role}:${user.accountId ?? user.phone}`;
+}
+
+function readStoredReviewedNotificationIds(user: AuthUser | null) {
+  if (!user) {
+    return [];
+  }
+
+  try {
+    const savedNotifications = window.localStorage.getItem(REVIEWED_NOTIFICATIONS_STORAGE_KEY);
+    const reviewedByUser = savedNotifications ? (JSON.parse(savedNotifications) as Record<string, string[]>) : {};
+    return reviewedByUser[reviewedNotificationKey(user)] ?? [];
+  } catch {
+    return [];
+  }
+}
+
+function saveStoredReviewedNotificationIds(user: AuthUser | null, ids: string[]) {
+  if (!user) {
+    return;
+  }
+
+  try {
+    const savedNotifications = window.localStorage.getItem(REVIEWED_NOTIFICATIONS_STORAGE_KEY);
+    const reviewedByUser = savedNotifications ? (JSON.parse(savedNotifications) as Record<string, string[]>) : {};
+    reviewedByUser[reviewedNotificationKey(user)] = Array.from(new Set(ids)).slice(-200);
+    window.localStorage.setItem(REVIEWED_NOTIFICATIONS_STORAGE_KEY, JSON.stringify(reviewedByUser));
+  } catch {
+    // Notification review state still works for the current session if local storage is unavailable.
+  }
+}
+
 export default function App() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -40,6 +75,7 @@ export default function App() {
     district,
     language,
     loginOpen,
+    markChatThreadOpen,
     menuOpen,
     query,
     registrations,
@@ -108,7 +144,7 @@ export default function App() {
     }
 
     const accessToken = user.accessToken;
-    setReviewedNotificationIds([]);
+    setReviewedNotificationIds(readStoredReviewedNotificationIds(user));
 
     fetchNotifications(accessToken)
       .then((notifications) => {
@@ -172,7 +208,11 @@ export default function App() {
   };
 
   const openNotification = (notification: AppNotification) => {
-    setReviewedNotificationIds((current) => (current.includes(notification.id) ? current : [...current, notification.id]));
+    setReviewedNotificationIds((current) => {
+      const nextIds = current.includes(notification.id) ? current : [...current, notification.id];
+      saveStoredReviewedNotificationIds(user, nextIds);
+      return nextIds;
+    });
 
     if (user?.accessToken && backendNotifications?.some((item) => item.id === notification.id) && !notification.readAt) {
       const optimisticReadAt = new Date().toISOString();
@@ -200,7 +240,11 @@ export default function App() {
   };
 
   const markAllNotificationsReviewed = () => {
-    setReviewedNotificationIds((current) => Array.from(new Set([...current, ...activeNotifications.map((notification) => notification.id)])));
+    setReviewedNotificationIds((current) => {
+      const nextIds = Array.from(new Set([...current, ...activeNotifications.map((notification) => notification.id)]));
+      saveStoredReviewedNotificationIds(user, nextIds);
+      return nextIds;
+    });
 
     if (!user?.accessToken || !backendNotifications) {
       return;
@@ -415,6 +459,7 @@ export default function App() {
                 chatThreads={chatThreads}
                 registrations={registrations}
                 onAdminReply={sendAdminChatReply}
+                onThreadOpen={markChatThreadOpen}
                 onUpdateRegistration={updateRegistrationStatus}
                 user={user}
               />

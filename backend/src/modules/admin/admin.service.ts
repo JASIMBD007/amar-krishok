@@ -206,11 +206,17 @@ export class AdminService {
       };
     }
 
-    return this.prisma.user.update({
+    const updatedAccount = await this.prisma.user.update({
       data,
       select: accountSelect,
       where: { id },
     });
+
+    if (status && status !== AccountStatus.PENDING) {
+      await this.notificationsService.markVerificationRequestNotificationsReviewed(updatedAccount);
+    }
+
+    return updatedAccount;
   }
 
   async deleteAccount(id: string) {
@@ -250,6 +256,7 @@ export class AdminService {
       where: { id },
     });
 
+    await this.notificationsService.markVerificationRequestNotificationsReviewed(updatedUser);
     await this.notificationsService.notifyUser(updatedUser.id, {
       body:
         action === "approve"

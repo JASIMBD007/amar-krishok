@@ -36,12 +36,14 @@ function sectionFromSearch(search: string): AdminSection | null {
 export function AdminPage({
   chatThreads,
   onAdminReply,
+  onThreadOpen,
   onUpdateRegistration,
   registrations,
   user,
 }: {
   chatThreads: ChatThread[];
   onAdminReply: (threadId: string, text: string) => void;
+  onThreadOpen: (threadId: string) => void;
   onUpdateRegistration: (id: string, status: AccountStatus) => void;
   registrations: RegisteredAccount[];
   user: AuthUser | null;
@@ -205,7 +207,7 @@ export function AdminPage({
       case "payouts":
         return <PayoutsSection onOpenSection={openAdminSection} />;
       case "chat":
-        return <ChatSection chatThreads={chatThreads} onAdminReply={onAdminReply} />;
+        return <ChatSection chatThreads={chatThreads} onAdminReply={onAdminReply} onThreadOpen={onThreadOpen} />;
       case "settings":
         return <SettingsSection />;
       case "dashboard":
