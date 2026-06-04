@@ -21,7 +21,7 @@ import { AccountProfilePanel } from "../account/AccountProfilePanel";
 import { getUpazillasForDistrict, serviceDistricts } from "../../data";
 import { useLanguage, useTranslate, useValueText } from "../../i18n";
 import type { AuthUser, RegisteredAccount } from "../../types";
-import { dateInputType, formatLocalizedDate, normalizeDateInput } from "../../utils/dateInput";
+import { formatLocalizedDate, normalizeDateInput } from "../../utils/dateInput";
 import { FormGrid } from "../shared";
 
 type CropLotForm = {
@@ -312,13 +312,9 @@ export function PostCropPage({
                 </label>
                 <label className="input-field">
                   <span>{t("Harvest date")}</span>
-                  <input
-                    value={form.harvestDate}
-                    inputMode={language === "bn" ? "numeric" : undefined}
-                    onChange={(event) => updateField("harvestDate", event.target.value)}
-                    placeholder={language === "bn" ? t("Date format example") : undefined}
-                    type={dateInputType(language)}
-                  />
+                  <div className={`date-input-shell ${language === "bn" && !form.harvestDate ? "show-placeholder" : ""}`} data-placeholder={t("Date format example")}>
+                    <input value={form.harvestDate} onChange={(event) => updateField("harvestDate", event.target.value)} type="date" />
+                  </div>
                 </label>
                 <label className="input-field">
                   <span>{t("Grade")}</span>

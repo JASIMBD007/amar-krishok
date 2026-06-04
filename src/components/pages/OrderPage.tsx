@@ -4,7 +4,7 @@ import { ApiRequestError, createBuyerOrder, fetchMyOrders, type BackendOrder } f
 import { getUpazillasForDistrict, lots, serviceDistricts } from "../../data";
 import { useLanguage, useTranslate, useValueText } from "../../i18n";
 import type { AuthUser, ChatThread, RegisteredAccount } from "../../types";
-import { dateInputType, formatLocalizedDate, normalizeDateInput } from "../../utils/dateInput";
+import { formatLocalizedDate, normalizeDateInput } from "../../utils/dateInput";
 import { AccountProfilePanel } from "../account/AccountProfilePanel";
 import { ChatWidget } from "../chat/ChatWidget";
 import { FormGrid, SectionTitle } from "../shared";
@@ -255,13 +255,9 @@ export function OrderPage({
           </label>
           <label className="input-field">
             <span>{t("Target date")}</span>
-            <input
-              value={form.targetDate}
-              inputMode={language === "bn" ? "numeric" : undefined}
-              onChange={(event) => updateField("targetDate", event.target.value)}
-              placeholder={language === "bn" ? t("Date format example") : undefined}
-              type={dateInputType(language)}
-            />
+            <div className={`date-input-shell ${language === "bn" && !form.targetDate ? "show-placeholder" : ""}`} data-placeholder={t("Date format example")}>
+              <input value={form.targetDate} onChange={(event) => updateField("targetDate", event.target.value)} type="date" />
+            </div>
           </label>
           <label className="input-field">
             <span>{t("Delivery area")}</span>

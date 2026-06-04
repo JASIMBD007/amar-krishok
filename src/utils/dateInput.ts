@@ -8,10 +8,6 @@ export function normalizeDateInput(value: string) {
     .replaceAll("/", "-");
 }
 
-export function dateInputType(language: Language) {
-  return language === "bn" ? "text" : "date";
-}
-
 export function formatLocalizedDate(
   value: string | null,
   language: Language,
