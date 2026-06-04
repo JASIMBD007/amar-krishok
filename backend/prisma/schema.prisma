@@ -62,6 +62,7 @@ enum ChatStatus {
 
 model User {
   id                String                @id @default(cuid())
+  username          String                @unique
   name              String
   phone             String
   passwordHash      String

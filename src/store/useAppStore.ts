@@ -45,7 +45,7 @@ function readStoredUser() {
     }
 
     const user = JSON.parse(savedUser) as AuthUser;
-    return hasRole(user.role) ? user : null;
+    return hasRole(user.role) ? { ...user, username: user.username ?? user.phone ?? user.name } : null;
   } catch {
     return null;
   }
@@ -59,7 +59,9 @@ function readStoredRegistrations() {
     }
 
     const registrations = JSON.parse(savedRegistrations) as RegisteredAccount[];
-    return registrations.filter((account) => hasRegistrationRole(account.role));
+    return registrations
+      .filter((account) => hasRegistrationRole(account.role))
+      .map((account) => ({ ...account, username: account.username ?? account.phone }));
   } catch {
     return [];
   }

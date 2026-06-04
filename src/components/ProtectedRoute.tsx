@@ -18,8 +18,7 @@ export function ProtectedRoute({
   const location = useLocation();
 
   if (!user || !user.accessToken) {
-    const fallbackRole = allowedRoles[0];
-    return <Navigate to={`/login?role=${fallbackRole}&next=${encodeURIComponent(location.pathname)}`} replace />;
+    return <Navigate to={`/login?next=${encodeURIComponent(location.pathname)}`} replace />;
   }
 
   if (!allowedRoles.includes(user.role)) {
@@ -31,7 +30,7 @@ export function ProtectedRoute({
           <h1>{t("This page is protected")}</h1>
           <p>{t("Your current role cannot open this page.")}</p>
           <div className="auth-actions">
-            <NavLink className="secondary-button" to={`/login?role=${allowedRoles[0]}&next=${encodeURIComponent(location.pathname)}`}>
+            <NavLink className="secondary-button" to={`/login?next=${encodeURIComponent(location.pathname)}`}>
               {t("Switch account")}
             </NavLink>
             <NavLink className="primary-button" to="/">

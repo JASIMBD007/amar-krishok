@@ -1,6 +1,12 @@
-import { IsIn, IsNotEmpty, IsOptional, IsString, MinLength } from "class-validator";
+import { IsNotEmpty, IsOptional, IsString, Matches, MinLength } from "class-validator";
 
 export class RegisterAccountDto {
+  @IsString()
+  @Matches(/^[a-zA-Z0-9._-]{3,32}$/, {
+    message: "Username can use 3-32 letters, numbers, dots, underscores, or hyphens.",
+  })
+  username!: string;
+
   @IsString()
   @IsNotEmpty()
   name!: string;
@@ -47,16 +53,11 @@ export class RegisterAccountDto {
 }
 
 export class LoginDto {
-  @IsIn(["admin", "buyer", "farmer"])
-  role!: "admin" | "buyer" | "farmer";
-
-  @IsOptional()
   @IsString()
-  name?: string;
-
-  @IsString()
-  @IsNotEmpty()
-  phone!: string;
+  @Matches(/^[a-zA-Z0-9._-]{3,32}$/, {
+    message: "Username can use 3-32 letters, numbers, dots, underscores, or hyphens.",
+  })
+  username!: string;
 
   @IsString()
   @MinLength(4)

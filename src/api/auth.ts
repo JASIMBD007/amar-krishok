@@ -11,6 +11,7 @@ type ApiUser = {
   id: string;
   name: string;
   phone: string;
+  username: string;
   role: ApiRole;
   status?: ApiAccountStatus;
   organization?: string | null;
@@ -139,6 +140,7 @@ export type AdminAccountPayload = UpdateProfilePayload & {
   phone: string;
   role: RegistrationRole;
   status: AccountStatus;
+  username: string;
 };
 
 export type BackendNotification = {
@@ -175,6 +177,7 @@ type RegisterAccountPayload = {
   password: string;
   phone: string;
   role: RegistrationRole;
+  username: string;
 };
 
 const apiRoleToAppRole: Record<ApiRole, Role> = {
@@ -252,6 +255,7 @@ function toAuthUser(data: LoginResponse): AuthUser {
     phone: data.user.phone,
     role: apiRoleToAppRole[data.user.role],
     signedInAt: new Date().toISOString(),
+    username: data.user.username ?? data.user.phone,
   };
 }
 
@@ -277,6 +281,7 @@ export function toRegisteredAccount(user: ApiUser): RegisteredAccount {
     organization: user.organization ?? "",
     password: "",
     phone: user.phone,
+    username: user.username ?? user.phone,
     reviewedAt: user.reviewedAt ?? undefined,
     role: apiRoleToAppRole[user.role] as RegistrationRole,
     status: user.status ? apiStatusToAccountStatus[user.status] : "pending",
@@ -285,19 +290,15 @@ export function toRegisteredAccount(user: ApiUser): RegisteredAccount {
 }
 
 export async function loginWithApi({
-  name,
   password,
-  phone,
-  role,
+  username,
 }: {
-  name: string;
   password: string;
-  phone: string;
-  role: Role;
+  username: string;
 }) {
   try {
     return toAuthUser(await apiRequest<LoginResponse>("/api/auth/login", {
-      body: JSON.stringify({ name, password, phone, role }),
+      body: JSON.stringify({ password, username }),
       method: "POST",
     }));
   } catch (error) {
@@ -311,7 +312,7 @@ export async function loginWithApi({
     }
 
     if (error.status === 401 || error.status === 400) {
-      throw new AuthRequestError("Name, mobile number, or password is incorrect.");
+      throw new AuthRequestError("Username or password is incorrect.");
     }
 
     throw new AuthRequestError(message || "Login service is unavailable. Please try again.");

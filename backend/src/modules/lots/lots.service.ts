@@ -20,6 +20,7 @@ const lotInclude = {
       status: true,
       upazilla: true,
       updatedAt: true,
+      username: true,
     },
   },
 } satisfies Prisma.CropLotInclude;

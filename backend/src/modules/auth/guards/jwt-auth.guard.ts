@@ -60,6 +60,7 @@ export class JwtAuthGuard implements CanActivate {
       phone: user.phone,
       role: user.role,
       status: user.status,
+      username: user.username,
     };
 
     return true;

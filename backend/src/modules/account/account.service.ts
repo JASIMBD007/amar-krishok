@@ -19,6 +19,7 @@ const profileSelect = {
   status: true,
   upazilla: true,
   updatedAt: true,
+  username: true,
 } satisfies Prisma.UserSelect;
 
 @Injectable()

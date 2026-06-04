@@ -203,7 +203,7 @@ export default function App() {
       return;
     }
 
-    navigate(`/login?role=${role}&next=${encodeURIComponent(targetPath)}`);
+    navigate(`/login?next=${encodeURIComponent(targetPath)}`);
     closeAllHeaderMenus();
   };
 
@@ -269,7 +269,7 @@ export default function App() {
     addRegistration(account);
 
     if (user?.accountId === account.id) {
-      setUser({ ...user, name: account.name });
+      setUser({ ...user, name: account.name, phone: account.phone, username: account.username });
     }
   };
 
@@ -362,20 +362,30 @@ export default function App() {
                     <strong>{user.name}</strong>
                   </div>
                 ) : (
-                  <span>{t("Choose login type")}</span>
+                  <span>{t("Account access")}</span>
                 )}
-                {roleOptions.map((option) => {
-                  const Icon = option.icon;
-                  return (
-                    <button className="role-option" key={option.role} type="button" role="menuitem" onClick={() => chooseRole(option.role, option.view)}>
-                      <Icon size={18} />
-                      <span>
-                        <strong>{t(option.label)}</strong>
-                        <small>{t(option.detail)}</small>
-                      </span>
-                    </button>
-                  );
-                })}
+                {user ? (
+                  roleOptions.map((option) => {
+                    const Icon = option.icon;
+                    return (
+                      <button className="role-option" key={option.role} type="button" role="menuitem" onClick={() => chooseRole(option.role, option.view)}>
+                        <Icon size={18} />
+                        <span>
+                          <strong>{t(option.label)}</strong>
+                          <small>{t(option.detail)}</small>
+                        </span>
+                      </button>
+                    );
+                  })
+                ) : (
+                  <NavLink className="role-option" to="/login" onClick={closeAllHeaderMenus}>
+                    <LockKeyhole size={18} />
+                    <span>
+                      <strong>{t("Sign in")}</strong>
+                      <small>{t("One username for every account")}</small>
+                    </span>
+                  </NavLink>
+                )}
                 {!user && (
                   <>
                     <NavLink className="role-option" to="/register/buyer" onClick={closeAllHeaderMenus}>

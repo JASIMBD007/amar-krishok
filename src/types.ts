@@ -17,6 +17,7 @@ export type AuthUser = {
   phone: string;
   role: Role;
   signedInAt: string;
+  username: string;
 };
 
 export type RegisteredAccount = {
@@ -25,6 +26,7 @@ export type RegisteredAccount = {
   status: AccountStatus;
   name: string;
   phone: string;
+  username: string;
   password: string;
   organization: string;
   district: string;

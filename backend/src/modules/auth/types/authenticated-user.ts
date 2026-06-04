@@ -6,4 +6,5 @@ export interface AuthenticatedUser {
   phone: string;
   role: Role;
   status: AccountStatus;
+  username: string;
 }
