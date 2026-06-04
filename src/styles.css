@@ -1464,41 +1464,6 @@ button {
   background: #f8faf5;
 }
 
-.date-input-shell {
-  position: relative;
-  margin-top: 3px;
-}
-
-.input-field .date-input-shell input {
-  margin-top: 0;
-}
-
-.date-input-shell.show-placeholder input {
-  color: transparent;
-}
-
-.date-input-shell.show-placeholder input::-webkit-datetime-edit {
-  color: transparent;
-}
-
-.date-input-shell.show-placeholder input::-webkit-calendar-picker-indicator {
-  opacity: 1;
-}
-
-.date-input-shell.show-placeholder::after {
-  position: absolute;
-  top: 50%;
-  left: 13px;
-  max-width: calc(100% - 52px);
-  overflow: hidden;
-  color: #777b78;
-  content: attr(data-placeholder);
-  pointer-events: none;
-  text-overflow: ellipsis;
-  transform: translateY(-50%);
-  white-space: nowrap;
-}
-
 .hidden-file-input {
   position: absolute;
   width: 1px;

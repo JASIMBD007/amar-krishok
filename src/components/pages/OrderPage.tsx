@@ -255,9 +255,7 @@ export function OrderPage({
           </label>
           <label className="input-field">
             <span>{t("Target date")}</span>
-            <div className={`date-input-shell ${language === "bn" && !form.targetDate ? "show-placeholder" : ""}`} data-placeholder={t("Date format example")}>
-              <input value={form.targetDate} onChange={(event) => updateField("targetDate", event.target.value)} type="date" />
-            </div>
+            <input value={form.targetDate} onChange={(event) => updateField("targetDate", event.target.value)} type="date" />
           </label>
           <label className="input-field">
             <span>{t("Delivery area")}</span>

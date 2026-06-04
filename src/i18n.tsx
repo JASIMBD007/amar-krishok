@@ -154,7 +154,6 @@ const bn: Record<string, string> = {
   "Choose an image or PDF": "ছবি বা পিডিএফ বেছে নিন",
   "Choose file": "ফাইল বেছে নিন",
   "No file chosen": "ফাইল বেছে নেওয়া হয়নি",
-  "Date format example": "যেমন ২০২৬-০৬-০৮",
   "Please choose a file to upload.": "আপলোড করার জন্য একটি ফাইল বেছে নিন।",
   "Document must be an image or PDF.": "ডকুমেন্টটি ছবি বা পিডিএফ হতে হবে।",
   "Crop image must be JPG, PNG, WEBP, or GIF.": "ফসলের ছবি JPG, PNG, WEBP বা GIF হতে হবে।",
