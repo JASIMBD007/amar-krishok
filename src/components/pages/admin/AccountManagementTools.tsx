@@ -187,9 +187,10 @@ export function DeleteConfirmModal({
   );
 }
 
-function LotDetailCard({ lot }: { lot: RegisteredCropLotRecord }) {
+function LotDetailCard({ fallbackUpazilla, lot }: { fallbackUpazilla?: string; lot: RegisteredCropLotRecord }) {
   const t = useTranslate();
   const v = useValueText();
+  const displayUpazilla = lot.upazilla || fallbackUpazilla;
 
   return (
     <article className="lot-detail-card">
@@ -209,7 +210,7 @@ function LotDetailCard({ lot }: { lot: RegisteredCropLotRecord }) {
         </span>
         <span>
           <small>{t("Upazilla")}</small>
-          <strong>{lot.upazilla || t("Not added")}</strong>
+          <strong>{displayUpazilla ? t(displayUpazilla) : t("Not added")}</strong>
         </span>
         <span>
           <small>{t("Quantity")}</small>
@@ -283,7 +284,7 @@ export function FarmerLotDetailsModal({
         ) : (
           <div className="lot-details-list">
             {lots.map((lot) => (
-              <LotDetailCard key={lot.id} lot={lot} />
+              <LotDetailCard key={lot.id} fallbackUpazilla={account.upazilla} lot={lot} />
             ))}
           </div>
         )}
