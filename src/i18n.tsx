@@ -129,6 +129,7 @@ const bn: Record<string, string> = {
   "Edit profile": "প্রোফাইল এডিট করুন",
   "Not provided": "দেওয়া হয়নি",
   "Uploaded document saved": "ডকুমেন্ট আপলোড করা আছে",
+  "Uploaded document preview": "আপলোড করা ডকুমেন্ট",
   "No document uploaded": "ডকুমেন্ট আপলোড করা হয়নি",
   "View document": "ডকুমেন্ট দেখুন",
   "Document ready for admin review": "অ্যাডমিন রিভিউর জন্য ডকুমেন্ট প্রস্তুত",

@@ -1171,6 +1171,43 @@ button {
   padding: 0 10px;
 }
 
+.readonly-password-input {
+  color: #687b70;
+  cursor: not-allowed;
+}
+
+.admin-document-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 52px;
+  padding: 8px 10px;
+  border: 1px solid #d8ddd4;
+  border-radius: 8px;
+  background: #f9fbf6;
+}
+
+.admin-document-status {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  color: #183028;
+  font-weight: 850;
+}
+
+.admin-document-status svg {
+  flex: 0 0 auto;
+  color: #176b47;
+}
+
+.admin-document-status span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .danger-button {
   color: #8a2a1b;
   background: #f8e5df;
@@ -1263,6 +1300,10 @@ button {
   backdrop-filter: blur(4px);
 }
 
+.document-preview-backdrop {
+  z-index: 75;
+}
+
 .admin-modal {
   display: grid;
   gap: 14px;
@@ -1302,6 +1343,36 @@ button {
 
 .lot-details-modal {
   width: min(980px, 100%);
+}
+
+.document-preview-modal {
+  width: min(820px, 100%);
+}
+
+.document-preview-body {
+  display: grid;
+  place-items: center;
+  min-height: 260px;
+  padding: 10px;
+  border-radius: 8px;
+  background: #f4f7f1;
+}
+
+.document-preview-body img,
+.document-preview-body iframe {
+  width: 100%;
+  max-height: min(68vh, 720px);
+  border: 1px solid rgba(24, 48, 40, 0.12);
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.document-preview-body img {
+  object-fit: contain;
+}
+
+.document-preview-body iframe {
+  height: min(68vh, 720px);
 }
 
 .lot-details-summary {
@@ -4022,6 +4093,16 @@ th {
 
   .lot-detail-meta {
     grid-template-columns: 1fr;
+  }
+
+  .admin-document-field {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-document-field .secondary-button {
+    justify-content: center;
+    width: 100%;
   }
 
   .header-actions {
