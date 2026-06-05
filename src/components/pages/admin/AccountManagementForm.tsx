@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { Plus, Save } from "lucide-react";
+import { Eye, FileImage, Plus, Save, X } from "lucide-react";
 import type { AdminAccountPayload } from "../../../api/auth";
 import { getUpazillasForDistrict, serviceDistricts } from "../../../data";
 import { useTranslate } from "../../../i18n";
@@ -34,6 +34,16 @@ const emptyForm: AccountFormState = {
   username: "",
 };
 
+function canPreviewDocument(value: string) {
+  const cleanValue = value.trim();
+  return cleanValue.startsWith("http://") || cleanValue.startsWith("https://") || cleanValue.startsWith("data:");
+}
+
+function isPdfDocument(value: string) {
+  const cleanValue = value.trim().toLowerCase();
+  return cleanValue.startsWith("data:application/pdf") || cleanValue.includes(".pdf");
+}
+
 export function AccountManagementForm({
   editingAccount,
   onCreateAccount,
@@ -51,13 +61,16 @@ export function AccountManagementForm({
 }) {
   const t = useTranslate();
   const [form, setForm] = useState<AccountFormState>(emptyForm);
+  const [documentPreviewOpen, setDocumentPreviewOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isEditing = Boolean(editingAccount);
+  const hasPreviewableDocument = canPreviewDocument(form.identity);
   const availableUpazillas = getUpazillasForDistrict(form.district);
 
   useEffect(() => {
     if (!editingAccount) {
       setForm(emptyForm);
+      setDocumentPreviewOpen(false);
       return;
     }
 
@@ -74,6 +87,7 @@ export function AccountManagementForm({
       status: editingAccount.status,
       username: editingAccount.username,
     });
+    setDocumentPreviewOpen(false);
   }, [editingAccount]);
 
   const updateField = (field: keyof AccountFormState, value: string) => {
@@ -157,10 +171,17 @@ export function AccountManagementForm({
           <span>{t("Mobile number")}</span>
           <input value={form.phone} onChange={(event) => updateField("phone", event.target.value)} inputMode="tel" placeholder="01700000000" />
         </label>
-        <label className="input-field">
-          <span>{t("Password")}</span>
-          <input value={form.password} onChange={(event) => updateField("password", event.target.value)} placeholder={t(isEditing ? "Leave blank to keep current password" : "Password")} type="password" />
-        </label>
+        {isEditing ? (
+          <label className="input-field">
+            <span>{t("Password")}</span>
+            <input className="readonly-password-input" value="••••••••" readOnly aria-readonly="true" />
+          </label>
+        ) : (
+          <label className="input-field">
+            <span>{t("Password")}</span>
+            <input value={form.password} onChange={(event) => updateField("password", event.target.value)} placeholder={t("Password")} type="password" />
+          </label>
+        )}
         <label className="input-field">
           <span>{t("Status")}</span>
           <select value={form.status} onChange={(event) => updateField("status", event.target.value as AccountStatus)}>
@@ -203,10 +224,28 @@ export function AccountManagementForm({
           <span>{t("Address")}</span>
           <input value={form.address} onChange={(event) => updateField("address", event.target.value)} placeholder={t("Dhaka North")} />
         </label>
-        <label className="input-field">
-          <span>{t("NID / trade license")}</span>
-          <input value={form.identity} onChange={(event) => updateField("identity", event.target.value)} placeholder={t("Sample identity")} />
-        </label>
+        {isEditing ? (
+          <div className="input-field">
+            <span>{t("NID / trade license")}</span>
+            <div className="admin-document-field">
+              <div className="admin-document-status">
+                <FileImage size={17} />
+                <span>{t(form.identity ? "Uploaded document saved" : "No document uploaded")}</span>
+              </div>
+              {hasPreviewableDocument && (
+                <button className="secondary-button compact-action" type="button" onClick={() => setDocumentPreviewOpen(true)}>
+                  <Eye size={15} />
+                  {t("View document")}
+                </button>
+              )}
+            </div>
+          </div>
+        ) : (
+          <label className="input-field">
+            <span>{t("NID / trade license")}</span>
+            <input value={form.identity} onChange={(event) => updateField("identity", event.target.value)} placeholder={t("Sample identity")} />
+          </label>
+        )}
       </FormGrid>
       <label className="full-field">
         <span>{t("Crop interest / supply focus")}</span>
@@ -218,6 +257,28 @@ export function AccountManagementForm({
           {t(isEditing ? "Update account" : "Create account")}
         </button>
       </div>
+      {documentPreviewOpen && hasPreviewableDocument && (
+        <div className="admin-modal-backdrop document-preview-backdrop" role="presentation">
+          <section className="admin-modal document-preview-modal" role="dialog" aria-modal="true" aria-labelledby="document-preview-title">
+            <div className="admin-modal-header">
+              <div>
+                <span>{t("NID / trade license")}</span>
+                <h2 id="document-preview-title">{t("Uploaded document preview")}</h2>
+              </div>
+              <button className="icon-button" type="button" aria-label={t("Close modal")} onClick={() => setDocumentPreviewOpen(false)}>
+                <X size={18} />
+              </button>
+            </div>
+            <div className="document-preview-body">
+              {isPdfDocument(form.identity) ? (
+                <iframe src={form.identity} title={t("Uploaded document preview")} />
+              ) : (
+                <img src={form.identity} alt={t("Uploaded document preview")} />
+              )}
+            </div>
+          </section>
+        </div>
+      )}
     </form>
   );
 }
