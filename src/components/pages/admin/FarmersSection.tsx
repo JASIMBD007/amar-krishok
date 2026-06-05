@@ -3,7 +3,14 @@ import { Plus } from "lucide-react";
 import type { AdminAccountPayload } from "../../../api/auth";
 import { useTranslate, useValueText } from "../../../i18n";
 import type { AccountStatus, RegisteredAccount } from "../../../types";
-import { AccountDirectoryTable, AccountModal, AdminSnackbar, DeleteConfirmModal, type AdminToast } from "./AccountManagementTools";
+import {
+  AccountDirectoryTable,
+  AccountModal,
+  AdminSnackbar,
+  DeleteConfirmModal,
+  FarmerLotDetailsModal,
+  type AdminToast,
+} from "./AccountManagementTools";
 
 export function FarmersSection({
   onCreateAccount,
@@ -26,6 +33,7 @@ export function FarmersSection({
   const [deleteTarget, setDeleteTarget] = useState<RegisteredAccount | null>(null);
   const [editingFarmer, setEditingFarmer] = useState<RegisteredAccount | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [lotDetailsAccount, setLotDetailsAccount] = useState<RegisteredAccount | null>(null);
   const [toast, setToast] = useState<AdminToast | null>(null);
   const farmers = registrations.filter((account) => account.role === "farmer");
   const pendingFarmers = farmers.filter((account) => account.status === "pending");
@@ -113,6 +121,7 @@ export function FarmersSection({
           emptyText="No farmer registrations yet"
           onDelete={setDeleteTarget}
           onEdit={openEditModal}
+          onOpenLotRecords={setLotDetailsAccount}
           onUpdateRegistration={onUpdateRegistration}
           role="farmer"
         />
@@ -126,6 +135,7 @@ export function FarmersSection({
         open={accountModalOpen}
         role="farmer"
       />
+      <FarmerLotDetailsModal account={lotDetailsAccount} onClose={() => setLotDetailsAccount(null)} />
       <DeleteConfirmModal account={deleteTarget} isDeleting={isDeleting} onClose={() => setDeleteTarget(null)} onConfirm={confirmDelete} />
       <AdminSnackbar toast={toast} onClose={() => setToast(null)} />
     </section>

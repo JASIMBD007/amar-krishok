@@ -1184,7 +1184,7 @@ button {
 }
 
 .account-table {
-  min-width: 980px;
+  min-width: 1120px;
 }
 
 .account-table th,
@@ -1212,6 +1212,29 @@ button {
 .account-record-cell span {
   color: #183028;
   font-weight: 850;
+}
+
+.account-mobile-cell {
+  color: #183028;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.record-cell-button {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  text-align: left;
+  background: #f2f7ef;
+  cursor: pointer;
+}
+
+.record-cell-button:hover,
+.record-cell-button:focus-visible {
+  border-color: rgba(23, 107, 71, 0.28);
+  background: #e9f4eb;
+  outline: none;
 }
 
 .table-actions {
@@ -1275,6 +1298,123 @@ button {
 
 .confirm-modal {
   width: min(460px, 100%);
+}
+
+.lot-details-modal {
+  width: min(980px, 100%);
+}
+
+.lot-details-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 12px;
+  border-radius: 8px;
+  color: #66786f;
+  background: #f2f7ef;
+  font-weight: 800;
+}
+
+.lot-details-summary svg {
+  color: #176b47;
+}
+
+.lot-details-summary strong {
+  color: #183028;
+}
+
+.lot-details-list {
+  display: grid;
+  gap: 12px;
+}
+
+.lot-detail-card {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid rgba(24, 48, 40, 0.1);
+  border-radius: 8px;
+  background: #fffdf8;
+}
+
+.lot-detail-card header,
+.lot-detail-card header div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.lot-detail-card header div {
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.lot-detail-card header span {
+  color: #66786f;
+  font-size: 0.76rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.lot-detail-card h3 {
+  margin: 0;
+  color: #183028;
+  font-size: 1.16rem;
+}
+
+.lot-detail-card em {
+  align-self: flex-start;
+  padding: 7px 11px;
+  border-radius: 999px;
+  color: #176b47;
+  background: #e2f2e5;
+  font-style: normal;
+  font-weight: 900;
+  text-transform: capitalize;
+}
+
+.lot-detail-meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.lot-detail-meta span {
+  display: grid;
+  gap: 3px;
+  min-height: 62px;
+  padding: 10px;
+  border-radius: 8px;
+  background: #f4f7f1;
+}
+
+.lot-detail-meta small {
+  color: #66786f;
+  font-size: 0.72rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.lot-detail-meta strong {
+  color: #183028;
+}
+
+.lot-detail-notes {
+  margin: 0;
+  padding: 10px;
+  border-radius: 8px;
+  color: #506257;
+  background: #f4f7f1;
+  line-height: 1.5;
+}
+
+.lot-detail-link {
+  width: fit-content;
+  color: #176b47;
+  font-weight: 900;
 }
 
 .confirm-modal-body {
@@ -3717,6 +3857,10 @@ th {
     width: min(360px, calc(100vw - 28px));
   }
 
+  .lot-detail-meta {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .global-search {
     order: 3;
     width: 100%;
@@ -3874,6 +4018,10 @@ th {
   .buyer-supply-item em {
     grid-column: 2;
     justify-self: start;
+  }
+
+  .lot-detail-meta {
+    grid-template-columns: 1fr;
   }
 
   .header-actions {
