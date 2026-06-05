@@ -29,14 +29,19 @@ type ApiUser = {
     orders?: number;
   };
   cropLots?: Array<{
+    createdAt?: string;
     crop: { name: string };
     district: { name: string };
     upazilla?: string | null;
     grade: string;
+    harvestDate?: string | null;
     id: string;
+    imageUrl?: string | null;
+    notes?: string | null;
     pricePerKg: string | number;
     quantityKg: string | number;
     status: string;
+    updatedAt?: string;
   }>;
   orders?: Array<{
     deliveryAddress: string;
@@ -295,6 +300,22 @@ export function toRegisteredAccount(user: ApiUser): RegisteredAccount {
   const latestLot = user.cropLots?.[0];
   return {
     address: user.address ?? "",
+    cropLots:
+      user.cropLots?.map((lot) => ({
+        createdAt: lot.createdAt,
+        crop: lot.crop.name,
+        district: lot.district.name,
+        grade: lot.grade,
+        harvestDate: lot.harvestDate ?? undefined,
+        id: lot.id,
+        imageUrl: lot.imageUrl ?? undefined,
+        notes: lot.notes ?? undefined,
+        pricePerKg: numericValue(lot.pricePerKg),
+        quantityKg: numericValue(lot.quantityKg),
+        status: lot.status,
+        upazilla: lot.upazilla ?? undefined,
+        updatedAt: lot.updatedAt,
+      })) ?? [],
     cropLotCount: user._count?.cropLots ?? user.cropLots?.length ?? 0,
     cropLotQuantityKg: user.cropLots?.reduce((total, lot) => total + numericValue(lot.quantityKg), 0) ?? 0,
     district: user.district?.name ?? "",

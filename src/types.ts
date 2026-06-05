@@ -36,6 +36,7 @@ export type RegisteredAccount = {
   focus: string;
   submittedAt: string;
   reviewedAt?: string;
+  cropLots?: RegisteredCropLotRecord[];
   cropLotCount?: number;
   cropLotQuantityKg?: number;
   latestLotStatus?: string;
@@ -44,6 +45,22 @@ export type RegisteredAccount = {
   orderValue?: number;
   latestOrderStatus?: string;
   latestOrderSummary?: string;
+};
+
+export type RegisteredCropLotRecord = {
+  id: string;
+  crop: string;
+  district: string;
+  upazilla?: string;
+  grade: string;
+  harvestDate?: string;
+  imageUrl?: string;
+  notes?: string;
+  pricePerKg: number;
+  quantityKg: number;
+  status: string;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 export type CropLot = {

@@ -19,16 +19,20 @@ const accountSelect = {
   cropLots: {
     orderBy: { createdAt: "desc" },
     select: {
+      createdAt: true,
       crop: { select: { name: true } },
       district: { select: { name: true } },
       grade: true,
+      harvestDate: true,
       id: true,
+      imageUrl: true,
+      notes: true,
       pricePerKg: true,
       quantityKg: true,
       status: true,
       upazilla: true,
+      updatedAt: true,
     },
-    take: 3,
   },
   orders: {
     orderBy: { createdAt: "desc" },
