@@ -716,6 +716,10 @@ button {
   appearance: none;
 }
 
+.input-field select.login-select {
+  appearance: auto;
+}
+
 .form-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(280px, 390px);
@@ -1352,6 +1356,12 @@ button {
   padding: clamp(20px, 4vw, 32px);
 }
 
+.login-panel {
+  width: min(100%, 720px);
+  gap: 16px;
+  padding: clamp(28px, 5vw, 56px);
+}
+
 .register-panel {
   width: min(100%, 980px);
   gap: 18px;
@@ -1382,10 +1392,22 @@ button {
   line-height: 1.05;
 }
 
+.login-panel h1 {
+  color: #132d24;
+  font-size: clamp(2.4rem, 5vw, 4rem);
+  letter-spacing: 0;
+}
+
 .auth-panel p {
   margin: 0;
   color: #61746a;
   line-height: 1.65;
+}
+
+.login-intro {
+  max-width: 560px;
+  font-size: 1.05rem;
+  line-height: 1.45;
 }
 
 .auth-panel .input-field small {
@@ -1394,11 +1416,24 @@ button {
   font-weight: 650;
 }
 
+.required-mark {
+  color: #b95439;
+  font-weight: 900;
+}
+
 .auth-error {
   padding: 11px 12px;
   border-radius: 8px;
   color: #8a321d !important;
   background: #faece6;
+  font-weight: 760;
+}
+
+.auth-info {
+  padding: 11px 12px;
+  border-radius: 8px;
+  color: #176b47 !important;
+  background: #e8f3e8;
   font-weight: 760;
 }
 
@@ -1431,6 +1466,46 @@ button {
   flex-wrap: wrap;
   gap: 10px;
   margin-top: 4px;
+}
+
+.auth-submit-button {
+  justify-content: center;
+  width: 100%;
+  min-height: 54px;
+  margin-top: 8px;
+  font-size: 1rem;
+}
+
+.auth-link-line,
+.auth-create-line {
+  color: #4f6258;
+  font-weight: 720;
+}
+
+.auth-link-line button,
+.auth-create-line a {
+  display: inline;
+  padding: 0;
+  border: 0;
+  color: #2675b8;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 820;
+  text-decoration: none;
+}
+
+.auth-link-line button:hover,
+.auth-create-line a:hover {
+  color: #176b47;
+  text-decoration: underline;
+}
+
+.auth-create-line {
+  margin-top: 10px !important;
+  padding-top: 16px;
+  border-top: 1px solid rgba(24, 48, 40, 0.1);
+  text-align: center;
 }
 
 .registration-summary {

@@ -382,7 +382,7 @@ export default function App() {
                     <LockKeyhole size={18} />
                     <span>
                       <strong>{t("Sign in")}</strong>
-                      <small>{t("One username for every account")}</small>
+                      <small>{t("Choose account type to sign in")}</small>
                     </span>
                   </NavLink>
                 )}

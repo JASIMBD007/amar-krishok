@@ -186,6 +186,12 @@ const apiRoleToAppRole: Record<ApiRole, Role> = {
   FARMER: "farmer",
 };
 
+const appRoleToApiRole: Record<Role, ApiRole> = {
+  admin: "ADMIN",
+  buyer: "BUYER",
+  farmer: "FARMER",
+};
+
 const apiStatusToAccountStatus: Record<ApiAccountStatus, AccountStatus> = {
   ACTIVE: "active",
   PENDING: "pending",
@@ -290,15 +296,22 @@ export function toRegisteredAccount(user: ApiUser): RegisteredAccount {
 }
 
 export async function loginWithApi({
+  accountType,
+  identifier,
   password,
-  username,
 }: {
+  accountType: Role;
+  identifier: string;
   password: string;
-  username: string;
 }) {
   try {
+    const role = appRoleToApiRole[accountType];
     return toAuthUser(await apiRequest<LoginResponse>("/api/auth/login", {
-      body: JSON.stringify({ password, username }),
+      body: JSON.stringify({
+        password,
+        role,
+        ...(accountType === "admin" ? { username: identifier } : { phone: identifier }),
+      }),
       method: "POST",
     }));
   } catch (error) {
@@ -312,7 +325,7 @@ export async function loginWithApi({
     }
 
     if (error.status === 401 || error.status === 400) {
-      throw new AuthRequestError("Username or password is incorrect.");
+      throw new AuthRequestError(accountType === "admin" ? "Username or password is incorrect." : "Mobile number or password is incorrect.");
     }
 
     throw new AuthRequestError(message || "Login service is unavailable. Please try again.");

@@ -59,3 +59,4 @@ ADMIN_PASSWORD=your_admin_password
 
 When `ADMIN_PHONE` and `ADMIN_PASSWORD` are present, the API creates or updates an active admin account on startup.
 Admin login uses `ADMIN_USERNAME` and `ADMIN_PASSWORD`; phone remains contact information.
+Buyer and farmer login uses the selected account type, mobile number, and password after admin approval.
