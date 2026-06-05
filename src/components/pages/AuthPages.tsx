@@ -1,23 +1,30 @@
 import React, { useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { AtSign, Building2, CheckCircle2, Clock3, ClipboardCheck, Eye, EyeOff, LockKeyhole, MapPin, ShieldCheck, UserRound } from "lucide-react";
+import { AtSign, Building2, CheckCircle2, Clock3, ClipboardCheck, Eye, EyeOff, LockKeyhole, MapPin, UserRound } from "lucide-react";
 import { ApiRequestError, loginWithApi, AuthRequestError, registerAccountWithApi } from "../../api/auth";
 import { getUpazillasForDistrict, roleHomePath, roleOptions, serviceDistricts } from "../../data";
 import { useTranslate, useValueText } from "../../i18n";
-import type { AuthUser, RegisteredAccount, RegistrationRole } from "../../types";
+import type { AuthUser, RegisteredAccount, RegistrationRole, Role } from "../../types";
 import { roleCanOpenPath } from "./pageHelpers";
 
 const usernamePattern = /^[a-zA-Z0-9._-]{3,32}$/;
+const loginAccountOrder: Role[] = ["admin", "farmer", "buyer"];
+
+function loginRoleFromQuery(role: string | null): Role | "" {
+  return role === "admin" || role === "farmer" || role === "buyer" ? role : "";
+}
 
 function PasswordField({
   hint,
   onChange,
   placeholder,
+  required,
   value,
 }: {
   hint?: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  required?: boolean;
   value: string;
 }) {
   const t = useTranslate();
@@ -27,7 +34,10 @@ function PasswordField({
 
   return (
     <label className="input-field">
-      <span>{t("Password")}</span>
+      <span>
+        {t("Password")}
+        {required && <strong className="required-mark"> *</strong>}
+      </span>
       <div className="password-control">
         <input value={value} onChange={(event) => onChange(event.target.value)} type={visible ? "text" : "password"} placeholder={placeholder ?? t("Password")} />
         <button className="password-toggle" type="button" aria-label={t(toggleLabel)} aria-pressed={visible} title={t(toggleLabel)} onClick={() => setVisible((current) => !current)}>
@@ -47,22 +57,36 @@ export function LoginPage({
   user: AuthUser | null;
 }) {
   const location = useLocation();
-  const navigate = useNavigate();
   const t = useTranslate();
   const params = new URLSearchParams(location.search);
   const queryNext = params.get("next") ?? "";
   const safeNext = queryNext.startsWith("/") && !queryNext.startsWith("//") ? queryNext : "";
-  const [username, setUsername] = useState(user?.username ?? "");
+  const [accountType, setAccountType] = useState<Role | "">(loginRoleFromQuery(params.get("role")) || user?.role || "");
+  const [identifier, setIdentifier] = useState(user?.role === "admin" ? user.username : user?.phone ?? "");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const createAccountPath = accountType === "farmer" ? "/register/farmer" : "/register/buyer";
+  const credentialLabel = accountType === "admin" ? "Username" : "Mobile";
+  const credentialPlaceholder = accountType === "admin" ? "Account username" : "Your mobile number";
 
   const submitLogin = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const cleanUsername = username.trim().toLowerCase();
+    const cleanIdentifier = accountType === "admin" ? identifier.trim().toLowerCase() : identifier.trim();
 
-    if (!usernamePattern.test(cleanUsername)) {
+    if (!accountType) {
+      setError(t("Please select account type."));
+      return;
+    }
+
+    if (accountType === "admin" && !usernamePattern.test(cleanIdentifier)) {
       setError(t("Please enter a valid username."));
+      return;
+    }
+
+    if (accountType !== "admin" && cleanIdentifier.replace(/\D/g, "").length < 10) {
+      setError(t("Please enter a valid mobile number."));
       return;
     }
 
@@ -73,9 +97,10 @@ export function LoginPage({
 
     setIsSubmitting(true);
     setError("");
+    setNotice("");
 
     try {
-      const nextUser = await loginWithApi({ password, username: cleanUsername });
+      const nextUser = await loginWithApi({ accountType, identifier: cleanIdentifier, password });
       const nextPath = safeNext && roleCanOpenPath(nextUser.role, safeNext) ? safeNext : roleHomePath[nextUser.role];
       onLogin(nextUser, nextPath);
     } catch (apiError) {
@@ -87,36 +112,81 @@ export function LoginPage({
 
   return (
     <section className="page-wrap auth-layout">
-      <form className="panel auth-panel" onSubmit={submitLogin}>
-        <div className="auth-icon">
-          <ShieldCheck size={28} />
-        </div>
-        <span>{t("Secure login")}</span>
-        <h1>{t("Login to continue")}</h1>
+      <form className="panel auth-panel login-panel" onSubmit={submitLogin}>
+        <h1>{t("Login to AmarKrishok")}</h1>
+        <p className="login-intro">{t("To use AmarKrishok, please log in with your account details.")}</p>
 
         <label className="input-field">
-          <span>{t("Username")}</span>
-          <input autoComplete="username" value={username} onChange={(event) => setUsername(event.target.value)} placeholder={t("Account username")} />
+          <span>
+            {t("Account type")}
+            <strong className="required-mark"> *</strong>
+          </span>
+          <select
+            className="login-select"
+            value={accountType}
+            onChange={(event) => {
+              const nextRole = event.target.value as Role | "";
+              setAccountType(nextRole);
+              setIdentifier("");
+              setError("");
+              setNotice("");
+            }}
+          >
+            <option value="">{t("Select account type")}</option>
+            {loginAccountOrder.map((role) => {
+              const option = roleOptions.find((item) => item.role === role);
+              return option ? (
+                <option key={option.role} value={option.role}>
+                  {t(option.label)}
+                </option>
+              ) : null;
+            })}
+          </select>
         </label>
-        <PasswordField value={password} onChange={setPassword} placeholder={t("Password")} />
+
+        <label className="input-field">
+          <span>
+            {t(credentialLabel)}
+            <strong className="required-mark"> *</strong>
+          </span>
+          <input
+            autoComplete={accountType === "admin" ? "username" : "tel"}
+            inputMode={accountType === "admin" ? undefined : "tel"}
+            value={identifier}
+            onChange={(event) => setIdentifier(event.target.value)}
+            placeholder={t(credentialPlaceholder)}
+          />
+        </label>
+        <PasswordField value={password} onChange={setPassword} placeholder={t("Your password")} required />
 
         {error && <p className="auth-error">{error}</p>}
+        {notice && <p className="auth-info">{notice}</p>}
 
-        <div className="auth-actions">
-          <button className="secondary-button" type="button" onClick={() => navigate("/")}>
-            {t("Go home")}
+        <button className="primary-button auth-submit-button" type="submit" disabled={isSubmitting}>
+          <LockKeyhole size={17} />
+          {t(isSubmitting ? "Signing in" : "Login")}
+        </button>
+
+        <p className="auth-link-line">
+          {t("Forgot password?")}{" "}
+          <button
+            type="button"
+            onClick={() => {
+              setError("");
+              setNotice(t("Please contact AmarKrishok support to reset your password."));
+            }}
+          >
+            {t("Reset")}
           </button>
-          <NavLink className="secondary-button" to="/register/buyer">
-            {t("Register buyer")}
+        </p>
+
+        <p className="auth-create-line">
+          {t("Don't have an account?")}{" "}
+          <NavLink to={createAccountPath}>
+            {t("Create account")}
           </NavLink>
-          <NavLink className="secondary-button" to="/register/farmer">
-            {t("Register seller")}
-          </NavLink>
-          <button className="primary-button" type="submit" disabled={isSubmitting}>
-            <LockKeyhole size={17} />
-            {t(isSubmitting ? "Signing in" : "Sign in")}
-          </button>
-        </div>
+        </p>
+
       </form>
     </section>
   );
