@@ -1,7 +1,15 @@
 import React, { useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { AtSign, Building2, CheckCircle2, Clock3, ClipboardCheck, Eye, EyeOff, LockKeyhole, MapPin, UserRound } from "lucide-react";
-import { ApiRequestError, loginWithApi, AuthRequestError, registerAccountWithApi } from "../../api/auth";
+import {
+  ApiRequestError,
+  AuthRequestError,
+  loginWithApi,
+  lookupPasswordResetAccount,
+  type PasswordResetAccount,
+  registerAccountWithApi,
+  resetAccountPassword,
+} from "../../api/auth";
 import { getUpazillasForDistrict, roleHomePath, roleOptions, serviceDistricts } from "../../data";
 import { useTranslate, useValueText } from "../../i18n";
 import type { AuthUser, RegisteredAccount, RegistrationRole, Role } from "../../types";
@@ -16,12 +24,14 @@ function loginRoleFromQuery(role: string | null): Role | "" {
 
 function PasswordField({
   hint,
+  label = "Password",
   onChange,
   placeholder,
   required,
   value,
 }: {
   hint?: string;
+  label?: string;
   onChange: (value: string) => void;
   placeholder?: string;
   required?: boolean;
@@ -35,7 +45,7 @@ function PasswordField({
   return (
     <label className="input-field">
       <span>
-        {t("Password")}
+        {t(label)}
         {required && <strong className="required-mark"> *</strong>}
       </span>
       <div className="password-control">
@@ -67,9 +77,74 @@ export function LoginPage({
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [authMode, setAuthMode] = useState<"login" | "reset">("login");
+  const [resetRole, setResetRole] = useState<RegistrationRole>(accountType === "farmer" || accountType === "buyer" ? accountType : "buyer");
+  const [resetPhone, setResetPhone] = useState("");
+  const [resetAccount, setResetAccount] = useState<PasswordResetAccount | null>(null);
+  const [resetPassword, setResetPassword] = useState("");
+  const [resetPasswordConfirm, setResetPasswordConfirm] = useState("");
+  const [resetError, setResetError] = useState("");
+  const [isResetSubmitting, setIsResetSubmitting] = useState(false);
   const createAccountPath = accountType === "farmer" ? "/register/farmer" : "/register/buyer";
   const credentialLabel = accountType === "admin" ? "Username" : "Mobile";
   const credentialPlaceholder = accountType === "admin" ? "Account username" : "Your mobile number";
+  const resetStatusLabel = resetAccount?.status === "active" ? "Active" : resetAccount?.status === "rejected" ? "Rejected" : "Pending verification";
+
+  const openPasswordReset = () => {
+    setAuthMode("reset");
+    setResetRole(accountType === "farmer" || accountType === "buyer" ? accountType : "buyer");
+    setResetPhone(accountType !== "admin" ? identifier : "");
+    setResetAccount(null);
+    setResetPassword("");
+    setResetPasswordConfirm("");
+    setError("");
+    setNotice("");
+    setResetError("");
+  };
+
+  const submitPasswordReset = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const cleanPhone = resetPhone.trim();
+
+    if (cleanPhone.replace(/\D/g, "").length < 10) {
+      setResetError(t("Please enter a valid mobile number."));
+      return;
+    }
+
+    setIsResetSubmitting(true);
+    setResetError("");
+
+    try {
+      if (!resetAccount) {
+        setResetAccount(await lookupPasswordResetAccount({ phone: cleanPhone, role: resetRole }));
+        return;
+      }
+
+      if (resetPassword.length < 4) {
+        setResetError(t("Password must be at least 4 characters."));
+        return;
+      }
+
+      if (resetPassword !== resetPasswordConfirm) {
+        setResetError(t("Passwords do not match."));
+        return;
+      }
+
+      const updatedAccount = await resetAccountPassword({ password: resetPassword, phone: cleanPhone, role: resetRole });
+      setAuthMode("login");
+      setAccountType(updatedAccount.role);
+      setIdentifier(updatedAccount.phone);
+      setPassword("");
+      setNotice(t("Password reset complete. Please log in with your new password."));
+      setResetAccount(null);
+      setResetPassword("");
+      setResetPasswordConfirm("");
+    } catch (apiError) {
+      setResetError(t(apiError instanceof AuthRequestError ? apiError.message : "Password reset service is unavailable. Please try again."));
+    } finally {
+      setIsResetSubmitting(false);
+    }
+  };
 
   const submitLogin = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -109,6 +184,97 @@ export function LoginPage({
       setIsSubmitting(false);
     }
   };
+
+  if (authMode === "reset") {
+    return (
+      <section className="page-wrap auth-layout">
+        <form className="panel auth-panel login-panel password-reset-panel" onSubmit={submitPasswordReset}>
+          <h1>{t("Reset password")}</h1>
+          <p className="login-intro">{t("Enter your account type and mobile number. AmarKrishok will find the matching buyer or seller account.")}</p>
+
+          <label className="input-field">
+            <span>
+              {t("Account type")}
+              <strong className="required-mark"> *</strong>
+            </span>
+            <select
+              className="login-select"
+              value={resetRole}
+              onChange={(event) => {
+                setResetRole(event.target.value as RegistrationRole);
+                setResetAccount(null);
+                setResetPassword("");
+                setResetPasswordConfirm("");
+                setResetError("");
+              }}
+            >
+              {roleOptions
+                .filter((option) => option.role === "farmer" || option.role === "buyer")
+                .map((option) => (
+                  <option key={option.role} value={option.role}>
+                    {t(option.label)}
+                  </option>
+                ))}
+            </select>
+          </label>
+
+          <label className="input-field">
+            <span>
+              {t("Mobile")}
+              <strong className="required-mark"> *</strong>
+            </span>
+            <input
+              autoComplete="tel"
+              inputMode="tel"
+              value={resetPhone}
+              onChange={(event) => {
+                setResetPhone(event.target.value);
+                setResetAccount(null);
+                setResetPassword("");
+                setResetPasswordConfirm("");
+                setResetError("");
+              }}
+              placeholder={t("Your mobile number")}
+            />
+          </label>
+
+          {resetAccount && (
+            <div className="password-reset-account">
+              <span>{t("Account found")}</span>
+              <strong>{resetAccount.name}</strong>
+              <p>{[resetAccount.organization, t(resetAccount.role === "farmer" ? "Seller / Farmer" : "Buyer"), t(resetStatusLabel)].filter(Boolean).join(" · ")}</p>
+            </div>
+          )}
+
+          {resetAccount && (
+            <>
+              <PasswordField label="New password" value={resetPassword} onChange={setResetPassword} placeholder={t("New password")} required />
+              <PasswordField label="Confirm new password" value={resetPasswordConfirm} onChange={setResetPasswordConfirm} placeholder={t("Confirm new password")} required />
+            </>
+          )}
+
+          {resetError && <p className="auth-error">{resetError}</p>}
+
+          <button className="primary-button auth-submit-button" type="submit" disabled={isResetSubmitting}>
+            <LockKeyhole size={17} />
+            {t(isResetSubmitting ? "Submitting" : resetAccount ? "Reset password" : "Find account")}
+          </button>
+
+          <p className="auth-link-line">
+            <button
+              type="button"
+              onClick={() => {
+                setAuthMode("login");
+                setResetError("");
+              }}
+            >
+              {t("Back to login")}
+            </button>
+          </p>
+        </form>
+      </section>
+    );
+  }
 
   return (
     <section className="page-wrap auth-layout">
@@ -169,13 +335,7 @@ export function LoginPage({
 
         <p className="auth-link-line">
           {t("Forgot password?")}{" "}
-          <button
-            type="button"
-            onClick={() => {
-              setError("");
-              setNotice(t("Please contact AmarKrishok support to reset your password."));
-            }}
-          >
+          <button type="button" onClick={openPasswordReset}>
             {t("Reset")}
           </button>
         </p>

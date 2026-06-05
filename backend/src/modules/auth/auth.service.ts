@@ -1,16 +1,27 @@
-import { ConflictException, Injectable, UnauthorizedException } from "@nestjs/common";
+import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { AccountStatus, Role, User } from "@prisma/client";
 import { compare, hash } from "bcryptjs";
 import { sign } from "jsonwebtoken";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
-import { LoginDto, RegisterAccountDto } from "./dto/register-account.dto";
+import { LoginDto, PasswordResetConfirmDto, PasswordResetLookupDto, RegisterAccountDto } from "./dto/register-account.dto";
 import { normalizeUsername } from "./username";
 
 function publicUser(user: User) {
   const { passwordHash: _passwordHash, ...safeUser } = user;
   return safeUser;
+}
+
+function resetUser(user: User) {
+  return {
+    id: user.id,
+    name: user.name,
+    organization: user.organization,
+    phone: user.phone,
+    role: user.role,
+    status: user.status,
+  };
 }
 
 @Injectable()
@@ -54,6 +65,33 @@ export class AuthService {
     return {
       accessToken,
       user: publicUser(user),
+    };
+  }
+
+  async lookupPasswordResetAccount(dto: PasswordResetLookupDto) {
+    const user = await this.findResettableUser(dto);
+
+    return {
+      user: resetUser(user),
+    };
+  }
+
+  async resetPassword(dto: PasswordResetConfirmDto) {
+    const user = await this.findResettableUser(dto);
+    const passwordHash = await hash(dto.password, 10);
+    const updatedUser = await this.prisma.user.update({
+      data: { passwordHash },
+      where: { id: user.id },
+    });
+
+    await this.notifications.notifyUser(updatedUser.id, {
+      body: "Your AmarKrishok password was reset. You can now log in with your new password.",
+      title: "Password reset complete",
+    });
+
+    return {
+      message: "Password reset complete.",
+      user: resetUser(updatedUser),
     };
   }
 
@@ -117,5 +155,17 @@ export class AuthService {
       message: "Registration submitted for admin verification.",
       user: publicUser(user),
     };
+  }
+
+  private async findResettableUser(dto: PasswordResetLookupDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { phone_role: { phone: dto.phone.trim(), role: dto.role } },
+    });
+
+    if (!user || (user.role !== Role.BUYER && user.role !== Role.FARMER)) {
+      throw new NotFoundException("No buyer or farmer account found with this mobile number.");
+    }
+
+    return user;
   }
 }

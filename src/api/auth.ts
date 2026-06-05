@@ -54,6 +54,20 @@ type LoginResponse = {
   user: ApiUser;
 };
 
+export type PasswordResetAccount = {
+  id: string;
+  name: string;
+  organization: string;
+  phone: string;
+  role: RegistrationRole;
+  status: AccountStatus;
+};
+
+type PasswordResetResponse = {
+  message?: string;
+  user: Pick<ApiUser, "id" | "name" | "organization" | "phone" | "role" | "status">;
+};
+
 type ApiLotFarmer = Omit<ApiUser, "phone"> & {
   phone?: string;
 };
@@ -265,6 +279,17 @@ function toAuthUser(data: LoginResponse): AuthUser {
   };
 }
 
+function toPasswordResetAccount(data: PasswordResetResponse): PasswordResetAccount {
+  return {
+    id: data.user.id,
+    name: data.user.name,
+    organization: data.user.organization ?? "",
+    phone: data.user.phone,
+    role: apiRoleToAppRole[data.user.role] as RegistrationRole,
+    status: data.user.status ? apiStatusToAccountStatus[data.user.status] : "pending",
+  };
+}
+
 export function toRegisteredAccount(user: ApiUser): RegisteredAccount {
   const latestOrder = user.orders?.[0];
   const latestLot = user.cropLots?.[0];
@@ -329,6 +354,60 @@ export async function loginWithApi({
     }
 
     throw new AuthRequestError(message || "Login service is unavailable. Please try again.");
+  }
+}
+
+export async function lookupPasswordResetAccount({
+  phone,
+  role,
+}: {
+  phone: string;
+  role: RegistrationRole;
+}) {
+  try {
+    const apiRole = appRoleToApiRole[role];
+    return toPasswordResetAccount(await apiRequest<PasswordResetResponse>("/api/auth/password-reset/lookup", {
+      body: JSON.stringify({ phone, role: apiRole }),
+      method: "POST",
+    }));
+  } catch (error) {
+    if (!(error instanceof ApiRequestError)) {
+      throw new AuthRequestError("Password reset service is unavailable. Please try again.");
+    }
+
+    if (error.status === 400 || error.status === 404) {
+      throw new AuthRequestError("No buyer or farmer account found with this mobile number.");
+    }
+
+    throw new AuthRequestError(error.message || "Password reset service is unavailable. Please try again.");
+  }
+}
+
+export async function resetAccountPassword({
+  password,
+  phone,
+  role,
+}: {
+  password: string;
+  phone: string;
+  role: RegistrationRole;
+}) {
+  try {
+    const apiRole = appRoleToApiRole[role];
+    return toPasswordResetAccount(await apiRequest<PasswordResetResponse>("/api/auth/password-reset/confirm", {
+      body: JSON.stringify({ password, phone, role: apiRole }),
+      method: "POST",
+    }));
+  } catch (error) {
+    if (!(error instanceof ApiRequestError)) {
+      throw new AuthRequestError("Password reset service is unavailable. Please try again.");
+    }
+
+    if (error.status === 400 || error.status === 404) {
+      throw new AuthRequestError("No buyer or farmer account found with this mobile number.");
+    }
+
+    throw new AuthRequestError(error.message || "Password reset service is unavailable. Please try again.");
   }
 }
 

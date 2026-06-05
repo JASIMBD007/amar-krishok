@@ -73,3 +73,18 @@ export class LoginDto {
   @MinLength(4)
   password!: string;
 }
+
+export class PasswordResetLookupDto {
+  @IsIn([Role.BUYER, Role.FARMER])
+  role!: typeof Role.BUYER | typeof Role.FARMER;
+
+  @IsString()
+  @IsNotEmpty()
+  phone!: string;
+}
+
+export class PasswordResetConfirmDto extends PasswordResetLookupDto {
+  @IsString()
+  @MinLength(4)
+  password!: string;
+}

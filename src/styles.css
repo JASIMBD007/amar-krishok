@@ -1508,6 +1508,32 @@ button {
   text-align: center;
 }
 
+.password-reset-account {
+  display: grid;
+  gap: 4px;
+  padding: 14px;
+  border: 1px solid rgba(23, 107, 71, 0.2);
+  border-radius: 8px;
+  background: #edf6ee;
+}
+
+.password-reset-account span {
+  color: #176b47;
+  font-size: 0.78rem;
+  font-weight: 880;
+  text-transform: uppercase;
+}
+
+.password-reset-account strong {
+  color: #163225;
+  font-size: 1.1rem;
+}
+
+.password-reset-account p {
+  color: #5a6f64;
+  font-weight: 720;
+}
+
 .registration-summary {
   display: grid;
   gap: 4px;
