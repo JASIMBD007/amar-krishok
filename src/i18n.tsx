@@ -151,6 +151,7 @@ const bn: Record<string, string> = {
   "Switch account": "অ্যাকাউন্ট বদলান",
   "Go home": "হোমে যান",
   Register: "নিবন্ধন",
+  "Choose buyer or seller account": "ক্রেতা বা বিক্রেতা অ্যাকাউন্ট বেছে নিন",
   "Register buyer": "ক্রেতা নিবন্ধন",
   "Register seller": "বিক্রেতা নিবন্ধন",
   "New buyer account": "নতুন ক্রেতা অ্যাকাউন্ট",
