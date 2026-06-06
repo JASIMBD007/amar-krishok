@@ -42,14 +42,20 @@ export class AuthService {
 
   async login(dto: LoginDto) {
     const role = dto.role;
+    const username = normalizeUsername(dto.username ?? "");
+    const phone = dto.phone?.trim() ?? "";
     const user =
       role === Role.ADMIN
-        ? await this.prisma.user.findUnique({
-            where: { username: normalizeUsername(dto.username ?? "") },
-          })
-        : await this.prisma.user.findUnique({
-            where: { phone_role: { phone: dto.phone?.trim() ?? "", role } },
-          });
+        ? username
+          ? await this.prisma.user.findUnique({
+              where: { username },
+            })
+          : null
+        : phone
+          ? await this.prisma.user.findUnique({
+              where: { phone_role: { phone, role } },
+            })
+          : null;
 
     if (!user || user.role !== role || !(await compare(dto.password, user.passwordHash))) {
       throw new UnauthorizedException(role === Role.ADMIN ? "Invalid username or password." : "Invalid mobile number or password.");
