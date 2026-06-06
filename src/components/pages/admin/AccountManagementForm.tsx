@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { ExternalLink, Eye, FileImage, Plus, Save, X } from "lucide-react";
+import { ExternalLink, Eye, Plus, Save, X } from "lucide-react";
 import type { AdminAccountPayload } from "../../../api/auth";
 import { getUpazillasForDistrict, serviceDistricts } from "../../../data";
 import { useTranslate } from "../../../i18n";
@@ -71,11 +71,10 @@ export function AccountManagementForm({
   const t = useTranslate();
   const [form, setForm] = useState<AccountFormState>(emptyForm);
   const [documentPreviewOpen, setDocumentPreviewOpen] = useState(false);
-  const [identityEntryMode, setIdentityEntryMode] = useState<"auto" | "number">("auto");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isEditing = Boolean(editingAccount);
   const currentIdentityKind = identityKind(form.identity);
-  const showUploadedDocumentControls = isEditing && currentIdentityKind === "document" && identityEntryMode === "auto";
+  const showUploadedDocumentControls = isEditing && currentIdentityKind === "document";
   const hasPreviewableDocument = showUploadedDocumentControls && canPreviewDocument(form.identity);
   const availableUpazillas = getUpazillasForDistrict(form.district);
 
@@ -83,7 +82,6 @@ export function AccountManagementForm({
     if (!editingAccount) {
       setForm(emptyForm);
       setDocumentPreviewOpen(false);
-      setIdentityEntryMode("auto");
       return;
     }
 
@@ -101,7 +99,6 @@ export function AccountManagementForm({
       username: editingAccount.username,
     });
     setDocumentPreviewOpen(false);
-    setIdentityEntryMode("auto");
   }, [editingAccount]);
 
   const updateField = (field: keyof AccountFormState, value: string) => {
@@ -241,27 +238,11 @@ export function AccountManagementForm({
         {showUploadedDocumentControls ? (
           <div className="input-field">
             <span>{t("NID / trade license")}</span>
-            <div className="admin-document-field">
-              <div className="admin-document-status">
-                <FileImage size={17} />
-                <span>{t("Uploaded document saved")}</span>
-              </div>
-              <div className="admin-document-actions">
-                <button className="secondary-button compact-action" type="button" onClick={() => setDocumentPreviewOpen(true)}>
-                  <Eye size={15} />
-                  {t("View document")}
-                </button>
-                <button
-                  className="secondary-button compact-action"
-                  type="button"
-                  onClick={() => {
-                    updateField("identity", "");
-                    setIdentityEntryMode("number");
-                  }}
-                >
-                  {t("Use ID number")}
-                </button>
-              </div>
+            <div className="admin-document-button-row">
+              <button className="secondary-button compact-action" type="button" onClick={() => setDocumentPreviewOpen(true)}>
+                <Eye size={15} />
+                {t("View document")}
+              </button>
             </div>
           </div>
         ) : (

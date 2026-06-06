@@ -193,7 +193,6 @@ const bn: Record<string, string> = {
   "NID / trade license": "জাতীয় পরিচয়পত্র / ট্রেড লাইসেন্স",
   "NID / trade license number": "জাতীয় পরিচয়পত্র / ট্রেড লাইসেন্স নম্বর",
   "NID / trade license image": "জাতীয় পরিচয়পত্র / ট্রেড লাইসেন্সের ছবি",
-  "Use ID number": "নম্বর ব্যবহার করুন",
   "Existing document kept": "আগের ডকুমেন্ট রাখা হবে",
   "Choose an image or PDF": "ছবি বা পিডিএফ বেছে নিন",
   "Choose file": "ফাইল বেছে নিন",
