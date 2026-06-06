@@ -28,6 +28,11 @@ export class AuthController {
     return this.authService.lookupPasswordResetAccount(dto);
   }
 
+  @Post("password-reset/request")
+  requestPasswordReset(@Body() dto: PasswordResetConfirmDto) {
+    return this.authService.resetPassword(dto);
+  }
+
   @Post("password-reset/confirm")
   resetPassword(@Body() dto: PasswordResetConfirmDto) {
     return this.authService.resetPassword(dto);

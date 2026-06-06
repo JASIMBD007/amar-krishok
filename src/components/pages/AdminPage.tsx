@@ -3,13 +3,17 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { LayoutDashboard, Menu, Plus, Search, ShieldCheck, X } from "lucide-react";
 import {
   ApiRequestError,
+  approveAdminPasswordResetRequest,
   createAdminAccount,
   deleteAdminAccount,
   fetchAdminAccounts,
+  fetchAdminPasswordResetRequests,
   fetchMyOrders,
+  rejectAdminPasswordResetRequest,
   updateAdminAccount,
   updateBackendVerification,
   type AdminAccountPayload,
+  type AdminPasswordResetRequest,
   type BackendOrder,
 } from "../../api/auth";
 import { countAdminChatAttention } from "../chat/chatUnread";
@@ -55,8 +59,10 @@ export function AdminPage({
   const [activeAdminSection, setActiveAdminSection] = useState<AdminSection>("dashboard");
   const [adminMenuOpen, setAdminMenuOpen] = useState(false);
   const [backendOrders, setBackendOrders] = useState<BackendOrder[] | null>(null);
+  const [backendPasswordResetRequests, setBackendPasswordResetRequests] = useState<AdminPasswordResetRequest[]>([]);
   const [backendRegistrations, setBackendRegistrations] = useState<RegisteredAccount[] | null>(null);
   const [orderError, setOrderError] = useState("");
+  const [passwordResetError, setPasswordResetError] = useState("");
   const [verificationError, setVerificationError] = useState("");
   const activeNavItem = adminNavItems.find((item) => item.id === activeAdminSection) ?? adminNavItems[0];
   const activeTitle = activeAdminSection === "dashboard" ? "Operations dashboard" : activeNavItem.label;
@@ -83,16 +89,19 @@ export function AdminPage({
       return;
     }
 
-    Promise.all([fetchAdminAccounts(user.accessToken), fetchMyOrders(user.accessToken)])
-      .then(([nextRegistrations, nextOrders]) => {
+    Promise.all([fetchAdminAccounts(user.accessToken), fetchMyOrders(user.accessToken), fetchAdminPasswordResetRequests(user.accessToken)])
+      .then(([nextRegistrations, nextOrders, nextPasswordResetRequests]) => {
         setBackendRegistrations(nextRegistrations);
         setBackendOrders(nextOrders);
+        setBackendPasswordResetRequests(nextPasswordResetRequests);
         setOrderError("");
+        setPasswordResetError("");
         setVerificationError("");
       })
       .catch((error) => {
         const message = error instanceof ApiRequestError ? error.message : "Backend service is unavailable. Please try again.";
         setOrderError(message);
+        setPasswordResetError(message);
         setVerificationError(message);
       });
   }, [user?.accessToken, user?.role]);
@@ -141,6 +150,26 @@ export function AdminPage({
     await deleteAdminAccount(user.accessToken, id);
     setBackendRegistrations((current) => (current ?? registrations).filter((item) => item.id !== id));
     setVerificationError("");
+  };
+
+  const approvePasswordReset = async (id: string) => {
+    if (!user?.accessToken) {
+      throw new Error("Backend service is unavailable. Please try again.");
+    }
+
+    const request = await approveAdminPasswordResetRequest(user.accessToken, id);
+    setBackendPasswordResetRequests((current) => current.map((item) => (item.id === id ? request : item)));
+    setPasswordResetError("");
+  };
+
+  const rejectPasswordReset = async (id: string) => {
+    if (!user?.accessToken) {
+      throw new Error("Backend service is unavailable. Please try again.");
+    }
+
+    const request = await rejectAdminPasswordResetRequest(user.accessToken, id);
+    setBackendPasswordResetRequests((current) => current.map((item) => (item.id === id ? request : item)));
+    setPasswordResetError("");
   };
 
   const openAdminSection = (section: AdminSection) => {
@@ -209,7 +238,14 @@ export function AdminPage({
       case "chat":
         return <ChatSection chatThreads={chatThreads} onAdminReply={onAdminReply} onThreadOpen={onThreadOpen} />;
       case "settings":
-        return <SettingsSection />;
+        return (
+          <SettingsSection
+            onApprovePasswordReset={approvePasswordReset}
+            onRejectPasswordReset={rejectPasswordReset}
+            passwordResetError={passwordResetError}
+            passwordResetRequests={backendPasswordResetRequests}
+          />
+        );
       case "dashboard":
       default:
         return (

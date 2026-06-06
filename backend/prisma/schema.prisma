@@ -20,6 +20,12 @@ enum AccountStatus {
   REJECTED
 }
 
+enum PasswordResetStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 enum LotStatus {
   DRAFT
   ACTIVE
@@ -61,32 +67,34 @@ enum ChatStatus {
 }
 
 model User {
-  id                String                @id @default(cuid())
-  username          String                @unique
-  name              String
-  phone             String
-  passwordHash      String
-  role              Role
-  status            AccountStatus         @default(PENDING)
-  organization      String?
-  address           String?
-  identity          String?
-  focus             String?
-  districtId        String?
-  upazilla          String?
-  createdAt         DateTime              @default(now())
-  updatedAt         DateTime              @updatedAt
-  reviewedAt        DateTime?
-  district          District?             @relation(fields: [districtId], references: [id])
-  buyerProfile      BuyerProfile?
-  farmerProfile     FarmerProfile?
-  cropLots          CropLot[]             @relation("FarmerLots")
-  orders            Order[]               @relation("BuyerOrders")
-  payouts           Payout[]              @relation("FarmerPayouts")
-  notifications     Notification[]
-  auditLogs         AuditLog[]
-  uploadedFiles     UploadedFile[]
-  chatMessages      ChatMessage[]
+  id                   String                 @id @default(cuid())
+  username             String                 @unique
+  name                 String
+  phone                String
+  passwordHash         String
+  role                 Role
+  status               AccountStatus          @default(PENDING)
+  organization         String?
+  address              String?
+  identity             String?
+  focus                String?
+  districtId           String?
+  upazilla             String?
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+  reviewedAt           DateTime?
+  district             District?              @relation(fields: [districtId], references: [id])
+  buyerProfile         BuyerProfile?
+  farmerProfile        FarmerProfile?
+  cropLots             CropLot[]              @relation("FarmerLots")
+  orders               Order[]                @relation("BuyerOrders")
+  payouts              Payout[]               @relation("FarmerPayouts")
+  notifications        Notification[]
+  auditLogs            AuditLog[]
+  uploadedFiles        UploadedFile[]
+  chatMessages         ChatMessage[]
+  passwordResets       PasswordResetRequest[] @relation("PasswordResetRequests")
+  passwordResetReviews PasswordResetRequest[] @relation("PasswordResetReviews")
 
   @@unique([phone, role])
   @@index([role, status])
@@ -113,11 +121,11 @@ model FarmerProfile {
 }
 
 model District {
-  id            String        @id @default(cuid())
-  name          String        @unique
-  active        Boolean       @default(true)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  id            String         @id @default(cuid())
+  name          String         @unique
+  active        Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
   users         User[]
   cropLots      CropLot[]
   orders        Order[]
@@ -138,26 +146,26 @@ model Crop {
 }
 
 model CropLot {
-  id             String         @id @default(cuid())
-  farmerId       String
-  cropId         String
-  districtId     String
-  upazilla       String?
-  quantityKg     Decimal        @db.Decimal(12, 2)
-  pricePerKg     Decimal        @db.Decimal(12, 2)
-  grade          String
-  harvestDate    DateTime?
-  status         LotStatus      @default(ACTIVE)
-  notes          String?
-  imageUrl       String?
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  farmer         User           @relation("FarmerLots", fields: [farmerId], references: [id])
-  crop           Crop           @relation(fields: [cropId], references: [id])
-  district       District       @relation(fields: [districtId], references: [id])
-  orderItems     OrderItem[]
-  logisticsJobs  LogisticsJob[]
-  qualityChecks  QualityCheck[]
+  id            String         @id @default(cuid())
+  farmerId      String
+  cropId        String
+  districtId    String
+  upazilla      String?
+  quantityKg    Decimal        @db.Decimal(12, 2)
+  pricePerKg    Decimal        @db.Decimal(12, 2)
+  grade         String
+  harvestDate   DateTime?
+  status        LotStatus      @default(ACTIVE)
+  notes         String?
+  imageUrl      String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  farmer        User           @relation("FarmerLots", fields: [farmerId], references: [id])
+  crop          Crop           @relation(fields: [cropId], references: [id])
+  district      District       @relation(fields: [districtId], references: [id])
+  orderItems    OrderItem[]
+  logisticsJobs LogisticsJob[]
+  qualityChecks QualityCheck[]
 
   @@index([cropId, districtId, status])
   @@index([farmerId, status])
@@ -198,17 +206,17 @@ model OrderItem {
 }
 
 model MarketPrice {
-  id          String   @id @default(cuid())
-  cropId      String
-  districtId  String
-  farmerAsk   Decimal  @db.Decimal(12, 2)
-  wholesale   Decimal  @db.Decimal(12, 2)
-  retail      Decimal  @db.Decimal(12, 2)
-  source      String?
-  priceDate   DateTime
-  createdAt   DateTime @default(now())
-  crop        Crop     @relation(fields: [cropId], references: [id])
-  district    District @relation(fields: [districtId], references: [id])
+  id         String   @id @default(cuid())
+  cropId     String
+  districtId String
+  farmerAsk  Decimal  @db.Decimal(12, 2)
+  wholesale  Decimal  @db.Decimal(12, 2)
+  retail     Decimal  @db.Decimal(12, 2)
+  source     String?
+  priceDate  DateTime
+  createdAt  DateTime @default(now())
+  crop       Crop     @relation(fields: [cropId], references: [id])
+  district   District @relation(fields: [districtId], references: [id])
 
   @@unique([cropId, districtId, priceDate])
   @@index([priceDate])
@@ -246,29 +254,29 @@ model QualityCheck {
 }
 
 model Payment {
-  id          String        @id @default(cuid())
-  orderId     String
-  amount      Decimal       @db.Decimal(12, 2)
-  status      PaymentStatus @default(PENDING)
-  escrowRef   String?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  order       Order         @relation(fields: [orderId], references: [id])
-  payouts     Payout[]
+  id        String        @id @default(cuid())
+  orderId   String
+  amount    Decimal       @db.Decimal(12, 2)
+  status    PaymentStatus @default(PENDING)
+  escrowRef String?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  order     Order         @relation(fields: [orderId], references: [id])
+  payouts   Payout[]
 }
 
 model Payout {
-  id          String        @id @default(cuid())
-  paymentId   String
-  farmerId    String
-  amount      Decimal       @db.Decimal(12, 2)
-  status      PaymentStatus @default(PENDING)
-  walletRef   String?
-  releasedAt  DateTime?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  payment     Payment       @relation(fields: [paymentId], references: [id])
-  farmer      User          @relation("FarmerPayouts", fields: [farmerId], references: [id])
+  id         String        @id @default(cuid())
+  paymentId  String
+  farmerId   String
+  amount     Decimal       @db.Decimal(12, 2)
+  status     PaymentStatus @default(PENDING)
+  walletRef  String?
+  releasedAt DateTime?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  payment    Payment       @relation(fields: [paymentId], references: [id])
+  farmer     User          @relation("FarmerPayouts", fields: [farmerId], references: [id])
 }
 
 model ChatThread {
@@ -302,13 +310,30 @@ model ChatMessage {
 }
 
 model Notification {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   userId    String
   title     String
   body      String
   readAt    DateTime?
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PasswordResetRequest {
+  id           String              @id @default(cuid())
+  userId       String
+  role         Role
+  phone        String
+  passwordHash String
+  status       PasswordResetStatus @default(PENDING)
+  requestedAt  DateTime            @default(now())
+  reviewedAt   DateTime?
+  reviewedById String?
+  user         User                @relation("PasswordResetRequests", fields: [userId], references: [id], onDelete: Cascade)
+  reviewedBy   User?               @relation("PasswordResetReviews", fields: [reviewedById], references: [id])
+
+  @@index([status, requestedAt])
+  @@index([userId, status])
 }
 
 model UploadedFile {

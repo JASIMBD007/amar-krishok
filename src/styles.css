@@ -1216,6 +1216,10 @@ button {
   min-width: 1120px;
 }
 
+.password-reset-table {
+  min-width: 1180px;
+}
+
 .account-table th,
 .account-table td {
   vertical-align: middle;
@@ -1241,6 +1245,17 @@ button {
 .account-record-cell span {
   color: #183028;
   font-weight: 850;
+}
+
+.password-reset-review-panel > p {
+  margin: 0 0 8px;
+  color: #66786f;
+}
+
+.reviewed-by-text {
+  color: #66786f;
+  font-size: 0.84rem;
+  font-weight: 800;
 }
 
 .account-mobile-cell {

@@ -25,6 +25,14 @@ function notificationMeta(title: string) {
       return { meta: "Account approved", section: "profile", tone: "success", type: "account" };
     case "Account review update":
       return { meta: "Account verification", section: "profile", tone: "warning", type: "account" };
+    case "Password reset request":
+      return { meta: "Password reset", section: "settings", tone: "urgent", type: "account" };
+    case "Password reset requested":
+      return { meta: "Account security", section: "profile", tone: "warning", type: "account" };
+    case "Password reset approved":
+      return { meta: "Account security", section: "profile", tone: "success", type: "account" };
+    case "Password reset rejected":
+      return { meta: "Account security", section: "profile", tone: "warning", type: "account" };
     case "Order request received":
       return { meta: "Order update", section: "orders", tone: "success", type: "order" };
     case "Order status update":
@@ -161,6 +169,23 @@ export class NotificationsService {
         body: { contains: account.name },
         readAt: null,
         title: account.role === Role.BUYER ? "Buyer verification request" : "Farmer verification request",
+        user: { role: Role.ADMIN },
+      },
+    });
+  }
+
+  async markPasswordResetRequestNotificationsReviewed(request: { id?: string; phone: string; user?: { name?: string } | null }) {
+    const filters = [request.id, request.phone, request.user?.name].filter((value): value is string => Boolean(value));
+    if (filters.length === 0) {
+      return { count: 0 };
+    }
+
+    return this.prisma.notification.updateMany({
+      data: { readAt: new Date() },
+      where: {
+        OR: filters.map((value) => ({ body: { contains: value } })),
+        readAt: null,
+        title: "Password reset request",
         user: { role: Role.ADMIN },
       },
     });
