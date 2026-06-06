@@ -1176,39 +1176,14 @@ button {
   cursor: not-allowed;
 }
 
-.admin-document-field {
+.admin-document-button-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 10px;
   min-height: 52px;
-  padding: 8px 10px;
-  border: 1px solid #d8ddd4;
-  border-radius: 8px;
-  background: #f9fbf6;
 }
 
-.admin-document-status {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  min-width: 0;
-  color: #183028;
-  font-weight: 850;
-}
-
-.admin-document-status svg {
-  flex: 0 0 auto;
-  color: #176b47;
-}
-
-.admin-document-status span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.admin-document-actions,
 .document-preview-actions {
   display: flex;
   align-items: center;
@@ -4114,19 +4089,12 @@ th {
     grid-template-columns: 1fr;
   }
 
-  .admin-document-field {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .admin-document-actions,
   .document-preview-actions {
     align-items: stretch;
     flex-direction: column;
   }
 
-  .admin-document-actions .secondary-button,
-  .admin-document-field .secondary-button {
+  .admin-document-button-row .secondary-button {
     justify-content: center;
     width: 100%;
   }
