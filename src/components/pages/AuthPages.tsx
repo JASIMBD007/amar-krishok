@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { AtSign, Building2, CheckCircle2, Clock3, ClipboardCheck, Eye, EyeOff, LockKeyhole, MapPin, UserRound } from "lucide-react";
+import { AtSign, Building2, CheckCircle2, Clock3, ClipboardCheck, Eye, EyeOff, LockKeyhole, MapPin, ShoppingBag, Sprout, UserRound, X } from "lucide-react";
 import {
   ApiRequestError,
   AuthRequestError,
@@ -67,6 +67,7 @@ export function LoginPage({
   user: AuthUser | null;
 }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const t = useTranslate();
   const params = new URLSearchParams(location.search);
   const queryNext = params.get("next") ?? "";
@@ -85,10 +86,15 @@ export function LoginPage({
   const [resetPasswordConfirm, setResetPasswordConfirm] = useState("");
   const [resetError, setResetError] = useState("");
   const [isResetSubmitting, setIsResetSubmitting] = useState(false);
-  const createAccountPath = accountType === "farmer" ? "/register/farmer" : "/register/buyer";
+  const [isRegisterChoiceOpen, setIsRegisterChoiceOpen] = useState(false);
   const credentialLabel = accountType === "admin" ? "Username" : "Mobile";
   const credentialPlaceholder = accountType === "admin" ? "Account username" : "Your mobile number";
   const resetStatusLabel = resetAccount?.status === "active" ? "Active" : resetAccount?.status === "rejected" ? "Rejected" : "Pending verification";
+
+  const chooseRegistration = (role: RegistrationRole) => {
+    setIsRegisterChoiceOpen(false);
+    navigate(role === "farmer" ? "/register/farmer" : "/register/buyer");
+  };
 
   const openPasswordReset = () => {
     setAuthMode("reset");
@@ -342,12 +348,43 @@ export function LoginPage({
 
         <p className="auth-create-line">
           {t("Don't have an account?")}{" "}
-          <NavLink to={createAccountPath}>
+          <button type="button" onClick={() => setIsRegisterChoiceOpen(true)}>
             {t("Create account")}
-          </NavLink>
+          </button>
         </p>
 
       </form>
+      {isRegisterChoiceOpen && (
+        <div className="admin-modal-backdrop auth-choice-backdrop" role="presentation" onClick={() => setIsRegisterChoiceOpen(false)}>
+          <div className="admin-modal auth-choice-modal" role="dialog" aria-modal="true" aria-labelledby="registration-choice-title" onClick={(event) => event.stopPropagation()}>
+            <div className="admin-modal-header">
+              <div>
+                <span>{t("Create account")}</span>
+                <h2 id="registration-choice-title">{t("Do you want to buy or sell?")}</h2>
+              </div>
+              <button className="icon-button" type="button" aria-label={t("Close modal")} onClick={() => setIsRegisterChoiceOpen(false)}>
+                <X size={18} />
+              </button>
+            </div>
+            <div className="auth-choice-grid">
+              <button className="auth-choice-card" type="button" onClick={() => chooseRegistration("buyer")}>
+                <span className="auth-choice-icon">
+                  <ShoppingBag size={22} />
+                </span>
+                <strong>{t("I want to buy crops")}</strong>
+                <em>{t("Create a buyer account to order from verified farmers.")}</em>
+              </button>
+              <button className="auth-choice-card" type="button" onClick={() => chooseRegistration("farmer")}>
+                <span className="auth-choice-icon">
+                  <Sprout size={22} />
+                </span>
+                <strong>{t("I want to sell crops")}</strong>
+                <em>{t("Create a seller account to post harvest lots.")}</em>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

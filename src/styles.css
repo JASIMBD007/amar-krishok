@@ -1688,7 +1688,8 @@ button {
 }
 
 .auth-link-line button,
-.auth-create-line a {
+.auth-create-line a,
+.auth-create-line button {
   display: inline;
   padding: 0;
   border: 0;
@@ -1701,7 +1702,8 @@ button {
 }
 
 .auth-link-line button:hover,
-.auth-create-line a:hover {
+.auth-create-line a:hover,
+.auth-create-line button:hover {
   color: #176b47;
   text-decoration: underline;
 }
@@ -1711,6 +1713,69 @@ button {
   padding-top: 16px;
   border-top: 1px solid rgba(24, 48, 40, 0.1);
   text-align: center;
+}
+
+.auth-choice-backdrop {
+  z-index: 80;
+}
+
+.auth-choice-modal {
+  width: min(560px, 100%);
+}
+
+.auth-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.auth-choice-card {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  min-height: 160px;
+  padding: 18px;
+  border: 1px solid rgba(24, 48, 40, 0.1);
+  border-radius: 8px;
+  color: #183028;
+  text-align: left;
+  background: #fbfcf8;
+  cursor: pointer;
+}
+
+.auth-choice-card:hover,
+.auth-choice-card:focus-visible {
+  border-color: rgba(23, 107, 71, 0.32);
+  background: #edf6ee;
+  outline: none;
+  box-shadow: 0 14px 30px rgba(24, 48, 40, 0.08);
+}
+
+.auth-choice-icon {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: 8px;
+  color: #ffffff;
+  background: #176b47;
+}
+
+.auth-choice-card strong,
+.auth-choice-card em {
+  display: block;
+}
+
+.auth-choice-card strong {
+  font-size: 1.08rem;
+  font-weight: 900;
+}
+
+.auth-choice-card em {
+  color: #687b70;
+  font-style: normal;
+  font-weight: 680;
+  line-height: 1.45;
 }
 
 .password-reset-account {
@@ -4160,6 +4225,10 @@ th {
 
   .chat-compose,
   .admin-chat-reply {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-choice-grid {
     grid-template-columns: 1fr;
   }
 
