@@ -1,5 +1,5 @@
 import { Role } from "@prisma/client";
-import { IsIn, IsNotEmpty, IsOptional, IsString, Matches, MinLength, ValidateIf } from "class-validator";
+import { IsIn, IsNotEmpty, IsOptional, IsString, Matches, MinLength } from "class-validator";
 
 export class RegisterAccountDto {
   @IsString()
@@ -57,14 +57,14 @@ export class LoginDto {
   @IsIn([Role.ADMIN, Role.BUYER, Role.FARMER])
   role!: Role;
 
-  @ValidateIf((dto: LoginDto) => dto.role === Role.ADMIN)
+  @IsOptional()
   @IsString()
   @Matches(/^[a-zA-Z0-9._-]{3,32}$/, {
     message: "Username can use 3-32 letters, numbers, dots, underscores, or hyphens.",
   })
   username?: string;
 
-  @ValidateIf((dto: LoginDto) => dto.role !== Role.ADMIN)
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
   phone?: string;
