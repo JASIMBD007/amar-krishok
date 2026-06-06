@@ -59,18 +59,42 @@ type LoginResponse = {
   user: ApiUser;
 };
 
-export type PasswordResetAccount = {
-  id: string;
-  name: string;
-  organization: string;
-  phone: string;
-  role: RegistrationRole;
-  status: AccountStatus;
-};
-
 type PasswordResetResponse = {
   message?: string;
-  user: Pick<ApiUser, "id" | "name" | "organization" | "phone" | "role" | "status">;
+};
+
+type ApiPasswordResetStatus = "PENDING" | "APPROVED" | "REJECTED";
+
+export type AdminPasswordResetRequest = {
+  id: string;
+  phone: string;
+  requestedAt: string;
+  reviewedAt?: string | null;
+  reviewedBy?: { id: string; name: string } | null;
+  role: RegistrationRole;
+  status: "pending" | "approved" | "rejected";
+  user: {
+    district: string;
+    id: string;
+    name: string;
+    organization: string;
+    phone: string;
+    role: RegistrationRole;
+    status: AccountStatus;
+    upazilla: string;
+    username: string;
+  };
+};
+
+type ApiPasswordResetRequest = {
+  id: string;
+  phone: string;
+  requestedAt: string;
+  reviewedAt?: string | null;
+  reviewedBy?: { id: string; name: string } | null;
+  role: ApiRole;
+  status: ApiPasswordResetStatus;
+  user: Pick<ApiUser, "id" | "name" | "organization" | "phone" | "role" | "status" | "upazilla" | "username" | "district">;
 };
 
 type ApiLotFarmer = Omit<ApiUser, "phone"> & {
@@ -217,6 +241,12 @@ const apiStatusToAccountStatus: Record<ApiAccountStatus, AccountStatus> = {
   REJECTED: "rejected",
 };
 
+const apiPasswordResetStatusToAppStatus: Record<ApiPasswordResetStatus, AdminPasswordResetRequest["status"]> = {
+  APPROVED: "approved",
+  PENDING: "pending",
+  REJECTED: "rejected",
+};
+
 function numericValue(value: string | number | undefined) {
   const numberValue = Number(value);
   return Number.isFinite(numberValue) ? numberValue : 0;
@@ -284,17 +314,6 @@ function toAuthUser(data: LoginResponse): AuthUser {
   };
 }
 
-function toPasswordResetAccount(data: PasswordResetResponse): PasswordResetAccount {
-  return {
-    id: data.user.id,
-    name: data.user.name,
-    organization: data.user.organization ?? "",
-    phone: data.user.phone,
-    role: apiRoleToAppRole[data.user.role] as RegistrationRole,
-    status: data.user.status ? apiStatusToAccountStatus[data.user.status] : "pending",
-  };
-}
-
 export function toRegisteredAccount(user: ApiUser): RegisteredAccount {
   const latestOrder = user.orders?.[0];
   const latestLot = user.cropLots?.[0];
@@ -341,6 +360,29 @@ export function toRegisteredAccount(user: ApiUser): RegisteredAccount {
   };
 }
 
+function toAdminPasswordResetRequest(request: ApiPasswordResetRequest): AdminPasswordResetRequest {
+  return {
+    id: request.id,
+    phone: request.phone,
+    requestedAt: request.requestedAt,
+    reviewedAt: request.reviewedAt,
+    reviewedBy: request.reviewedBy,
+    role: apiRoleToAppRole[request.role] as RegistrationRole,
+    status: apiPasswordResetStatusToAppStatus[request.status],
+    user: {
+      district: request.user.district?.name ?? "",
+      id: request.user.id,
+      name: request.user.name,
+      organization: request.user.organization ?? "",
+      phone: request.user.phone,
+      role: apiRoleToAppRole[request.user.role] as RegistrationRole,
+      status: request.user.status ? apiStatusToAccountStatus[request.user.status] : "pending",
+      upazilla: request.user.upazilla ?? "",
+      username: request.user.username ?? request.user.phone,
+    },
+  };
+}
+
 export async function loginWithApi({
   accountType,
   identifier,
@@ -378,33 +420,7 @@ export async function loginWithApi({
   }
 }
 
-export async function lookupPasswordResetAccount({
-  phone,
-  role,
-}: {
-  phone: string;
-  role: RegistrationRole;
-}) {
-  try {
-    const apiRole = appRoleToApiRole[role];
-    return toPasswordResetAccount(await apiRequest<PasswordResetResponse>("/api/auth/password-reset/lookup", {
-      body: JSON.stringify({ phone, role: apiRole }),
-      method: "POST",
-    }));
-  } catch (error) {
-    if (!(error instanceof ApiRequestError)) {
-      throw new AuthRequestError("Password reset service is unavailable. Please try again.");
-    }
-
-    if (error.status === 400 || error.status === 404) {
-      throw new AuthRequestError("No buyer or farmer account found with this mobile number.");
-    }
-
-    throw new AuthRequestError(error.message || "Password reset service is unavailable. Please try again.");
-  }
-}
-
-export async function resetAccountPassword({
+export async function requestAccountPasswordReset({
   password,
   phone,
   role,
@@ -415,17 +431,13 @@ export async function resetAccountPassword({
 }) {
   try {
     const apiRole = appRoleToApiRole[role];
-    return toPasswordResetAccount(await apiRequest<PasswordResetResponse>("/api/auth/password-reset/confirm", {
+    return await apiRequest<PasswordResetResponse>("/api/auth/password-reset/request", {
       body: JSON.stringify({ password, phone, role: apiRole }),
       method: "POST",
-    }));
+    });
   } catch (error) {
     if (!(error instanceof ApiRequestError)) {
       throw new AuthRequestError("Password reset service is unavailable. Please try again.");
-    }
-
-    if (error.status === 400 || error.status === 404) {
-      throw new AuthRequestError("No buyer or farmer account found with this mobile number.");
     }
 
     throw new AuthRequestError(error.message || "Password reset service is unavailable. Please try again.");
@@ -539,6 +551,29 @@ export function markAllAdminNotificationsRead(accessToken: string) {
     accessToken,
     method: "PATCH",
   });
+}
+
+export async function fetchAdminPasswordResetRequests(accessToken: string) {
+  const requests = await apiRequest<ApiPasswordResetRequest[]>("/api/admin/password-resets", { accessToken });
+  return requests.map(toAdminPasswordResetRequest);
+}
+
+export async function approveAdminPasswordResetRequest(accessToken: string, id: string) {
+  return toAdminPasswordResetRequest(
+    await apiRequest<ApiPasswordResetRequest>(`/api/admin/password-resets/${id}/approve`, {
+      accessToken,
+      method: "PATCH",
+    }),
+  );
+}
+
+export async function rejectAdminPasswordResetRequest(accessToken: string, id: string) {
+  return toAdminPasswordResetRequest(
+    await apiRequest<ApiPasswordResetRequest>(`/api/admin/password-resets/${id}/reject`, {
+      accessToken,
+      method: "PATCH",
+    }),
+  );
 }
 
 export function fetchNotifications(accessToken: string) {

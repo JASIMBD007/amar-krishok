@@ -5,10 +5,8 @@ import {
   ApiRequestError,
   AuthRequestError,
   loginWithApi,
-  lookupPasswordResetAccount,
-  type PasswordResetAccount,
+  requestAccountPasswordReset,
   registerAccountWithApi,
-  resetAccountPassword,
 } from "../../api/auth";
 import { RegisterChoiceModal } from "../RegisterChoiceModal";
 import { getUpazillasForDistrict, roleHomePath, roleOptions, serviceDistricts } from "../../data";
@@ -82,7 +80,6 @@ export function LoginPage({
   const [authMode, setAuthMode] = useState<"login" | "reset">("login");
   const [resetRole, setResetRole] = useState<RegistrationRole>(accountType === "farmer" || accountType === "buyer" ? accountType : "buyer");
   const [resetPhone, setResetPhone] = useState("");
-  const [resetAccount, setResetAccount] = useState<PasswordResetAccount | null>(null);
   const [resetPassword, setResetPassword] = useState("");
   const [resetPasswordConfirm, setResetPasswordConfirm] = useState("");
   const [resetError, setResetError] = useState("");
@@ -90,7 +87,6 @@ export function LoginPage({
   const [isRegisterChoiceOpen, setIsRegisterChoiceOpen] = useState(false);
   const credentialLabel = accountType === "admin" ? "Username" : "Mobile";
   const credentialPlaceholder = accountType === "admin" ? "Account username" : "Your mobile number";
-  const resetStatusLabel = resetAccount?.status === "active" ? "Active" : resetAccount?.status === "rejected" ? "Rejected" : "Pending verification";
 
   const chooseRegistration = (role: RegistrationRole) => {
     setIsRegisterChoiceOpen(false);
@@ -101,7 +97,6 @@ export function LoginPage({
     setAuthMode("reset");
     setResetRole(accountType === "farmer" || accountType === "buyer" ? accountType : "buyer");
     setResetPhone(accountType !== "admin" ? identifier : "");
-    setResetAccount(null);
     setResetPassword("");
     setResetPasswordConfirm("");
     setError("");
@@ -122,11 +117,6 @@ export function LoginPage({
     setResetError("");
 
     try {
-      if (!resetAccount) {
-        setResetAccount(await lookupPasswordResetAccount({ phone: cleanPhone, role: resetRole }));
-        return;
-      }
-
       if (resetPassword.length < 4) {
         setResetError(t("Password must be at least 4 characters."));
         return;
@@ -137,13 +127,12 @@ export function LoginPage({
         return;
       }
 
-      const updatedAccount = await resetAccountPassword({ password: resetPassword, phone: cleanPhone, role: resetRole });
+      await requestAccountPasswordReset({ password: resetPassword, phone: cleanPhone, role: resetRole });
       setAuthMode("login");
-      setAccountType(updatedAccount.role);
-      setIdentifier(updatedAccount.phone);
+      setAccountType(resetRole);
+      setIdentifier(cleanPhone);
       setPassword("");
-      setNotice(t("Password reset complete. Please log in with your new password."));
-      setResetAccount(null);
+      setNotice(t("Password reset request sent. Admin will review it before the password changes."));
       setResetPassword("");
       setResetPasswordConfirm("");
     } catch (apiError) {
@@ -197,7 +186,7 @@ export function LoginPage({
       <section className="page-wrap auth-layout">
         <form className="panel auth-panel login-panel password-reset-panel" onSubmit={submitPasswordReset}>
           <h1>{t("Reset password")}</h1>
-          <p className="login-intro">{t("Enter your account type and mobile number. AmarKrishok will find the matching buyer or seller account.")}</p>
+          <p className="login-intro">{t("Enter your mobile number and new password. Admin will approve the change before it becomes active.")}</p>
 
           <label className="input-field">
             <span>
@@ -209,7 +198,6 @@ export function LoginPage({
               value={resetRole}
               onChange={(event) => {
                 setResetRole(event.target.value as RegistrationRole);
-                setResetAccount(null);
                 setResetPassword("");
                 setResetPasswordConfirm("");
                 setResetError("");
@@ -236,7 +224,6 @@ export function LoginPage({
               value={resetPhone}
               onChange={(event) => {
                 setResetPhone(event.target.value);
-                setResetAccount(null);
                 setResetPassword("");
                 setResetPasswordConfirm("");
                 setResetError("");
@@ -245,26 +232,14 @@ export function LoginPage({
             />
           </label>
 
-          {resetAccount && (
-            <div className="password-reset-account">
-              <span>{t("Account found")}</span>
-              <strong>{resetAccount.name}</strong>
-              <p>{[resetAccount.organization, t(resetAccount.role === "farmer" ? "Seller / Farmer" : "Buyer"), t(resetStatusLabel)].filter(Boolean).join(" · ")}</p>
-            </div>
-          )}
-
-          {resetAccount && (
-            <>
-              <PasswordField label="New password" value={resetPassword} onChange={setResetPassword} placeholder={t("New password")} required />
-              <PasswordField label="Confirm new password" value={resetPasswordConfirm} onChange={setResetPasswordConfirm} placeholder={t("Confirm new password")} required />
-            </>
-          )}
+          <PasswordField label="New password" value={resetPassword} onChange={setResetPassword} placeholder={t("New password")} required />
+          <PasswordField label="Confirm new password" value={resetPasswordConfirm} onChange={setResetPasswordConfirm} placeholder={t("Confirm new password")} required />
 
           {resetError && <p className="auth-error">{resetError}</p>}
 
           <button className="primary-button auth-submit-button" type="submit" disabled={isResetSubmitting}>
             <LockKeyhole size={17} />
-            {t(isResetSubmitting ? "Submitting" : resetAccount ? "Reset password" : "Find account")}
+            {t(isResetSubmitting ? "Submitting" : "Send reset request")}
           </button>
 
           <p className="auth-link-line">

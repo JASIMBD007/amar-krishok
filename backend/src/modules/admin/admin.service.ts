@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
-import { AccountStatus, Prisma, Role } from "@prisma/client";
+import { AccountStatus, PasswordResetStatus, Prisma, Role } from "@prisma/client";
 import { hash } from "bcryptjs";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
@@ -55,6 +55,29 @@ const accountSelect = {
   updatedAt: true,
   username: true,
 } satisfies Prisma.UserSelect;
+
+const passwordResetSelect = {
+  id: true,
+  phone: true,
+  requestedAt: true,
+  reviewedAt: true,
+  reviewedBy: { select: { id: true, name: true } },
+  role: true,
+  status: true,
+  user: {
+    select: {
+      district: { select: { name: true } },
+      id: true,
+      name: true,
+      organization: true,
+      phone: true,
+      role: true,
+      status: true,
+      upazilla: true,
+      username: true,
+    },
+  },
+} satisfies Prisma.PasswordResetRequestSelect;
 
 function accountRole(value?: string) {
   if (!value) {
@@ -113,6 +136,14 @@ export class AdminService {
 
   markAllNotificationsRead(userId: string) {
     return this.notificationsService.markAllRead(userId);
+  }
+
+  passwordResetRequests() {
+    return this.prisma.passwordResetRequest.findMany({
+      orderBy: { requestedAt: "desc" },
+      select: passwordResetSelect,
+      take: 60,
+    });
   }
 
   accounts(filters: { role?: string; status?: string }) {
@@ -261,6 +292,74 @@ export class AdminService {
       this.prisma.user.delete({ where: { id } }),
     ]);
     return { id };
+  }
+
+  async approvePasswordReset(id: string, adminId: string) {
+    const request = await this.prisma.passwordResetRequest.findUnique({
+      include: { user: true },
+      where: { id },
+    });
+
+    if (!request || request.status !== PasswordResetStatus.PENDING) {
+      throw new NotFoundException("Pending password reset request not found.");
+    }
+
+    const reviewedAt = new Date();
+    const updatedRequest = await this.prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        data: { passwordHash: request.passwordHash },
+        where: { id: request.userId },
+      });
+
+      return tx.passwordResetRequest.update({
+        data: {
+          passwordHash: "",
+          reviewedAt,
+          reviewedBy: { connect: { id: adminId } },
+          status: PasswordResetStatus.APPROVED,
+        },
+        select: passwordResetSelect,
+        where: { id },
+      });
+    });
+
+    await this.notificationsService.markPasswordResetRequestNotificationsReviewed(updatedRequest);
+    await this.notificationsService.notifyUser(request.userId, {
+      body: "Your AmarKrishok password reset was approved. You can now log in with the new password.",
+      title: "Password reset approved",
+    });
+
+    return updatedRequest;
+  }
+
+  async rejectPasswordReset(id: string, adminId: string) {
+    const request = await this.prisma.passwordResetRequest.findUnique({
+      include: { user: true },
+      where: { id },
+    });
+
+    if (!request || request.status !== PasswordResetStatus.PENDING) {
+      throw new NotFoundException("Pending password reset request not found.");
+    }
+
+    const updatedRequest = await this.prisma.passwordResetRequest.update({
+      data: {
+        passwordHash: "",
+        reviewedAt: new Date(),
+        reviewedBy: { connect: { id: adminId } },
+        status: PasswordResetStatus.REJECTED,
+      },
+      select: passwordResetSelect,
+      where: { id },
+    });
+
+    await this.notificationsService.markPasswordResetRequestNotificationsReviewed(updatedRequest);
+    await this.notificationsService.notifyUser(request.userId, {
+      body: "Your AmarKrishok password reset request was reviewed. Please contact support if you still need help.",
+      title: "Password reset rejected",
+    });
+
+    return updatedRequest;
   }
 
   async updateVerification(id: string, action: "approve" | "reject") {

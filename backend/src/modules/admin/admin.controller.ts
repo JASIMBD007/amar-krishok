@@ -33,6 +33,21 @@ export class AdminController {
     return this.adminService.markAllNotificationsRead(user.id);
   }
 
+  @Get("password-resets")
+  passwordResetRequests() {
+    return this.adminService.passwordResetRequests();
+  }
+
+  @Patch("password-resets/:id/approve")
+  approvePasswordReset(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string) {
+    return this.adminService.approvePasswordReset(id, user.id);
+  }
+
+  @Patch("password-resets/:id/reject")
+  rejectPasswordReset(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string) {
+    return this.adminService.rejectPasswordReset(id, user.id);
+  }
+
   @Get("accounts")
   accounts(@Query("role") role?: string, @Query("status") status?: string) {
     return this.adminService.accounts({ role, status });

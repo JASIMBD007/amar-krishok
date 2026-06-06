@@ -1,6 +1,6 @@
-import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
+import { ConflictException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { AccountStatus, Role, User } from "@prisma/client";
+import { AccountStatus, PasswordResetStatus, Role, User } from "@prisma/client";
 import { compare, hash } from "bcryptjs";
 import { sign } from "jsonwebtoken";
 import { NotificationsService } from "../notifications/notifications.service";
@@ -11,17 +11,6 @@ import { normalizeUsername } from "./username";
 function publicUser(user: User) {
   const { passwordHash: _passwordHash, ...safeUser } = user;
   return safeUser;
-}
-
-function resetUser(user: User) {
-  return {
-    id: user.id,
-    name: user.name,
-    organization: user.organization,
-    phone: user.phone,
-    role: user.role,
-    status: user.status,
-  };
 }
 
 @Injectable()
@@ -74,30 +63,57 @@ export class AuthService {
     };
   }
 
-  async lookupPasswordResetAccount(dto: PasswordResetLookupDto) {
-    const user = await this.findResettableUser(dto);
-
+  lookupPasswordResetAccount(_dto: PasswordResetLookupDto) {
     return {
-      user: resetUser(user),
+      message: "If this account exists, a password reset request can be submitted for admin review.",
     };
   }
 
   async resetPassword(dto: PasswordResetConfirmDto) {
-    const user = await this.findResettableUser(dto);
-    const passwordHash = await hash(dto.password, 10);
-    const updatedUser = await this.prisma.user.update({
-      data: { passwordHash },
-      where: { id: user.id },
+    const cleanPhone = dto.phone.trim();
+    const user = await this.prisma.user.findUnique({
+      where: { phone_role: { phone: cleanPhone, role: dto.role } },
     });
 
-    await this.notifications.notifyUser(updatedUser.id, {
-      body: "Your AmarKrishok password was reset. You can now log in with your new password.",
-      title: "Password reset complete",
+    if (!user || (user.role !== Role.BUYER && user.role !== Role.FARMER)) {
+      return {
+        message: "Password reset request sent. Admin will review it before the password changes.",
+      };
+    }
+
+    const passwordHash = await hash(dto.password, 10);
+
+    const request = await this.prisma.$transaction(async (tx) => {
+      await tx.passwordResetRequest.updateMany({
+        data: { passwordHash: "", reviewedAt: new Date(), status: PasswordResetStatus.REJECTED },
+        where: { status: PasswordResetStatus.PENDING, userId: user.id },
+      });
+
+      return tx.passwordResetRequest.create({
+        data: {
+          passwordHash,
+          phone: cleanPhone,
+          role: user.role,
+          userId: user.id,
+        },
+      });
+    });
+
+    await this.notifications.markPasswordResetRequestNotificationsReviewed({
+      phone: cleanPhone,
+      user,
+    });
+    await this.notifications.notifyAdmins({
+      body: `${user.name} · ${cleanPhone} · ${user.role === Role.BUYER ? "Buyer" : "Seller / Farmer"} · ${request.id}`,
+      title: "Password reset request",
+    });
+    await this.notifications.notifyUser(user.id, {
+      body: "Your AmarKrishok password reset request is waiting for admin approval.",
+      title: "Password reset requested",
     });
 
     return {
-      message: "Password reset complete.",
-      user: resetUser(updatedUser),
+      message: "Password reset request sent. Admin will review it before the password changes.",
     };
   }
 
@@ -163,15 +179,4 @@ export class AuthService {
     };
   }
 
-  private async findResettableUser(dto: PasswordResetLookupDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { phone_role: { phone: dto.phone.trim(), role: dto.role } },
-    });
-
-    if (!user || (user.role !== Role.BUYER && user.role !== Role.FARMER)) {
-      throw new NotFoundException("No buyer or farmer account found with this mobile number.");
-    }
-
-    return user;
-  }
 }
