@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { Eye, FileImage, Plus, Save, X } from "lucide-react";
+import { ExternalLink, Eye, FileImage, Plus, Save, X } from "lucide-react";
 import type { AdminAccountPayload } from "../../../api/auth";
 import { getUpazillasForDistrict, serviceDistricts } from "../../../data";
 import { useTranslate } from "../../../i18n";
@@ -36,12 +36,21 @@ const emptyForm: AccountFormState = {
 
 function canPreviewDocument(value: string) {
   const cleanValue = value.trim();
-  return cleanValue.startsWith("http://") || cleanValue.startsWith("https://") || cleanValue.startsWith("data:");
+  return cleanValue.startsWith("http://") || cleanValue.startsWith("https://") || cleanValue.startsWith("data:") || cleanValue.startsWith("/api/uploads/") || cleanValue.startsWith("/uploads/");
 }
 
-function isPdfDocument(value: string) {
+function isImageDocument(value: string) {
   const cleanValue = value.trim().toLowerCase();
-  return cleanValue.startsWith("data:application/pdf") || cleanValue.includes(".pdf");
+  return cleanValue.startsWith("data:image/") || /\.(apng|avif|gif|jpe?g|png|svg|webp)(\?|#|$)/.test(cleanValue);
+}
+
+function identityKind(value: string) {
+  const cleanValue = value.trim();
+  if (!cleanValue) {
+    return "empty";
+  }
+
+  return canPreviewDocument(cleanValue) ? "document" : "number";
 }
 
 export function AccountManagementForm({
@@ -62,15 +71,19 @@ export function AccountManagementForm({
   const t = useTranslate();
   const [form, setForm] = useState<AccountFormState>(emptyForm);
   const [documentPreviewOpen, setDocumentPreviewOpen] = useState(false);
+  const [identityEntryMode, setIdentityEntryMode] = useState<"auto" | "number">("auto");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isEditing = Boolean(editingAccount);
-  const hasPreviewableDocument = canPreviewDocument(form.identity);
+  const currentIdentityKind = identityKind(form.identity);
+  const showUploadedDocumentControls = isEditing && currentIdentityKind === "document" && identityEntryMode === "auto";
+  const hasPreviewableDocument = showUploadedDocumentControls && canPreviewDocument(form.identity);
   const availableUpazillas = getUpazillasForDistrict(form.district);
 
   useEffect(() => {
     if (!editingAccount) {
       setForm(emptyForm);
       setDocumentPreviewOpen(false);
+      setIdentityEntryMode("auto");
       return;
     }
 
@@ -88,6 +101,7 @@ export function AccountManagementForm({
       username: editingAccount.username,
     });
     setDocumentPreviewOpen(false);
+    setIdentityEntryMode("auto");
   }, [editingAccount]);
 
   const updateField = (field: keyof AccountFormState, value: string) => {
@@ -224,25 +238,35 @@ export function AccountManagementForm({
           <span>{t("Address")}</span>
           <input value={form.address} onChange={(event) => updateField("address", event.target.value)} placeholder={t("Dhaka North")} />
         </label>
-        {isEditing ? (
+        {showUploadedDocumentControls ? (
           <div className="input-field">
             <span>{t("NID / trade license")}</span>
             <div className="admin-document-field">
               <div className="admin-document-status">
                 <FileImage size={17} />
-                <span>{t(form.identity ? "Uploaded document saved" : "No document uploaded")}</span>
+                <span>{t("Uploaded document saved")}</span>
               </div>
-              {hasPreviewableDocument && (
+              <div className="admin-document-actions">
                 <button className="secondary-button compact-action" type="button" onClick={() => setDocumentPreviewOpen(true)}>
                   <Eye size={15} />
                   {t("View document")}
                 </button>
-              )}
+                <button
+                  className="secondary-button compact-action"
+                  type="button"
+                  onClick={() => {
+                    updateField("identity", "");
+                    setIdentityEntryMode("number");
+                  }}
+                >
+                  {t("Use ID number")}
+                </button>
+              </div>
             </div>
           </div>
         ) : (
           <label className="input-field">
-            <span>{t("NID / trade license")}</span>
+            <span>{t(isEditing ? "NID / trade license number" : "NID / trade license")}</span>
             <input value={form.identity} onChange={(event) => updateField("identity", event.target.value)} placeholder={t("Sample identity")} />
           </label>
         )}
@@ -270,11 +294,18 @@ export function AccountManagementForm({
               </button>
             </div>
             <div className="document-preview-body">
-              {isPdfDocument(form.identity) ? (
-                <iframe src={form.identity} title={t("Uploaded document preview")} />
-              ) : (
+              {isImageDocument(form.identity) ? (
                 <img src={form.identity} alt={t("Uploaded document preview")} />
+              ) : (
+                <iframe src={form.identity} title={t("Uploaded document preview")} />
               )}
+            </div>
+            <div className="document-preview-actions">
+              <p>{t("If the preview is blank, open the document in a new tab.")}</p>
+              <a className="secondary-button compact-action" href={form.identity} target="_blank" rel="noreferrer">
+                <ExternalLink size={15} />
+                {t("Open document")}
+              </a>
             </div>
           </section>
         </div>

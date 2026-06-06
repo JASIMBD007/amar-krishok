@@ -1208,6 +1208,14 @@ button {
   white-space: nowrap;
 }
 
+.admin-document-actions,
+.document-preview-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .danger-button {
   color: #8a2a1b;
   background: #f8e5df;
@@ -1373,6 +1381,17 @@ button {
 
 .document-preview-body iframe {
   height: min(68vh, 720px);
+}
+
+.document-preview-actions {
+  justify-content: space-between;
+  padding: 4px 2px 0;
+}
+
+.document-preview-actions p {
+  margin: 0;
+  color: #66786f;
+  font-weight: 800;
 }
 
 .lot-details-summary {
@@ -4100,6 +4119,13 @@ th {
     flex-direction: column;
   }
 
+  .admin-document-actions,
+  .document-preview-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-document-actions .secondary-button,
   .admin-document-field .secondary-button {
     justify-content: center;
     width: 100%;
