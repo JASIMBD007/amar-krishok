@@ -1176,6 +1176,15 @@ button {
   cursor: not-allowed;
 }
 
+.readonly-password-control {
+  margin-top: 0;
+}
+
+.input-field .readonly-password-control .readonly-password-input {
+  color: #243d32;
+  cursor: default;
+}
+
 .admin-document-button-row {
   display: flex;
   align-items: center;

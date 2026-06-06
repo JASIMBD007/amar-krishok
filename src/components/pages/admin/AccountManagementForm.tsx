@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { ExternalLink, Eye, Plus, Save, X } from "lucide-react";
+import { ExternalLink, Eye, EyeOff, Plus, Save, X } from "lucide-react";
 import type { AdminAccountPayload } from "../../../api/auth";
 import { getUpazillasForDistrict, serviceDistricts } from "../../../data";
 import { useTranslate } from "../../../i18n";
@@ -72,16 +72,21 @@ export function AccountManagementForm({
   const [form, setForm] = useState<AccountFormState>(emptyForm);
   const [documentPreviewOpen, setDocumentPreviewOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const isEditing = Boolean(editingAccount);
   const currentIdentityKind = identityKind(form.identity);
   const showUploadedDocumentControls = isEditing && currentIdentityKind === "document";
   const hasPreviewableDocument = showUploadedDocumentControls && canPreviewDocument(form.identity);
   const availableUpazillas = getUpazillasForDistrict(form.district);
+  const PasswordToggleIcon = isPasswordVisible ? EyeOff : Eye;
+  const passwordToggleLabel = isPasswordVisible ? "Hide password" : "Show password";
+  const readonlyPasswordValue = isPasswordVisible ? form.password || t("Password protected") : "••••••••";
 
   useEffect(() => {
     if (!editingAccount) {
       setForm(emptyForm);
       setDocumentPreviewOpen(false);
+      setIsPasswordVisible(false);
       return;
     }
 
@@ -99,6 +104,7 @@ export function AccountManagementForm({
       username: editingAccount.username,
     });
     setDocumentPreviewOpen(false);
+    setIsPasswordVisible(false);
   }, [editingAccount]);
 
   const updateField = (field: keyof AccountFormState, value: string) => {
@@ -185,12 +191,22 @@ export function AccountManagementForm({
         {isEditing ? (
           <label className="input-field">
             <span>{t("Password")}</span>
-            <input className="readonly-password-input" value="••••••••" readOnly aria-readonly="true" />
+            <div className="password-control readonly-password-control">
+              <input className="readonly-password-input" value={readonlyPasswordValue} readOnly aria-readonly="true" type="text" />
+              <button className="password-toggle" type="button" aria-label={t(passwordToggleLabel)} aria-pressed={isPasswordVisible} title={t(passwordToggleLabel)} onClick={() => setIsPasswordVisible((current) => !current)}>
+                <PasswordToggleIcon size={18} />
+              </button>
+            </div>
           </label>
         ) : (
           <label className="input-field">
             <span>{t("Password")}</span>
-            <input value={form.password} onChange={(event) => updateField("password", event.target.value)} placeholder={t("Password")} type="password" />
+            <div className="password-control">
+              <input value={form.password} onChange={(event) => updateField("password", event.target.value)} placeholder={t("Password")} type={isPasswordVisible ? "text" : "password"} />
+              <button className="password-toggle" type="button" aria-label={t(passwordToggleLabel)} aria-pressed={isPasswordVisible} title={t(passwordToggleLabel)} onClick={() => setIsPasswordVisible((current) => !current)}>
+                <PasswordToggleIcon size={18} />
+              </button>
+            </div>
           </label>
         )}
         <label className="input-field">

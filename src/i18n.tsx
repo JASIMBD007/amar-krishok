@@ -85,6 +85,7 @@ const bn: Record<string, string> = {
   "Your password": "আপনার পাসওয়ার্ড",
   "Show password": "পাসওয়ার্ড দেখান",
   "Hide password": "পাসওয়ার্ড লুকান",
+  "Password protected": "পাসওয়ার্ড সুরক্ষিত",
   "Sign in": "লগইন",
   "Signing in": "লগইন হচ্ছে",
   "Forgot password?": "পাসওয়ার্ড ভুলে গেছেন?",
