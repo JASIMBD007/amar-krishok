@@ -4,8 +4,8 @@ import {
   ChevronDown,
   LockKeyhole,
   Menu,
-  ShoppingBag,
   Sprout,
+  UserRound,
   X,
 } from "lucide-react";
 import {
@@ -19,6 +19,7 @@ import {
   type BackendOrder,
 } from "./api/auth";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { RegisterChoiceModal } from "./components/RegisterChoiceModal";
 import { Seo } from "./components/Seo";
 import { FloatingSupportChat } from "./components/chat/FloatingSupportChat";
 import { NotificationCenter } from "./components/notifications/NotificationCenter";
@@ -28,7 +29,7 @@ import { LanguageContext, translate } from "./i18n";
 import { lots, roleOptions, routeByView, views } from "./data";
 import { AdminPage, HomePage, LoginPage, MarketplacePage, OrderPage, PostCropPage, PricesPage, RegisterPage } from "./components/pages";
 import { useAppStore } from "./store/useAppStore";
-import type { AppNotification, AuthUser, RegisteredAccount, Role, View } from "./types";
+import type { AppNotification, AuthUser, RegisteredAccount, RegistrationRole, Role, View } from "./types";
 
 const REVIEWED_NOTIFICATIONS_STORAGE_KEY = "amarKrishokReviewedNotifications";
 
@@ -97,11 +98,13 @@ export default function App() {
   const [notificationLots, setNotificationLots] = useState<BackendCropLot[]>([]);
   const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
   const [notificationError, setNotificationError] = useState("");
+  const [registerChoiceOpen, setRegisterChoiceOpen] = useState(false);
   const [reviewedNotificationIds, setReviewedNotificationIds] = useState<string[]>([]);
 
   const closeAllHeaderMenus = () => {
     closeHeaderMenus();
     setNotificationPanelOpen(false);
+    setRegisterChoiceOpen(false);
   };
 
   useEffect(() => {
@@ -205,6 +208,17 @@ export default function App() {
 
     navigate(`/login?next=${encodeURIComponent(targetPath)}`);
     closeAllHeaderMenus();
+  };
+
+  const openHeaderRegisterChoice = () => {
+    closeHeaderMenus();
+    setNotificationPanelOpen(false);
+    setRegisterChoiceOpen(true);
+  };
+
+  const chooseRegistration = (role: RegistrationRole) => {
+    setRegisterChoiceOpen(false);
+    navigate(role === "farmer" ? "/register/farmer" : "/register/buyer");
   };
 
   const openNotification = (notification: AppNotification) => {
@@ -387,22 +401,13 @@ export default function App() {
                   </NavLink>
                 )}
                 {!user && (
-                  <>
-                    <NavLink className="role-option" to="/register/buyer" onClick={closeAllHeaderMenus}>
-                      <ShoppingBag size={18} />
-                      <span>
-                        <strong>{t("Register buyer")}</strong>
-                        <small>{t("New buyer account")}</small>
-                      </span>
-                    </NavLink>
-                    <NavLink className="role-option" to="/register/farmer" onClick={closeAllHeaderMenus}>
-                      <Sprout size={18} />
-                      <span>
-                        <strong>{t("Register seller")}</strong>
-                        <small>{t("New seller account")}</small>
-                      </span>
-                    </NavLink>
-                  </>
+                  <button className="role-option" type="button" role="menuitem" onClick={openHeaderRegisterChoice}>
+                    <UserRound size={18} />
+                    <span>
+                      <strong>{t("Register")}</strong>
+                      <small>{t("Choose buyer or seller account")}</small>
+                    </span>
+                  </button>
                 )}
                 {user && (
                   <button className="role-option danger" type="button" role="menuitem" onClick={handleLogout}>
@@ -428,6 +433,7 @@ export default function App() {
           </nav>
         )}
       </header>
+      {registerChoiceOpen && <RegisterChoiceModal onChoose={chooseRegistration} onClose={() => setRegisterChoiceOpen(false)} />}
 
       <Routes location={location}>
         <Route path="/" element={<HomePage setView={selectView} />} />
