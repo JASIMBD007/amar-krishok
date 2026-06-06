@@ -1562,9 +1562,9 @@ button {
 }
 
 .login-panel {
-  width: min(100%, 720px);
-  gap: 16px;
-  padding: clamp(28px, 5vw, 56px);
+  width: min(100%, 620px);
+  gap: 13px;
+  padding: clamp(24px, 4vw, 44px);
 }
 
 .register-panel {
@@ -1599,7 +1599,7 @@ button {
 
 .login-panel h1 {
   color: #132d24;
-  font-size: clamp(2.4rem, 5vw, 4rem);
+  font-size: clamp(2rem, 3.8vw, 3.1rem);
   letter-spacing: 0;
 }
 
@@ -1611,8 +1611,26 @@ button {
 
 .login-intro {
   max-width: 560px;
-  font-size: 1.05rem;
+  font-size: 0.98rem;
   line-height: 1.45;
+}
+
+.login-panel .input-field {
+  font-size: 0.94rem;
+}
+
+.login-panel .input-field input:not([type="file"]),
+.login-panel .input-field select {
+  min-height: 44px;
+  font-size: 0.95rem;
+}
+
+.login-panel .password-control {
+  min-height: 44px;
+}
+
+.login-panel .input-field .password-control input {
+  min-height: 42px;
 }
 
 .auth-panel .input-field small {
@@ -1676,9 +1694,14 @@ button {
 .auth-submit-button {
   justify-content: center;
   width: 100%;
-  min-height: 54px;
+  min-height: 50px;
   margin-top: 8px;
   font-size: 1rem;
+}
+
+.login-panel .auth-submit-button {
+  min-height: 48px;
+  font-size: 0.98rem;
 }
 
 .auth-link-line,
