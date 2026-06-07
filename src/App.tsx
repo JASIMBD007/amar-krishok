@@ -122,6 +122,7 @@ function toMarketplaceLot(lot: BackendCropLot): CropLot {
     harvest: formatBackendHarvestDate(lot.harvestDate),
     id: lot.id,
     image: lot.imageUrl || staticLot?.image || "/assets/crops/rice.png",
+    postedAt: lot.createdAt,
     quantity: formatBackendQuantity(lot.quantityKg),
     upazilla: lot.upazilla ?? lot.farmer.upazilla ?? staticLot?.upazilla,
   };
@@ -202,10 +203,7 @@ export default function App() {
         }
 
         const mappedLots = backendLots.map(toMarketplaceLot);
-        const staticFallbackLots = lots.filter(
-          (staticLot) => !mappedLots.some((backendLot) => backendLot.crop.toLowerCase() === staticLot.crop.toLowerCase()),
-        );
-        setMarketplaceLots(mappedLots.length > 0 ? [...mappedLots, ...staticFallbackLots] : lots);
+        setMarketplaceLots(mappedLots.length > 0 ? mappedLots : lots);
         setMarketplaceError("");
       })
       .catch((error) => {

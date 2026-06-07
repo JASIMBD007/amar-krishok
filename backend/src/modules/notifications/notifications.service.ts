@@ -18,7 +18,7 @@ function notificationMeta(title: string) {
     case "Order request needs review":
       return { meta: "Pending order", section: "orders", tone: "urgent", type: "order" };
     case "New supply lot posted":
-      return { meta: "Supply Lots", section: "supply", tone: "success", type: "supply" };
+      return { meta: "Supply approval", section: "supply", tone: "warning", type: "supply" };
     case "Registration received":
       return { meta: "Account verification", section: "profile", tone: "info", type: "account" };
     case "Account verified":
@@ -41,6 +41,8 @@ function notificationMeta(title: string) {
       return { meta: "Buyer demand", section: "orders", tone: "urgent", type: "order" };
     case "Crop lot published":
       return { meta: "Supply Lots", section: "supply", tone: "success", type: "supply" };
+    case "Crop lot submitted":
+      return { meta: "Supply approval", section: "supply", tone: "warning", type: "supply" };
     case "Lot status update":
       return { meta: "Supply Lots", section: "supply", tone: "info", type: "supply" };
     case "Payment update":
@@ -186,6 +188,23 @@ export class NotificationsService {
         OR: filters.map((value) => ({ body: { contains: value } })),
         readAt: null,
         title: "Password reset request",
+        user: { role: Role.ADMIN },
+      },
+    });
+  }
+
+  async markSupplyLotNotificationsReviewed(lot: { crop: { name: string }; district: { name: string }; farmer: { name: string }; upazilla?: string | null }) {
+    const filters = [lot.farmer.name, lot.crop.name, lot.upazilla, lot.district.name].filter((value): value is string => Boolean(value));
+    if (filters.length === 0) {
+      return { count: 0 };
+    }
+
+    return this.prisma.notification.updateMany({
+      data: { readAt: new Date() },
+      where: {
+        AND: filters.slice(0, 2).map((value) => ({ body: { contains: value } })),
+        readAt: null,
+        title: "New supply lot posted",
         user: { role: Role.ADMIN },
       },
     });

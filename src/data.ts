@@ -25,6 +25,7 @@ export const lots: CropLot[] = [
     harvest: "Ready tomorrow",
     image:
       "https://images.unsplash.com/photo-1592841200221-a6898f307baa?auto=format&fit=crop&w=900&q=80",
+    postedAt: "2026-06-07T08:30:00.000Z",
   },
   {
     id: "LOT-731",
@@ -37,6 +38,7 @@ export const lots: CropLot[] = [
     grade: "A",
     harvest: "Ready today",
     image: "/assets/crops/green-chilli.jpg",
+    postedAt: "2026-06-07T07:20:00.000Z",
   },
   {
     id: "LOT-640",
@@ -50,6 +52,7 @@ export const lots: CropLot[] = [
     harvest: "Cold stored",
     image:
       "https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=900&q=80",
+    postedAt: "2026-06-06T16:10:00.000Z",
   },
   {
     id: "LOT-529",
@@ -62,6 +65,7 @@ export const lots: CropLot[] = [
     grade: "A",
     harvest: "Ready in 2 days",
     image: "/assets/crops/onion.jpg",
+    postedAt: "2026-06-06T12:45:00.000Z",
   },
   {
     id: "LOT-418",
@@ -74,6 +78,7 @@ export const lots: CropLot[] = [
     grade: "A",
     harvest: "Ready tomorrow",
     image: "/assets/crops/rice.png",
+    postedAt: "2026-06-05T10:00:00.000Z",
   },
   {
     id: "LOT-386",
@@ -86,6 +91,7 @@ export const lots: CropLot[] = [
     grade: "B",
     harvest: "Ready today",
     image: "/assets/crops/eggplant.jpg",
+    postedAt: "2026-06-05T09:15:00.000Z",
   },
   {
     id: "LOT-274",
@@ -99,6 +105,7 @@ export const lots: CropLot[] = [
     harvest: "Ready in 2 days",
     image:
       "https://images.unsplash.com/photo-1449300079323-02e209d9d3a6?auto=format&fit=crop&w=900&q=80",
+    postedAt: "2026-06-04T14:30:00.000Z",
   },
   {
     id: "LOT-193",
@@ -111,6 +118,7 @@ export const lots: CropLot[] = [
     grade: "A",
     harvest: "Ready tomorrow",
     image: "/assets/crops/mango.jpg",
+    postedAt: "2026-06-04T11:35:00.000Z",
   },
 ];
 

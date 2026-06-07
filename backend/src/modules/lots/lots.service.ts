@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { LotStatus, Prisma, Role } from "@prisma/client";
 import { AuthenticatedUser } from "../auth/types/authenticated-user";
 import { NotificationsService } from "../notifications/notifications.service";
@@ -71,6 +71,7 @@ export class LotsService {
       }),
     ]);
 
+    const status = user.role === Role.ADMIN ? LotStatus.ACTIVE : LotStatus.DRAFT;
     const lot = await this.prisma.cropLot.create({
       data: {
         cropId: crop.id,
@@ -82,7 +83,7 @@ export class LotsService {
         notes: dto.notes,
         pricePerKg: new Prisma.Decimal(dto.pricePerKg),
         quantityKg: new Prisma.Decimal(dto.quantityKg),
-        status: LotStatus.ACTIVE,
+        status,
         upazilla: dto.upazilla,
       },
       include: lotInclude,
@@ -93,8 +94,40 @@ export class LotsService {
       title: "New supply lot posted",
     });
     await this.notifications.notifyUser(lot.farmerId, {
-      body: `${lot.crop.name} · ${lot.upazilla || lot.district.name} · ${lot.quantityKg} kg listed at ৳${lot.pricePerKg}/kg`,
-      title: "Crop lot published",
+      body:
+        status === LotStatus.ACTIVE
+          ? `${lot.crop.name} · ${lot.upazilla || lot.district.name} · ${lot.quantityKg} kg listed at ৳${lot.pricePerKg}/kg`
+          : `${lot.crop.name} · ${lot.upazilla || lot.district.name} submitted for admin approval.`,
+      title: status === LotStatus.ACTIVE ? "Crop lot published" : "Crop lot submitted",
+    });
+
+    return lot;
+  }
+
+  async review(id: string, action: "approve" | "reject") {
+    const existingLot = await this.prisma.cropLot.findUnique({
+      include: lotInclude,
+      where: { id },
+    });
+
+    if (!existingLot) {
+      throw new NotFoundException("Crop lot not found.");
+    }
+
+    const nextStatus = action === "approve" ? LotStatus.ACTIVE : LotStatus.CANCELLED;
+    const lot = await this.prisma.cropLot.update({
+      data: { status: nextStatus },
+      include: lotInclude,
+      where: { id },
+    });
+
+    await this.notifications.markSupplyLotNotificationsReviewed(lot);
+    await this.notifications.notifyUser(lot.farmerId, {
+      body:
+        action === "approve"
+          ? `${lot.crop.name} is approved and now visible in the marketplace.`
+          : `${lot.crop.name} was reviewed and is not visible in the marketplace.`,
+      title: "Lot status update",
     });
 
     return lot;

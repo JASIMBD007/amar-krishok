@@ -1,4 +1,5 @@
-import { AlertTriangle, BadgeCheck, Clock3, PackageSearch, Pencil, Trash2, X, XCircle } from "lucide-react";
+import { useState } from "react";
+import { AlertTriangle, BadgeCheck, CheckCircle2, Clock3, ImageIcon, PackageSearch, Pencil, Trash2, X, XCircle } from "lucide-react";
 import type { AdminAccountPayload } from "../../../api/auth";
 import { useTranslate, useValueText } from "../../../i18n";
 import type { AccountStatus, RegisteredAccount, RegisteredCropLotRecord, RegistrationRole } from "../../../types";
@@ -43,11 +44,24 @@ function formatLotDate(value?: string) {
 }
 
 function formatLotStatus(value?: string) {
-  if (!value) {
-    return "ACTIVE";
+  const status = value?.toUpperCase();
+  if (status === "DRAFT") {
+    return "Pending approval";
   }
 
-  return value.toUpperCase();
+  if (status === "CANCELLED") {
+    return "Rejected";
+  }
+
+  if (status === "RESERVED") {
+    return "Reserved";
+  }
+
+  if (status === "SOLD") {
+    return "Sold";
+  }
+
+  return "Active";
 }
 
 function formatLotGrade(value?: string) {
@@ -187,10 +201,36 @@ export function DeleteConfirmModal({
   );
 }
 
-function LotDetailCard({ fallbackUpazilla, lot }: { fallbackUpazilla?: string; lot: RegisteredCropLotRecord }) {
+function LotDetailCard({
+  fallbackUpazilla,
+  isReviewing,
+  lot,
+  onNotify,
+  onReviewLot,
+}: {
+  fallbackUpazilla?: string;
+  isReviewing: boolean;
+  lot: RegisteredCropLotRecord;
+  onNotify?: (toast: AdminToast) => void;
+  onReviewLot?: (lotId: string, action: "approve" | "reject") => Promise<void>;
+}) {
   const t = useTranslate();
   const v = useValueText();
   const displayUpazilla = lot.upazilla || fallbackUpazilla;
+  const isPendingApproval = lot.status.toUpperCase() === "DRAFT";
+
+  const reviewLot = async (action: "approve" | "reject") => {
+    if (!onReviewLot) {
+      return;
+    }
+
+    try {
+      await onReviewLot(lot.id, action);
+      onNotify?.({ message: action === "approve" ? "Lot approved." : "Lot rejected.", tone: "success" });
+    } catch (error) {
+      onNotify?.({ message: error instanceof Error ? error.message : "Lot review failed.", tone: "error" });
+    }
+  };
 
   return (
     <article className="lot-detail-card">
@@ -201,40 +241,61 @@ function LotDetailCard({ fallbackUpazilla, lot }: { fallbackUpazilla?: string; l
           </span>
           <h3>{t(lot.crop)}</h3>
         </div>
-        <em>{t(formatLotStatus(lot.status))}</em>
+        <div className="lot-detail-status-actions">
+          <em>{t(formatLotStatus(lot.status))}</em>
+          {isPendingApproval && onReviewLot && (
+            <div className="lot-review-actions">
+              <button className="secondary-button danger-button compact-action" type="button" disabled={isReviewing} onClick={() => reviewLot("reject")}>
+                <XCircle size={15} />
+                {t("Reject lot")}
+              </button>
+              <button className="primary-button compact-action" type="button" disabled={isReviewing} onClick={() => reviewLot("approve")}>
+                <CheckCircle2 size={15} />
+                {t("Approve lot")}
+              </button>
+            </div>
+          )}
+        </div>
       </header>
-      <div className="lot-detail-meta">
-        <span>
-          <small>{t("District")}</small>
-          <strong>{t(lot.district || "Not added")}</strong>
-        </span>
-        <span>
-          <small>{t("Upazilla")}</small>
-          <strong>{displayUpazilla ? t(displayUpazilla) : t("Not added")}</strong>
-        </span>
-        <span>
-          <small>{t("Quantity")}</small>
-          <strong>{t(formatQuantityKg(lot.quantityKg))}</strong>
-        </span>
-        <span>
-          <small>{t("Price per kg")}</small>
-          <strong>{v(formatPricePerKg(lot.pricePerKg))}</strong>
-        </span>
-        <span>
-          <small>{t("Grade")}</small>
-          <strong>{t(formatLotGrade(lot.grade))}</strong>
-        </span>
-        <span>
-          <small>{t("Harvest date")}</small>
-          <strong>{t(formatLotDate(lot.harvestDate))}</strong>
-        </span>
+      <div className="lot-detail-body">
+        <div className="lot-detail-meta">
+          <span>
+            <small>{t("District")}</small>
+            <strong>{t(lot.district || "Not added")}</strong>
+          </span>
+          <span>
+            <small>{t("Upazilla")}</small>
+            <strong>{displayUpazilla ? t(displayUpazilla) : t("Not added")}</strong>
+          </span>
+          <span>
+            <small>{t("Quantity")}</small>
+            <strong>{t(formatQuantityKg(lot.quantityKg))}</strong>
+          </span>
+          <span>
+            <small>{t("Price per kg")}</small>
+            <strong>{v(formatPricePerKg(lot.pricePerKg))}</strong>
+          </span>
+          <span>
+            <small>{t("Grade")}</small>
+            <strong>{t(formatLotGrade(lot.grade))}</strong>
+          </span>
+          <span>
+            <small>{t("Harvest date")}</small>
+            <strong>{t(formatLotDate(lot.harvestDate))}</strong>
+          </span>
+        </div>
+        <div className="lot-detail-image">
+          {lot.imageUrl ? (
+            <img src={lot.imageUrl} alt={`${t(lot.crop)} ${t("crop image")}`} />
+          ) : (
+            <div className="lot-detail-image-empty">
+              <ImageIcon size={24} />
+              <span>{t("No crop image")}</span>
+            </div>
+          )}
+        </div>
       </div>
       {lot.notes && <p className="lot-detail-notes">{lot.notes}</p>}
-      {lot.imageUrl && (
-        <a className="lot-detail-link" href={lot.imageUrl} target="_blank" rel="noreferrer">
-          {t("View crop image")}
-        </a>
-      )}
     </article>
   );
 }
@@ -242,12 +303,17 @@ function LotDetailCard({ fallbackUpazilla, lot }: { fallbackUpazilla?: string; l
 export function FarmerLotDetailsModal({
   account,
   onClose,
+  onNotify,
+  onReviewLot,
 }: {
   account: RegisteredAccount | null;
   onClose: () => void;
+  onNotify?: (toast: AdminToast) => void;
+  onReviewLot?: (lotId: string, action: "approve" | "reject") => Promise<void>;
 }) {
   const t = useTranslate();
   const v = useValueText();
+  const [reviewingLotId, setReviewingLotId] = useState<string | null>(null);
 
   if (!account) {
     return null;
@@ -284,7 +350,25 @@ export function FarmerLotDetailsModal({
         ) : (
           <div className="lot-details-list">
             {lots.map((lot) => (
-              <LotDetailCard key={lot.id} fallbackUpazilla={account.upazilla} lot={lot} />
+              <LotDetailCard
+                key={lot.id}
+                fallbackUpazilla={account.upazilla}
+                isReviewing={reviewingLotId === lot.id}
+                lot={lot}
+                onNotify={onNotify}
+                onReviewLot={
+                  onReviewLot
+                    ? async (lotId, action) => {
+                        setReviewingLotId(lotId);
+                        try {
+                          await onReviewLot(lotId, action);
+                        } finally {
+                          setReviewingLotId(null);
+                        }
+                      }
+                    : undefined
+                }
+              />
             ))}
           </div>
         )}
