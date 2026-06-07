@@ -1,8 +1,8 @@
 import type { AccountStatus, AuthUser, RegisteredAccount, RegistrationRole, Role } from "../types";
 
-const API_BASE_URL = ["localhost", "127.0.0.1"].includes(window.location.hostname)
-  ? "http://localhost:4000"
-  : "https://amar-krishok-api.onrender.com";
+const PRODUCTION_API_BASE_URL = "https://amar-krishok-api.onrender.com";
+const IS_LOCAL_FRONTEND = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+const API_BASE_URL = IS_LOCAL_FRONTEND ? "http://localhost:4000" : PRODUCTION_API_BASE_URL;
 
 type ApiRole = "ADMIN" | "BUYER" | "FARMER";
 type ApiAccountStatus = "PENDING" | "ACTIVE" | "REJECTED";
@@ -301,6 +301,26 @@ async function apiRequest<T>(path: string, options: RequestInit & { accessToken?
   return (await response.json()) as T;
 }
 
+async function publicProductionApiRequest<T>(path: string) {
+  let response: Response;
+
+  try {
+    response = await fetch(`${PRODUCTION_API_BASE_URL}${path}`, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  } catch {
+    throw new ApiRequestError("Backend service is unavailable. Please try again.");
+  }
+
+  if (!response.ok) {
+    throw new ApiRequestError((await readApiMessage(response)) ?? "Backend request failed.", response.status);
+  }
+
+  return (await response.json()) as T;
+}
+
 function toAuthUser(data: LoginResponse): AuthUser {
   return {
     accessToken: data.accessToken,
@@ -455,6 +475,31 @@ export async function registerAccountWithApi({ role, ...payload }: RegisterAccou
 
 export function fetchMyCropLots(accessToken: string) {
   return apiRequest<BackendCropLot[]>("/api/lots/mine", { accessToken });
+}
+
+export async function fetchPublicCropLots(filters: { crop?: string; district?: string } = {}) {
+  const params = new URLSearchParams();
+
+  if (filters.crop) {
+    params.set("crop", filters.crop);
+  }
+
+  if (filters.district && filters.district !== "All districts") {
+    params.set("district", filters.district);
+  }
+
+  const query = params.toString();
+  const path = `/api/lots${query ? `?${query}` : ""}`;
+
+  try {
+    return await apiRequest<BackendCropLot[]>(path);
+  } catch (error) {
+    if (IS_LOCAL_FRONTEND) {
+      return publicProductionApiRequest<BackendCropLot[]>(path);
+    }
+
+    throw error;
+  }
 }
 
 export function createCropLot(accessToken: string, payload: CreateCropLotPayload) {

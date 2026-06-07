@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Navigate, NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import {
   ChevronDown,
@@ -13,6 +13,7 @@ import {
   fetchMyCropLots,
   fetchMyOrders,
   fetchNotifications,
+  fetchPublicCropLots,
   markAllNotificationsRead,
   markNotificationRead,
   type BackendCropLot,
@@ -26,10 +27,10 @@ import { NotificationCenter } from "./components/notifications/NotificationCente
 import { makeRoleNotifications, mergeNotifications, toAppNotification } from "./components/notifications/roleNotifications";
 import { roleCanOpenPath } from "./components/pages/pageHelpers";
 import { LanguageContext, translate } from "./i18n";
-import { lots, roleOptions, routeByView, views } from "./data";
+import { lots, roleOptions, routeByView, serviceDistricts, views } from "./data";
 import { AdminPage, HomePage, LoginPage, MarketplacePage, OrderPage, PostCropPage, PricesPage, RegisterPage } from "./components/pages";
 import { useAppStore } from "./store/useAppStore";
-import type { AppNotification, AuthUser, RegisteredAccount, RegistrationRole, Role, View } from "./types";
+import type { AppNotification, AuthUser, CropLot, RegisteredAccount, RegistrationRole, Role, View } from "./types";
 
 const REVIEWED_NOTIFICATIONS_STORAGE_KEY = "amarKrishokReviewedNotifications";
 
@@ -66,6 +67,66 @@ function saveStoredReviewedNotificationIds(user: AuthUser | null, ids: string[])
   }
 }
 
+function numericBackendValue(value: string | number | null | undefined) {
+  const numberValue = Number(value);
+  return Number.isFinite(numberValue) ? numberValue : 0;
+}
+
+function formatBackendQuantity(value: string | number | null | undefined) {
+  const kg = numericBackendValue(value);
+  if (kg >= 1000) {
+    return `${(kg / 1000).toFixed(kg % 1000 === 0 ? 0 : 1)} tons`;
+  }
+
+  return `${kg.toLocaleString("en-US")} kg`;
+}
+
+function formatBackendHarvestDate(value: string | null | undefined) {
+  if (!value) {
+    return "Ready today";
+  }
+
+  const harvestDate = new Date(value);
+  if (Number.isNaN(harvestDate.getTime())) {
+    return "Ready today";
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  harvestDate.setHours(0, 0, 0, 0);
+  const daysAway = Math.round((harvestDate.getTime() - today.getTime()) / 86_400_000);
+
+  if (daysAway <= 0) {
+    return "Ready today";
+  }
+
+  if (daysAway === 1) {
+    return "Ready tomorrow";
+  }
+
+  if (daysAway === 2) {
+    return "Ready in 2 days";
+  }
+
+  return "Ready soon";
+}
+
+function toMarketplaceLot(lot: BackendCropLot): CropLot {
+  const staticLot = lots.find((item) => item.crop.toLowerCase() === lot.crop.name.toLowerCase());
+  return {
+    ask: `৳${Math.round(numericBackendValue(lot.pricePerKg)).toLocaleString("en-US")}/kg`,
+    crop: lot.crop.name,
+    district: lot.district.name,
+    farmer: lot.farmer.name,
+    grade: lot.grade.replace(/^Grade\s+/i, ""),
+    harvest: formatBackendHarvestDate(lot.harvestDate),
+    id: lot.id,
+    image: lot.imageUrl || staticLot?.image || "/assets/crops/rice.png",
+    quantity: formatBackendQuantity(lot.quantityKg),
+    upazilla: lot.upazilla ?? lot.farmer.upazilla ?? staticLot?.upazilla,
+  };
+}
+
 export default function App() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -98,6 +159,9 @@ export default function App() {
   const [notificationLots, setNotificationLots] = useState<BackendCropLot[]>([]);
   const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
   const [notificationError, setNotificationError] = useState("");
+  const [marketplaceError, setMarketplaceError] = useState("");
+  const [marketplaceLots, setMarketplaceLots] = useState<CropLot[]>(lots);
+  const [marketplaceLoading, setMarketplaceLoading] = useState(false);
   const [registerChoiceOpen, setRegisterChoiceOpen] = useState(false);
   const [reviewedNotificationIds, setReviewedNotificationIds] = useState<string[]>([]);
 
@@ -127,14 +191,65 @@ export default function App() {
     }
   }, [registrations, user]);
 
+  const refreshMarketplaceLots = useCallback(() => {
+    let isActive = true;
+    setMarketplaceLoading(true);
+
+    fetchPublicCropLots()
+      .then((backendLots) => {
+        if (!isActive) {
+          return;
+        }
+
+        const mappedLots = backendLots.map(toMarketplaceLot);
+        const staticFallbackLots = lots.filter(
+          (staticLot) => !mappedLots.some((backendLot) => backendLot.crop.toLowerCase() === staticLot.crop.toLowerCase()),
+        );
+        setMarketplaceLots(mappedLots.length > 0 ? [...mappedLots, ...staticFallbackLots] : lots);
+        setMarketplaceError("");
+      })
+      .catch((error) => {
+        if (!isActive) {
+          return;
+        }
+
+        setMarketplaceLots(lots);
+        setMarketplaceError(error instanceof ApiRequestError ? error.message : "Could not load marketplace lots.");
+      })
+      .finally(() => {
+        if (isActive) {
+          setMarketplaceLoading(false);
+        }
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  useEffect(() => refreshMarketplaceLots(), [refreshMarketplaceLots]);
+
+  useEffect(() => {
+    if (location.pathname === "/marketplace") {
+      return refreshMarketplaceLots();
+    }
+
+    return undefined;
+  }, [location.pathname, refreshMarketplaceLots]);
+
+  const marketplaceDistricts = useMemo(
+    () => Array.from(new Set([...serviceDistricts, ...marketplaceLots.map((lot) => lot.district)])).sort(),
+    [marketplaceLots],
+  );
+
   const filteredLots = useMemo(() => {
-    return lots.filter((lot) => {
-      const haystack = `${lot.crop} ${lot.farmer} ${lot.district} ${t(lot.crop)} ${t(lot.farmer)} ${t(lot.district)}`;
+    return marketplaceLots.filter((lot) => {
+      const haystack = `${lot.crop} ${lot.farmer} ${lot.district} ${lot.upazilla ?? ""} ${lot.quantity} ${lot.grade} ${t(lot.crop)} ${t(lot.farmer)} ${t(lot.district)}`;
       const textMatch = haystack.toLowerCase().includes(query.toLowerCase());
       const districtMatch = district === "All districts" || lot.district === district;
       return textMatch && districtMatch;
     });
-  }, [query, district, language]);
+  }, [query, district, language, marketplaceLots]);
 
   useEffect(() => {
     if (!user?.accessToken) {
@@ -442,7 +557,10 @@ export default function App() {
           element={
             <MarketplacePage
               district={district}
+              districtOptions={marketplaceDistricts}
+              error={marketplaceError}
               filteredLots={filteredLots}
+              isLoading={marketplaceLoading}
               query={query}
               setDistrict={setDistrict}
               setQuery={setQuery}
