@@ -220,7 +220,6 @@ type RegisterAccountPayload = {
   password: string;
   phone: string;
   role: RegistrationRole;
-  username: string;
 };
 
 const apiRoleToAppRole: Record<ApiRole, Role> = {
