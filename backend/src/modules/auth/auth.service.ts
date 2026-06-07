@@ -13,6 +13,16 @@ function publicUser(user: User) {
   return safeUser;
 }
 
+function registrationUsername(role: typeof Role.BUYER | typeof Role.FARMER, phone: string, providedUsername?: string) {
+  const explicitUsername = normalizeUsername(providedUsername ?? "");
+  if (explicitUsername) {
+    return explicitUsername;
+  }
+
+  const phoneKey = phone.replace(/\D/g, "").slice(0, 24) || phone.toLowerCase().replace(/[^a-z0-9._-]/g, "").slice(0, 24) || "account";
+  return normalizeUsername(`${role === Role.BUYER ? "buyer" : "farmer"}-${phoneKey}`);
+}
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -118,11 +128,12 @@ export class AuthService {
   }
 
   private async registerAccount(role: typeof Role.BUYER | typeof Role.FARMER, dto: RegisterAccountDto) {
-    const username = normalizeUsername(dto.username);
+    const cleanPhone = dto.phone.trim();
+    const username = registrationUsername(role, cleanPhone, dto.username);
     const [existingUsername, existingUser] = await Promise.all([
       this.prisma.user.findUnique({ where: { username } }),
       this.prisma.user.findUnique({
-        where: { phone_role: { phone: dto.phone, role } },
+        where: { phone_role: { phone: cleanPhone, role } },
       }),
     ]);
 
@@ -154,7 +165,7 @@ export class AuthService {
         name: dto.name,
         organization: dto.organization,
         passwordHash,
-        phone: dto.phone,
+        phone: cleanPhone,
         role,
         status: AccountStatus.PENDING,
         upazilla: dto.upazilla,
@@ -165,11 +176,11 @@ export class AuthService {
     });
 
     await this.notifications.notifyAdmins({
-      body: `${user.name} · ${dto.upazilla || dto.district || dto.organization || dto.phone}`,
+      body: `${user.name} · ${dto.upazilla || dto.district || dto.organization || cleanPhone}`,
       title: role === Role.BUYER ? "Buyer verification request" : "Farmer verification request",
     });
     await this.notifications.notifyUser(user.id, {
-      body: `${dto.organization || user.name} · ${dto.upazilla || dto.district || dto.phone}`,
+      body: `${dto.organization || user.name} · ${dto.upazilla || dto.district || cleanPhone}`,
       title: "Registration received",
     });
 
