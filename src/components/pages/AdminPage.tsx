@@ -10,6 +10,8 @@ import {
   fetchAdminPasswordResetRequests,
   fetchMyOrders,
   rejectAdminPasswordResetRequest,
+  reviewCropLot,
+  toRegisteredCropLotRecord,
   updateAdminAccount,
   updateBackendVerification,
   type AdminAccountPayload,
@@ -152,6 +154,33 @@ export function AdminPage({
     setVerificationError("");
   };
 
+  const reviewManagedLot = async (lotId: string, action: "approve" | "reject") => {
+    if (!user?.accessToken) {
+      throw new Error("Backend service is unavailable. Please try again.");
+    }
+
+    const lot = await reviewCropLot(user.accessToken, lotId, action);
+    const nextLot = toRegisteredCropLotRecord(lot);
+    setBackendRegistrations((current) =>
+      (current ?? registrations).map((account) => {
+        if (account.id !== lot.farmer.id) {
+          return account;
+        }
+
+        const cropLots = (account.cropLots ?? []).map((item) => (item.id === nextLot.id ? nextLot : item));
+        return {
+          ...account,
+          cropLots,
+          cropLotCount: cropLots.length,
+          cropLotQuantityKg: cropLots.reduce((total, item) => total + item.quantityKg, 0),
+          latestLotStatus: cropLots[0]?.status,
+          latestLotSummary: cropLots[0] ? `${cropLots[0].crop} · ${cropLots[0].upazilla || cropLots[0].district}` : account.latestLotSummary,
+        };
+      }),
+    );
+    setVerificationError("");
+  };
+
   const approvePasswordReset = async (id: string) => {
     if (!user?.accessToken) {
       throw new Error("Backend service is unavailable. Please try again.");
@@ -219,7 +248,7 @@ export function AdminPage({
           />
         );
       case "supply":
-        return <SupplyLotsSection onOpenSection={openAdminSection} />;
+        return <SupplyLotsSection onOpenSection={openAdminSection} registrations={effectiveRegistrations} />;
       case "farmers":
         return (
           <FarmersSection
@@ -227,6 +256,7 @@ export function AdminPage({
             onCreateAccount={createManagedAccount}
             onDeleteAccount={deleteManagedAccount}
             onUpdateAccount={updateManagedAccount}
+            onReviewLot={reviewManagedLot}
             onUpdateRegistration={updateRegistration}
             verificationError={verificationError}
           />

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Post, Query } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
 import { Role } from "@prisma/client";
 import { Auth } from "../auth/decorators/auth.decorator";
@@ -27,5 +27,17 @@ export class LotsController {
   @Post()
   create(@Body() dto: CreateLotDto, @CurrentUser() user: AuthenticatedUser) {
     return this.lotsService.create(dto, user);
+  }
+
+  @Auth(Role.ADMIN)
+  @Patch(":id/approve")
+  approve(@Param("id") id: string) {
+    return this.lotsService.review(id, "approve");
+  }
+
+  @Auth(Role.ADMIN)
+  @Patch(":id/reject")
+  reject(@Param("id") id: string) {
+    return this.lotsService.review(id, "reject");
   }
 }

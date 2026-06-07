@@ -1,10 +1,27 @@
 import React from "react";
 import type { LucideIcon } from "lucide-react";
-import { BadgeCheck, Banknote, CalendarDays, MapPin, PackageCheck } from "lucide-react";
+import { BadgeCheck, Banknote, CalendarClock, CalendarDays, MapPin, PackageCheck } from "lucide-react";
+import { useLanguage } from "../i18n";
 import type { CropLot } from "../types";
 
 export type Translator = (text: string) => string;
 export type ValueFormatter = (text: string | number) => string;
+
+function formatPostedDate(value: string | undefined, language: "en" | "bn") {
+  if (!value) {
+    return "";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return new Intl.DateTimeFormat(language === "bn" ? "bn-BD" : "en", {
+    day: "numeric",
+    month: "short",
+  }).format(date);
+}
 
 export function CropCard({
   lot,
@@ -17,6 +34,10 @@ export function CropCard({
   t: Translator;
   v: ValueFormatter;
 }) {
+  const language = useLanguage();
+  const location = lot.upazilla ? `${t(lot.upazilla)}, ${t(lot.district)}` : t(lot.district);
+  const postedDate = formatPostedDate(lot.postedAt, language);
+
   return (
     <article className="crop-card">
       <img src={lot.image} alt={`${t(lot.crop)} ${t("harvest")}`} />
@@ -29,11 +50,19 @@ export function CropCard({
           <span>{v(lot.ask)}</span>
         </div>
         <div className="crop-meta">
-          <span><MapPin size={15} /> {t(lot.district)}</span>
+          <span><MapPin size={15} /> {location}</span>
           <span><PackageCheck size={15} /> {t(lot.quantity)}</span>
           <span><BadgeCheck size={15} /> {t("Grade")} {t(lot.grade)}</span>
           <span><CalendarDays size={15} /> {t(lot.harvest)}</span>
         </div>
+        {postedDate && (
+          <div className="crop-card-footer">
+            <span className="crop-post-date">
+              <CalendarClock size={15} />
+              {t("Posted")} {postedDate}
+            </span>
+          </div>
+        )}
         <button className="order-button" type="button" onClick={onOrder}>{t("Order this lot")}</button>
       </div>
     </article>

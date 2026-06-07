@@ -15,6 +15,7 @@ import {
 export function FarmersSection({
   onCreateAccount,
   onDeleteAccount,
+  onReviewLot,
   onUpdateAccount,
   onUpdateRegistration,
   registrations,
@@ -22,6 +23,7 @@ export function FarmersSection({
 }: {
   onCreateAccount: (payload: AdminAccountPayload) => Promise<void>;
   onDeleteAccount: (id: string) => Promise<void>;
+  onReviewLot: (lotId: string, action: "approve" | "reject") => Promise<void>;
   onUpdateAccount: (id: string, payload: Partial<AdminAccountPayload>) => Promise<void>;
   onUpdateRegistration: (id: string, status: AccountStatus) => void;
   registrations: RegisteredAccount[];
@@ -81,6 +83,21 @@ export function FarmersSection({
     }
   };
 
+  const reviewLot = async (lotId: string, action: "approve" | "reject") => {
+    await onReviewLot(lotId, action);
+    setLotDetailsAccount((current) => {
+      if (!current) {
+        return current;
+      }
+
+      return {
+        ...current,
+        cropLots: current.cropLots?.map((lot) => (lot.id === lotId ? { ...lot, status: action === "approve" ? "ACTIVE" : "CANCELLED" } : lot)),
+        latestLotStatus: current.latestLotStatus,
+      };
+    });
+  };
+
   return (
     <section className="dashboard-grid admin-focused-grid">
       <section className="panel verification-panel admin-wide-panel" aria-labelledby="farmers-heading">
@@ -135,7 +152,12 @@ export function FarmersSection({
         open={accountModalOpen}
         role="farmer"
       />
-      <FarmerLotDetailsModal account={lotDetailsAccount} onClose={() => setLotDetailsAccount(null)} />
+      <FarmerLotDetailsModal
+        account={lotDetailsAccount}
+        onClose={() => setLotDetailsAccount(null)}
+        onNotify={setToast}
+        onReviewLot={reviewLot}
+      />
       <DeleteConfirmModal account={deleteTarget} isDeleting={isDeleting} onClose={() => setDeleteTarget(null)} onConfirm={confirmDelete} />
       <AdminSnackbar toast={toast} onClose={() => setToast(null)} />
     </section>

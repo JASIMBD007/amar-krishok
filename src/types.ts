@@ -74,6 +74,7 @@ export type CropLot = {
   grade: string;
   harvest: string;
   image: string;
+  postedAt?: string;
 };
 
 export type MarketPrice = {

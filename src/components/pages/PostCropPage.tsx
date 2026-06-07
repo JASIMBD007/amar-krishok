@@ -93,14 +93,15 @@ export function PostCropPage({
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const availableUpazillas = getUpazillasForDistrict(form.district);
-  const totalQuantityKg = useMemo(() => backendLots.reduce((total, lot) => total + numericValue(lot.quantityKg), 0), [backendLots]);
+  const activeBackendLots = useMemo(() => backendLots.filter((lot) => lot.status.toUpperCase() === "ACTIVE"), [backendLots]);
+  const totalQuantityKg = useMemo(() => activeBackendLots.reduce((total, lot) => total + numericValue(lot.quantityKg), 0), [activeBackendLots]);
   const averageAsk = useMemo(() => {
-    if (!backendLots.length) {
+    if (!activeBackendLots.length) {
       return 0;
     }
 
-    return Math.round(backendLots.reduce((total, lot) => total + numericValue(lot.pricePerKg), 0) / backendLots.length);
-  }, [backendLots]);
+    return Math.round(activeBackendLots.reduce((total, lot) => total + numericValue(lot.pricePerKg), 0) / activeBackendLots.length);
+  }, [activeBackendLots]);
   const estimatedPayout = totalQuantityKg * averageAsk;
   const latestLot = backendLots[0];
 
@@ -172,7 +173,7 @@ export function PostCropPage({
         setBackendLots((current) => [lot, ...current]);
         setForm(emptyForm);
         setCropImageFile(null);
-        setSuccess("Published to backend.");
+        setSuccess(lot.status.toUpperCase() === "ACTIVE" ? "Published to backend." : "Lot submitted for admin approval.");
       })
       .catch((apiError) => {
         setError(apiError instanceof ApiRequestError ? apiError.message : "Could not publish crop lot.");
@@ -232,7 +233,7 @@ export function PostCropPage({
               <PackageCheck size={20} />
               <span>{t("Active lots")}</span>
             </div>
-            <strong>{v(backendLots.length)}</strong>
+            <strong>{v(activeBackendLots.length)}</strong>
             <p>{t("Ready for buyer requests")}</p>
           </article>
           <article className="panel stat-card dashboard-stat">
@@ -359,8 +360,8 @@ export function PostCropPage({
               <div className="panel-header">
                 <div>
                   <span>{t("Backend lots")}</span>
-                  <h2>{t("Your published crop lots")}</h2>
-                  <p>{t("Track the lots already sent to the marketplace. Order changes stay read-only for farmers.")}</p>
+                  <h2>{t("Your crop lots")}</h2>
+                  <p>{t("Track submitted and approved lots. Order changes stay read-only for farmers.")}</p>
                 </div>
                 <Sprout size={22} />
               </div>
@@ -371,7 +372,7 @@ export function PostCropPage({
                   <article className="seller-lot-item" key={lot.id}>
                     <div>
                       <strong>{t(lot.crop.name)}</strong>
-                      <span>{t(lot.upazilla || lot.district.name)}</span>
+                      <span>{lot.upazilla ? `${t(lot.upazilla)}, ${t(lot.district.name)}` : t(lot.district.name)}</span>
                     </div>
                     <div>
                       <strong>{v(formatQuantity(lot.quantityKg))}</strong>

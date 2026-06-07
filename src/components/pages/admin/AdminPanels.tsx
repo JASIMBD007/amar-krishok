@@ -24,7 +24,7 @@ import {
 import type { BackendOrder } from "../../../api/auth";
 import { adminPriceSignals, adminRoutes, dashboardStats, lots, orders } from "../../../data";
 import { useLanguage, useTranslate, useValueText } from "../../../i18n";
-import type { AccountStatus, AdminSection, RegisteredAccount } from "../../../types";
+import type { AccountStatus, AdminSection, CropLot, RegisteredAccount, RegisteredCropLotRecord } from "../../../types";
 import { formatLocalizedDate } from "../../../utils/dateInput";
 import { statusClass, TrendIcon } from "../pageHelpers";
 
@@ -68,6 +68,68 @@ function formatBackendStatus(status: string) {
 
 function backendStatusClass(status: string) {
   return status.toLowerCase().replaceAll("_", "-");
+}
+
+function fallbackImageForCrop(crop: string) {
+  return lots.find((lot) => lot.crop.toLowerCase() === crop.toLowerCase())?.image ?? "/assets/crops/rice.png";
+}
+
+function formatLotQuantityKg(value: number) {
+  if (value >= 1000) {
+    return `${(value / 1000).toFixed(value % 1000 === 0 ? 0 : 1)} tons`;
+  }
+
+  return `${value.toLocaleString("en-US")} kg`;
+}
+
+function formatLotHarvest(value?: string) {
+  if (!value) {
+    return "Ready date not set";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "Ready date not set";
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  date.setHours(0, 0, 0, 0);
+  const daysAway = Math.round((date.getTime() - today.getTime()) / 86_400_000);
+
+  if (daysAway <= 0) {
+    return "Ready today";
+  }
+
+  if (daysAway === 1) {
+    return "Ready tomorrow";
+  }
+
+  if (daysAway === 2) {
+    return "Ready in 2 days";
+  }
+
+  return "Ready soon";
+}
+
+function toApprovedSupplyLot(account: RegisteredAccount, lot: RegisteredCropLotRecord): CropLot | null {
+  if (lot.status.toUpperCase() !== "ACTIVE") {
+    return null;
+  }
+
+  return {
+    ask: `৳${Math.round(lot.pricePerKg).toLocaleString("en-US")}/kg`,
+    crop: lot.crop,
+    district: lot.district || account.district,
+    farmer: account.name,
+    grade: lot.grade.replace(/^Grade\s+/i, ""),
+    harvest: formatLotHarvest(lot.harvestDate),
+    id: lot.id,
+    image: lot.imageUrl || fallbackImageForCrop(lot.crop),
+    postedAt: lot.createdAt,
+    quantity: formatLotQuantityKg(lot.quantityKg),
+    upazilla: lot.upazilla || account.upazilla,
+  };
 }
 
 export function StatsPanel() {
@@ -291,15 +353,22 @@ export function VerificationPanel({
 
 export function SupplyPanel({
   onOpenSection,
+  registrations = [],
   showAllLots = false,
   wide = false,
 }: {
   onOpenSection: OpenAdminSection;
+  registrations?: RegisteredAccount[];
   showAllLots?: boolean;
   wide?: boolean;
 }) {
   const t = useTranslate();
   const v = useValueText();
+  const approvedBackendLots = registrations
+    .filter((account) => account.role === "farmer")
+    .flatMap((account) => (account.cropLots ?? []).map((lot) => toApprovedSupplyLot(account, lot)).filter((lot): lot is CropLot => Boolean(lot)));
+  const sourceLots = registrations.length > 0 ? approvedBackendLots : lots;
+  const displayLots = showAllLots ? sourceLots : sourceLots.slice(0, 3);
 
   return (
     <section className={`panel supply-panel ${wide ? "admin-wide-panel" : ""}`} aria-labelledby="supply-heading">
@@ -315,7 +384,9 @@ export function SupplyPanel({
       </div>
 
       <div className="supply-list">
-        {(showAllLots ? lots : lots.slice(0, 3)).map((lot) => (
+        {displayLots.length === 0 ? (
+          <p className="empty-table-note">{t("No approved lots yet")}</p>
+        ) : displayLots.map((lot) => (
           <article className="supply-item" key={lot.id}>
             <img src={lot.image} alt={`${t(lot.crop)} ${t("supply")}`} />
             <div>
@@ -323,7 +394,7 @@ export function SupplyPanel({
               <span>{t(lot.farmer)}</span>
               <p>
                 <MapPin size={15} />
-                {t(lot.upazilla || lot.district)}
+                {lot.upazilla ? `${t(lot.upazilla)}, ${t(lot.district)}` : t(lot.district)}
               </p>
             </div>
             <div>

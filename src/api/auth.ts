@@ -333,27 +333,30 @@ function toAuthUser(data: LoginResponse): AuthUser {
   };
 }
 
+export function toRegisteredCropLotRecord(lot: NonNullable<ApiUser["cropLots"]>[number] | BackendCropLot) {
+  return {
+    createdAt: lot.createdAt,
+    crop: lot.crop.name,
+    district: lot.district.name,
+    grade: lot.grade,
+    harvestDate: lot.harvestDate ?? undefined,
+    id: lot.id,
+    imageUrl: lot.imageUrl ?? undefined,
+    notes: lot.notes ?? undefined,
+    pricePerKg: numericValue(lot.pricePerKg),
+    quantityKg: numericValue(lot.quantityKg),
+    status: lot.status,
+    upazilla: lot.upazilla ?? undefined,
+    updatedAt: lot.updatedAt,
+  };
+}
+
 export function toRegisteredAccount(user: ApiUser): RegisteredAccount {
   const latestOrder = user.orders?.[0];
   const latestLot = user.cropLots?.[0];
   return {
     address: user.address ?? "",
-    cropLots:
-      user.cropLots?.map((lot) => ({
-        createdAt: lot.createdAt,
-        crop: lot.crop.name,
-        district: lot.district.name,
-        grade: lot.grade,
-        harvestDate: lot.harvestDate ?? undefined,
-        id: lot.id,
-        imageUrl: lot.imageUrl ?? undefined,
-        notes: lot.notes ?? undefined,
-        pricePerKg: numericValue(lot.pricePerKg),
-        quantityKg: numericValue(lot.quantityKg),
-        status: lot.status,
-        upazilla: lot.upazilla ?? undefined,
-        updatedAt: lot.updatedAt,
-      })) ?? [],
+    cropLots: user.cropLots?.map(toRegisteredCropLotRecord) ?? [],
     cropLotCount: user._count?.cropLots ?? user.cropLots?.length ?? 0,
     cropLotQuantityKg: user.cropLots?.reduce((total, lot) => total + numericValue(lot.quantityKg), 0) ?? 0,
     district: user.district?.name ?? "",
@@ -507,6 +510,13 @@ export function createCropLot(accessToken: string, payload: CreateCropLotPayload
     accessToken,
     body: JSON.stringify(payload),
     method: "POST",
+  });
+}
+
+export function reviewCropLot(accessToken: string, id: string, action: "approve" | "reject") {
+  return apiRequest<BackendCropLot>(`/api/lots/${id}/${action}`, {
+    accessToken,
+    method: "PATCH",
   });
 }
 

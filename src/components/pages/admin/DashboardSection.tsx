@@ -33,7 +33,7 @@ export function DashboardSection({
         <OrdersPanel backendOrders={backendOrders} onOpenSection={onOpenSection} orderError={orderError} />
         <PayoutPanel onOpenSection={onOpenSection} />
         <VerificationPanel registrations={registrations} onUpdateRegistration={onUpdateRegistration} verificationError={verificationError} />
-        <SupplyPanel onOpenSection={onOpenSection} />
+        <SupplyPanel onOpenSection={onOpenSection} registrations={registrations} />
         <PricePanel />
         <LogisticsPanel />
         <MessagesPanel />
