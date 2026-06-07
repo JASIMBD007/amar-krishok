@@ -437,7 +437,7 @@ export function RegisterPage({
           </div>
           <div className="auth-actions">
             <NavLink className="secondary-button" to="/">
-              {t("Go home")}
+              {t("Home")}
             </NavLink>
             <NavLink className="primary-button" to={`/login?next=${encodeURIComponent(roleHomePath[role])}`}>
               {t("Back to login")}
@@ -460,7 +460,7 @@ export function RegisterPage({
         <div className="registration-grid register-form-grid">
           <label className="input-field">
             <span>{t("Full name")}</span>
-            <input autoComplete="name" value={name} onChange={(event) => setName(event.target.value)} placeholder={t("Sample full name")} />
+            <input autoComplete="name" value={name} onChange={(event) => setName(event.target.value)} placeholder={t("Your full name")} />
           </label>
           <label className="input-field">
             <span>{t("Mobile number")}</span>
@@ -469,15 +469,15 @@ export function RegisterPage({
           <PasswordField value={password} onChange={setPassword} />
           <label className="input-field">
             <span>{t("Business / farm name")}</span>
-            <input value={organization} onChange={(event) => setOrganization(event.target.value)} placeholder={t("Shop, restaurant, company, or farm")} />
+            <input value={organization} onChange={(event) => setOrganization(event.target.value)} placeholder={t("Business or farm name")} />
           </label>
           <label className="input-field">
             <span>{t("NID / trade license")}</span>
-            <input value={identity} onChange={(event) => setIdentity(event.target.value)} placeholder={t("Sample identity")} />
+            <input value={identity} onChange={(event) => setIdentity(event.target.value)} placeholder={t("NID or trade license number")} />
           </label>
           <label className="input-field">
             <span>{t("Crop interest / supply focus")}</span>
-            <input value={focus} onChange={(event) => setFocus(event.target.value)} placeholder={t("Tomato, potato, chilli...")} />
+            <input value={focus} onChange={(event) => setFocus(event.target.value)} placeholder={t("Crops you buy or sell")} />
           </label>
           <label className="input-field">
             <span>{t("District")}</span>
@@ -510,7 +510,7 @@ export function RegisterPage({
           </label>
           <label className="input-field registration-wide-field">
             <span>{t("Address")}</span>
-            <input value={address} onChange={(event) => setAddress(event.target.value)} placeholder={t("Dhaka North")} />
+            <input value={address} onChange={(event) => setAddress(event.target.value)} placeholder={t("Your address")} />
           </label>
         </div>
 
@@ -518,11 +518,11 @@ export function RegisterPage({
 
         <div className="auth-actions">
           <button className="secondary-button" type="button" onClick={() => navigate("/")}>
-            {t("Go home")}
+            {t("Home")}
           </button>
           <button className="primary-button" type="submit" disabled={isSubmitting}>
             <ClipboardCheck size={17} />
-            {t(isSubmitting ? "Submitting" : "Submit registration")}
+            {t(isSubmitting ? "Submitting" : "Register")}
           </button>
         </div>
       </form>
