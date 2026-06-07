@@ -422,6 +422,22 @@ button {
   grid-template-columns: repeat(4, minmax(220px, 1fr));
 }
 
+.marketplace-feedback {
+  margin: 0 0 18px;
+  padding: 12px 14px;
+  border: 1px solid #d8e3d9;
+  border-radius: 8px;
+  background: #f1f7ef;
+  color: #51675a;
+  font-weight: 800;
+}
+
+.marketplace-feedback.warning {
+  border-color: #f2d5c8;
+  background: #fbebe4;
+  color: #90331f;
+}
+
 .crop-card {
   min-width: 0;
   overflow: hidden;

@@ -5,14 +5,20 @@ import { CropCard, SectionTitle } from "../shared";
 
 export function MarketplacePage({
   district,
+  districtOptions,
+  error,
   filteredLots,
+  isLoading,
   query,
   setDistrict,
   setQuery,
   setView,
 }: {
   district: string;
+  districtOptions: string[];
+  error?: string;
   filteredLots: CropLot[];
+  isLoading?: boolean;
   query: string;
   setDistrict: (value: string) => void;
   setQuery: (value: string) => void;
@@ -32,15 +38,16 @@ export function MarketplacePage({
           <MapPin size={18} />
           <select value={district} onChange={(event) => setDistrict(event.target.value)}>
             <option value="All districts">{t("All districts")}</option>
-            <option value="Jashore">{t("Jashore")}</option>
-            <option value="Bogura">{t("Bogura")}</option>
-            <option value="Rangpur">{t("Rangpur")}</option>
-            <option value="Pabna">{t("Pabna")}</option>
-            <option value="Kushtia">{t("Kushtia")}</option>
+            {districtOptions.map((option) => (
+              <option key={option} value={option}>{t(option)}</option>
+            ))}
           </select>
           <ChevronDown size={16} />
         </label>
       </div>
+      {isLoading && <p className="marketplace-feedback">{t("Loading marketplace lots...")}</p>}
+      {error && <p className="marketplace-feedback warning">{t(error)}</p>}
+      {!isLoading && filteredLots.length === 0 && <p className="empty-table-note">{t("No crop lots found")}</p>}
       <div className="listing-grid market-grid">
         {filteredLots.map((lot) => (
           <CropCard lot={lot} key={lot.id} onOrder={() => setView("buyer")} t={t} v={v} />
