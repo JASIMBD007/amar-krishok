@@ -4,17 +4,18 @@ import { ShieldCheck } from "lucide-react";
 import type { AuthUser, Role } from "../types";
 import type { Translator } from "./shared";
 
+type ProtectedRouteProps = React.PropsWithChildren<{
+  allowedRoles: Role[];
+  t: Translator;
+  user: AuthUser | null;
+}>;
+
 export function ProtectedRoute({
   allowedRoles,
   children,
   t,
   user,
-}: {
-  allowedRoles: Role[];
-  children: React.ReactNode;
-  t: Translator;
-  user: AuthUser | null;
-}) {
+}: ProtectedRouteProps): React.JSX.Element {
   const location = useLocation();
 
   if (!user || !user.accessToken) {
@@ -42,5 +43,5 @@ export function ProtectedRoute({
     );
   }
 
-  return children;
+  return <>{children}</>;
 }
