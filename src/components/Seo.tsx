@@ -4,7 +4,9 @@ import type { Language } from "../types";
 const siteUrl = "https://www.amarkrishok.com";
 const siteName = "AmarKrishok";
 const defaultDescription =
-  "AmarKrishok is a direct farmer marketplace for Bangladesh where farmers post crops, buyers order transparently, and fair prices stay visible.";
+  "AmarKrishok, also searched as Amar Krishok and Amarkrishok, is a direct farmer marketplace for Bangladesh where farmers post crops, buyers order transparently, and fair prices stay visible.";
+const defaultKeywords =
+  "AmarKrishok, Amar Krishok, Amarkrishok, amar krishok, amarkrishok, আমার কৃষক, আমারকৃষক, Bangladesh farmers, farmer marketplace, crop marketplace, fair crop price, কৃষক, ফসল বাজার, বাজারদর";
 
 type SeoConfig = {
   title: string;
@@ -15,7 +17,7 @@ type SeoConfig = {
 
 const publicSeo: Record<string, SeoConfig> = {
   "/": {
-    title: "AmarKrishok | Farmer Marketplace for Bangladesh",
+    title: "AmarKrishok | Amar Krishok Farmer Marketplace for Bangladesh",
     description: defaultDescription,
     path: "/",
   },
@@ -104,6 +106,10 @@ export function Seo({ language, pathname }: { language: Language; pathname: stri
     document.documentElement.lang = language === "bn" ? "bn-BD" : "en-BD";
     document.title = seo.title;
     setCanonical(canonical);
+    setMeta("name", "application-name", siteName);
+    setMeta("name", "apple-mobile-web-app-title", siteName);
+    setMeta("name", "author", siteName);
+    setMeta("name", "keywords", defaultKeywords);
     setMeta("name", "description", seo.description);
     setMeta("name", "robots", seo.robots ?? "index, follow");
     setMeta("property", "og:site_name", siteName);
