@@ -1,10 +1,10 @@
 import { LogisticsPanel, MessagesPanel } from "./AdminPanels";
 
-export function LogisticsSection() {
+export function LogisticsSection({ searchTerm }: { searchTerm?: string }) {
   return (
     <section className="dashboard-grid admin-focused-grid">
-      <LogisticsPanel wide />
-      <MessagesPanel />
+      <LogisticsPanel searchTerm={searchTerm} wide />
+      <MessagesPanel searchTerm={searchTerm} />
     </section>
   );
 }

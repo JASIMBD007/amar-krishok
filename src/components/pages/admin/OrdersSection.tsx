@@ -6,15 +6,17 @@ export function OrdersSection({
   backendOrders,
   onOpenSection,
   orderError,
+  searchTerm,
 }: {
   backendOrders?: BackendOrder[] | null;
   onOpenSection: (section: AdminSection) => void;
   orderError?: string;
+  searchTerm?: string;
 }) {
   return (
     <section className="dashboard-grid admin-focused-grid">
-      <OrdersPanel backendOrders={backendOrders} onOpenSection={onOpenSection} orderError={orderError} wide />
-      <MessagesPanel />
+      <OrdersPanel backendOrders={backendOrders} onOpenSection={onOpenSection} orderError={orderError} searchTerm={searchTerm} wide />
+      <MessagesPanel searchTerm={searchTerm} />
     </section>
   );
 }

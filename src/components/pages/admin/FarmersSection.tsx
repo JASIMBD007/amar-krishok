@@ -11,6 +11,7 @@ import {
   FarmerLotDetailsModal,
   type AdminToast,
 } from "./AccountManagementTools";
+import { accountMatchesSearch } from "./searchHelpers";
 
 export function FarmersSection({
   onCreateAccount,
@@ -19,6 +20,7 @@ export function FarmersSection({
   onUpdateAccount,
   onUpdateRegistration,
   registrations,
+  searchTerm,
   verificationError,
 }: {
   onCreateAccount: (payload: AdminAccountPayload) => Promise<void>;
@@ -27,6 +29,7 @@ export function FarmersSection({
   onUpdateAccount: (id: string, payload: Partial<AdminAccountPayload>) => Promise<void>;
   onUpdateRegistration: (id: string, status: AccountStatus) => void;
   registrations: RegisteredAccount[];
+  searchTerm?: string;
   verificationError?: string;
 }) {
   const t = useTranslate();
@@ -37,7 +40,7 @@ export function FarmersSection({
   const [isDeleting, setIsDeleting] = useState(false);
   const [lotDetailsAccount, setLotDetailsAccount] = useState<RegisteredAccount | null>(null);
   const [toast, setToast] = useState<AdminToast | null>(null);
-  const farmers = registrations.filter((account) => account.role === "farmer");
+  const farmers = registrations.filter((account) => account.role === "farmer" && accountMatchesSearch(searchTerm ?? "", account, t));
   const pendingFarmers = farmers.filter((account) => account.status === "pending");
   const activeFarmers = farmers.filter((account) => account.status === "active");
   const rejectedFarmers = farmers.filter((account) => account.status === "rejected");

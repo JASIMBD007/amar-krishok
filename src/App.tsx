@@ -31,6 +31,7 @@ import { lots, roleOptions, routeByView, serviceDistricts, views } from "./data"
 import { AdminPage, HomePage, LoginPage, MarketplacePage, OrderPage, PostCropPage, PricesPage, RegisterPage } from "./components/pages";
 import { useAppStore } from "./store/useAppStore";
 import type { AppNotification, AuthUser, CropLot, RegisteredAccount, RegistrationRole, Role, View } from "./types";
+import { matchesSearch } from "./utils/search";
 
 const REVIEWED_NOTIFICATIONS_STORAGE_KEY = "amarKrishokReviewedNotifications";
 
@@ -242,8 +243,24 @@ export default function App() {
 
   const filteredLots = useMemo(() => {
     return marketplaceLots.filter((lot) => {
-      const haystack = `${lot.crop} ${lot.farmer} ${lot.district} ${lot.upazilla ?? ""} ${lot.quantity} ${lot.grade} ${t(lot.crop)} ${t(lot.farmer)} ${t(lot.district)}`;
-      const textMatch = haystack.toLowerCase().includes(query.toLowerCase());
+      const textMatch = matchesSearch(query, [
+        lot.id,
+        lot.crop,
+        t(lot.crop),
+        lot.farmer,
+        t(lot.farmer),
+        lot.district,
+        t(lot.district),
+        lot.upazilla,
+        lot.upazilla ? t(lot.upazilla) : "",
+        lot.quantity,
+        lot.ask,
+        lot.grade,
+        t(lot.grade),
+        lot.harvest,
+        t(lot.harvest),
+        lot.postedAt,
+      ]);
       const districtMatch = district === "All districts" || lot.district === district;
       return textMatch && districtMatch;
     });

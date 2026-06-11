@@ -5,6 +5,7 @@ import { useLanguage, useTranslate, useValueText } from "../../../i18n";
 import { formatLocalizedDate } from "../../../utils/dateInput";
 import { MessagesPanel, SettingsPanel } from "./AdminPanels";
 import { AdminSnackbar, type AdminToast } from "./AccountManagementTools";
+import { passwordResetRequestMatchesSearch } from "./searchHelpers";
 
 function resetStatusLabel(status: AdminPasswordResetRequest["status"]) {
   if (status === "approved") {
@@ -27,20 +28,23 @@ function PasswordResetReviewPanel({
   onRejectPasswordReset,
   passwordResetError,
   passwordResetRequests,
+  searchTerm = "",
 }: {
   onApprovePasswordReset: (id: string) => Promise<void>;
   onRejectPasswordReset: (id: string) => Promise<void>;
   passwordResetError: string;
   passwordResetRequests: AdminPasswordResetRequest[];
+  searchTerm?: string;
 }) {
   const language = useLanguage();
   const t = useTranslate();
   const v = useValueText();
   const [toast, setToast] = useState<AdminToast | null>(null);
   const [workingRequestId, setWorkingRequestId] = useState<string | null>(null);
-  const pendingCount = passwordResetRequests.filter((request) => request.status === "pending").length;
-  const reviewedCount = passwordResetRequests.length - pendingCount;
-  const sortedRequests = [...passwordResetRequests].sort((first, second) => {
+  const searchedRequests = passwordResetRequests.filter((request) => passwordResetRequestMatchesSearch(searchTerm, request, t));
+  const pendingCount = searchedRequests.filter((request) => request.status === "pending").length;
+  const reviewedCount = searchedRequests.length - pendingCount;
+  const sortedRequests = [...searchedRequests].sort((first, second) => {
     if (first.status === "pending" && second.status !== "pending") {
       return -1;
     }
@@ -116,7 +120,7 @@ function PasswordResetReviewPanel({
             {sortedRequests.length === 0 && (
               <tr>
                 <td colSpan={7}>
-                  <em className="empty-table-note">{t("No password reset requests right now")}</em>
+                  <em className="empty-table-note">{t(searchTerm ? "No results match your search" : "No password reset requests right now")}</em>
                 </td>
               </tr>
             )}
@@ -186,11 +190,13 @@ export function SettingsSection({
   onRejectPasswordReset,
   passwordResetError,
   passwordResetRequests,
+  searchTerm,
 }: {
   onApprovePasswordReset: (id: string) => Promise<void>;
   onRejectPasswordReset: (id: string) => Promise<void>;
   passwordResetError: string;
   passwordResetRequests: AdminPasswordResetRequest[];
+  searchTerm?: string;
 }) {
   return (
     <section className="dashboard-grid admin-focused-grid">
@@ -199,9 +205,10 @@ export function SettingsSection({
         onRejectPasswordReset={onRejectPasswordReset}
         passwordResetError={passwordResetError}
         passwordResetRequests={passwordResetRequests}
+        searchTerm={searchTerm}
       />
       <SettingsPanel />
-      <MessagesPanel />
+      <MessagesPanel searchTerm={searchTerm} />
     </section>
   );
 }

@@ -65,6 +65,7 @@ export function AdminPage({
   const [backendRegistrations, setBackendRegistrations] = useState<RegisteredAccount[] | null>(null);
   const [orderError, setOrderError] = useState("");
   const [passwordResetError, setPasswordResetError] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [verificationError, setVerificationError] = useState("");
   const activeNavItem = adminNavItems.find((item) => item.id === activeAdminSection) ?? adminNavItems[0];
   const activeTitle = activeAdminSection === "dashboard" ? "Operations dashboard" : activeNavItem.label;
@@ -235,20 +236,21 @@ export function AdminPage({
   const renderActiveSection = () => {
     switch (activeAdminSection) {
       case "orders":
-        return <OrdersSection backendOrders={backendOrders} onOpenSection={openAdminSection} orderError={orderError} />;
+        return <OrdersSection backendOrders={backendOrders} onOpenSection={openAdminSection} orderError={orderError} searchTerm={searchTerm} />;
       case "buyers":
         return (
           <BuyersSection
             registrations={effectiveRegistrations}
             onCreateAccount={createManagedAccount}
             onDeleteAccount={deleteManagedAccount}
+            searchTerm={searchTerm}
             onUpdateAccount={updateManagedAccount}
             onUpdateRegistration={updateRegistration}
             verificationError={verificationError}
           />
         );
       case "supply":
-        return <SupplyLotsSection onOpenSection={openAdminSection} registrations={effectiveRegistrations} />;
+        return <SupplyLotsSection onOpenSection={openAdminSection} registrations={effectiveRegistrations} searchTerm={searchTerm} />;
       case "farmers":
         return (
           <FarmersSection
@@ -257,16 +259,17 @@ export function AdminPage({
             onDeleteAccount={deleteManagedAccount}
             onUpdateAccount={updateManagedAccount}
             onReviewLot={reviewManagedLot}
+            searchTerm={searchTerm}
             onUpdateRegistration={updateRegistration}
             verificationError={verificationError}
           />
         );
       case "logistics":
-        return <LogisticsSection />;
+        return <LogisticsSection searchTerm={searchTerm} />;
       case "payouts":
-        return <PayoutsSection onOpenSection={openAdminSection} />;
+        return <PayoutsSection onOpenSection={openAdminSection} searchTerm={searchTerm} />;
       case "chat":
-        return <ChatSection chatThreads={chatThreads} onAdminReply={onAdminReply} onThreadOpen={onThreadOpen} />;
+        return <ChatSection chatThreads={chatThreads} onAdminReply={onAdminReply} onThreadOpen={onThreadOpen} searchTerm={searchTerm} />;
       case "settings":
         return (
           <SettingsSection
@@ -274,6 +277,7 @@ export function AdminPage({
             onRejectPasswordReset={rejectPasswordReset}
             passwordResetError={passwordResetError}
             passwordResetRequests={backendPasswordResetRequests}
+            searchTerm={searchTerm}
           />
         );
       case "dashboard":
@@ -284,6 +288,7 @@ export function AdminPage({
             backendOrders={backendOrders}
             orderError={orderError}
             registrations={effectiveRegistrations}
+            searchTerm={searchTerm}
             onUpdateRegistration={updateRegistration}
             verificationError={verificationError}
           />
@@ -331,7 +336,12 @@ export function AdminPage({
           <div className="topbar-actions">
             <label className="global-search">
               <Search size={18} />
-              <input value={t("Search order, farmer, district...")} readOnly aria-label={t("Search dashboard")} />
+              <input
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                placeholder={t("Search order, farmer, district...")}
+                aria-label={t("Search dashboard")}
+              />
             </label>
             <button className="primary-button" type="button" onClick={() => openAdminSection("supply")}>
               <Plus size={18} />

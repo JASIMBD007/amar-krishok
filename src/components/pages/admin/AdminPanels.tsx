@@ -26,7 +26,9 @@ import { adminPriceSignals, adminRoutes, dashboardStats, lots, orders } from "..
 import { useLanguage, useTranslate, useValueText } from "../../../i18n";
 import type { AccountStatus, AdminSection, CropLot, RegisteredAccount, RegisteredCropLotRecord } from "../../../types";
 import { formatLocalizedDate } from "../../../utils/dateInput";
+import { matchesSearch } from "../../../utils/search";
 import { statusClass, TrendIcon } from "../pageHelpers";
+import { accountMatchesSearch } from "./searchHelpers";
 
 type OpenAdminSection = (section: AdminSection) => void;
 type OrderRow = {
@@ -156,11 +158,13 @@ export function OrdersPanel({
   backendOrders,
   onOpenSection,
   orderError,
+  searchTerm = "",
   wide = false,
 }: {
   backendOrders?: BackendOrder[] | null;
   onOpenSection: OpenAdminSection;
   orderError?: string;
+  searchTerm?: string;
   wide?: boolean;
 }) {
   const language = useLanguage();
@@ -187,6 +191,23 @@ export function OrdersPanel({
         status: order.status,
         value: order.value,
       }));
+  const searchedOrders = displayOrders.filter((order) =>
+    matchesSearch(searchTerm, [
+      order.id,
+      order.buyer,
+      t(order.buyer),
+      order.crop,
+      t(order.crop),
+      order.destination,
+      t(order.destination),
+      order.eta,
+      t(order.eta),
+      order.quantity,
+      order.status,
+      t(order.status),
+      order.value,
+    ]),
+  );
 
   return (
     <section className={`panel orders-panel ${wide ? "admin-wide-panel" : ""}`} aria-labelledby="orders-heading">
@@ -216,7 +237,14 @@ export function OrdersPanel({
             </tr>
           </thead>
           <tbody>
-            {displayOrders.map((order) => (
+            {searchedOrders.length === 0 && (
+              <tr>
+                <td colSpan={7}>
+                  <em className="empty-table-note">{t("No results match your search")}</em>
+                </td>
+              </tr>
+            )}
+            {searchedOrders.map((order) => (
               <tr key={order.id}>
                 <td>
                   <strong>{order.id}</strong>
@@ -280,19 +308,22 @@ export function PayoutPanel({ onOpenSection, wide = false }: { onOpenSection: Op
 export function VerificationPanel({
   onUpdateRegistration,
   registrations,
+  searchTerm = "",
   verificationError,
   wide = false,
 }: {
   onUpdateRegistration: (id: string, status: AccountStatus) => void;
   registrations: RegisteredAccount[];
+  searchTerm?: string;
   verificationError?: string;
   wide?: boolean;
 }) {
   const t = useTranslate();
   const v = useValueText();
-  const pendingRegistrations = registrations.filter((account) => account.status === "pending");
-  const activeRegistrations = registrations.filter((account) => account.status === "active");
-  const rejectedRegistrations = registrations.filter((account) => account.status === "rejected");
+  const searchedRegistrations = registrations.filter((account) => accountMatchesSearch(searchTerm, account, t));
+  const pendingRegistrations = searchedRegistrations.filter((account) => account.status === "pending");
+  const activeRegistrations = searchedRegistrations.filter((account) => account.status === "active");
+  const rejectedRegistrations = searchedRegistrations.filter((account) => account.status === "rejected");
 
   return (
     <section className={`panel verification-panel ${wide ? "admin-wide-panel" : ""}`} aria-labelledby="verification-heading">
@@ -320,7 +351,7 @@ export function VerificationPanel({
         </span>
       </div>
       <div className="verification-list">
-        {pendingRegistrations.length === 0 && <em>{t("No pending registrations")}</em>}
+        {pendingRegistrations.length === 0 && <em>{t(searchTerm ? "No results match your search" : "No pending registrations")}</em>}
         {pendingRegistrations.map((account) => (
           <article className="verification-item" key={account.id}>
             <div>
@@ -354,11 +385,13 @@ export function VerificationPanel({
 export function SupplyPanel({
   onOpenSection,
   registrations = [],
+  searchTerm = "",
   showAllLots = false,
   wide = false,
 }: {
   onOpenSection: OpenAdminSection;
   registrations?: RegisteredAccount[];
+  searchTerm?: string;
   showAllLots?: boolean;
   wide?: boolean;
 }) {
@@ -368,7 +401,27 @@ export function SupplyPanel({
     .filter((account) => account.role === "farmer")
     .flatMap((account) => (account.cropLots ?? []).map((lot) => toApprovedSupplyLot(account, lot)).filter((lot): lot is CropLot => Boolean(lot)));
   const sourceLots = registrations.length > 0 ? approvedBackendLots : lots;
-  const displayLots = showAllLots ? sourceLots : sourceLots.slice(0, 3);
+  const searchedLots = sourceLots.filter((lot) =>
+    matchesSearch(searchTerm, [
+      lot.id,
+      lot.crop,
+      t(lot.crop),
+      lot.farmer,
+      t(lot.farmer),
+      lot.district,
+      t(lot.district),
+      lot.upazilla,
+      lot.upazilla ? t(lot.upazilla) : "",
+      lot.quantity,
+      lot.ask,
+      lot.grade,
+      t(lot.grade),
+      lot.harvest,
+      t(lot.harvest),
+      lot.postedAt,
+    ]),
+  );
+  const displayLots = showAllLots ? searchedLots : searchedLots.slice(0, 3);
 
   return (
     <section className={`panel supply-panel ${wide ? "admin-wide-panel" : ""}`} aria-labelledby="supply-heading">
@@ -385,7 +438,7 @@ export function SupplyPanel({
 
       <div className="supply-list">
         {displayLots.length === 0 ? (
-          <p className="empty-table-note">{t("No approved lots yet")}</p>
+          <p className="empty-table-note">{t(searchTerm ? "No results match your search" : "No approved lots yet")}</p>
         ) : displayLots.map((lot) => (
           <article className="supply-item" key={lot.id}>
             <img src={lot.image} alt={`${t(lot.crop)} ${t("supply")}`} />
@@ -415,9 +468,20 @@ export function SupplyPanel({
   );
 }
 
-export function PricePanel({ wide = false }: { wide?: boolean }) {
+export function PricePanel({ searchTerm = "", wide = false }: { searchTerm?: string; wide?: boolean }) {
   const t = useTranslate();
   const v = useValueText();
+  const searchedPriceSignals = adminPriceSignals.filter((price) =>
+    matchesSearch(searchTerm, [
+      price.crop,
+      t(price.crop),
+      price.region,
+      t(price.region),
+      price.farmerAsk,
+      price.wholesale,
+      price.market,
+    ]),
+  );
   const averageRetailGap = Math.round(
     adminPriceSignals.reduce((total, price) => total + ((price.market - price.farmerAsk) / price.market) * 100, 0) /
       adminPriceSignals.length,
@@ -458,7 +522,8 @@ export function PricePanel({ wide = false }: { wide?: boolean }) {
       </div>
 
       <div className="price-signal-list">
-        {adminPriceSignals.map((price) => {
+        {searchedPriceSignals.length === 0 && <p className="empty-table-note">{t("No results match your search")}</p>}
+        {searchedPriceSignals.map((price) => {
           const farmerWidth = (price.farmerAsk / price.market) * 100;
           const wholesaleWidth = (price.wholesale / price.market) * 100;
           const retailGap = price.market - price.farmerAsk;
@@ -502,8 +567,20 @@ export function PricePanel({ wide = false }: { wide?: boolean }) {
   );
 }
 
-export function LogisticsPanel({ wide = false }: { wide?: boolean }) {
+export function LogisticsPanel({ searchTerm = "", wide = false }: { searchTerm?: string; wide?: boolean }) {
   const t = useTranslate();
+  const searchedRoutes = adminRoutes.filter((route) =>
+    matchesSearch(searchTerm, [
+      route.route,
+      t(route.route),
+      route.driver,
+      t(route.driver),
+      route.lots,
+      route.status,
+      t(route.status),
+      route.temperature,
+    ]),
+  );
 
   return (
     <section className={`panel logistics-panel ${wide ? "admin-wide-panel" : ""}`} aria-labelledby="logistics-heading">
@@ -516,7 +593,8 @@ export function LogisticsPanel({ wide = false }: { wide?: boolean }) {
       </div>
 
       <div className="route-list">
-        {adminRoutes.map((route) => (
+        {searchedRoutes.length === 0 && <p className="empty-table-note">{t("No results match your search")}</p>}
+        {searchedRoutes.map((route) => (
           <article className="route-item" key={route.route}>
             <div className="route-icon">
               <Truck size={20} />
@@ -537,8 +615,13 @@ export function LogisticsPanel({ wide = false }: { wide?: boolean }) {
   );
 }
 
-export function MessagesPanel() {
+export function MessagesPanel({ searchTerm = "" }: { searchTerm?: string }) {
   const t = useTranslate();
+  const messages = [
+    { icon: PackageCheck, text: "Tomato lot AKL-882 passed weight check." },
+    { icon: CalendarDays, text: "Rangpur potato pickup moved to 8:20 PM." },
+    { icon: UsersRound, text: "4 new farmers awaiting verification." },
+  ].filter((message) => matchesSearch(searchTerm, [message.text, t(message.text)]));
 
   return (
     <aside className="panel messages-panel" aria-labelledby="messages-heading">
@@ -550,18 +633,13 @@ export function MessagesPanel() {
         <MessageSquareText size={22} />
       </div>
       <div className="message-list">
-        <span>
-          <PackageCheck size={18} />
-          {t("Tomato lot AKL-882 passed weight check.")}
-        </span>
-        <span>
-          <CalendarDays size={18} />
-          {t("Rangpur potato pickup moved to 8:20 PM.")}
-        </span>
-        <span>
-          <UsersRound size={18} />
-          {t("4 new farmers awaiting verification.")}
-        </span>
+        {messages.length === 0 && <em className="empty-table-note">{t("No results match your search")}</em>}
+        {messages.map(({ icon: Icon, text }) => (
+          <span key={text}>
+            <Icon size={18} />
+            {t(text)}
+          </span>
+        ))}
       </div>
     </aside>
   );
