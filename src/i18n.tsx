@@ -581,6 +581,8 @@ const bn: Record<string, string> = {
   "Sunday, May 24": "রবিবার, ২৪ মে",
   "Operations dashboard": "কার্যক্রমের ড্যাশবোর্ড",
   "Search order, farmer, district...": "অর্ডার, কৃষক, জেলা খুঁজুন...",
+  "No results match your search": "আপনার খোঁজার সাথে কোনো ফল মেলেনি",
+  "Try another order, farmer, district, or message keyword.": "অন্য অর্ডার, কৃষক, জেলা বা মেসেজের শব্দ দিয়ে খুঁজে দেখুন।",
   "New lot": "নতুন লট",
   "GMV today": "আজকের মোট বিক্রি",
   "18 orders confirmed": "১৮টি অর্ডার নিশ্চিত",

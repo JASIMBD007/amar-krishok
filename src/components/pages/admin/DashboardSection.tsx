@@ -17,6 +17,7 @@ export function DashboardSection({
   backendOrders,
   orderError,
   registrations,
+  searchTerm,
   verificationError,
 }: {
   backendOrders?: BackendOrder[] | null;
@@ -24,19 +25,25 @@ export function DashboardSection({
   onUpdateRegistration: (id: string, status: AccountStatus) => void;
   orderError?: string;
   registrations: RegisteredAccount[];
+  searchTerm?: string;
   verificationError?: string;
 }) {
   return (
     <>
       <StatsPanel />
       <section className="dashboard-grid">
-        <OrdersPanel backendOrders={backendOrders} onOpenSection={onOpenSection} orderError={orderError} />
+        <OrdersPanel backendOrders={backendOrders} onOpenSection={onOpenSection} orderError={orderError} searchTerm={searchTerm} />
         <PayoutPanel onOpenSection={onOpenSection} />
-        <VerificationPanel registrations={registrations} onUpdateRegistration={onUpdateRegistration} verificationError={verificationError} />
-        <SupplyPanel onOpenSection={onOpenSection} registrations={registrations} />
-        <PricePanel />
-        <LogisticsPanel />
-        <MessagesPanel />
+        <VerificationPanel
+          registrations={registrations}
+          onUpdateRegistration={onUpdateRegistration}
+          searchTerm={searchTerm}
+          verificationError={verificationError}
+        />
+        <SupplyPanel onOpenSection={onOpenSection} registrations={registrations} searchTerm={searchTerm} />
+        <PricePanel searchTerm={searchTerm} />
+        <LogisticsPanel searchTerm={searchTerm} />
+        <MessagesPanel searchTerm={searchTerm} />
       </section>
     </>
   );

@@ -4,6 +4,7 @@ import type { AdminAccountPayload } from "../../../api/auth";
 import { useTranslate, useValueText } from "../../../i18n";
 import type { AccountStatus, RegisteredAccount } from "../../../types";
 import { AccountDirectoryTable, AccountModal, AdminSnackbar, DeleteConfirmModal, type AdminToast } from "./AccountManagementTools";
+import { accountMatchesSearch } from "./searchHelpers";
 
 export function BuyersSection({
   onCreateAccount,
@@ -11,6 +12,7 @@ export function BuyersSection({
   onUpdateAccount,
   onUpdateRegistration,
   registrations,
+  searchTerm,
   verificationError,
 }: {
   onCreateAccount: (payload: AdminAccountPayload) => Promise<void>;
@@ -18,6 +20,7 @@ export function BuyersSection({
   onUpdateAccount: (id: string, payload: Partial<AdminAccountPayload>) => Promise<void>;
   onUpdateRegistration: (id: string, status: AccountStatus) => void;
   registrations: RegisteredAccount[];
+  searchTerm?: string;
   verificationError?: string;
 }) {
   const t = useTranslate();
@@ -27,7 +30,7 @@ export function BuyersSection({
   const [editingBuyer, setEditingBuyer] = useState<RegisteredAccount | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [toast, setToast] = useState<AdminToast | null>(null);
-  const buyers = registrations.filter((account) => account.role === "buyer");
+  const buyers = registrations.filter((account) => account.role === "buyer" && accountMatchesSearch(searchTerm ?? "", account, t));
   const pendingBuyers = buyers.filter((account) => account.status === "pending");
   const activeBuyers = buyers.filter((account) => account.status === "active");
   const rejectedBuyers = buyers.filter((account) => account.status === "rejected");

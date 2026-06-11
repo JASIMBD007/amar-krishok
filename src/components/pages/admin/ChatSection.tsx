@@ -3,6 +3,7 @@ import type { FormEvent } from "react";
 import { MessageSquareText, Send, UserRoundCheck } from "lucide-react";
 import { useTranslate } from "../../../i18n";
 import type { ChatParticipantRole, ChatThread } from "../../../types";
+import { chatThreadMatchesSearch } from "./searchHelpers";
 
 function getParticipantLabel(role: ChatParticipantRole) {
   if (role === "buyer") {
@@ -20,19 +21,38 @@ export function ChatSection({
   chatThreads,
   onAdminReply,
   onThreadOpen,
+  searchTerm = "",
 }: {
   chatThreads: ChatThread[];
   onAdminReply: (threadId: string, text: string) => void;
   onThreadOpen: (threadId: string) => void;
+  searchTerm?: string;
 }) {
   const t = useTranslate();
   const sortedThreads = useMemo(
     () => [...chatThreads].sort((first, second) => new Date(second.updatedAt).getTime() - new Date(first.updatedAt).getTime()),
     [chatThreads],
   );
+  const filteredThreads = useMemo(
+    () => sortedThreads.filter((thread) => chatThreadMatchesSearch(searchTerm, thread, t)),
+    [searchTerm, sortedThreads, t],
+  );
   const [activeThreadId, setActiveThreadId] = useState(sortedThreads[0]?.id ?? "");
   const [reply, setReply] = useState("");
-  const activeThread = sortedThreads.find((thread) => thread.id === activeThreadId) ?? sortedThreads[0];
+  const activeThread = filteredThreads.find((thread) => thread.id === activeThreadId) ?? filteredThreads[0];
+
+  useEffect(() => {
+    if (filteredThreads.length === 0) {
+      if (activeThreadId) {
+        setActiveThreadId("");
+      }
+      return;
+    }
+
+    if (!filteredThreads.some((thread) => thread.id === activeThreadId)) {
+      setActiveThreadId(filteredThreads[0].id);
+    }
+  }, [activeThreadId, filteredThreads]);
 
   useEffect(() => {
     if (activeThread?.status === "waiting") {
@@ -65,6 +85,19 @@ export function ChatSection({
     );
   }
 
+  if (!activeThread) {
+    return (
+      <section className="dashboard-grid admin-focused-grid">
+        <section className="panel chat-admin-empty">
+          <MessageSquareText size={24} />
+          <span>{t("Admin chat inbox")}</span>
+          <h2>{t("No results match your search")}</h2>
+          <p>{t("Try another order, farmer, district, or message keyword.")}</p>
+        </section>
+      </section>
+    );
+  }
+
   return (
     <section className="dashboard-grid admin-focused-grid">
       <section className="panel admin-chat-panel" aria-labelledby="admin-chat-heading">
@@ -78,7 +111,7 @@ export function ChatSection({
 
         <div className="admin-chat-layout">
           <div className="chat-thread-list" aria-label={t("Conversations")}>
-            {sortedThreads.map((thread) => {
+            {filteredThreads.map((thread) => {
               const latestMessage = thread.messages[thread.messages.length - 1];
               return (
                 <button
