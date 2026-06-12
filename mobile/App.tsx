@@ -13,6 +13,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
 import {
@@ -89,6 +90,8 @@ function matchesQuery(values: Array<string | number | null | undefined>, query: 
 }
 
 export default function App() {
+  const { width } = useWindowDimensions();
+  const compact = width < 430;
   const [language, setLanguage] = useState<Language>("en");
   const [user, setUser] = useState<AuthUser | null>(null);
   const [profile, setProfile] = useState<AccountProfile | null>(null);
@@ -166,6 +169,7 @@ export default function App() {
           onLanguageChange={setLanguage}
           onLogout={handleLogout}
           onNavigate={setScreen}
+          compact={compact}
           user={user}
         />
         <ScrollView contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
@@ -193,7 +197,7 @@ export default function App() {
             <>
               <View style={styles.sectionHeader}>
                 <Text style={styles.kicker}>{protectedTitle}</Text>
-                <Text style={styles.title}>{screen === "marketplace" ? t(language, "marketplace") : protectedTitle}</Text>
+                <Text style={[styles.title, compact && styles.titleCompact]}>{screen === "marketplace" ? t(language, "marketplace") : protectedTitle}</Text>
               </View>
               <SearchBox language={language} search={search} setSearch={setSearch} />
               <Tabs language={language} role={user?.role ?? "buyer"} screen={screen} setScreen={setScreen} />
@@ -283,12 +287,14 @@ export default function App() {
 }
 
 function Header({
+  compact,
   language,
   onLanguageChange,
   onLogout,
   onNavigate,
   user,
 }: {
+  compact: boolean;
   language: Language;
   onLanguageChange: (language: Language) => void;
   onLogout: () => void;
@@ -296,14 +302,16 @@ function Header({
   user: AuthUser | null;
 }) {
   return (
-    <View style={styles.header}>
+    <View style={[styles.header, compact && styles.headerCompact]}>
       <Pressable onPress={() => onNavigate(user ? "dashboard" : "marketplace")} style={styles.brand}>
-        <View style={styles.logoBox}>
-          <Sprout color="#fff" size={26} />
+        <View style={[styles.logoBox, compact && styles.logoBoxCompact]}>
+          <Sprout color="#fff" size={compact ? 23 : 26} />
         </View>
-        <View>
-          <Text style={styles.brandTitle}>AmarKrishok</Text>
-          <Text style={styles.brandSubtitle}>{t(language, "appSubtitle")}</Text>
+        <View style={styles.brandCopy}>
+          <Text numberOfLines={1} style={[styles.brandTitle, compact && styles.brandTitleCompact]}>
+            AmarKrishok
+          </Text>
+          {!compact ? <Text numberOfLines={1} style={styles.brandSubtitle}>{t(language, "appSubtitle")}</Text> : null}
         </View>
       </Pressable>
       <View style={styles.headerActions}>
@@ -316,9 +324,9 @@ function Header({
           </Pressable>
         </View>
         {user ? (
-          <Pressable onPress={onLogout} style={styles.logoutButton}>
+          <Pressable onPress={onLogout} style={[styles.logoutButton, compact && styles.logoutButtonCompact]}>
             <LogOut color="#17382b" size={18} />
-            <Text style={styles.logoutText}>{roleLabel(language, user.role)}</Text>
+            {!compact ? <Text numberOfLines={1} style={styles.logoutText}>{roleLabel(language, user.role)}</Text> : null}
           </Pressable>
         ) : (
           <Bell color="#17382b" size={22} />
@@ -869,7 +877,7 @@ function Tabs({
   ];
 
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabs}>
+    <View style={styles.tabs}>
       {tabs.map((tab) => {
         const Icon = tab.icon;
         const active = screen === tab.screen;
@@ -880,7 +888,7 @@ function Tabs({
           </TouchableOpacity>
         );
       })}
-    </ScrollView>
+    </View>
   );
 }
 
@@ -1085,9 +1093,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     elevation: 4,
-    gap: 14,
+    gap: 12,
     maxWidth: 720,
-    padding: 28,
+    padding: 22,
     shadowColor: "#0b2118",
     shadowOpacity: 0.08,
     shadowRadius: 18,
@@ -1095,8 +1103,8 @@ const styles = StyleSheet.create({
   },
   authCopy: {
     color: "#687a70",
-    fontSize: 18,
-    lineHeight: 26,
+    fontSize: 16,
+    lineHeight: 23,
   },
   authLinks: {
     flexDirection: "row",
@@ -1104,10 +1112,10 @@ const styles = StyleSheet.create({
   },
   authTitle: {
     color: "#14372a",
-    fontSize: 48,
+    fontSize: 38,
     fontWeight: "800",
     letterSpacing: 0,
-    lineHeight: 54,
+    lineHeight: 44,
   },
   between: {
     alignItems: "center",
@@ -1116,8 +1124,13 @@ const styles = StyleSheet.create({
   },
   brand: {
     alignItems: "center",
+    flex: 1,
     flexDirection: "row",
     gap: 10,
+    minWidth: 0,
+  },
+  brandCopy: {
+    flex: 1,
     minWidth: 0,
   },
   brandSubtitle: {
@@ -1128,6 +1141,9 @@ const styles = StyleSheet.create({
     color: "#14372a",
     fontSize: 18,
     fontWeight: "800",
+  },
+  brandTitleCompact: {
+    fontSize: 21,
   },
   card: {
     backgroundColor: "#fff",
@@ -1202,7 +1218,7 @@ const styles = StyleSheet.create({
   field: {
     flex: 1,
     gap: 8,
-    minWidth: 240,
+    minWidth: 180,
   },
   fieldLabel: {
     color: "#324d40",
@@ -1223,10 +1239,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10,
   },
+  headerCompact: {
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
   headerActions: {
     alignItems: "center",
+    flexShrink: 0,
     flexDirection: "row",
-    gap: 10,
+    gap: 6,
   },
   iconButton: {
     alignItems: "center",
@@ -1255,7 +1277,7 @@ const styles = StyleSheet.create({
   input: {
     color: "#17382b",
     flex: 1,
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "700",
     minHeight: 48,
     paddingHorizontal: 12,
@@ -1279,8 +1301,8 @@ const styles = StyleSheet.create({
   },
   languageButton: {
     borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 7,
   },
   languageButtonActive: {
     backgroundColor: "#157747",
@@ -1313,6 +1335,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     width: 42,
   },
+  logoBoxCompact: {
+    borderRadius: 8,
+    height: 38,
+    width: 38,
+  },
   logoutButton: {
     alignItems: "center",
     backgroundColor: "#fff",
@@ -1323,6 +1350,13 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingHorizontal: 10,
     paddingVertical: 10,
+  },
+  logoutButtonCompact: {
+    height: 40,
+    justifyContent: "center",
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+    width: 40,
   },
   logoutText: {
     color: "#17382b",
@@ -1348,7 +1382,7 @@ const styles = StyleSheet.create({
   },
   lotTitle: {
     color: "#17382b",
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: "800",
   },
   metricCard: {
@@ -1358,8 +1392,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     flex: 1,
     gap: 8,
-    minWidth: 170,
-    padding: 16,
+    minWidth: 150,
+    padding: 14,
   },
   metricGrid: {
     flexDirection: "row",
@@ -1380,7 +1414,7 @@ const styles = StyleSheet.create({
   },
   metricValue: {
     color: "#17382b",
-    fontSize: 30,
+    fontSize: 28,
     fontWeight: "800",
   },
   modalBackdrop: {
@@ -1409,7 +1443,7 @@ const styles = StyleSheet.create({
   page: {
     backgroundColor: "#f4f2ea",
     flexGrow: 1,
-    padding: 16,
+    padding: 14,
   },
   panelHeader: {
     alignItems: "center",
@@ -1419,7 +1453,7 @@ const styles = StyleSheet.create({
   },
   panelTitle: {
     color: "#17382b",
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: "800",
   },
   placeholderText: {
@@ -1427,7 +1461,7 @@ const styles = StyleSheet.create({
   },
   priceText: {
     color: "#157747",
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "900",
   },
   primaryButton: {
@@ -1474,8 +1508,8 @@ const styles = StyleSheet.create({
   searchInput: {
     color: "#17382b",
     flex: 1,
-    fontSize: 17,
-    minHeight: 48,
+    fontSize: 15,
+    minHeight: 46,
   },
   secondaryButton: {
     alignItems: "center",
@@ -1551,13 +1585,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#fff",
     borderColor: "#d8ddd7",
-    borderRadius: 999,
+    borderRadius: 14,
     borderWidth: 1,
-    flexDirection: "row",
-    gap: 7,
-    marginRight: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+    flexBasis: "30%",
+    flexGrow: 1,
+    gap: 6,
+    justifyContent: "center",
+    minHeight: 72,
+    paddingHorizontal: 8,
+    paddingVertical: 12,
   },
   tabActive: {
     backgroundColor: "#157747",
@@ -1565,12 +1601,18 @@ const styles = StyleSheet.create({
   },
   tabText: {
     color: "#17382b",
+    fontSize: 13,
     fontWeight: "800",
+    lineHeight: 17,
+    textAlign: "center",
   },
   tabTextActive: {
     color: "#fff",
   },
   tabs: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
     marginBottom: 14,
   },
   textArea: {
@@ -1585,6 +1627,10 @@ const styles = StyleSheet.create({
     fontSize: 38,
     fontWeight: "900",
     letterSpacing: 0,
+  },
+  titleCompact: {
+    fontSize: 30,
+    lineHeight: 35,
   },
   twoColumn: {
     flexDirection: "row",
