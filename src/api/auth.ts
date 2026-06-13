@@ -130,6 +130,9 @@ export type CreateCropLotPayload = {
   quantityKg: number;
 };
 
+export type UpdateCropLotPayload = Partial<CreateCropLotPayload>;
+export type CropLotStatusUpdate = "ACTIVE" | "CANCELLED" | "DRAFT";
+
 export type BackendOrderItem = {
   id: string;
   crop: { name: string };
@@ -468,8 +471,21 @@ export async function requestAccountPasswordReset({
 
 export async function registerAccountWithApi({ role, ...payload }: RegisterAccountPayload) {
   const path = role === "buyer" ? "/api/auth/register/buyer" : "/api/auth/register/farmer";
+  const cleanPhone = payload.phone.trim();
+  const phoneSlug =
+    cleanPhone.replace(/\D/g, "").slice(0, 24) ||
+    cleanPhone
+      .toLowerCase()
+      .replace(/[^a-z0-9._-]/g, "")
+      .slice(0, 24) ||
+    "account";
+  const compatibilityUsername = `${role}-${phoneSlug}`.slice(0, 32);
   const response = await apiRequest<{ message: string; user: ApiUser }>(path, {
-    body: JSON.stringify(payload),
+    body: JSON.stringify({
+      ...payload,
+      phone: cleanPhone,
+      username: compatibilityUsername,
+    }),
     method: "POST",
   });
 
@@ -510,6 +526,22 @@ export function createCropLot(accessToken: string, payload: CreateCropLotPayload
     accessToken,
     body: JSON.stringify(payload),
     method: "POST",
+  });
+}
+
+export function updateCropLot(accessToken: string, id: string, payload: UpdateCropLotPayload) {
+  return apiRequest<BackendCropLot>(`/api/lots/${id}`, {
+    accessToken,
+    body: JSON.stringify(payload),
+    method: "PATCH",
+  });
+}
+
+export function updateCropLotStatus(accessToken: string, id: string, status: CropLotStatusUpdate) {
+  return apiRequest<BackendCropLot>(`/api/lots/${id}/status`, {
+    accessToken,
+    body: JSON.stringify({ status }),
+    method: "PATCH",
   });
 }
 

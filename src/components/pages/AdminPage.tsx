@@ -14,14 +14,18 @@ import {
   toRegisteredCropLotRecord,
   updateAdminAccount,
   updateBackendVerification,
+  updateCropLot,
+  updateCropLotStatus,
   type AdminAccountPayload,
   type AdminPasswordResetRequest,
   type BackendOrder,
+  type CropLotStatusUpdate,
+  type UpdateCropLotPayload,
 } from "../../api/auth";
 import { countAdminChatAttention } from "../chat/chatUnread";
 import { adminNavItems } from "../../data";
 import { useTranslate, useValueText } from "../../i18n";
-import type { AccountStatus, AdminSection, AuthUser, ChatThread, RegisteredAccount } from "../../types";
+import type { AccountStatus, AdminSection, AuthUser, ChatThread, RegisteredAccount, RegisteredCropLotRecord } from "../../types";
 import {
   BuyersSection,
   ChatSection,
@@ -155,20 +159,18 @@ export function AdminPage({
     setVerificationError("");
   };
 
-  const reviewManagedLot = async (lotId: string, action: "approve" | "reject") => {
-    if (!user?.accessToken) {
-      throw new Error("Backend service is unavailable. Please try again.");
-    }
-
-    const lot = await reviewCropLot(user.accessToken, lotId, action);
-    const nextLot = toRegisteredCropLotRecord(lot);
+  const applyManagedLot = (nextLot: RegisteredCropLotRecord, farmerId: string) => {
     setBackendRegistrations((current) =>
       (current ?? registrations).map((account) => {
-        if (account.id !== lot.farmer.id) {
+        if (account.id !== farmerId) {
           return account;
         }
 
-        const cropLots = (account.cropLots ?? []).map((item) => (item.id === nextLot.id ? nextLot : item));
+        const existingLots = account.cropLots ?? [];
+        const cropLots = existingLots.some((item) => item.id === nextLot.id)
+          ? existingLots.map((item) => (item.id === nextLot.id ? nextLot : item))
+          : [nextLot, ...existingLots];
+
         return {
           ...account,
           cropLots,
@@ -179,7 +181,41 @@ export function AdminPage({
         };
       }),
     );
+  };
+
+  const reviewManagedLot = async (lotId: string, action: "approve" | "reject") => {
+    if (!user?.accessToken) {
+      throw new Error("Backend service is unavailable. Please try again.");
+    }
+
+    const lot = await reviewCropLot(user.accessToken, lotId, action);
+    const nextLot = toRegisteredCropLotRecord(lot);
+    applyManagedLot(nextLot, lot.farmer.id);
     setVerificationError("");
+  };
+
+  const updateManagedLot = async (lotId: string, payload: UpdateCropLotPayload) => {
+    if (!user?.accessToken) {
+      throw new Error("Backend service is unavailable. Please try again.");
+    }
+
+    const lot = await updateCropLot(user.accessToken, lotId, payload);
+    const nextLot = toRegisteredCropLotRecord(lot);
+    applyManagedLot(nextLot, lot.farmer.id);
+    setVerificationError("");
+    return nextLot;
+  };
+
+  const updateManagedLotStatus = async (lotId: string, status: CropLotStatusUpdate) => {
+    if (!user?.accessToken) {
+      throw new Error("Backend service is unavailable. Please try again.");
+    }
+
+    const lot = await updateCropLotStatus(user.accessToken, lotId, status);
+    const nextLot = toRegisteredCropLotRecord(lot);
+    applyManagedLot(nextLot, lot.farmer.id);
+    setVerificationError("");
+    return nextLot;
   };
 
   const approvePasswordReset = async (id: string) => {
@@ -258,6 +294,8 @@ export function AdminPage({
             onCreateAccount={createManagedAccount}
             onDeleteAccount={deleteManagedAccount}
             onUpdateAccount={updateManagedAccount}
+            onUpdateLot={updateManagedLot}
+            onUpdateLotStatus={updateManagedLotStatus}
             onReviewLot={reviewManagedLot}
             searchTerm={searchTerm}
             onUpdateRegistration={updateRegistration}

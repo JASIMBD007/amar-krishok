@@ -1104,7 +1104,8 @@ button {
   font-size: 0.84rem;
 }
 
-.seller-lot-item em {
+.seller-lot-item > em,
+.lot-status-pill {
   justify-self: end;
   padding: 7px 10px;
   border-radius: 999px;
@@ -1112,6 +1113,61 @@ button {
   background: #e8f3e8;
   font-style: normal;
   font-weight: 850;
+  text-transform: capitalize;
+}
+
+.lot-status-pill.draft {
+  color: #8a5a12;
+  background: #f7ecd5;
+}
+
+.lot-status-pill.cancelled {
+  color: #943322;
+  background: #f7e4dd;
+}
+
+.lot-status-pill.reserved,
+.lot-status-pill.sold {
+  color: #2c5f79;
+  background: #e6f1f6;
+}
+
+.seller-lot-actions {
+  display: grid;
+  gap: 8px;
+  justify-items: end;
+}
+
+.seller-lot-actions > div {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.compact-action {
+  min-height: 38px;
+  padding: 9px 12px;
+  font-size: 0.9rem;
+}
+
+.danger-button {
+  color: #943322;
+  background: #f8e8e0;
+  border-color: #efc7ba;
+}
+
+.danger-button:hover {
+  background: #f4d9cf;
+}
+
+.lot-edit-modal {
+  width: min(840px, 100%);
+}
+
+.lot-edit-modal form {
+  display: grid;
+  gap: 14px;
 }
 
 .buyer-supply-grid {
