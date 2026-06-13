@@ -11,9 +11,9 @@ export function SupplyLotsSection({
   searchTerm?: string;
 }) {
   return (
-    <section className="dashboard-grid admin-focused-grid">
-      <SupplyPanel onOpenSection={onOpenSection} registrations={registrations} searchTerm={searchTerm} showAllLots wide />
-      <PricePanel searchTerm={searchTerm} wide />
+    <section className="supply-lots-insight-grid">
+      <SupplyPanel onOpenSection={onOpenSection} registrations={registrations} searchTerm={searchTerm} showAllLots />
+      <PricePanel searchTerm={searchTerm} />
     </section>
   );
 }
