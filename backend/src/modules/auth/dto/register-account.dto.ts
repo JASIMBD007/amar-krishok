@@ -4,9 +4,6 @@ import { IsIn, IsNotEmpty, IsOptional, IsString, Matches, MinLength } from "clas
 export class RegisterAccountDto {
   @IsOptional()
   @IsString()
-  @Matches(/^[a-zA-Z0-9._-]{3,32}$/, {
-    message: "Username can use 3-32 letters, numbers, dots, underscores, or hyphens.",
-  })
   username?: string;
 
   @IsString()

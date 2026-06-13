@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
-import type { AdminAccountPayload } from "../../../api/auth";
+import type { AdminAccountPayload, CropLotStatusUpdate, UpdateCropLotPayload } from "../../../api/auth";
 import { useTranslate, useValueText } from "../../../i18n";
-import type { AccountStatus, RegisteredAccount } from "../../../types";
+import type { AccountStatus, RegisteredAccount, RegisteredCropLotRecord } from "../../../types";
 import {
   AccountDirectoryTable,
   AccountModal,
@@ -18,6 +18,8 @@ export function FarmersSection({
   onDeleteAccount,
   onReviewLot,
   onUpdateAccount,
+  onUpdateLot,
+  onUpdateLotStatus,
   onUpdateRegistration,
   registrations,
   searchTerm,
@@ -27,6 +29,8 @@ export function FarmersSection({
   onDeleteAccount: (id: string) => Promise<void>;
   onReviewLot: (lotId: string, action: "approve" | "reject") => Promise<void>;
   onUpdateAccount: (id: string, payload: Partial<AdminAccountPayload>) => Promise<void>;
+  onUpdateLot: (lotId: string, payload: UpdateCropLotPayload) => Promise<RegisteredCropLotRecord>;
+  onUpdateLotStatus: (lotId: string, status: CropLotStatusUpdate) => Promise<RegisteredCropLotRecord>;
   onUpdateRegistration: (id: string, status: AccountStatus) => void;
   registrations: RegisteredAccount[];
   searchTerm?: string;
@@ -101,6 +105,36 @@ export function FarmersSection({
     });
   };
 
+  const applyLotUpdate = (updatedLot: RegisteredCropLotRecord) => {
+    setLotDetailsAccount((current) => {
+      if (!current) {
+        return current;
+      }
+
+      const cropLots = (current.cropLots ?? []).map((lot) => (lot.id === updatedLot.id ? updatedLot : lot));
+      return {
+        ...current,
+        cropLots,
+        cropLotCount: cropLots.length,
+        cropLotQuantityKg: cropLots.reduce((total, item) => total + item.quantityKg, 0),
+        latestLotStatus: cropLots[0]?.status,
+        latestLotSummary: cropLots[0] ? `${cropLots[0].crop} · ${cropLots[0].upazilla || cropLots[0].district}` : current.latestLotSummary,
+      };
+    });
+  };
+
+  const updateLot = async (lotId: string, payload: UpdateCropLotPayload) => {
+    const updatedLot = await onUpdateLot(lotId, payload);
+    applyLotUpdate(updatedLot);
+    return updatedLot;
+  };
+
+  const updateLotStatus = async (lotId: string, status: CropLotStatusUpdate) => {
+    const updatedLot = await onUpdateLotStatus(lotId, status);
+    applyLotUpdate(updatedLot);
+    return updatedLot;
+  };
+
   return (
     <section className="dashboard-grid admin-focused-grid">
       <section className="panel verification-panel admin-wide-panel" aria-labelledby="farmers-heading">
@@ -160,6 +194,8 @@ export function FarmersSection({
         onClose={() => setLotDetailsAccount(null)}
         onNotify={setToast}
         onReviewLot={reviewLot}
+        onUpdateLot={updateLot}
+        onUpdateLotStatus={updateLotStatus}
       />
       <DeleteConfirmModal account={deleteTarget} isDeleting={isDeleting} onClose={() => setDeleteTarget(null)} onConfirm={confirmDelete} />
       <AdminSnackbar toast={toast} onClose={() => setToast(null)} />

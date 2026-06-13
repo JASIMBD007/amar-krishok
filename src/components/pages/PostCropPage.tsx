@@ -8,15 +8,28 @@ import {
   LayoutDashboard,
   ListChecks,
   PackageCheck,
+  Pencil,
   Plus,
+  Power,
+  Save,
   ShieldCheck,
   Sprout,
   Truck,
   Upload,
   UserRoundCheck,
   WalletCards,
+  X,
 } from "lucide-react";
-import { ApiRequestError, createCropLot, fetchMyCropLots, uploadFile, type BackendCropLot } from "../../api/auth";
+import {
+  ApiRequestError,
+  createCropLot,
+  fetchMyCropLots,
+  updateCropLot,
+  updateCropLotStatus,
+  uploadFile,
+  type BackendCropLot,
+  type CreateCropLotPayload,
+} from "../../api/auth";
 import { AccountProfilePanel } from "../account/AccountProfilePanel";
 import { getUpazillasForDistrict, serviceDistricts } from "../../data";
 import { useLanguage, useTranslate, useValueText } from "../../i18n";
@@ -75,6 +88,19 @@ function formatMoney(value: number) {
   return `৳${Math.round(value).toLocaleString("en-US")}`;
 }
 
+function lotToForm(lot: BackendCropLot): CropLotForm {
+  return {
+    crop: lot.crop.name,
+    district: lot.district.name,
+    grade: lot.grade,
+    harvestDate: lot.harvestDate ? lot.harvestDate.slice(0, 10) : "",
+    notes: lot.notes ?? "",
+    pricePerKg: String(numericValue(lot.pricePerKg) || ""),
+    quantityKg: String(numericValue(lot.quantityKg) || ""),
+    upazilla: lot.upazilla ?? "",
+  };
+}
+
 export function PostCropPage({
   onProfileSaved,
   user,
@@ -88,11 +114,17 @@ export function PostCropPage({
   const [backendLots, setBackendLots] = useState<BackendCropLot[]>([]);
   const [form, setForm] = useState<CropLotForm>(emptyForm);
   const [cropImageFile, setCropImageFile] = useState<File | null>(null);
+  const [editingLot, setEditingLot] = useState<BackendCropLot | null>(null);
+  const [editForm, setEditForm] = useState<CropLotForm>(emptyForm);
+  const [editCropImageFile, setEditCropImageFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [isUpdatingLot, setIsUpdatingLot] = useState(false);
+  const [statusUpdatingLotId, setStatusUpdatingLotId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const availableUpazillas = getUpazillasForDistrict(form.district);
+  const availableEditUpazillas = getUpazillasForDistrict(editForm.district);
   const activeBackendLots = useMemo(() => backendLots.filter((lot) => lot.status.toUpperCase() === "ACTIVE"), [backendLots]);
   const totalQuantityKg = useMemo(() => activeBackendLots.reduce((total, lot) => total + numericValue(lot.quantityKg), 0), [activeBackendLots]);
   const averageAsk = useMemo(() => {
@@ -126,8 +158,46 @@ export function PostCropPage({
     setForm((current) => ({ ...current, [field]: value, ...(field === "district" ? { upazilla: "" } : {}) }));
   };
 
+  const updateEditField = (field: keyof CropLotForm, value: string) => {
+    setEditForm((current) => ({ ...current, [field]: value, ...(field === "district" ? { upazilla: "" } : {}) }));
+  };
+
   const scrollToSection = (sectionId: string) => {
     document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const buildLotPayload = (source: CropLotForm, imageUrl?: string): CreateCropLotPayload => ({
+    crop: source.crop.trim(),
+    district: source.district.trim(),
+    grade: source.grade.trim(),
+    harvestDate: normalizeDateInput(source.harvestDate) || undefined,
+    imageUrl,
+    notes: source.notes.trim() || undefined,
+    pricePerKg: Number(source.pricePerKg),
+    quantityKg: Number(source.quantityKg),
+    upazilla: source.upazilla.trim(),
+  });
+
+  const validateLotForm = (source: CropLotForm) => {
+    const quantityKg = Number(source.quantityKg);
+    const pricePerKg = Number(source.pricePerKg);
+    if (!source.crop.trim() || !source.district.trim() || !source.upazilla.trim() || !source.grade.trim() || !quantityKg || !pricePerKg) {
+      return "Please fill in crop, district, upazilla, quantity, price, and grade.";
+    }
+
+    if (quantityKg <= 0 || pricePerKg <= 0) {
+      return "Quantity and price must be greater than zero.";
+    }
+
+    return "";
+  };
+
+  const openEditLot = (lot: BackendCropLot) => {
+    setEditingLot(lot);
+    setEditForm(lotToForm(lot));
+    setEditCropImageFile(null);
+    setError("");
+    setSuccess("");
   };
 
   const submitLot = (event: FormEvent<HTMLFormElement>) => {
@@ -140,15 +210,9 @@ export function PostCropPage({
     }
     const accessToken = user.accessToken;
 
-    const quantityKg = Number(form.quantityKg);
-    const pricePerKg = Number(form.pricePerKg);
-    if (!form.crop.trim() || !form.district.trim() || !form.upazilla.trim() || !form.grade.trim() || !quantityKg || !pricePerKg) {
-      setError("Please fill in crop, district, upazilla, quantity, price, and grade.");
-      return;
-    }
-
-    if (quantityKg <= 0 || pricePerKg <= 0) {
-      setError("Quantity and price must be greater than zero.");
+    const validationError = validateLotForm(form);
+    if (validationError) {
+      setError(validationError);
       return;
     }
 
@@ -157,17 +221,7 @@ export function PostCropPage({
 
     (async () => {
       const uploadedCropImage = cropImageFile ? await uploadFile(accessToken, cropImageFile, "crop-lot-image") : null;
-      return createCropLot(accessToken, {
-        crop: form.crop.trim(),
-        district: form.district.trim(),
-        grade: form.grade.trim(),
-        harvestDate: normalizeDateInput(form.harvestDate) || undefined,
-        imageUrl: uploadedCropImage?.url,
-        notes: form.notes.trim() || undefined,
-        pricePerKg,
-        quantityKg,
-        upazilla: form.upazilla.trim(),
-      });
+      return createCropLot(accessToken, buildLotPayload(form, uploadedCropImage?.url));
     })()
       .then((lot) => {
         setBackendLots((current) => [lot, ...current]);
@@ -179,6 +233,68 @@ export function PostCropPage({
         setError(apiError instanceof ApiRequestError ? apiError.message : "Could not publish crop lot.");
       })
       .finally(() => setIsPublishing(false));
+  };
+
+  const submitLotUpdate = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setSuccess("");
+
+    if (!user?.accessToken || !editingLot) {
+      setError("Please sign in again to update this lot.");
+      return;
+    }
+
+    const validationError = validateLotForm(editForm);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
+    setIsUpdatingLot(true);
+    setError("");
+
+    (async () => {
+      const uploadedCropImage = editCropImageFile ? await uploadFile(user.accessToken!, editCropImageFile, "crop-lot-image") : null;
+      return updateCropLot(user.accessToken!, editingLot.id, buildLotPayload(editForm, uploadedCropImage?.url ?? editingLot.imageUrl ?? undefined));
+    })()
+      .then((lot) => {
+        setBackendLots((current) => current.map((item) => (item.id === lot.id ? lot : item)));
+        setEditingLot(null);
+        setEditCropImageFile(null);
+        setSuccess("Lot updated.");
+      })
+      .catch((apiError) => {
+        setError(apiError instanceof ApiRequestError ? apiError.message : "Could not update crop lot.");
+      })
+      .finally(() => setIsUpdatingLot(false));
+  };
+
+  const toggleLotStatus = (lot: BackendCropLot) => {
+    if (!user?.accessToken) {
+      setError("Please sign in again to manage this lot.");
+      return;
+    }
+
+    const nextStatus = lot.status.toUpperCase() === "ACTIVE" ? "CANCELLED" : "ACTIVE";
+    setStatusUpdatingLotId(lot.id);
+    setError("");
+    setSuccess("");
+
+    updateCropLotStatus(user.accessToken, lot.id, nextStatus)
+      .then((updatedLot) => {
+        setBackendLots((current) => current.map((item) => (item.id === updatedLot.id ? updatedLot : item)));
+        setSuccess(
+          updatedLot.status.toUpperCase() === "DRAFT"
+            ? "Lot sent for admin approval."
+            : updatedLot.status.toUpperCase() === "ACTIVE"
+              ? "Lot activated."
+              : "Lot deactivated.",
+        );
+      })
+      .catch((apiError) => {
+        setError(apiError instanceof ApiRequestError ? apiError.message : "Could not update lot status.");
+      })
+      .finally(() => setStatusUpdatingLotId(null));
   };
 
   return (
@@ -382,7 +498,24 @@ export function PostCropPage({
                       <strong>{t("Grade")} {t(lot.grade)}</strong>
                       <span>{formatLocalizedDate(lot.harvestDate, language, t("Ready date not set"))}</span>
                     </div>
-                    <em>{t(lot.status)}</em>
+                    <div className="seller-lot-actions">
+                      <em className={`lot-status-pill ${lot.status.toLowerCase()}`}>{t(lot.status)}</em>
+                      <div>
+                        <button className="secondary-button compact-action" type="button" onClick={() => openEditLot(lot)}>
+                          <Pencil size={15} />
+                          {t("Edit")}
+                        </button>
+                        <button
+                          className={`secondary-button compact-action ${lot.status.toUpperCase() === "ACTIVE" ? "danger-button" : ""}`}
+                          type="button"
+                          disabled={statusUpdatingLotId === lot.id}
+                          onClick={() => toggleLotStatus(lot)}
+                        >
+                          <Power size={15} />
+                          {t(lot.status.toUpperCase() === "ACTIVE" ? "Deactivate" : "Activate")}
+                        </button>
+                      </div>
+                    </div>
                   </article>
                 ))}
               </div>
@@ -472,6 +605,104 @@ export function PostCropPage({
           </aside>
         </section>
       </div>
+      {editingLot && (
+        <div className="admin-modal-backdrop" role="presentation">
+          <section className="admin-modal lot-edit-modal" role="dialog" aria-modal="true" aria-labelledby="farmer-edit-lot-title">
+            <div className="admin-modal-header">
+              <div>
+                <span>{t("Edit lot")}</span>
+                <h2 id="farmer-edit-lot-title">{t(editingLot.crop.name)}</h2>
+              </div>
+              <button className="icon-button" type="button" aria-label={t("Close modal")} onClick={() => setEditingLot(null)}>
+                <X size={18} />
+              </button>
+            </div>
+            <form onSubmit={submitLotUpdate}>
+              <FormGrid>
+                <label className="input-field">
+                  <span>{t("Crop name")}</span>
+                  <input value={editForm.crop} onChange={(event) => updateEditField("crop", event.target.value)} />
+                </label>
+                <label className="input-field">
+                  <span>{t("District")}</span>
+                  <select value={editForm.district} onChange={(event) => updateEditField("district", event.target.value)}>
+                    <option value="" disabled>
+                      {t("Select service district")}
+                    </option>
+                    {serviceDistricts.map((district) => (
+                      <option key={district} value={district}>
+                        {t(district)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="input-field">
+                  <span>{t("Upazilla")}</span>
+                  <select value={editForm.upazilla} onChange={(event) => updateEditField("upazilla", event.target.value)} disabled={!editForm.district}>
+                    <option value="" disabled>
+                      {t(editForm.district ? "Select upazilla" : "Select district first")}
+                    </option>
+                    {availableEditUpazillas.map((upazilla) => (
+                      <option key={upazilla} value={upazilla}>
+                        {t(upazilla)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="input-field">
+                  <span>{t("Quantity (kg)")}</span>
+                  <input value={editForm.quantityKg} min="1" onChange={(event) => updateEditField("quantityKg", event.target.value)} type="number" />
+                </label>
+                <label className="input-field">
+                  <span>{t("Price per kg")}</span>
+                  <input value={editForm.pricePerKg} min="1" onChange={(event) => updateEditField("pricePerKg", event.target.value)} type="number" />
+                </label>
+                <label className="input-field">
+                  <span>{t("Harvest date")}</span>
+                  <input value={editForm.harvestDate} onChange={(event) => updateEditField("harvestDate", event.target.value)} type="date" />
+                </label>
+                <label className="input-field">
+                  <span>{t("Grade")}</span>
+                  <select value={editForm.grade} onChange={(event) => updateEditField("grade", event.target.value)}>
+                    <option value="" disabled>
+                      {t("Select grade")}
+                    </option>
+                    {["A", "B", "C"].map((grade) => (
+                      <option key={grade} value={grade}>
+                        {t(grade)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <div className="input-field upload-field">
+                  <span>{t("Crop image")}</span>
+                  <div className="file-picker-row">
+                    <label className="file-picker-button">
+                      <input className="hidden-file-input" accept="image/*" onChange={(event) => setEditCropImageFile(event.target.files?.[0] ?? null)} type="file" />
+                      <FileImage size={16} />
+                      {t("Choose file")}
+                    </label>
+                    <span className="file-picker-name">{editCropImageFile?.name ?? (editingLot.imageUrl ? t("Existing image kept") : t("No file chosen"))}</span>
+                  </div>
+                </div>
+              </FormGrid>
+              <label className="full-field">
+                <span>{t("Notes")}</span>
+                <textarea value={editForm.notes} onChange={(event) => updateEditField("notes", event.target.value)} />
+              </label>
+              <div className="modal-action-row">
+                <button className="secondary-button" type="button" onClick={() => setEditingLot(null)} disabled={isUpdatingLot}>
+                  {t("Cancel")}
+                </button>
+                <button className="primary-button" type="submit" disabled={isUpdatingLot}>
+                  <Save size={18} />
+                  {t(isUpdatingLot ? "Saving" : "Save lot")}
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
+      )}
     </section>
   );
 }

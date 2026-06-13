@@ -1,8 +1,10 @@
-import { useState } from "react";
-import { AlertTriangle, BadgeCheck, CheckCircle2, Clock3, ImageIcon, PackageSearch, Pencil, Trash2, X, XCircle } from "lucide-react";
-import type { AdminAccountPayload } from "../../../api/auth";
+import { useEffect, useState, type FormEvent } from "react";
+import { AlertTriangle, BadgeCheck, CheckCircle2, Clock3, ImageIcon, PackageSearch, Pencil, Power, Save, Trash2, X, XCircle } from "lucide-react";
+import type { AdminAccountPayload, CropLotStatusUpdate, UpdateCropLotPayload } from "../../../api/auth";
+import { getUpazillasForDistrict, serviceDistricts } from "../../../data";
 import { useTranslate, useValueText } from "../../../i18n";
 import type { AccountStatus, RegisteredAccount, RegisteredCropLotRecord, RegistrationRole } from "../../../types";
+import { FormGrid } from "../../shared";
 import { AccountManagementForm } from "./AccountManagementForm";
 
 export type AdminToast = {
@@ -70,6 +72,32 @@ function formatLotGrade(value?: string) {
   }
 
   return value.toLowerCase().startsWith("grade ") ? value : `Grade ${value}`;
+}
+
+function lotRecordToEditForm(lot: RegisteredCropLotRecord) {
+  return {
+    crop: lot.crop,
+    district: lot.district,
+    grade: lot.grade,
+    harvestDate: lot.harvestDate ? lot.harvestDate.slice(0, 10) : "",
+    notes: lot.notes ?? "",
+    pricePerKg: String(lot.pricePerKg || ""),
+    quantityKg: String(lot.quantityKg || ""),
+    upazilla: lot.upazilla ?? "",
+  };
+}
+
+function buildLotUpdatePayload(form: ReturnType<typeof lotRecordToEditForm>): UpdateCropLotPayload {
+  return {
+    crop: form.crop.trim(),
+    district: form.district.trim(),
+    grade: form.grade.trim(),
+    harvestDate: form.harvestDate || undefined,
+    notes: form.notes.trim() || undefined,
+    pricePerKg: Number(form.pricePerKg),
+    quantityKg: Number(form.quantityKg),
+    upazilla: form.upazilla.trim(),
+  };
 }
 
 function accountStatusIcon(status: AccountStatus) {
@@ -204,20 +232,27 @@ export function DeleteConfirmModal({
 function LotDetailCard({
   fallbackUpazilla,
   isReviewing,
+  isStatusUpdating,
   lot,
+  onEditLot,
   onNotify,
   onReviewLot,
+  onUpdateLotStatus,
 }: {
   fallbackUpazilla?: string;
   isReviewing: boolean;
+  isStatusUpdating: boolean;
   lot: RegisteredCropLotRecord;
+  onEditLot: (lot: RegisteredCropLotRecord) => void;
   onNotify?: (toast: AdminToast) => void;
   onReviewLot?: (lotId: string, action: "approve" | "reject") => Promise<void>;
+  onUpdateLotStatus?: (lotId: string, status: CropLotStatusUpdate) => Promise<void>;
 }) {
   const t = useTranslate();
   const v = useValueText();
   const displayUpazilla = lot.upazilla || fallbackUpazilla;
   const isPendingApproval = lot.status.toUpperCase() === "DRAFT";
+  const isActive = lot.status.toUpperCase() === "ACTIVE";
 
   const reviewLot = async (action: "approve" | "reject") => {
     if (!onReviewLot) {
@@ -232,6 +267,19 @@ function LotDetailCard({
     }
   };
 
+  const updateStatus = async () => {
+    if (!onUpdateLotStatus) {
+      return;
+    }
+
+    try {
+      await onUpdateLotStatus(lot.id, isActive ? "CANCELLED" : "ACTIVE");
+      onNotify?.({ message: isActive ? "Lot deactivated." : "Lot activated.", tone: "success" });
+    } catch (error) {
+      onNotify?.({ message: error instanceof Error ? error.message : "Lot status update failed.", tone: "error" });
+    }
+  };
+
   return (
     <article className="lot-detail-card">
       <header>
@@ -243,8 +291,19 @@ function LotDetailCard({
         </div>
         <div className="lot-detail-status-actions">
           <em>{t(formatLotStatus(lot.status))}</em>
-          {isPendingApproval && onReviewLot && (
-            <div className="lot-review-actions">
+          <div className="lot-review-actions">
+            <button className="secondary-button compact-action" type="button" onClick={() => onEditLot(lot)}>
+              <Pencil size={15} />
+              {t("Edit")}
+            </button>
+            {onUpdateLotStatus && (
+              <button className={`secondary-button compact-action ${isActive ? "danger-button" : ""}`} type="button" disabled={isStatusUpdating} onClick={updateStatus}>
+                <Power size={15} />
+                {t(isActive ? "Deactivate" : "Activate")}
+              </button>
+            )}
+            {isPendingApproval && onReviewLot && (
+              <>
               <button className="secondary-button danger-button compact-action" type="button" disabled={isReviewing} onClick={() => reviewLot("reject")}>
                 <XCircle size={15} />
                 {t("Reject lot")}
@@ -253,8 +312,9 @@ function LotDetailCard({
                 <CheckCircle2 size={15} />
                 {t("Approve lot")}
               </button>
-            </div>
-          )}
+              </>
+            )}
+          </div>
         </div>
       </header>
       <div className="lot-detail-body">
@@ -300,20 +360,150 @@ function LotDetailCard({
   );
 }
 
+function LotEditModal({
+  isSaving,
+  lot,
+  onClose,
+  onSave,
+}: {
+  isSaving: boolean;
+  lot: RegisteredCropLotRecord | null;
+  onClose: () => void;
+  onSave: (lotId: string, payload: UpdateCropLotPayload) => Promise<void>;
+}) {
+  const t = useTranslate();
+  const [form, setForm] = useState(lot ? lotRecordToEditForm(lot) : lotRecordToEditForm({ crop: "", district: "", grade: "", id: "", pricePerKg: 0, quantityKg: 0, status: "" }));
+
+  useEffect(() => {
+    if (lot) {
+      setForm(lotRecordToEditForm(lot));
+    }
+  }, [lot]);
+
+  if (!lot) {
+    return null;
+  }
+
+  const availableUpazillas = getUpazillasForDistrict(form.district);
+  const updateField = (field: keyof typeof form, value: string) => {
+    setForm((current) => ({ ...current, [field]: value, ...(field === "district" ? { upazilla: "" } : {}) }));
+  };
+
+  const submitEdit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    await onSave(lot.id, buildLotUpdatePayload(form));
+  };
+
+  return (
+    <div className="admin-modal-backdrop" role="presentation">
+      <section className="admin-modal lot-edit-modal" role="dialog" aria-modal="true" aria-labelledby="admin-edit-lot-title">
+        <div className="admin-modal-header">
+          <div>
+            <span>{t("Edit lot")}</span>
+            <h2 id="admin-edit-lot-title">{t(lot.crop)}</h2>
+          </div>
+          <button className="icon-button" type="button" aria-label={t("Close modal")} onClick={onClose}>
+            <X size={18} />
+          </button>
+        </div>
+        <form onSubmit={submitEdit}>
+          <FormGrid>
+            <label className="input-field">
+              <span>{t("Crop name")}</span>
+              <input value={form.crop} onChange={(event) => updateField("crop", event.target.value)} />
+            </label>
+            <label className="input-field">
+              <span>{t("District")}</span>
+              <select value={form.district} onChange={(event) => updateField("district", event.target.value)}>
+                <option value="" disabled>
+                  {t("Select service district")}
+                </option>
+                {serviceDistricts.map((district) => (
+                  <option key={district} value={district}>
+                    {t(district)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="input-field">
+              <span>{t("Upazilla")}</span>
+              <select value={form.upazilla} onChange={(event) => updateField("upazilla", event.target.value)} disabled={!form.district}>
+                <option value="" disabled>
+                  {t(form.district ? "Select upazilla" : "Select district first")}
+                </option>
+                {availableUpazillas.map((upazilla) => (
+                  <option key={upazilla} value={upazilla}>
+                    {t(upazilla)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="input-field">
+              <span>{t("Quantity (kg)")}</span>
+              <input value={form.quantityKg} min="1" onChange={(event) => updateField("quantityKg", event.target.value)} type="number" />
+            </label>
+            <label className="input-field">
+              <span>{t("Price per kg")}</span>
+              <input value={form.pricePerKg} min="1" onChange={(event) => updateField("pricePerKg", event.target.value)} type="number" />
+            </label>
+            <label className="input-field">
+              <span>{t("Harvest date")}</span>
+              <input value={form.harvestDate} onChange={(event) => updateField("harvestDate", event.target.value)} type="date" />
+            </label>
+            <label className="input-field">
+              <span>{t("Grade")}</span>
+              <select value={form.grade} onChange={(event) => updateField("grade", event.target.value)}>
+                <option value="" disabled>
+                  {t("Select grade")}
+                </option>
+                {["A", "B", "C"].map((grade) => (
+                  <option key={grade} value={grade}>
+                    {t(grade)}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </FormGrid>
+          <label className="full-field">
+            <span>{t("Notes")}</span>
+            <textarea value={form.notes} onChange={(event) => updateField("notes", event.target.value)} />
+          </label>
+          <div className="modal-action-row">
+            <button className="secondary-button" type="button" onClick={onClose} disabled={isSaving}>
+              {t("Cancel")}
+            </button>
+            <button className="primary-button" type="submit" disabled={isSaving}>
+              <Save size={18} />
+              {t(isSaving ? "Saving" : "Save lot")}
+            </button>
+          </div>
+        </form>
+      </section>
+    </div>
+  );
+}
+
 export function FarmerLotDetailsModal({
   account,
   onClose,
   onNotify,
   onReviewLot,
+  onUpdateLot,
+  onUpdateLotStatus,
 }: {
   account: RegisteredAccount | null;
   onClose: () => void;
   onNotify?: (toast: AdminToast) => void;
   onReviewLot?: (lotId: string, action: "approve" | "reject") => Promise<void>;
+  onUpdateLot?: (lotId: string, payload: UpdateCropLotPayload) => Promise<RegisteredCropLotRecord>;
+  onUpdateLotStatus?: (lotId: string, status: CropLotStatusUpdate) => Promise<RegisteredCropLotRecord>;
 }) {
   const t = useTranslate();
   const v = useValueText();
+  const [editingLot, setEditingLot] = useState<RegisteredCropLotRecord | null>(null);
   const [reviewingLotId, setReviewingLotId] = useState<string | null>(null);
+  const [savingLotId, setSavingLotId] = useState<string | null>(null);
+  const [statusLotId, setStatusLotId] = useState<string | null>(null);
 
   if (!account) {
     return null;
@@ -354,7 +544,9 @@ export function FarmerLotDetailsModal({
                 key={lot.id}
                 fallbackUpazilla={account.upazilla}
                 isReviewing={reviewingLotId === lot.id}
+                isStatusUpdating={statusLotId === lot.id}
                 lot={lot}
+                onEditLot={setEditingLot}
                 onNotify={onNotify}
                 onReviewLot={
                   onReviewLot
@@ -368,11 +560,44 @@ export function FarmerLotDetailsModal({
                       }
                     : undefined
                 }
+                onUpdateLotStatus={
+                  onUpdateLotStatus
+                    ? async (lotId, status) => {
+                        setStatusLotId(lotId);
+                        try {
+                          await onUpdateLotStatus(lotId, status);
+                        } finally {
+                          setStatusLotId(null);
+                        }
+                      }
+                    : undefined
+                }
               />
             ))}
           </div>
         )}
       </section>
+      <LotEditModal
+        isSaving={savingLotId === editingLot?.id}
+        lot={editingLot}
+        onClose={() => setEditingLot(null)}
+        onSave={async (lotId, payload) => {
+          if (!onUpdateLot) {
+            return;
+          }
+
+          setSavingLotId(lotId);
+          try {
+            await onUpdateLot(lotId, payload);
+            onNotify?.({ message: "Lot updated.", tone: "success" });
+            setEditingLot(null);
+          } catch (error) {
+            onNotify?.({ message: error instanceof Error ? error.message : "Lot update failed.", tone: "error" });
+          } finally {
+            setSavingLotId(null);
+          }
+        }}
+      />
     </div>
   );
 }
