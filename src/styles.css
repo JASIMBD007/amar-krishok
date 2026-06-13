@@ -3046,6 +3046,19 @@ th {
   grid-column: 1 / -1;
 }
 
+.supply-lots-insight-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(420px, 0.92fr);
+  gap: 14px;
+  align-items: stretch;
+}
+
+.supply-lots-insight-grid .panel {
+  min-width: 0;
+  height: 100%;
+  padding: 18px;
+}
+
 .dashboard-grid .panel {
   min-width: 0;
   padding: 18px;
@@ -4081,6 +4094,10 @@ th {
 
   .dashboard-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .supply-lots-insight-grid {
+    grid-template-columns: 1fr;
   }
 
   .farmer-dashboard-grid {
