@@ -1885,6 +1885,10 @@ button {
   font-weight: 720;
 }
 
+.auth-link-line {
+  text-align: center;
+}
+
 .auth-link-line button,
 .auth-create-line a,
 .auth-create-line button {
