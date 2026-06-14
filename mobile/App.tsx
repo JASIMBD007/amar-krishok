@@ -1107,7 +1107,9 @@ const styles = StyleSheet.create({
     lineHeight: 23,
   },
   authLinks: {
+    alignItems: "center",
     flexDirection: "row",
+    justifyContent: "center",
     marginTop: 4,
   },
   authTitle: {
