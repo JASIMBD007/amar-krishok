@@ -21,6 +21,7 @@ import {
   CalendarDays,
   CheckCircle2,
   ChevronDown,
+  ChevronRight,
   Eye,
   EyeOff,
   Home,
@@ -60,6 +61,14 @@ import type { AccountProfile, AuthUser, CropLot, Language, Order, RegisterPayloa
 
 type Screen = "marketplace" | "dashboard" | "post" | "orders" | "profile";
 
+type MobileNotification = {
+  body: string;
+  icon: React.ComponentType<{ color?: string; size?: number }>;
+  id: string;
+  screen?: Screen;
+  title: string;
+};
+
 const roleOptions: Array<SelectOption<Role>> = [
   { label: "Admin", value: "admin" },
   { label: "Buyer", value: "buyer" },
@@ -72,21 +81,148 @@ function currency(value: number) {
   return `৳${Math.round(value).toLocaleString("en-US")}`;
 }
 
-function kgToDisplay(value: number) {
-  return value >= 1000 ? `${Number((value / 1000).toFixed(1))} tons` : `${value} kg`;
+function kgToDisplay(value: number, language: Language = "en") {
+  if (value >= 1000) return `${Number((value / 1000).toFixed(1))} ${language === "bn" ? "টন" : "tons"}`;
+  return `${value} ${language === "bn" ? "কেজি" : "kg"}`;
 }
 
-function formatDate(value?: string | null) {
-  if (!value) return "Not added";
+function pricePerKg(value: number, language: Language) {
+  return `৳${Math.round(value)}/${language === "bn" ? "কেজি" : "kg"}`;
+}
+
+function formatDate(value?: string | null, language: Language = "en") {
+  if (!value) return language === "bn" ? "দেওয়া হয়নি" : "Not added";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleDateString("en-US", { day: "numeric", month: "short" });
+  return date.toLocaleDateString(language === "bn" ? "bn-BD" : "en-US", { day: "numeric", month: "short" });
+}
+
+function statusLabel(status: string, language: Language) {
+  const normalized = status.toLowerCase();
+  if (language === "en") return status;
+  if (normalized.includes("active") || normalized.includes("approved")) return "সক্রিয়";
+  if (normalized.includes("pending")) return "অপেক্ষায়";
+  if (normalized.includes("reject")) return "বাতিল";
+  if (normalized.includes("transit")) return "পথে আছে";
+  if (normalized.includes("match")) return "ম্যাচিং";
+  return status;
 }
 
 function matchesQuery(values: Array<string | number | null | undefined>, query: string) {
   const term = query.trim().toLowerCase();
   if (!term) return true;
   return values.some((value) => String(value ?? "").toLowerCase().includes(term));
+}
+
+function buildNotifications({
+  language,
+  lots,
+  marketplaceLots,
+  orders,
+  profile,
+  user,
+}: {
+  language: Language;
+  lots: CropLot[];
+  marketplaceLots: CropLot[];
+  orders: Order[];
+  profile: AccountProfile | null;
+  user: AuthUser | null;
+}) {
+  if (!user) return [];
+
+  const notifications: MobileNotification[] = [];
+
+  if (profile?.status === "pending") {
+    notifications.push({
+      body: t(language, "profileReviewBody"),
+      icon: UserRound,
+      id: `profile-${profile.id}`,
+      screen: "profile",
+      title: t(language, "profileReview"),
+    });
+  }
+
+  if (user.role === "farmer") {
+    const latestLot = lots[0];
+    if (latestLot) {
+      notifications.push({
+        body: `${latestLot.crop} · ${latestLot.district}${latestLot.upazilla ? `, ${latestLot.upazilla}` : ""} · ${statusLabel(latestLot.status, language)}`,
+        icon: Sprout,
+        id: `lot-${latestLot.id}`,
+        screen: "post",
+        title: t(language, "lotUpdate"),
+      });
+      notifications.push({
+        body: `${pricePerKg(latestLot.pricePerKg, language)} · ${kgToDisplay(latestLot.quantityKg, language)}`,
+        icon: WalletCards,
+        id: `payment-${latestLot.id}`,
+        screen: "post",
+        title: t(language, "paymentUpdate"),
+      });
+    } else {
+      notifications.push({
+        body: t(language, "postFirstCropLot"),
+        icon: PlusCircle,
+        id: "farmer-first-lot",
+        screen: "post",
+        title: t(language, "lotUpdate"),
+      });
+    }
+  }
+
+  if (user.role === "buyer") {
+    const latestOrder = orders[0];
+    if (latestOrder) {
+      notifications.push({
+        body: `${latestOrder.items.map((item) => item.crop).join(", ") || latestOrder.id} · ${statusLabel(latestOrder.status, language)} · ${currency(latestOrder.totalValue)}`,
+        icon: ShoppingBag,
+        id: `order-${latestOrder.id}`,
+        screen: "orders",
+        title: t(language, "orderUpdate"),
+      });
+    } else {
+      notifications.push({
+        body: t(language, "marketplaceUpdateBody"),
+        icon: Package,
+        id: "buyer-marketplace",
+        screen: "marketplace",
+        title: t(language, "marketplaceUpdate"),
+      });
+    }
+  }
+
+  if (user.role === "admin") {
+    if (lots.length) {
+      notifications.push({
+        body: `${lots.length} ${t(language, "farmerSupplyLots")} · ${kgToDisplay(lots.reduce((sum, lot) => sum + lot.quantityKg, 0), language)}`,
+        icon: Sprout,
+        id: `admin-lots-${lots.length}`,
+        screen: "post",
+        title: t(language, "lotUpdate"),
+      });
+    }
+    if (orders.length) {
+      notifications.push({
+        body: `${orders.length} ${t(language, "buyerOrder")} · ${currency(orders.reduce((sum, order) => sum + order.totalValue, 0))}`,
+        icon: ShoppingBag,
+        id: `admin-orders-${orders.length}`,
+        screen: "orders",
+        title: t(language, "orderUpdate"),
+      });
+    }
+    if (!lots.length && !orders.length && marketplaceLots.length) {
+      notifications.push({
+        body: `${marketplaceLots.length} ${t(language, "approvedMarketplaceLots")}`,
+        icon: Package,
+        id: `admin-marketplace-${marketplaceLots.length}`,
+        screen: "marketplace",
+        title: t(language, "marketplaceUpdate"),
+      });
+    }
+  }
+
+  return notifications.slice(0, 5);
 }
 
 export default function App() {
@@ -105,6 +241,8 @@ export default function App() {
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
   const [registerRole, setRegisterRole] = useState<Exclude<Role, "admin">>("buyer");
   const [accountChoiceOpen, setAccountChoiceOpen] = useState(false);
+  const [notificationOpen, setNotificationOpen] = useState(false);
+  const [reviewedNotificationIds, setReviewedNotificationIds] = useState<string[]>([]);
 
   useEffect(() => {
     fetchDistricts()
@@ -145,7 +283,7 @@ export default function App() {
     }
   }
 
-  function handleLogout() {
+  function completeLogout() {
     setUser(null);
     setProfile(null);
     setMyLots([]);
@@ -153,12 +291,52 @@ export default function App() {
     setScreen("marketplace");
   }
 
+  function requestLogout() {
+    Alert.alert(t(language, "confirmLogoutTitle"), t(language, "confirmLogoutMessage"), [
+      { text: t(language, "stayLoggedIn"), style: "cancel" },
+      { text: t(language, "logout"), onPress: completeLogout, style: "destructive" },
+    ]);
+  }
+
   const visibleLots = useMemo(
     () => lots.filter((lot) => matchesQuery([lot.crop, lot.farmer, lot.district, lot.upazilla, lot.grade, lot.pricePerKg], search)),
     [lots, search],
   );
+  const visibleMyLots = useMemo(
+    () => myLots.filter((lot) => matchesQuery([lot.crop, lot.farmer, lot.district, lot.upazilla, lot.grade, lot.pricePerKg, lot.status], search)),
+    [myLots, search],
+  );
+  const visibleOrders = useMemo(
+    () =>
+      orders.filter((order) =>
+        matchesQuery(
+          [order.id, order.district, order.upazilla, order.status, order.totalValue, ...order.items.flatMap((item) => [item.crop, item.quantityKg, item.offeredPricePerKg])],
+          search,
+        ),
+      ),
+    [orders, search],
+  );
+  const notifications = useMemo(
+    () => buildNotifications({ language, lots: myLots, marketplaceLots: lots, orders, profile, user }),
+    [language, lots, myLots, orders, profile, user],
+  );
+  const unreadNotifications = notifications.filter((notification) => !reviewedNotificationIds.includes(notification.id)).length;
 
-  const protectedTitle = user?.role === "buyer" ? t(language, "buyerDashboard") : user?.role === "farmer" ? t(language, "farmerDashboard") : t(language, "adminSummary");
+  const protectedKicker = user?.role === "buyer" ? t(language, "buyerWorkspace") : user?.role === "farmer" ? t(language, "farmerWorkspace") : t(language, "adminWorkspace");
+  const protectedTitle =
+    screen === "dashboard"
+      ? user?.role === "buyer"
+        ? t(language, "buyerDashboard")
+        : user?.role === "farmer"
+          ? t(language, "farmerDashboard")
+          : t(language, "adminSummary")
+      : screen === "post"
+        ? t(language, "postCrop")
+      : screen === "orders"
+        ? t(language, "orders")
+        : screen === "profile"
+          ? t(language, "profileSetting")
+          : t(language, "marketplace");
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -166,13 +344,14 @@ export default function App() {
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.flex}>
         <Header
           language={language}
+          notificationCount={unreadNotifications}
+          onNotificationsPress={() => setNotificationOpen(true)}
           onLanguageChange={setLanguage}
-          onLogout={handleLogout}
           onNavigate={setScreen}
           compact={compact}
           user={user}
         />
-        <ScrollView contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
+        <ScrollView contentContainerStyle={[styles.page, user && styles.pageWithBottomTabs]} keyboardShouldPersistTaps="handled">
           {!user && authMode === "login" ? (
             <LoginScreen
               language={language}
@@ -188,7 +367,7 @@ export default function App() {
               language={language}
               onBack={() => setAuthMode("login")}
               onRegistered={() => {
-                Alert.alert("Registration submitted", "Admin will verify the account before activation.");
+                Alert.alert(t(language, "registrationSubmitted"), t(language, "adminVerifyAccount"));
                 setAuthMode("login");
               }}
               role={registerRole}
@@ -196,15 +375,21 @@ export default function App() {
           ) : (
             <>
               <View style={styles.sectionHeader}>
-                <Text style={styles.kicker}>{protectedTitle}</Text>
+                <Text style={styles.kicker}>{screen === "marketplace" ? t(language, "marketplace") : protectedKicker}</Text>
                 <Text style={[styles.title, compact && styles.titleCompact]}>{screen === "marketplace" ? t(language, "marketplace") : protectedTitle}</Text>
               </View>
               <SearchBox language={language} search={search} setSearch={setSearch} />
-              <Tabs language={language} role={user?.role ?? "buyer"} screen={screen} setScreen={setScreen} />
               {screen === "marketplace" ? (
                 <MarketplaceScreen language={language} lots={visibleLots} onRefresh={loadMarketplace} />
               ) : screen === "dashboard" ? (
-                <DashboardScreen language={language} lots={myLots} orders={orders} profile={profile} role={user?.role ?? "buyer"} />
+                <DashboardScreen
+                  language={language}
+                  marketplaceLots={visibleLots}
+                  lots={visibleMyLots}
+                  onNavigate={setScreen}
+                  orders={visibleOrders}
+                  role={user?.role ?? "buyer"}
+                />
               ) : screen === "post" && user?.role !== "buyer" ? (
                 <FarmerPostScreen
                   districts={districts}
@@ -216,11 +401,11 @@ export default function App() {
                     try {
                       const imageUrl = imageUri ? await uploadImage(user.accessToken, imageUri, "crop-lot-image") : undefined;
                       await createLot(user.accessToken, { ...payload, imageUrl });
-                      Alert.alert("Crop lot submitted", "Admin approval is required before it appears in marketplace.");
+                      Alert.alert(t(language, "cropLotSubmitted"), t(language, "adminApprovalMarketplace"));
                       await refreshProtectedData();
                       await loadMarketplace();
                     } catch (error) {
-                      Alert.alert("Could not submit lot", error instanceof Error ? error.message : "Please try again.");
+                      Alert.alert(t(language, "couldNotSubmitLot"), error instanceof Error ? error.message : t(language, "commonTryAgain"));
                     } finally {
                       setLoading(false);
                     }
@@ -237,30 +422,33 @@ export default function App() {
                     setLoading(true);
                     try {
                       await createOrder(user.accessToken, payload);
-                      Alert.alert("Order request submitted", "The AmarKrishok team will review it.");
+                      Alert.alert(t(language, "orderRequestSubmitted"), t(language, "teamReview"));
                       await refreshProtectedData();
                     } catch (error) {
-                      Alert.alert("Could not create order", error instanceof Error ? error.message : "Please try again.");
+                      Alert.alert(t(language, "couldNotCreateOrder"), error instanceof Error ? error.message : t(language, "commonTryAgain"));
                     } finally {
                       setLoading(false);
                     }
                   }}
-                  orders={orders}
+                  orders={visibleOrders}
                   role={user?.role ?? "buyer"}
                 />
               ) : (
                 <ProfileScreen
                   districts={districts}
                   language={language}
+                  onLogout={requestLogout}
+                  onNavigate={setScreen}
+                  onNotificationsPress={() => setNotificationOpen(true)}
                   onSave={async (payload) => {
                     if (!user) return;
                     setLoading(true);
                     try {
                       const updated = await updateMyProfile(user.accessToken, payload);
                       setProfile(updated);
-                      Alert.alert("Profile updated", "Your account information was saved.");
+                      Alert.alert(t(language, "saveProfile"), t(language, "updateProfileSuccess"));
                     } catch (error) {
-                      Alert.alert("Could not update profile", error instanceof Error ? error.message : "Please try again.");
+                      Alert.alert(t(language, "couldNotUpdateProfile"), error instanceof Error ? error.message : t(language, "commonTryAgain"));
                     } finally {
                       setLoading(false);
                     }
@@ -271,6 +459,7 @@ export default function App() {
             </>
           )}
         </ScrollView>
+        {user ? <BottomTabs language={language} role={user.role} screen={screen} setScreen={setScreen} /> : null}
         <CreateAccountModal
           language={language}
           onClose={() => setAccountChoiceOpen(false)}
@@ -281,6 +470,20 @@ export default function App() {
           }}
           visible={accountChoiceOpen}
         />
+        <NotificationModal
+          language={language}
+          notifications={notifications}
+          onClose={() => setNotificationOpen(false)}
+          onMarkAll={() => setReviewedNotificationIds((ids) => Array.from(new Set([...ids, ...notifications.map((notification) => notification.id)])))}
+          onOpenNotification={(notification) => {
+            setReviewedNotificationIds((ids) => (ids.includes(notification.id) ? ids : [...ids, notification.id]));
+            if (notification.screen) setScreen(notification.screen);
+            setNotificationOpen(false);
+          }}
+          reviewedIds={reviewedNotificationIds}
+          user={user}
+          visible={notificationOpen}
+        />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -289,16 +492,18 @@ export default function App() {
 function Header({
   compact,
   language,
+  notificationCount,
   onLanguageChange,
-  onLogout,
   onNavigate,
+  onNotificationsPress,
   user,
 }: {
   compact: boolean;
   language: Language;
+  notificationCount: number;
   onLanguageChange: (language: Language) => void;
-  onLogout: () => void;
   onNavigate: (screen: Screen) => void;
+  onNotificationsPress: () => void;
   user: AuthUser | null;
 }) {
   return (
@@ -314,23 +519,42 @@ function Header({
           {!compact ? <Text numberOfLines={1} style={styles.brandSubtitle}>{t(language, "appSubtitle")}</Text> : null}
         </View>
       </Pressable>
-      <View style={styles.headerActions}>
+      <View style={[styles.headerActions, compact && styles.headerActionsCompact]}>
         <View style={styles.languageToggle}>
-          <Pressable onPress={() => onLanguageChange("en")} style={[styles.languageButton, language === "en" && styles.languageButtonActive]}>
+          <Pressable
+            accessibilityLabel="Switch to English"
+            accessibilityRole="button"
+            hitSlop={8}
+            onPress={() => onLanguageChange("en")}
+            style={[styles.languageButton, compact && styles.languageButtonCompact, language === "en" && styles.languageButtonActive]}
+          >
             <Text style={[styles.languageText, language === "en" && styles.languageTextActive]}>EN</Text>
           </Pressable>
-          <Pressable onPress={() => onLanguageChange("bn")} style={[styles.languageButton, language === "bn" && styles.languageButtonActive]}>
-            <Text style={[styles.languageText, language === "bn" && styles.languageTextActive]}>বাংলা</Text>
+          <Pressable
+            accessibilityLabel="Switch to Bangla"
+            accessibilityRole="button"
+            hitSlop={8}
+            onPress={() => onLanguageChange("bn")}
+            style={[styles.languageButton, compact && styles.languageButtonCompact, language === "bn" && styles.languageButtonActive]}
+          >
+            <Text style={[styles.languageText, language === "bn" && styles.languageTextActive]}>{compact ? "BN" : "বাংলা"}</Text>
           </Pressable>
         </View>
-        {user ? (
-          <Pressable onPress={onLogout} style={[styles.logoutButton, compact && styles.logoutButtonCompact]}>
-            <LogOut color="#17382b" size={18} />
-            {!compact ? <Text numberOfLines={1} style={styles.logoutText}>{roleLabel(language, user.role)}</Text> : null}
-          </Pressable>
-        ) : (
+        <Pressable
+          accessibilityLabel={t(language, "notifications")}
+          accessibilityRole="button"
+          hitSlop={10}
+          onPress={onNotificationsPress}
+          style={[styles.notificationButton, compact && styles.notificationButtonCompact]}
+          testID="notification-button"
+        >
           <Bell color="#17382b" size={22} />
-        )}
+          {notificationCount > 0 ? (
+            <View style={styles.notificationBadge}>
+              <Text style={styles.notificationBadgeText}>{notificationCount > 9 ? "9+" : notificationCount}</Text>
+            </View>
+          ) : null}
+        </Pressable>
       </View>
     </View>
   );
@@ -359,7 +583,7 @@ function LoginScreen({
     try {
       onLoggedIn(await login(role, identifier.trim(), password));
     } catch (loginError) {
-      setError(loginError instanceof Error ? loginError.message : "Login failed.");
+      setError(loginError instanceof Error ? loginError.message : t(language, "loginFailed"));
     } finally {
       setBusy(false);
     }
@@ -367,21 +591,21 @@ function LoginScreen({
 
   return (
     <View style={styles.authCard}>
-      <Text style={styles.authTitle}>Login to AmarKrishok</Text>
-      <Text style={styles.authCopy}>To use AmarKrishok, please log in with your account details.</Text>
-      <SelectField label={`${t(language, "selectAccountType")} *`} options={roleOptions.map((option) => ({ ...option, label: roleLabel(language, option.value) }))} value={role} onChange={setRole} />
+      <Text style={styles.authTitle}>{t(language, "loginToAmarkrishok")}</Text>
+      <Text style={styles.authCopy}>{t(language, "loginCopy")}</Text>
+      <SelectField language={language} label={`${t(language, "selectAccountType")} *`} options={roleOptions.map((option) => ({ ...option, label: roleLabel(language, option.value) }))} value={role} onChange={setRole} />
       <Field
         autoCapitalize="none"
         keyboardType={role === "admin" ? "default" : "phone-pad"}
-        label={role === "admin" ? "Username *" : `${t(language, "mobile")} *`}
+        label={role === "admin" ? `${t(language, "username")} *` : `${t(language, "mobile")} *`}
         onChangeText={setIdentifier}
-        placeholder={role === "admin" ? "Admin username" : "01700000000"}
+        placeholder={role === "admin" ? t(language, "adminUsername") : "01700000000"}
         value={identifier}
       />
       <Field
         label={`${t(language, "password")} *`}
         onChangeText={setPassword}
-        placeholder="Your password"
+        placeholder={t(language, "password")}
         rightIcon={
           <Pressable onPress={() => setShowPassword((value) => !value)}>
             {showPassword ? <EyeOff color="#50685c" size={22} /> : <Eye color="#50685c" size={22} />}
@@ -393,16 +617,16 @@ function LoginScreen({
       {error ? <Text style={styles.errorBox}>{error}</Text> : null}
       <PrimaryButton disabled={busy} icon={<Lock color="#fff" size={20} />} label={busy ? "..." : t(language, "login")} onPress={submit} />
       <View style={styles.authLinks}>
-        <Text style={styles.muted}>Forgot password? </Text>
+        <Text style={styles.muted}>{t(language, "forgotPassword")} </Text>
         <Pressable onPress={() => setResetOpen(true)}>
-          <Text style={styles.link}>Reset</Text>
+          <Text style={styles.link}>{t(language, "reset")}</Text>
         </Pressable>
       </View>
       <View style={styles.divider} />
       <View style={styles.centerRow}>
-        <Text style={styles.muted}>Don't have an account? </Text>
+        <Text style={styles.muted}>{language === "bn" ? "অ্যাকাউন্ট নেই? " : "Don't have an account? "}</Text>
         <Pressable onPress={onCreateAccount}>
-          <Text style={styles.link}>Create account</Text>
+          <Text style={styles.link}>{t(language, "createAccount")}</Text>
         </Pressable>
       </View>
       <PasswordResetModal language={language} onClose={() => setResetOpen(false)} visible={resetOpen} />
@@ -410,45 +634,90 @@ function LoginScreen({
   );
 }
 
-function PasswordResetModal({ language, onClose, visible }: { language: Language; onClose: () => void; visible: boolean }) {
-  const [role, setRole] = useState<Exclude<Role, "admin">>("buyer");
-  const [phone, setPhone] = useState("");
+function PasswordResetModal({
+  defaultPhone = "",
+  defaultRole = "buyer",
+  language,
+  onClose,
+  visible,
+}: {
+  defaultPhone?: string;
+  defaultRole?: Exclude<Role, "admin">;
+  language: Language;
+  onClose: () => void;
+  visible: boolean;
+}) {
+  const [role, setRole] = useState<Exclude<Role, "admin">>(defaultRole);
+  const [phone, setPhone] = useState(defaultPhone);
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [busy, setBusy] = useState(false);
 
+  useEffect(() => {
+    if (!visible) return;
+    setRole(defaultRole);
+    setPhone(defaultPhone);
+    setPassword("");
+    setConfirm("");
+  }, [defaultPhone, defaultRole, visible]);
+
   async function submit() {
     if (password !== confirm) {
-      Alert.alert("Passwords do not match");
+      Alert.alert(t(language, "passwordsDoNotMatch"));
       return;
     }
     setBusy(true);
     try {
       await requestPasswordReset(role, phone.trim(), password);
-      Alert.alert("Reset request sent", "Admin approval is required before the new password works.");
+      Alert.alert(t(language, "resetRequestSent"), t(language, "resetRequiresAdmin"));
       onClose();
     } catch (error) {
-      Alert.alert("Could not request reset", error instanceof Error ? error.message : "Please try again.");
+      Alert.alert(t(language, "couldNotRequestReset"), error instanceof Error ? error.message : t(language, "commonTryAgain"));
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <Dialog onClose={onClose} title="Password reset" visible={visible}>
-      <SelectField
-        label={`${t(language, "selectAccountType")} *`}
-        options={[
-          { label: roleLabel(language, "buyer"), value: "buyer" },
-          { label: roleLabel(language, "farmer"), value: "farmer" },
-        ]}
-        value={role}
-        onChange={setRole}
-      />
-      <Field keyboardType="phone-pad" label={`${t(language, "mobile")} *`} onChangeText={setPhone} placeholder="01700000000" value={phone} />
-      <Field label="New password *" onChangeText={setPassword} placeholder="New password" secureTextEntry value={password} />
-      <Field label="Confirm password *" onChangeText={setConfirm} placeholder="Confirm password" secureTextEntry value={confirm} />
-      <PrimaryButton disabled={busy} icon={<Send color="#fff" size={18} />} label={busy ? "..." : t(language, "submit")} onPress={submit} />
+    <Dialog onClose={onClose} title={t(language, "passwordReset")} visible={visible}>
+      <View style={styles.resetDialogContent}>
+        <SelectField
+          language={language}
+          label={`${t(language, "selectAccountType")} *`}
+          options={[
+            { label: roleLabel(language, "buyer"), value: "buyer" },
+            { label: roleLabel(language, "farmer"), value: "farmer" },
+          ]}
+          style={styles.resetDialogField}
+          value={role}
+          onChange={setRole}
+        />
+        <Field
+          keyboardType="phone-pad"
+          label={`${t(language, "mobile")} *`}
+          onChangeText={setPhone}
+          placeholder="01700000000"
+          style={styles.resetDialogField}
+          value={phone}
+        />
+        <Field
+          label={`${t(language, "newPassword")} *`}
+          onChangeText={setPassword}
+          placeholder={t(language, "newPassword")}
+          secureTextEntry
+          style={styles.resetDialogField}
+          value={password}
+        />
+        <Field
+          label={`${t(language, "confirmPassword")} *`}
+          onChangeText={setConfirm}
+          placeholder={t(language, "confirmPassword")}
+          secureTextEntry
+          style={styles.resetDialogField}
+          value={confirm}
+        />
+        <PrimaryButton disabled={busy} icon={<Send color="#fff" size={18} />} label={busy ? "..." : t(language, "submit")} onPress={submit} />
+      </View>
     </Dialog>
   );
 }
@@ -491,21 +760,21 @@ function RegisterScreen({
       await registerAccount(form);
       onRegistered();
     } catch (error) {
-      Alert.alert("Registration failed", error instanceof Error ? error.message : "Please try again.");
+      Alert.alert(t(language, "registrationFailed"), error instanceof Error ? error.message : t(language, "commonTryAgain"));
     }
   }
 
   return (
     <View style={styles.authCard}>
-      <Text style={styles.kicker}>New registration</Text>
-      <Text style={styles.authTitle}>{role === "buyer" ? "Create buyer account" : "Create seller account"}</Text>
+      <Text style={styles.kicker}>{t(language, "newRegistration")}</Text>
+      <Text style={styles.authTitle}>{role === "buyer" ? t(language, "createBuyerAccount") : t(language, "createSellerAccount")}</Text>
       <View style={styles.twoColumn}>
-        <Field label={t(language, "name")} onChangeText={(name) => setForm({ ...form, name })} placeholder="Full name" value={form.name} />
+        <Field label={t(language, "name")} onChangeText={(name) => setForm({ ...form, name })} placeholder={t(language, "name")} value={form.name} />
         <Field keyboardType="phone-pad" label={t(language, "mobile")} onChangeText={(phone) => setForm({ ...form, phone })} placeholder="01700000000" value={form.phone} />
         <Field
           label={t(language, "password")}
           onChangeText={(password) => setForm({ ...form, password })}
-          placeholder="Password"
+          placeholder={t(language, "password")}
           rightIcon={
             <Pressable onPress={() => setShowPassword((value) => !value)}>
               {showPassword ? <EyeOff color="#50685c" size={22} /> : <Eye color="#50685c" size={22} />}
@@ -514,16 +783,18 @@ function RegisterScreen({
           secureTextEntry={!showPassword}
           value={form.password}
         />
-        <Field label={t(language, "organization")} onChangeText={(organization) => setForm({ ...form, organization })} placeholder="Shop, restaurant, company, or farm" value={form.organization} />
-        <Field label={t(language, "identity")} onChangeText={(identity) => setForm({ ...form, identity })} placeholder="NID or trade license number" value={form.identity} />
-        <Field label={t(language, "focus")} onChangeText={(focus) => setForm({ ...form, focus })} placeholder="Tomato, potato, chilli" value={form.focus} />
+        <Field label={t(language, "organization")} onChangeText={(organization) => setForm({ ...form, organization })} placeholder={t(language, "organizationPlaceholder")} value={form.organization} />
+        <Field label={t(language, "identity")} onChangeText={(identity) => setForm({ ...form, identity })} placeholder={t(language, "identityPlaceholder")} value={form.identity} />
+        <Field label={t(language, "focus")} onChangeText={(focus) => setForm({ ...form, focus })} placeholder={t(language, "focusPlaceholder")} value={form.focus} />
         <SelectField
+          language={language}
           label={t(language, "district")}
           options={districts.map((value) => ({ label: value, value }))}
           value={form.district}
           onChange={(district) => setForm({ ...form, district, upazilla: "" })}
         />
         <SelectField
+          language={language}
           label={t(language, "upazilla")}
           options={upazillaOptions}
           placeholder={form.district ? t(language, "selectUpazilla") : t(language, "selectDistrict")}
@@ -531,7 +802,7 @@ function RegisterScreen({
           onChange={(upazilla) => setForm({ ...form, upazilla })}
         />
       </View>
-      <Field label={t(language, "address")} onChangeText={(address) => setForm({ ...form, address })} placeholder="Address" value={form.address} />
+      <Field label={t(language, "address")} onChangeText={(address) => setForm({ ...form, address })} placeholder={t(language, "addressPlaceholder")} value={form.address} />
       <View style={styles.rowGap}>
         <SecondaryButton label={t(language, "home")} onPress={onBack} />
         <PrimaryButton icon={<CheckCircle2 color="#fff" size={20} />} label={t(language, "register")} onPress={submit} />
@@ -546,27 +817,29 @@ function MarketplaceScreen({ language, lots, onRefresh }: { language: Language; 
       <View style={styles.panelHeader}>
         <Text style={styles.panelTitle}>{t(language, "marketplace")}</Text>
         <TouchableOpacity onPress={onRefresh} style={styles.smallButton}>
-          <Text style={styles.smallButtonText}>Refresh</Text>
+          <Text style={styles.smallButtonText}>{t(language, "refresh")}</Text>
         </TouchableOpacity>
       </View>
-      {lots.map((lot) => (
+      {lots.length ? lots.map((lot) => (
         <LotCard key={lot.id} language={language} lot={lot} />
-      ))}
+      )) : <EmptyState text={t(language, "noApprovedLots")} />}
     </View>
   );
 }
 
 function DashboardScreen({
   language,
+  marketplaceLots,
   lots,
+  onNavigate,
   orders,
-  profile,
   role,
 }: {
   language: Language;
+  marketplaceLots: CropLot[];
   lots: CropLot[];
+  onNavigate: (screen: Screen) => void;
   orders: Order[];
-  profile: AccountProfile | null;
   role: Role;
 }) {
   const totalQuantity = lots.reduce((sum, lot) => sum + lot.quantityKg, 0);
@@ -578,12 +851,24 @@ function DashboardScreen({
       <View>
         <MetricGrid
           items={[
-            { icon: Package, label: t(language, "lots"), value: String(lots.length), detail: "Submitted farmer lots" },
-            { icon: ShoppingBag, label: t(language, "orders"), value: String(orders.length), detail: "Buyer order records" },
-            { icon: WalletCards, label: "GMV", value: currency(orderValue), detail: "From backend orders" },
+            { icon: Package, label: t(language, "lots"), value: String(lots.length), detail: t(language, "farmerSupplyLots") },
+            { icon: ShoppingBag, label: t(language, "orders"), value: String(orders.length), detail: t(language, "buyerDemand") },
+            { icon: WalletCards, label: t(language, "gmv"), value: currency(orderValue), detail: t(language, "orderValue") },
+            { icon: Truck, label: t(language, "logistics"), value: t(language, "live"), detail: t(language, "pickupFollowUp") },
           ]}
         />
-        <InfoPanel title="Mobile admin view" body="Use the web dashboard for account approval, lot review, payouts, and detailed operations. This mobile view keeps the core status handy." icon={<Bell color="#157747" size={24} />} />
+        <ActionGrid
+          actions={[
+            { icon: Package, label: t(language, "lots"), onPress: () => onNavigate("post") },
+            { icon: ShoppingBag, label: t(language, "orders"), onPress: () => onNavigate("orders") },
+          ]}
+        />
+        <MobilePanel icon={<ShoppingBag color="#157747" size={22} />} title={t(language, "buyerDemandQueue")}>
+          <OrderList language={language} orders={orders.slice(0, 4)} emptyText={t(language, "noOrderRecords")} />
+        </MobilePanel>
+        <MobilePanel icon={<Sprout color="#157747" size={22} />} title={t(language, "verifiedSupplyLots")}>
+          <LotList language={language} lots={lots.slice(0, 4)} emptyText={t(language, "noFarmerLots")} />
+        </MobilePanel>
       </View>
     );
   }
@@ -594,22 +879,41 @@ function DashboardScreen({
         items={
           role === "farmer"
             ? [
-                { icon: Package, label: t(language, "activeLots"), value: String(lots.length), detail: "Ready for buyer requests" },
-                { icon: Sprout, label: "Listed quantity", value: kgToDisplay(totalQuantity), detail: "From your lots" },
-                { icon: WalletCards, label: "Estimated payout", value: currency(totalQuantity * averageAsk), detail: "After buyer confirmation" },
+                { icon: Package, label: t(language, "activeLots"), value: String(lots.length), detail: t(language, "readyForBuyerRequests") },
+                { icon: Sprout, label: t(language, "listedQuantity"), value: kgToDisplay(totalQuantity, language), detail: t(language, "fromYourLots") },
+                { icon: CheckCircle2, label: t(language, "averageAsk"), value: averageAsk ? pricePerKg(averageAsk, language) : pricePerKg(0, language), detail: t(language, "approvedSupply") },
+                { icon: WalletCards, label: t(language, "estimatedPayout"), value: currency(totalQuantity * averageAsk), detail: t(language, "afterBuyerConfirmation") },
               ]
             : [
-                { icon: ShoppingBag, label: t(language, "orders"), value: String(orders.length), detail: "Your order requests" },
-                { icon: WalletCards, label: "Order value", value: currency(orderValue), detail: "Requested supply" },
-                { icon: Truck, label: "Pickup", value: "Team managed", detail: "After order approval" },
+                { icon: ShoppingBag, label: t(language, "orders"), value: String(orders.length), detail: t(language, "yourOrderRequests") },
+                { icon: WalletCards, label: t(language, "orderValue"), value: currency(orderValue), detail: t(language, "requestedSupply") },
+                { icon: Truck, label: t(language, "pickup"), value: t(language, "team"), detail: t(language, "afterOrderApproval") },
+                { icon: Package, label: t(language, "availableLots"), value: String(marketplaceLots.length), detail: t(language, "approvedSupply") },
               ]
         }
       />
-      <InfoPanel
-        title={profile?.name || "Profile pending"}
-        body={`${profile?.organization || "Organization not added"} · ${profile?.district || "District not added"} ${profile?.upazilla ? `· ${profile.upazilla}` : ""}`}
-        icon={<UserRound color="#157747" size={24} />}
-      />
+      {role === "farmer" ? (
+        <>
+          <MobilePanel icon={<Sprout color="#157747" size={22} />} title={t(language, "yourCropLots")}>
+            <LotList language={language} lots={lots.slice(0, 5)} emptyText={t(language, "postFirstCropLot")} />
+          </MobilePanel>
+        </>
+      ) : (
+        <>
+          <ActionGrid
+            actions={[
+              { icon: ShoppingBag, label: t(language, "requestOrder"), onPress: () => onNavigate("orders") },
+              { icon: Package, label: t(language, "marketplace"), onPress: () => onNavigate("marketplace") },
+            ]}
+          />
+          <MobilePanel icon={<ShoppingBag color="#157747" size={22} />} title={t(language, "yourOrders")}>
+            <OrderList language={language} orders={orders.slice(0, 5)} emptyText={t(language, "noOrderRecords")} />
+          </MobilePanel>
+          <MobilePanel icon={<Package color="#157747" size={22} />} title={t(language, "approvedMarketplaceLots")}>
+            <LotList language={language} lots={marketplaceLots.slice(0, 4)} emptyText={t(language, "noApprovedLots")} />
+          </MobilePanel>
+        </>
+      )}
     </View>
   );
 }
@@ -625,6 +929,7 @@ function FarmerPostScreen({
   loading: boolean;
   onSubmit: (payload: Parameters<typeof createLot>[1], imageUri?: string) => Promise<void>;
 }) {
+  const kgUnit = language === "bn" ? "কেজি" : "kg";
   const [imageUri, setImageUri] = useState<string | undefined>();
   const [form, setForm] = useState({
     crop: "",
@@ -641,7 +946,7 @@ function FarmerPostScreen({
   async function pickImage() {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
-      Alert.alert("Permission needed", "Please allow photo access to choose a crop image.");
+      Alert.alert(language === "bn" ? "অনুমতি প্রয়োজন" : "Permission needed", language === "bn" ? "ফসলের ছবি বেছে নিতে ফটো অ্যাক্সেস দিন।" : "Please allow photo access to choose a crop image.");
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({ allowsEditing: true, mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.75 });
@@ -650,22 +955,22 @@ function FarmerPostScreen({
 
   return (
     <View style={styles.card}>
-      <Text style={styles.kicker}>Crop listing</Text>
+      <Text style={styles.kicker}>{t(language, "cropListing")}</Text>
       <Text style={styles.panelTitle}>{t(language, "postCrop")}</Text>
       <View style={styles.twoColumn}>
-        <Field label={t(language, "crop")} onChangeText={(crop) => setForm({ ...form, crop })} placeholder="Tomato" value={form.crop} />
-        <SelectField label={t(language, "district")} options={districts.map((value) => ({ label: value, value }))} value={form.district} onChange={(district) => setForm({ ...form, district, upazilla: "" })} />
-        <SelectField label={t(language, "upazilla")} options={upazillaOptions} placeholder={t(language, "selectUpazilla")} value={form.upazilla} onChange={(upazilla) => setForm({ ...form, upazilla })} />
-        <Field keyboardType="numeric" label={`${t(language, "quantity")} (kg)`} onChangeText={(quantityKg) => setForm({ ...form, quantityKg })} placeholder="1200" value={form.quantityKg} />
-        <Field keyboardType="numeric" label={`${t(language, "price")} / kg`} onChangeText={(pricePerKg) => setForm({ ...form, pricePerKg })} placeholder="34" value={form.pricePerKg} />
+        <Field label={t(language, "crop")} onChangeText={(crop) => setForm({ ...form, crop })} placeholder={language === "bn" ? "টমেটো" : "Tomato"} value={form.crop} />
+        <SelectField language={language} label={t(language, "district")} options={districts.map((value) => ({ label: value, value }))} value={form.district} onChange={(district) => setForm({ ...form, district, upazilla: "" })} />
+        <SelectField language={language} label={t(language, "upazilla")} options={upazillaOptions} placeholder={t(language, "selectUpazilla")} value={form.upazilla} onChange={(upazilla) => setForm({ ...form, upazilla })} />
+        <Field keyboardType="numeric" label={`${t(language, "quantity")} (${kgUnit})`} onChangeText={(quantityKg) => setForm({ ...form, quantityKg })} placeholder="1200" value={form.quantityKg} />
+        <Field keyboardType="numeric" label={`${t(language, "price")} / ${kgUnit}`} onChangeText={(pricePerKg) => setForm({ ...form, pricePerKg })} placeholder="34" value={form.pricePerKg} />
         <Field label={t(language, "harvestDate")} onChangeText={(harvestDate) => setForm({ ...form, harvestDate })} placeholder="2026-06-12" value={form.harvestDate} />
-        <SelectField label={t(language, "grade")} options={gradeOptions.map((value) => ({ label: value, value }))} value={form.grade} onChange={(grade) => setForm({ ...form, grade })} />
+        <SelectField language={language} label={t(language, "grade")} options={gradeOptions.map((value) => ({ label: value, value }))} value={form.grade} onChange={(grade) => setForm({ ...form, grade })} />
       </View>
       <TouchableOpacity onPress={pickImage} style={styles.uploadBox}>
         <PlusCircle color="#157747" size={20} />
-        <Text style={styles.uploadText}>{imageUri ? "Crop image selected" : t(language, "cropImage")}</Text>
+        <Text style={styles.uploadText}>{imageUri ? t(language, "cropImageSelected") : t(language, "cropImage")}</Text>
       </TouchableOpacity>
-      <Field label={t(language, "notes")} multiline onChangeText={(notes) => setForm({ ...form, notes })} placeholder="Packaging, pickup point, storage condition" value={form.notes} />
+      <Field label={t(language, "notes")} multiline onChangeText={(notes) => setForm({ ...form, notes })} placeholder={t(language, "packagingPlaceholder")} value={form.notes} />
       <PrimaryButton
         disabled={loading}
         icon={<PlusCircle color="#fff" size={20} />}
@@ -707,6 +1012,7 @@ function OrdersScreen({
   orders: Order[];
   role: Role;
 }) {
+  const kgUnit = language === "bn" ? "কেজি" : "kg";
   const [form, setForm] = useState({
     crop: lots[0]?.crop || "",
     deliveryAddress: "",
@@ -723,18 +1029,18 @@ function OrdersScreen({
     <View>
       {role === "buyer" ? (
         <View style={styles.card}>
-          <Text style={styles.kicker}>Buyer order</Text>
+          <Text style={styles.kicker}>{t(language, "buyerOrder")}</Text>
           <Text style={styles.panelTitle}>{t(language, "requestOrder")}</Text>
           <View style={styles.twoColumn}>
-            <Field label={t(language, "crop")} onChangeText={(crop) => setForm({ ...form, crop })} placeholder="Tomato" value={form.crop} />
-            <Field keyboardType="numeric" label={`${t(language, "quantity")} (kg)`} onChangeText={(quantityKg) => setForm({ ...form, quantityKg })} placeholder="500" value={form.quantityKg} />
-            <Field keyboardType="numeric" label={`${t(language, "price")} / kg`} onChangeText={(offeredPricePerKg) => setForm({ ...form, offeredPricePerKg })} placeholder="34" value={form.offeredPricePerKg} />
-            <SelectField label={t(language, "district")} options={districts.map((value) => ({ label: value, value }))} value={form.district} onChange={(district) => setForm({ ...form, district, upazilla: "" })} />
-            <SelectField label={t(language, "upazilla")} options={upazillaOptions} placeholder={t(language, "selectUpazilla")} value={form.upazilla} onChange={(upazilla) => setForm({ ...form, upazilla })} />
-            <Field label="Target date" onChangeText={(targetDate) => setForm({ ...form, targetDate })} placeholder="2026-06-12" value={form.targetDate} />
+            <Field label={t(language, "crop")} onChangeText={(crop) => setForm({ ...form, crop })} placeholder={language === "bn" ? "টমেটো" : "Tomato"} value={form.crop} />
+            <Field keyboardType="numeric" label={`${t(language, "quantity")} (${kgUnit})`} onChangeText={(quantityKg) => setForm({ ...form, quantityKg })} placeholder="500" value={form.quantityKg} />
+            <Field keyboardType="numeric" label={`${t(language, "price")} / ${kgUnit}`} onChangeText={(offeredPricePerKg) => setForm({ ...form, offeredPricePerKg })} placeholder="34" value={form.offeredPricePerKg} />
+            <SelectField language={language} label={t(language, "district")} options={districts.map((value) => ({ label: value, value }))} value={form.district} onChange={(district) => setForm({ ...form, district, upazilla: "" })} />
+            <SelectField language={language} label={t(language, "upazilla")} options={upazillaOptions} placeholder={t(language, "selectUpazilla")} value={form.upazilla} onChange={(upazilla) => setForm({ ...form, upazilla })} />
+            <Field label={t(language, "targetDate")} onChangeText={(targetDate) => setForm({ ...form, targetDate })} placeholder="2026-06-12" value={form.targetDate} />
           </View>
-          <Field label={t(language, "address")} onChangeText={(deliveryAddress) => setForm({ ...form, deliveryAddress })} placeholder="Delivery address" value={form.deliveryAddress} />
-          <Field label={t(language, "notes")} multiline onChangeText={(notes) => setForm({ ...form, notes })} placeholder="Packaging, timing, contact notes" value={form.notes} />
+          <Field label={t(language, "address")} onChangeText={(deliveryAddress) => setForm({ ...form, deliveryAddress })} placeholder={t(language, "deliveryAddressPlaceholder")} value={form.deliveryAddress} />
+          <Field label={t(language, "notes")} multiline onChangeText={(notes) => setForm({ ...form, notes })} placeholder={t(language, "packagingPlaceholder")} value={form.notes} />
           <PrimaryButton
             disabled={loading}
             icon={<Send color="#fff" size={20} />}
@@ -759,7 +1065,7 @@ function OrdersScreen({
         </View>
       ) : null}
       <Text style={styles.panelTitle}>{t(language, "orders")}</Text>
-      {orders.length ? orders.map((order) => <OrderCard key={order.id} order={order} />) : <EmptyState text="No order records yet." />}
+      {orders.length ? orders.map((order) => <OrderCard key={order.id} language={language} order={order} />) : <EmptyState text={t(language, "noOrderRecords")} />}
     </View>
   );
 }
@@ -767,14 +1073,22 @@ function OrdersScreen({
 function ProfileScreen({
   districts,
   language,
+  onLogout,
+  onNavigate,
+  onNotificationsPress,
   onSave,
   profile,
 }: {
   districts: string[];
   language: Language;
+  onLogout: () => void;
+  onNavigate: (screen: Screen) => void;
+  onNotificationsPress: () => void;
   onSave: (payload: Omit<AccountProfile, "id" | "phone" | "role" | "status" | "username">) => Promise<void>;
   profile: AccountProfile | null;
 }) {
+  const [editOpen, setEditOpen] = useState(false);
+  const [resetOpen, setResetOpen] = useState(false);
   const [form, setForm] = useState({
     address: "",
     district: districts[0] || "",
@@ -800,24 +1114,116 @@ function ProfileScreen({
 
   const upazillaOptions = (upazillasByDistrict[form.district] || []).map((value) => ({ label: value, value }));
 
-  if (!profile) return <EmptyState text="Profile data is loading." />;
+  if (!profile) return <EmptyState text={t(language, "profileLoading")} />;
+
+  const resetRole: Exclude<Role, "admin"> = profile.role === "farmer" ? "farmer" : "buyer";
+
+  async function saveProfile() {
+    await onSave(form);
+    setEditOpen(false);
+  }
+
+  function openPasswordReset() {
+    if (profile?.role === "admin") {
+      Alert.alert(t(language, "changePassword"), t(language, "adminPasswordManaged"));
+      return;
+    }
+    setResetOpen(true);
+  }
+
+  function openPayments() {
+    Alert.alert(t(language, "payments"), t(language, "paymentsSubtitle"));
+  }
+
+  function openFaq() {
+    Alert.alert(t(language, "faq"), t(language, "faqMessage"));
+  }
 
   return (
-    <View style={styles.card}>
-      <Text style={styles.kicker}>{t(language, "profile")}</Text>
-      <Text style={styles.panelTitle}>{profile.name}</Text>
-      <Text style={styles.muted}>{profile.phone}</Text>
-      <View style={styles.twoColumn}>
-        <Field label={t(language, "name")} onChangeText={(name) => setForm({ ...form, name })} value={form.name} />
-        <Field label={t(language, "organization")} onChangeText={(organization) => setForm({ ...form, organization })} value={form.organization} />
-        <SelectField label={t(language, "district")} options={districts.map((value) => ({ label: value, value }))} value={form.district} onChange={(district) => setForm({ ...form, district, upazilla: "" })} />
-        <SelectField label={t(language, "upazilla")} options={upazillaOptions} placeholder={t(language, "selectUpazilla")} value={form.upazilla} onChange={(upazilla) => setForm({ ...form, upazilla })} />
-        <Field label={t(language, "identity")} onChangeText={(identity) => setForm({ ...form, identity })} value={form.identity} />
-        <Field label={t(language, "focus")} onChangeText={(focus) => setForm({ ...form, focus })} value={form.focus} />
+    <View style={styles.profileSettings}>
+      <View style={styles.profileSummaryCard}>
+        <View style={styles.profileAvatar}>
+          <UserRound color="#157747" size={26} />
+        </View>
+        <View style={styles.profileSummaryCopy}>
+          <Text style={styles.profileSummaryName}>{profile.name || roleLabel(language, profile.role)}</Text>
+          <Text style={styles.profileSummaryMeta}>
+            {profile.organization || roleLabel(language, profile.role)}
+            {profile.phone ? ` · ${profile.phone}` : ""}
+          </Text>
+          <Text style={styles.profileSummaryMeta}>
+            {[profile.district, profile.upazilla].filter(Boolean).join(", ") || t(language, "districtNotAdded")}
+          </Text>
+        </View>
       </View>
-      <Field label={t(language, "address")} onChangeText={(address) => setForm({ ...form, address })} value={form.address} />
-      <PrimaryButton icon={<Save color="#fff" size={20} />} label="Save profile" onPress={() => onSave(form)} />
+
+      <View style={styles.settingsGroup}>
+        <Text style={styles.settingsGroupTitle}>{t(language, "general")}</Text>
+        <SettingsItem icon={UserRound} onPress={() => setEditOpen(true)} subtitle={t(language, "editProfileSubtitle")} title={t(language, "editProfile")} />
+        <SettingsItem icon={Lock} onPress={openPasswordReset} subtitle={t(language, "changePasswordSubtitle")} title={t(language, "changePassword")} />
+        <SettingsItem icon={ShoppingBag} onPress={() => onNavigate("orders")} subtitle={t(language, "ordersSubtitle")} title={t(language, "orders")} />
+        <SettingsItem icon={WalletCards} onPress={openPayments} subtitle={t(language, "paymentsSubtitle")} title={t(language, "payments")} />
+      </View>
+
+      <View style={styles.settingsGroup}>
+        <Text style={styles.settingsGroupTitle}>{t(language, "preferences")}</Text>
+        <SettingsItem icon={Bell} onPress={onNotificationsPress} subtitle={t(language, "notificationPreferences")} title={t(language, "notifications")} trailing="toggle" />
+        <SettingsItem icon={CheckCircle2} onPress={openFaq} subtitle={t(language, "faqSubtitle")} title={t(language, "faq")} />
+        <SettingsItem danger icon={LogOut} onPress={onLogout} subtitle={t(language, "logoutSubtitle")} title={t(language, "logout")} />
+      </View>
+
+      <Dialog onClose={() => setEditOpen(false)} title={t(language, "editProfile")} visible={editOpen}>
+        <View style={styles.editProfileForm}>
+          <View style={styles.twoColumn}>
+            <Field label={t(language, "name")} onChangeText={(name) => setForm({ ...form, name })} value={form.name} />
+            <Field label={t(language, "organization")} onChangeText={(organization) => setForm({ ...form, organization })} value={form.organization} />
+            <SelectField language={language} label={t(language, "district")} options={districts.map((value) => ({ label: value, value }))} value={form.district} onChange={(district) => setForm({ ...form, district, upazilla: "" })} />
+            <SelectField language={language} label={t(language, "upazilla")} options={upazillaOptions} placeholder={t(language, "selectUpazilla")} value={form.upazilla} onChange={(upazilla) => setForm({ ...form, upazilla })} />
+            <Field label={t(language, "identity")} onChangeText={(identity) => setForm({ ...form, identity })} value={form.identity} />
+            <Field label={t(language, "focus")} onChangeText={(focus) => setForm({ ...form, focus })} value={form.focus} />
+          </View>
+          <Field label={t(language, "address")} onChangeText={(address) => setForm({ ...form, address })} value={form.address} />
+          <PrimaryButton icon={<Save color="#fff" size={20} />} label={t(language, "saveProfile")} onPress={saveProfile} />
+        </View>
+      </Dialog>
+
+      <PasswordResetModal defaultPhone={profile.phone} defaultRole={resetRole} language={language} onClose={() => setResetOpen(false)} visible={resetOpen} />
     </View>
+  );
+}
+
+function SettingsItem({
+  danger,
+  icon: Icon,
+  onPress,
+  subtitle,
+  title,
+  trailing = "chevron",
+}: {
+  danger?: boolean;
+  icon: React.ComponentType<{ color?: string; size?: number }>;
+  onPress: () => void;
+  subtitle: string;
+  title: string;
+  trailing?: "chevron" | "toggle";
+}) {
+  return (
+    <TouchableOpacity accessibilityRole="button" onPress={onPress} style={styles.settingsItem}>
+      <View style={[styles.settingsIconChip, danger && styles.settingsIconChipDanger]}>
+        <Icon color={danger ? "#c2415a" : "#157747"} size={18} />
+      </View>
+      <View style={styles.settingsItemBody}>
+        <Text style={[styles.settingsItemTitle, danger && styles.settingsItemDanger]}>{title}</Text>
+        <Text style={styles.settingsItemSubtitle}>{subtitle}</Text>
+      </View>
+      {trailing === "toggle" ? (
+        <View style={styles.settingsToggle}>
+          <View style={styles.settingsToggleThumb} />
+        </View>
+      ) : (
+        <ChevronRight color={danger ? "#c2415a" : "#687a70"} size={20} />
+      )}
+    </TouchableOpacity>
   );
 }
 
@@ -828,36 +1234,37 @@ function LotCard({ language, lot }: { language: Language; lot: CropLot }) {
       <View style={styles.lotBody}>
         <View style={styles.between}>
           <Text style={styles.lotTitle}>{lot.crop}</Text>
-          <Text style={styles.priceText}>৳{lot.pricePerKg}/kg</Text>
+          <Text style={styles.priceText}>{pricePerKg(lot.pricePerKg, language)}</Text>
         </View>
         <Text style={styles.muted}>{lot.farmer}</Text>
         <InfoLine icon={<MapPin color="#718479" size={18} />} text={`${lot.district}${lot.upazilla ? `, ${lot.upazilla}` : ""}`} />
-        <InfoLine icon={<Package color="#718479" size={18} />} text={kgToDisplay(lot.quantityKg)} />
-        <InfoLine icon={<CheckCircle2 color="#718479" size={18} />} text={`Grade ${lot.grade}`} />
-        <InfoLine icon={<CalendarDays color="#718479" size={18} />} text={formatDate(lot.harvestDate || lot.createdAt)} />
-        <PrimaryButton icon={<ShoppingBag color="#fff" size={18} />} label={t(language, "requestOrder")} onPress={() => Alert.alert("Order", "Login as buyer to request this lot.")} />
+        <InfoLine icon={<Package color="#718479" size={18} />} text={kgToDisplay(lot.quantityKg, language)} />
+        <InfoLine icon={<CheckCircle2 color="#718479" size={18} />} text={`${t(language, "grade")} ${lot.grade}`} />
+        <InfoLine icon={<CalendarDays color="#718479" size={18} />} text={formatDate(lot.harvestDate || lot.createdAt, language)} />
+        <PrimaryButton icon={<ShoppingBag color="#fff" size={18} />} label={t(language, "requestOrder")} onPress={() => Alert.alert(t(language, "orders"), language === "bn" ? "এই লট অর্ডার করতে ক্রেতা হিসেবে লগইন করুন।" : "Login as buyer to request this lot.")} />
       </View>
     </View>
   );
 }
 
-function OrderCard({ order }: { order: Order }) {
+function OrderCard({ language, order }: { language: Language; order: Order }) {
   return (
     <View style={styles.orderCard}>
       <View>
         <Text style={styles.lotTitle}>{order.id}</Text>
         <Text style={styles.muted}>{order.items.map((item) => item.crop).join(", ")}</Text>
         <Text style={styles.muted}>{order.district}{order.upazilla ? `, ${order.upazilla}` : ""}</Text>
+        <Text style={styles.muted}>{formatDate(order.targetDate || order.createdAt, language)}</Text>
       </View>
       <View style={styles.rightBlock}>
         <Text style={styles.priceText}>{currency(order.totalValue)}</Text>
-        <Text style={styles.statusPill}>{order.status}</Text>
+        <Text style={styles.statusPill}>{statusLabel(order.status, language)}</Text>
       </View>
     </View>
   );
 }
 
-function Tabs({
+function BottomTabs({
   language,
   role,
   screen,
@@ -868,26 +1275,32 @@ function Tabs({
   screen: Screen;
   setScreen: (screen: Screen) => void;
 }) {
-  const tabs: Array<{ icon: React.ComponentType<{ color?: string; size?: number }>; label: string; screen: Screen }> = [
-    { icon: Home, label: t(language, "dashboard"), screen: "dashboard" },
+  const tabs: Array<{ fillable?: boolean; icon: React.ComponentType<{ color?: string; fill?: string; size?: number; strokeWidth?: number }>; label: string; screen: Screen }> = [
+    { fillable: true, icon: Home, label: t(language, "dashboard"), screen: "dashboard" },
     { icon: ShoppingBag, label: t(language, "marketplace"), screen: "marketplace" },
-    ...(role !== "buyer" ? [{ icon: PlusCircle, label: t(language, "postCrop"), screen: "post" as Screen }] : []),
     { icon: Package, label: t(language, "orders"), screen: "orders" },
     { icon: UserRound, label: t(language, "profile"), screen: "profile" },
   ];
 
+  if (role !== "buyer") {
+    tabs.splice(2, 0, { icon: PlusCircle, label: t(language, "postCrop"), screen: "post" });
+  }
+
   return (
-    <View style={styles.tabs}>
-      {tabs.map((tab) => {
-        const Icon = tab.icon;
-        const active = screen === tab.screen;
-        return (
-          <TouchableOpacity key={tab.screen} onPress={() => setScreen(tab.screen)} style={[styles.tab, active && styles.tabActive]}>
-            <Icon color={active ? "#fff" : "#17382b"} size={18} />
-            <Text style={[styles.tabText, active && styles.tabTextActive]}>{tab.label}</Text>
-          </TouchableOpacity>
-        );
-      })}
+    <View style={styles.bottomNavWrap}>
+      <View style={styles.bottomTabs}>
+        {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const active = screen === tab.screen;
+            const color = active ? "#157747" : "#8b948d";
+            return (
+              <TouchableOpacity key={tab.screen} onPress={() => setScreen(tab.screen)} style={styles.bottomTab}>
+                <Icon color={color} fill={active && tab.fillable ? color : "none"} size={18} strokeWidth={active ? 2.8 : 2.2} />
+                <Text adjustsFontSizeToFit minimumFontScale={0.5} numberOfLines={1} style={[styles.bottomTabText, active && styles.bottomTabTextActive]}>{tab.label}</Text>
+              </TouchableOpacity>
+            );
+          })}
+      </View>
     </View>
   );
 }
@@ -922,26 +1335,30 @@ function Field({
 }
 
 function SelectField<T extends string>({
+  language = "en",
   label,
   onChange,
   options,
   placeholder,
+  style,
   value,
 }: {
+  language?: Language;
   label: string;
   onChange: (value: T) => void;
   options: Array<SelectOption<T>>;
   placeholder?: string;
+  style?: React.ComponentProps<typeof View>["style"];
   value: T;
 }) {
   const [open, setOpen] = useState(false);
   const selected = options.find((option) => option.value === value);
 
   return (
-    <View style={styles.field}>
+    <View style={[styles.field, style]}>
       <Text style={styles.fieldLabel}>{label}</Text>
       <Pressable onPress={() => setOpen(true)} style={styles.selectShell}>
-        <Text style={[styles.selectText, !selected && styles.placeholderText]}>{selected?.label || placeholder || "Select"}</Text>
+        <Text style={[styles.selectText, !selected && styles.placeholderText]}>{selected?.label || placeholder || t(language, "select")}</Text>
         <ChevronDown color="#17382b" size={20} />
       </Pressable>
       <Modal animationType="fade" transparent visible={open}>
@@ -961,7 +1378,7 @@ function SelectField<T extends string>({
                 </TouchableOpacity>
               ))
             ) : (
-              <Text style={styles.muted}>No options</Text>
+              <Text style={styles.muted}>{t(language, "noOptions")}</Text>
             )}
           </View>
         </Pressable>
@@ -982,21 +1399,84 @@ function CreateAccountModal({
   visible: boolean;
 }) {
   return (
-    <Dialog onClose={onClose} title="Create account" visible={visible}>
+    <Dialog onClose={onClose} title={t(language, "createAccount")} visible={visible}>
       <TouchableOpacity onPress={() => onPick("buyer")} style={styles.choiceCard}>
         <ShoppingBag color="#157747" size={28} />
         <View>
           <Text style={styles.choiceTitle}>{roleLabel(language, "buyer")}</Text>
-          <Text style={styles.muted}>Order crops directly</Text>
+          <Text style={styles.muted}>{t(language, "buyCropsDirectly")}</Text>
         </View>
       </TouchableOpacity>
       <TouchableOpacity onPress={() => onPick("farmer")} style={styles.choiceCard}>
         <Sprout color="#157747" size={28} />
         <View>
           <Text style={styles.choiceTitle}>{roleLabel(language, "farmer")}</Text>
-          <Text style={styles.muted}>Post harvest lots</Text>
+          <Text style={styles.muted}>{t(language, "postHarvestLots")}</Text>
         </View>
       </TouchableOpacity>
+    </Dialog>
+  );
+}
+
+function NotificationModal({
+  language,
+  notifications,
+  onClose,
+  onMarkAll,
+  onOpenNotification,
+  reviewedIds,
+  user,
+  visible,
+}: {
+  language: Language;
+  notifications: MobileNotification[];
+  onClose: () => void;
+  onMarkAll: () => void;
+  onOpenNotification: (notification: MobileNotification) => void;
+  reviewedIds: string[];
+  user: AuthUser | null;
+  visible: boolean;
+}) {
+  return (
+    <Dialog onClose={onClose} title={t(language, "notifications")} visible={visible}>
+      <View style={styles.notificationHeaderRow}>
+        <Text style={styles.muted}>{user ? t(language, "latestUpdates") : t(language, "notificationLoginHint")}</Text>
+        {notifications.length ? (
+          <TouchableOpacity onPress={onMarkAll} style={styles.smallButton}>
+            <Text style={styles.smallButtonText}>{t(language, "markAllReviewed")}</Text>
+          </TouchableOpacity>
+        ) : null}
+      </View>
+      {notifications.length ? (
+        <View style={styles.notificationList}>
+          {notifications.map((notification) => {
+            const Icon = notification.icon;
+            const reviewed = reviewedIds.includes(notification.id);
+            return (
+              <TouchableOpacity
+                key={notification.id}
+                onPress={() => onOpenNotification(notification)}
+                style={[styles.notificationItem, reviewed && styles.notificationItemReviewed]}
+              >
+                <View style={styles.notificationIconChip}>
+                  <Icon color="#157747" size={20} />
+                </View>
+                <View style={styles.notificationBody}>
+                  <View style={styles.notificationTitleRow}>
+                    <Text style={styles.notificationTitle}>{notification.title}</Text>
+                    <Text style={[styles.notificationStatus, reviewed && styles.notificationStatusReviewed]}>
+                      {reviewed ? t(language, "reviewed") : t(language, "needsAttention")}
+                    </Text>
+                  </View>
+                  <Text style={styles.mutedSmall}>{notification.body}</Text>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      ) : (
+        <EmptyState text={user ? t(language, "noNotifications") : t(language, "notificationLoginHint")} />
+      )}
     </Dialog>
   );
 }
@@ -1035,6 +1515,81 @@ function MetricGrid({ items }: { items: Array<{ detail: string; icon: React.Comp
           </View>
         );
       })}
+    </View>
+  );
+}
+
+function ActionGrid({ actions }: { actions: Array<{ icon: React.ComponentType<{ color?: string; size?: number }>; label: string; onPress: () => void }> }) {
+  return (
+    <View style={styles.actionGrid}>
+      {actions.map((action) => {
+        const Icon = action.icon;
+        return (
+          <TouchableOpacity key={action.label} onPress={action.onPress} style={styles.actionCard}>
+            <Icon color="#157747" size={20} />
+            <Text numberOfLines={1} style={styles.actionText}>{action.label}</Text>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+}
+
+function MobilePanel({ children, icon, title }: { children: React.ReactNode; icon: React.ReactNode; title: string }) {
+  return (
+    <View style={styles.card}>
+      <View style={styles.panelTitleRow}>
+        {icon}
+        <Text style={styles.panelTitle}>{title}</Text>
+      </View>
+      {children}
+    </View>
+  );
+}
+
+function LotList({ emptyText, language, lots }: { emptyText: string; language: Language; lots: CropLot[] }) {
+  if (!lots.length) return <EmptyState text={emptyText} />;
+  return (
+    <View style={styles.stack}>
+      {lots.map((lot) => (
+        <View key={lot.id} style={styles.compactRow}>
+          <Image source={{ uri: lot.imageUrl || cropImageFallback }} style={styles.compactImage} />
+          <View style={styles.compactRowBody}>
+            <View style={styles.between}>
+              <Text numberOfLines={1} style={styles.compactTitle}>{lot.crop}</Text>
+              <Text style={styles.compactPrice}>{pricePerKg(lot.pricePerKg, language)}</Text>
+            </View>
+            <Text numberOfLines={1} style={styles.mutedSmall}>{lot.farmer}</Text>
+            <Text numberOfLines={1} style={styles.mutedSmall}>
+              {lot.district}{lot.upazilla ? `, ${lot.upazilla}` : ""} · {kgToDisplay(lot.quantityKg, language)} · {t(language, "grade")} {lot.grade}
+            </Text>
+          </View>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+function OrderList({ emptyText, language, orders }: { emptyText: string; language: Language; orders: Order[] }) {
+  if (!orders.length) return <EmptyState text={emptyText} />;
+  return (
+    <View style={styles.stack}>
+      {orders.map((order) => (
+        <View key={order.id} style={styles.compactRow}>
+          <View style={styles.compactIconBox}>
+            <ShoppingBag color="#157747" size={20} />
+          </View>
+          <View style={styles.compactRowBody}>
+            <View style={styles.between}>
+              <Text numberOfLines={1} style={styles.compactTitle}>{order.items.map((item) => item.crop).join(", ") || order.id}</Text>
+              <Text style={styles.compactPrice}>{currency(order.totalValue)}</Text>
+            </View>
+            <Text numberOfLines={1} style={styles.mutedSmall}>
+              {order.district}{order.upazilla ? `, ${order.upazilla}` : ""} · {formatDate(order.targetDate || order.createdAt, language)} · {statusLabel(order.status, language)}
+            </Text>
+          </View>
+        </View>
+      ))}
     </View>
   );
 }
@@ -1086,6 +1641,33 @@ function EmptyState({ text }: { text: string }) {
 }
 
 const styles = StyleSheet.create({
+  actionCard: {
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderColor: "#d8ddd7",
+    borderRadius: 12,
+    borderWidth: 1,
+    flex: 1,
+    flexDirection: "row",
+    gap: 8,
+    justifyContent: "center",
+    minHeight: 48,
+    minWidth: 104,
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+  },
+  actionGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    marginBottom: 14,
+  },
+  actionText: {
+    color: "#17382b",
+    flexShrink: 1,
+    fontSize: 12,
+    fontWeight: "900",
+  },
   authCard: {
     alignSelf: "center",
     backgroundColor: "#fff",
@@ -1093,9 +1675,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     elevation: 4,
-    gap: 12,
+    gap: 10,
     maxWidth: 720,
-    padding: 22,
+    padding: 20,
     shadowColor: "#0b2118",
     shadowOpacity: 0.08,
     shadowRadius: 18,
@@ -1103,26 +1685,73 @@ const styles = StyleSheet.create({
   },
   authCopy: {
     color: "#687a70",
-    fontSize: 16,
-    lineHeight: 23,
+    fontSize: 13,
+    lineHeight: 19,
   },
   authLinks: {
     alignItems: "center",
+    alignSelf: "stretch",
     flexDirection: "row",
     justifyContent: "center",
     marginTop: 4,
   },
   authTitle: {
     color: "#14372a",
-    fontSize: 38,
+    fontSize: 30,
     fontWeight: "800",
     letterSpacing: 0,
-    lineHeight: 44,
+    lineHeight: 36,
   },
   between: {
     alignItems: "center",
     flexDirection: "row",
     justifyContent: "space-between",
+  },
+  bottomNavWrap: {
+    backgroundColor: "#f4f2ea",
+    borderTopColor: "#d8ddd7",
+    borderTopWidth: 1,
+    paddingBottom: Platform.OS === "ios" ? 4 : 6,
+    paddingHorizontal: 14,
+    paddingTop: 5,
+  },
+  bottomTab: {
+    alignItems: "center",
+    borderRadius: 14,
+    flex: 1,
+    gap: 3,
+    justifyContent: "center",
+    minHeight: 44,
+    paddingHorizontal: 1,
+    paddingVertical: 3,
+  },
+  bottomTabs: {
+    alignItems: "center",
+    alignSelf: "center",
+    backgroundColor: "#fff",
+    borderColor: "#d8ddd7",
+    borderRadius: 28,
+    borderWidth: 1,
+    elevation: 0,
+    flexDirection: "row",
+    gap: 0,
+    maxWidth: 560,
+    padding: 8,
+    shadowColor: "#0b2118",
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    width: "100%",
+  },
+  bottomTabText: {
+    color: "#8b948d",
+    fontSize: 8,
+    fontWeight: "900",
+    letterSpacing: 0,
+    lineHeight: 10,
+    textAlign: "center",
+  },
+  bottomTabTextActive: {
+    color: "#157747",
   },
   brand: {
     alignItems: "center",
@@ -1137,24 +1766,24 @@ const styles = StyleSheet.create({
   },
   brandSubtitle: {
     color: "#687a70",
-    fontSize: 12,
+    fontSize: 11,
   },
   brandTitle: {
     color: "#14372a",
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: "800",
   },
   brandTitleCompact: {
-    fontSize: 21,
+    fontSize: 17,
   },
   card: {
     backgroundColor: "#fff",
     borderColor: "#d8ddd7",
     borderRadius: 10,
     borderWidth: 1,
-    gap: 14,
+    gap: 12,
     marginBottom: 14,
-    padding: 18,
+    padding: 14,
   },
   centerRow: {
     alignItems: "center",
@@ -1171,8 +1800,48 @@ const styles = StyleSheet.create({
   },
   choiceTitle: {
     color: "#17382b",
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: "800",
+  },
+  compactIconBox: {
+    alignItems: "center",
+    backgroundColor: "#e7f3e9",
+    borderRadius: 12,
+    height: 44,
+    justifyContent: "center",
+    width: 44,
+  },
+  compactImage: {
+    backgroundColor: "#e9eee8",
+    borderRadius: 12,
+    height: 50,
+    width: 54,
+  },
+  compactPrice: {
+    color: "#157747",
+    fontSize: 13,
+    fontWeight: "900",
+  },
+  compactRow: {
+    alignItems: "center",
+    backgroundColor: "#fbfdf9",
+    borderColor: "#e1e5df",
+    borderRadius: 12,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 10,
+    padding: 10,
+  },
+  compactRowBody: {
+    flex: 1,
+    gap: 3,
+    minWidth: 0,
+  },
+  compactTitle: {
+    color: "#17382b",
+    flexShrink: 1,
+    fontSize: 15,
+    fontWeight: "900",
   },
   closeText: {
     color: "#17382b",
@@ -1186,8 +1855,23 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     gap: 14,
     maxWidth: 520,
-    padding: 20,
+    padding: 18,
     width: "92%",
+  },
+  resetDialogContent: {
+    alignItems: "stretch",
+    gap: 12,
+    width: "100%",
+  },
+  resetDialogField: {
+    alignSelf: "stretch",
+    flex: 0,
+    flexBasis: "auto",
+    flexGrow: 0,
+    flexShrink: 0,
+    minHeight: 76,
+    minWidth: "100%",
+    width: "100%",
   },
   dialogBackdrop: {
     alignItems: "center",
@@ -1207,24 +1891,24 @@ const styles = StyleSheet.create({
   emptyState: {
     backgroundColor: "#f0f5ef",
     borderRadius: 10,
-    padding: 18,
+    padding: 14,
   },
   errorBox: {
     backgroundColor: "#fae8e1",
     borderRadius: 10,
     color: "#922c1d",
-    fontSize: 16,
+    fontSize: 13,
     fontWeight: "800",
-    padding: 14,
+    padding: 12,
   },
   field: {
     flex: 1,
-    gap: 8,
+    gap: 7,
     minWidth: 180,
   },
   fieldLabel: {
     color: "#324d40",
-    fontSize: 16,
+    fontSize: 13,
     fontWeight: "800",
   },
   flex: {
@@ -1252,6 +1936,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 6,
   },
+  headerActionsCompact: {
+    gap: 5,
+  },
   iconButton: {
     alignItems: "center",
     borderColor: "#d8ddd7",
@@ -1269,7 +1956,7 @@ const styles = StyleSheet.create({
   },
   infoLineText: {
     color: "#718479",
-    fontSize: 16,
+    fontSize: 13,
   },
   infoPanelHeader: {
     alignItems: "center",
@@ -1279,9 +1966,9 @@ const styles = StyleSheet.create({
   input: {
     color: "#17382b",
     flex: 1,
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "700",
-    minHeight: 48,
+    minHeight: 46,
     paddingHorizontal: 12,
   },
   inputIcon: {
@@ -1297,7 +1984,7 @@ const styles = StyleSheet.create({
   },
   kicker: {
     color: "#687a70",
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: "800",
     textTransform: "uppercase",
   },
@@ -1308,6 +1995,10 @@ const styles = StyleSheet.create({
   },
   languageButtonActive: {
     backgroundColor: "#157747",
+  },
+  languageButtonCompact: {
+    paddingHorizontal: 7,
+    paddingVertical: 6,
   },
   languageText: {
     color: "#50685c",
@@ -1326,7 +2017,7 @@ const styles = StyleSheet.create({
   },
   link: {
     color: "#226eb8",
-    fontSize: 17,
+    fontSize: 14,
     fontWeight: "800",
   },
   logoBox: {
@@ -1362,12 +2053,102 @@ const styles = StyleSheet.create({
   },
   logoutText: {
     color: "#17382b",
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: "800",
+  },
+  notificationBadge: {
+    alignItems: "center",
+    backgroundColor: "#b95333",
+    borderColor: "#fff",
+    borderRadius: 999,
+    borderWidth: 2,
+    height: 20,
+    justifyContent: "center",
+    minWidth: 20,
+    paddingHorizontal: 4,
+    position: "absolute",
+    right: -6,
+    top: -7,
+  },
+  notificationBadgeText: {
+    color: "#fff",
+    fontSize: 10,
+    fontWeight: "900",
+  },
+  notificationBody: {
+    flex: 1,
+    gap: 4,
+    minWidth: 0,
+  },
+  notificationButton: {
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderColor: "#d8ddd7",
+    borderRadius: 10,
+    borderWidth: 1,
+    height: 40,
+    justifyContent: "center",
+    position: "relative",
+    width: 40,
+  },
+  notificationButtonCompact: {
+    height: 38,
+    width: 38,
+  },
+  notificationHeaderRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    justifyContent: "space-between",
+  },
+  notificationIconChip: {
+    alignItems: "center",
+    backgroundColor: "#e7f3e9",
+    borderRadius: 10,
+    height: 42,
+    justifyContent: "center",
+    width: 42,
+  },
+  notificationItem: {
+    alignItems: "flex-start",
+    backgroundColor: "#fbfdf9",
+    borderColor: "#d8ddd7",
+    borderRadius: 12,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 10,
+    padding: 12,
+  },
+  notificationItemReviewed: {
+    opacity: 0.72,
+  },
+  notificationList: {
+    gap: 10,
+  },
+  notificationStatus: {
+    color: "#157747",
+    fontSize: 11,
+    fontWeight: "900",
+    textTransform: "uppercase",
+  },
+  notificationStatusReviewed: {
+    color: "#687a70",
+  },
+  notificationTitle: {
+    color: "#17382b",
+    flex: 1,
+    fontSize: 15,
+    fontWeight: "900",
+  },
+  notificationTitleRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 8,
   },
   lotBody: {
     gap: 5,
-    padding: 16,
+    padding: 12,
   },
   lotCard: {
     backgroundColor: "#fff",
@@ -1379,12 +2160,12 @@ const styles = StyleSheet.create({
   },
   lotImage: {
     backgroundColor: "#e9eee8",
-    height: 190,
+    height: 170,
     width: "100%",
   },
   lotTitle: {
     color: "#17382b",
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: "800",
   },
   metricCard: {
@@ -1393,9 +2174,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 1,
     flex: 1,
-    gap: 8,
-    minWidth: 150,
-    padding: 14,
+    gap: 6,
+    minWidth: 138,
+    padding: 11,
   },
   metricGrid: {
     flexDirection: "row",
@@ -1405,19 +2186,23 @@ const styles = StyleSheet.create({
   },
   metricLabel: {
     color: "#687a70",
-    fontSize: 13,
+    flexShrink: 1,
+    fontSize: 11,
     fontWeight: "800",
+    lineHeight: 13,
     textTransform: "uppercase",
   },
   metricLabelRow: {
     alignItems: "center",
     flexDirection: "row",
     gap: 6,
+    minHeight: 20,
   },
   metricValue: {
     color: "#17382b",
-    fontSize: 28,
+    fontSize: 23,
     fontWeight: "800",
+    lineHeight: 28,
   },
   modalBackdrop: {
     alignItems: "center",
@@ -1428,8 +2213,13 @@ const styles = StyleSheet.create({
   },
   muted: {
     color: "#687a70",
-    fontSize: 16,
-    lineHeight: 23,
+    fontSize: 13,
+    lineHeight: 19,
+  },
+  mutedSmall: {
+    color: "#687a70",
+    fontSize: 12,
+    lineHeight: 16,
   },
   orderCard: {
     alignItems: "center",
@@ -1440,12 +2230,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 10,
-    padding: 14,
+    padding: 12,
   },
   page: {
     backgroundColor: "#f4f2ea",
     flexGrow: 1,
-    padding: 14,
+    padding: 12,
+  },
+  pageWithBottomTabs: {
+    paddingBottom: 28,
   },
   panelHeader: {
     alignItems: "center",
@@ -1455,16 +2248,83 @@ const styles = StyleSheet.create({
   },
   panelTitle: {
     color: "#17382b",
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: "800",
+    lineHeight: 22,
+  },
+  panelTitleRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 8,
   },
   placeholderText: {
     color: "#777",
   },
   priceText: {
     color: "#157747",
-    fontSize: 18,
+    fontSize: 15,
     fontWeight: "900",
+  },
+  editProfileForm: {
+    gap: 12,
+  },
+  profileActionStack: {
+    gap: 10,
+  },
+  profileAvatar: {
+    alignItems: "center",
+    backgroundColor: "#e8f5ee",
+    borderRadius: 18,
+    height: 58,
+    justifyContent: "center",
+    width: 58,
+  },
+  profileLogoutButton: {
+    alignItems: "center",
+    backgroundColor: "#fff6f2",
+    borderColor: "#f0c7b9",
+    borderRadius: 10,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 10,
+    justifyContent: "center",
+    minHeight: 50,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  profileLogoutText: {
+    color: "#922c1d",
+    fontSize: 15,
+    fontWeight: "900",
+  },
+  profileSettings: {
+    gap: 14,
+  },
+  profileSummaryCard: {
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderColor: "#d8ddd7",
+    borderRadius: 16,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 12,
+    padding: 14,
+  },
+  profileSummaryCopy: {
+    flex: 1,
+    gap: 3,
+    minWidth: 0,
+  },
+  profileSummaryMeta: {
+    color: "#687a70",
+    fontSize: 12,
+    lineHeight: 16,
+  },
+  profileSummaryName: {
+    color: "#17382b",
+    fontSize: 17,
+    fontWeight: "900",
+    lineHeight: 21,
   },
   primaryButton: {
     alignItems: "center",
@@ -1473,13 +2333,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 10,
     justifyContent: "center",
-    minHeight: 56,
-    paddingHorizontal: 18,
-    paddingVertical: 14,
+    minHeight: 50,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   primaryButtonText: {
     color: "#fff",
-    fontSize: 18,
+    fontSize: 15,
     fontWeight: "900",
   },
   rightBlock: {
@@ -1510,7 +2370,7 @@ const styles = StyleSheet.create({
   searchInput: {
     color: "#17382b",
     flex: 1,
-    fontSize: 15,
+    fontSize: 14,
     minHeight: 46,
   },
   secondaryButton: {
@@ -1520,12 +2380,12 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 1,
     justifyContent: "center",
-    minHeight: 56,
-    paddingHorizontal: 18,
+    minHeight: 50,
+    paddingHorizontal: 16,
   },
   secondaryButtonText: {
     color: "#17382b",
-    fontSize: 18,
+    fontSize: 15,
     fontWeight: "900",
   },
   sectionHeader: {
@@ -1538,7 +2398,7 @@ const styles = StyleSheet.create({
   },
   selectItemText: {
     color: "#17382b",
-    fontSize: 17,
+    fontSize: 15,
     fontWeight: "800",
   },
   selectMenu: {
@@ -1556,12 +2416,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     flexDirection: "row",
     justifyContent: "space-between",
-    minHeight: 52,
+    minHeight: 48,
     paddingHorizontal: 12,
   },
   selectText: {
     color: "#17382b",
-    fontSize: 17,
+    flex: 1,
+    fontSize: 14,
     fontWeight: "800",
   },
   smallButton: {
@@ -1574,6 +2435,74 @@ const styles = StyleSheet.create({
     color: "#157747",
     fontWeight: "800",
   },
+  settingsGroup: {
+    backgroundColor: "#fff",
+    borderColor: "#d8ddd7",
+    borderRadius: 16,
+    borderWidth: 1,
+    gap: 2,
+    padding: 10,
+  },
+  settingsGroupTitle: {
+    color: "#87938a",
+    fontSize: 13,
+    fontWeight: "900",
+    marginBottom: 6,
+  },
+  settingsIconChip: {
+    alignItems: "center",
+    backgroundColor: "#eef7f1",
+    borderRadius: 12,
+    height: 38,
+    justifyContent: "center",
+    width: 38,
+  },
+  settingsIconChipDanger: {
+    backgroundColor: "#fff0f4",
+  },
+  settingsItem: {
+    alignItems: "center",
+    borderRadius: 14,
+    flexDirection: "row",
+    gap: 12,
+    minHeight: 60,
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+  },
+  settingsItemBody: {
+    flex: 1,
+    minWidth: 0,
+  },
+  settingsItemDanger: {
+    color: "#c2415a",
+  },
+  settingsItemSubtitle: {
+    color: "#7a877e",
+    fontSize: 11,
+    lineHeight: 15,
+    marginTop: 2,
+  },
+  settingsItemTitle: {
+    color: "#17382b",
+    fontSize: 14,
+    fontWeight: "900",
+    lineHeight: 18,
+  },
+  settingsToggle: {
+    alignItems: "flex-end",
+    backgroundColor: "#dcefe5",
+    borderRadius: 999,
+    height: 22,
+    justifyContent: "center",
+    paddingHorizontal: 3,
+    width: 40,
+  },
+  settingsToggleThumb: {
+    backgroundColor: "#157747",
+    borderRadius: 999,
+    height: 16,
+    width: 16,
+  },
   statusPill: {
     backgroundColor: "#e7f3e9",
     borderRadius: 999,
@@ -1583,19 +2512,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
   },
+  stack: {
+    gap: 10,
+  },
   tab: {
     alignItems: "center",
     backgroundColor: "#fff",
     borderColor: "#d8ddd7",
-    borderRadius: 14,
+    borderRadius: 12,
     borderWidth: 1,
     flexBasis: "30%",
     flexGrow: 1,
     gap: 6,
     justifyContent: "center",
-    minHeight: 72,
+    minHeight: 58,
     paddingHorizontal: 8,
-    paddingVertical: 12,
+    paddingVertical: 9,
   },
   tabActive: {
     backgroundColor: "#157747",
@@ -1603,9 +2535,9 @@ const styles = StyleSheet.create({
   },
   tabText: {
     color: "#17382b",
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: "800",
-    lineHeight: 17,
+    lineHeight: 15,
     textAlign: "center",
   },
   tabTextActive: {
@@ -1618,7 +2550,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   textArea: {
-    minHeight: 110,
+    minHeight: 96,
     textAlignVertical: "top",
   },
   textAreaShell: {
@@ -1626,13 +2558,13 @@ const styles = StyleSheet.create({
   },
   title: {
     color: "#14372a",
-    fontSize: 38,
+    fontSize: 30,
     fontWeight: "900",
     letterSpacing: 0,
   },
   titleCompact: {
-    fontSize: 30,
-    lineHeight: 35,
+    fontSize: 24,
+    lineHeight: 28,
   },
   twoColumn: {
     flexDirection: "row",
@@ -1647,11 +2579,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     flexDirection: "row",
     gap: 10,
-    padding: 14,
+    padding: 12,
   },
   uploadText: {
     color: "#157747",
-    fontSize: 16,
+    fontSize: 13,
     fontWeight: "800",
   },
 });

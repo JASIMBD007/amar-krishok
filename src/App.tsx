@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Navigate, NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import {
   ChevronDown,
+  LogOut,
   LockKeyhole,
   Menu,
   Sprout,
@@ -165,6 +166,7 @@ export default function App() {
   const [marketplaceLots, setMarketplaceLots] = useState<CropLot[]>(lots);
   const [marketplaceLoading, setMarketplaceLoading] = useState(false);
   const [registerChoiceOpen, setRegisterChoiceOpen] = useState(false);
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const [reviewedNotificationIds, setReviewedNotificationIds] = useState<string[]>([]);
 
   const closeAllHeaderMenus = () => {
@@ -417,12 +419,18 @@ export default function App() {
     }
   };
 
-  const handleLogout = () => {
+  const completeLogout = () => {
     setUser(null);
     closeAllHeaderMenus();
+    setLogoutConfirmOpen(false);
     if (location.pathname === "/admin" || location.pathname === "/buyer" || location.pathname === "/farmer") {
       navigate("/");
     }
+  };
+
+  const requestLogout = () => {
+    closeAllHeaderMenus();
+    setLogoutConfirmOpen(true);
   };
 
   const roleLabel = user ? roleOptions.find((item) => item.role === user.role)?.label : null;
@@ -540,7 +548,7 @@ export default function App() {
                   </button>
                 )}
                 {user && (
-                  <button className="role-option danger" type="button" role="menuitem" onClick={handleLogout}>
+                  <button className="role-option danger" type="button" role="menuitem" onClick={requestLogout}>
                     <X size={18} />
                     <span>
                       <strong>{t("Logout")}</strong>
@@ -623,6 +631,42 @@ export default function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <FloatingSupportChat chatThreads={chatThreads} user={user} onSendMessage={sendParticipantChatMessage} />
+      {logoutConfirmOpen && (
+        <div
+          className="admin-modal-backdrop"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setLogoutConfirmOpen(false);
+            }
+          }}
+        >
+          <section className="admin-modal confirm-modal" role="dialog" aria-modal="true" aria-labelledby="logout-confirm-title">
+            <div className="admin-modal-header">
+              <div>
+                <span>{t("Account session")}</span>
+                <h2 id="logout-confirm-title">{t("Log out?")}</h2>
+              </div>
+              <button className="icon-button" type="button" aria-label={t("Close modal")} onClick={() => setLogoutConfirmOpen(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="confirm-modal-body">
+              <LogOut size={22} />
+              <strong>{t("Do you want to log out?")}</strong>
+              <p>{t("You can stay signed in or log out of this device.")}</p>
+            </div>
+            <div className="confirm-modal-actions">
+              <button className="secondary-button" type="button" onClick={() => setLogoutConfirmOpen(false)}>
+                {t("Stay logged in")}
+              </button>
+              <button className="primary-button danger-button" type="button" onClick={completeLogout}>
+                {t("Log out")}
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
     </main>
     </LanguageContext.Provider>
   );
