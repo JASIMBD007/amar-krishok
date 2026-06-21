@@ -17,7 +17,9 @@ import {
   View,
 } from "react-native";
 import {
+  ArrowLeft,
   Bell,
+  Camera,
   CalendarDays,
   CheckCircle2,
   ChevronDown,
@@ -378,7 +380,7 @@ export default function App() {
                 <Text style={styles.kicker}>{screen === "marketplace" ? t(language, "marketplace") : protectedKicker}</Text>
                 <Text style={[styles.title, compact && styles.titleCompact]}>{screen === "marketplace" ? t(language, "marketplace") : protectedTitle}</Text>
               </View>
-              <SearchBox language={language} search={search} setSearch={setSearch} />
+              {screen !== "profile" ? <SearchBox language={language} search={search} setSearch={setSearch} /> : null}
               {screen === "marketplace" ? (
                 <MarketplaceScreen language={language} lots={visibleLots} onRefresh={loadMarketplace} />
               ) : screen === "dashboard" ? (
@@ -1087,7 +1089,8 @@ function ProfileScreen({
   onSave: (payload: Omit<AccountProfile, "id" | "phone" | "role" | "status" | "username">) => Promise<void>;
   profile: AccountProfile | null;
 }) {
-  const [editOpen, setEditOpen] = useState(false);
+  const [profileMode, setProfileMode] = useState<"settings" | "edit">("settings");
+  const [profilePhotoUri, setProfilePhotoUri] = useState<string | null>(null);
   const [resetOpen, setResetOpen] = useState(false);
   const [form, setForm] = useState({
     address: "",
@@ -1120,7 +1123,26 @@ function ProfileScreen({
 
   async function saveProfile() {
     await onSave(form);
-    setEditOpen(false);
+    setProfileMode("settings");
+  }
+
+  async function pickProfileImage() {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert(t(language, "photoPermissionTitle"), t(language, "photoPermissionBody"));
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      aspect: [1, 1],
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.75,
+    });
+
+    if (!result.canceled) {
+      setProfilePhotoUri(result.assets[0]?.uri ?? null);
+    }
   }
 
   function openPasswordReset() {
@@ -1139,11 +1161,55 @@ function ProfileScreen({
     Alert.alert(t(language, "faq"), t(language, "faqMessage"));
   }
 
+  if (profileMode === "edit") {
+    return (
+      <View style={styles.profileEditScreen}>
+        <View style={styles.profileEditHeader}>
+          <TouchableOpacity accessibilityLabel={t(language, "profileSetting")} onPress={() => setProfileMode("settings")} style={styles.profileBackButton}>
+            <ArrowLeft color="#17382b" size={22} />
+          </TouchableOpacity>
+          <Text style={styles.profileEditHeaderTitle}>{t(language, "editProfile")}</Text>
+          <View style={styles.profileBackSpacer} />
+        </View>
+
+        <View style={styles.profilePhotoSection}>
+          <TouchableOpacity accessibilityRole="button" onPress={pickProfileImage} style={styles.profilePhotoWrap}>
+            {profilePhotoUri ? (
+              <Image source={{ uri: profilePhotoUri }} style={styles.profilePhoto} />
+            ) : (
+              <View style={styles.profilePhotoPlaceholder}>
+                <UserRound color="#157747" size={44} />
+              </View>
+            )}
+            <View style={styles.profileCameraBadge}>
+              <Camera color="#fff" size={16} />
+            </View>
+          </TouchableOpacity>
+          <Text style={styles.profilePhotoHint}>{t(language, "changePhoto")}</Text>
+        </View>
+
+        <View style={styles.editProfileForm}>
+          <View style={styles.twoColumn}>
+            <Field label={t(language, "name")} onChangeText={(name) => setForm({ ...form, name })} value={form.name} />
+            <Field editable={false} label={t(language, "mobile")} value={profile.phone || t(language, "phoneNotAdded")} />
+            <Field label={t(language, "organization")} onChangeText={(organization) => setForm({ ...form, organization })} value={form.organization} />
+            <SelectField language={language} label={t(language, "district")} options={districts.map((value) => ({ label: value, value }))} value={form.district} onChange={(district) => setForm({ ...form, district, upazilla: "" })} />
+            <SelectField language={language} label={t(language, "upazilla")} options={upazillaOptions} placeholder={t(language, "selectUpazilla")} value={form.upazilla} onChange={(upazilla) => setForm({ ...form, upazilla })} />
+            <Field label={t(language, "identity")} onChangeText={(identity) => setForm({ ...form, identity })} value={form.identity} />
+          </View>
+          <Field label={t(language, "focus")} onChangeText={(focus) => setForm({ ...form, focus })} value={form.focus} />
+          <Field label={t(language, "address")} multiline onChangeText={(address) => setForm({ ...form, address })} value={form.address} />
+          <PrimaryButton icon={<Save color="#fff" size={20} />} label={t(language, "saveProfile")} onPress={saveProfile} />
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.profileSettings}>
       <View style={styles.profileSummaryCard}>
         <View style={styles.profileAvatar}>
-          <UserRound color="#157747" size={26} />
+          {profilePhotoUri ? <Image source={{ uri: profilePhotoUri }} style={styles.profileAvatarImage} /> : <UserRound color="#157747" size={26} />}
         </View>
         <View style={styles.profileSummaryCopy}>
           <Text style={styles.profileSummaryName}>{profile.name || roleLabel(language, profile.role)}</Text>
@@ -1159,7 +1225,7 @@ function ProfileScreen({
 
       <View style={styles.settingsGroup}>
         <Text style={styles.settingsGroupTitle}>{t(language, "general")}</Text>
-        <SettingsItem icon={UserRound} onPress={() => setEditOpen(true)} subtitle={t(language, "editProfileSubtitle")} title={t(language, "editProfile")} />
+        <SettingsItem icon={UserRound} onPress={() => setProfileMode("edit")} subtitle={t(language, "editProfileSubtitle")} title={t(language, "editProfile")} />
         <SettingsItem icon={Lock} onPress={openPasswordReset} subtitle={t(language, "changePasswordSubtitle")} title={t(language, "changePassword")} />
         <SettingsItem icon={ShoppingBag} onPress={() => onNavigate("orders")} subtitle={t(language, "ordersSubtitle")} title={t(language, "orders")} />
         <SettingsItem icon={WalletCards} onPress={openPayments} subtitle={t(language, "paymentsSubtitle")} title={t(language, "payments")} />
@@ -1171,21 +1237,6 @@ function ProfileScreen({
         <SettingsItem icon={CheckCircle2} onPress={openFaq} subtitle={t(language, "faqSubtitle")} title={t(language, "faq")} />
         <SettingsItem danger icon={LogOut} onPress={onLogout} subtitle={t(language, "logoutSubtitle")} title={t(language, "logout")} />
       </View>
-
-      <Dialog onClose={() => setEditOpen(false)} title={t(language, "editProfile")} visible={editOpen}>
-        <View style={styles.editProfileForm}>
-          <View style={styles.twoColumn}>
-            <Field label={t(language, "name")} onChangeText={(name) => setForm({ ...form, name })} value={form.name} />
-            <Field label={t(language, "organization")} onChangeText={(organization) => setForm({ ...form, organization })} value={form.organization} />
-            <SelectField language={language} label={t(language, "district")} options={districts.map((value) => ({ label: value, value }))} value={form.district} onChange={(district) => setForm({ ...form, district, upazilla: "" })} />
-            <SelectField language={language} label={t(language, "upazilla")} options={upazillaOptions} placeholder={t(language, "selectUpazilla")} value={form.upazilla} onChange={(upazilla) => setForm({ ...form, upazilla })} />
-            <Field label={t(language, "identity")} onChangeText={(identity) => setForm({ ...form, identity })} value={form.identity} />
-            <Field label={t(language, "focus")} onChangeText={(focus) => setForm({ ...form, focus })} value={form.focus} />
-          </View>
-          <Field label={t(language, "address")} onChangeText={(address) => setForm({ ...form, address })} value={form.address} />
-          <PrimaryButton icon={<Save color="#fff" size={20} />} label={t(language, "saveProfile")} onPress={saveProfile} />
-        </View>
-      </Dialog>
 
       <PasswordResetModal defaultPhone={profile.phone} defaultRole={resetRole} language={language} onClose={() => setResetOpen(false)} visible={resetOpen} />
     </View>
@@ -2277,7 +2328,86 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     height: 58,
     justifyContent: "center",
+    overflow: "hidden",
     width: 58,
+  },
+  profileAvatarImage: {
+    height: "100%",
+    width: "100%",
+  },
+  profileBackButton: {
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderColor: "#d8ddd7",
+    borderRadius: 14,
+    borderWidth: 1,
+    height: 44,
+    justifyContent: "center",
+    width: 44,
+  },
+  profileBackSpacer: {
+    width: 44,
+  },
+  profileCameraBadge: {
+    alignItems: "center",
+    backgroundColor: "#17382b",
+    borderColor: "#fff",
+    borderRadius: 15,
+    borderWidth: 2,
+    bottom: 0,
+    height: 30,
+    justifyContent: "center",
+    position: "absolute",
+    right: 0,
+    width: 30,
+  },
+  profileEditHeader: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  profileEditHeaderTitle: {
+    color: "#17382b",
+    fontSize: 16,
+    fontWeight: "900",
+    textAlign: "center",
+  },
+  profileEditScreen: {
+    backgroundColor: "#fff",
+    borderColor: "#d8ddd7",
+    borderRadius: 16,
+    borderWidth: 1,
+    gap: 16,
+    padding: 16,
+  },
+  profilePhoto: {
+    borderRadius: 46,
+    height: "100%",
+    width: "100%",
+  },
+  profilePhotoHint: {
+    color: "#687a70",
+    fontSize: 12,
+    fontWeight: "800",
+    textAlign: "center",
+  },
+  profilePhotoPlaceholder: {
+    alignItems: "center",
+    backgroundColor: "#e8f5ee",
+    borderRadius: 46,
+    height: "100%",
+    justifyContent: "center",
+    width: "100%",
+  },
+  profilePhotoSection: {
+    alignItems: "center",
+    gap: 8,
+  },
+  profilePhotoWrap: {
+    borderRadius: 46,
+    height: 92,
+    position: "relative",
+    width: 92,
   },
   profileLogoutButton: {
     alignItems: "center",
