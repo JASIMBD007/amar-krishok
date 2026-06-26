@@ -8,7 +8,7 @@ export class HealthController {
   check() {
     return {
       name: "amar-krishok-backend",
-      schema: "upazilla-grade-v1",
+      schema: "lot-status-route-v2",
       status: "ok",
       timestamp: new Date().toISOString(),
     };

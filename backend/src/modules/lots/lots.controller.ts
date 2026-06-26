@@ -30,15 +30,15 @@ export class LotsController {
   }
 
   @Auth(Role.ADMIN, Role.FARMER)
-  @Patch(":id")
-  update(@Param("id") id: string, @Body() dto: UpdateLotDto, @CurrentUser() user: AuthenticatedUser) {
-    return this.lotsService.update(id, dto, user);
-  }
-
-  @Auth(Role.ADMIN, Role.FARMER)
   @Patch(":id/status")
   updateStatus(@Param("id") id: string, @Body() dto: UpdateLotStatusDto, @CurrentUser() user: AuthenticatedUser) {
     return this.lotsService.setStatus(id, dto.status, user);
+  }
+
+  @Auth(Role.ADMIN, Role.FARMER)
+  @Patch(":id")
+  update(@Param("id") id: string, @Body() dto: UpdateLotDto, @CurrentUser() user: AuthenticatedUser) {
+    return this.lotsService.update(id, dto, user);
   }
 
   @Auth(Role.ADMIN)
