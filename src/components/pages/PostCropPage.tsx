@@ -227,7 +227,7 @@ export function PostCropPage({
         setBackendLots((current) => [lot, ...current]);
         setForm(emptyForm);
         setCropImageFile(null);
-        setSuccess(lot.status.toUpperCase() === "ACTIVE" ? "Published to backend." : "Lot submitted for admin approval.");
+        setSuccess("Published to backend.");
       })
       .catch((apiError) => {
         setError(apiError instanceof ApiRequestError ? apiError.message : "Could not publish crop lot.");

@@ -78,6 +78,7 @@ function buildLotChangeList(before: IncludedLot, after: IncludedLot) {
   addChange("Quantity", `${formatValue(before.quantityKg)} kg`, `${formatValue(after.quantityKg)} kg`);
   addChange("Price", `৳${formatValue(before.pricePerKg)}/kg`, `৳${formatValue(after.pricePerKg)}/kg`);
   addChange("Grade", before.grade, after.grade);
+  addChange("Status", formatLotStatus(before.status), formatLotStatus(after.status));
   addChange("Harvest date", formatOptionalDate(before.harvestDate), formatOptionalDate(after.harvestDate));
   addChange("Notes", formatValue(before.notes), formatValue(after.notes));
   addChange("Crop image", before.imageUrl ? "Uploaded" : "Not added", after.imageUrl ? "Uploaded" : "Not added");
@@ -145,7 +146,6 @@ export class LotsService {
       }),
     ]);
 
-    const status = user.role === Role.ADMIN ? LotStatus.ACTIVE : LotStatus.DRAFT;
     const lot = await this.prisma.cropLot.create({
       data: {
         cropId: crop.id,
@@ -157,7 +157,7 @@ export class LotsService {
         notes: dto.notes,
         pricePerKg: new Prisma.Decimal(dto.pricePerKg),
         quantityKg: new Prisma.Decimal(dto.quantityKg),
-        status,
+        status: LotStatus.ACTIVE,
         upazilla: dto.upazilla,
       },
       include: lotInclude,
@@ -168,11 +168,8 @@ export class LotsService {
       title: "New supply lot posted",
     });
     await this.notifications.notifyUser(lot.farmerId, {
-      body:
-        status === LotStatus.ACTIVE
-          ? `${lot.crop.name} · ${lot.upazilla || lot.district.name} · ${lot.quantityKg} kg listed at ৳${lot.pricePerKg}/kg`
-          : `${lot.crop.name} · ${lot.upazilla || lot.district.name} submitted for admin approval.`,
-      title: status === LotStatus.ACTIVE ? "Crop lot published" : "Crop lot submitted",
+      body: `${lot.crop.name} · ${formatLotLocation(lot)} · ${lot.quantityKg} kg listed at ৳${lot.pricePerKg}/kg`,
+      title: "Crop lot published",
     });
 
     return lot;
@@ -236,6 +233,10 @@ export class LotsService {
 
     if (dto.imageUrl !== undefined) {
       data.imageUrl = dto.imageUrl.trim() || null;
+    }
+
+    if (user.role === Role.FARMER && existingLot.status === LotStatus.DRAFT) {
+      data.status = LotStatus.ACTIVE;
     }
 
     const lot = await this.prisma.cropLot.update({
