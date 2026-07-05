@@ -25,6 +25,7 @@ import { RegisterChoiceModal } from "./components/RegisterChoiceModal";
 import { Seo } from "./components/Seo";
 import { FloatingSupportChat } from "./components/chat/FloatingSupportChat";
 import { NotificationCenter } from "./components/notifications/NotificationCenter";
+import { NotificationDetailDialog } from "./components/notifications/NotificationDetailDialog";
 import { makeRoleNotifications, mergeNotifications, toAppNotification } from "./components/notifications/roleNotifications";
 import { roleCanOpenPath } from "./components/pages/pageHelpers";
 import { LanguageContext, translate } from "./i18n";
@@ -67,6 +68,10 @@ function saveStoredReviewedNotificationIds(user: AuthUser | null, ids: string[])
   } catch {
     // Notification review state still works for the current session if local storage is unavailable.
   }
+}
+
+function notificationShowsDetails(notification: AppNotification) {
+  return notification.title === "Farmer lot updated" || notification.title === "Farmer lot status changed";
 }
 
 function numericBackendValue(value: string | number | null | undefined) {
@@ -168,6 +173,7 @@ export default function App() {
   const [registerChoiceOpen, setRegisterChoiceOpen] = useState(false);
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const [reviewedNotificationIds, setReviewedNotificationIds] = useState<string[]>([]);
+  const [selectedNotification, setSelectedNotification] = useState<AppNotification | null>(null);
 
   const closeAllHeaderMenus = () => {
     closeHeaderMenus();
@@ -380,6 +386,11 @@ export default function App() {
     setNotificationPanelOpen(false);
     closeAllHeaderMenus();
 
+    if (notificationShowsDetails(notification)) {
+      setSelectedNotification(notification);
+      return;
+    }
+
     if (notification.href) {
       navigate(notification.href);
     }
@@ -423,6 +434,7 @@ export default function App() {
     setUser(null);
     closeAllHeaderMenus();
     setLogoutConfirmOpen(false);
+    setSelectedNotification(null);
     if (location.pathname === "/admin" || location.pathname === "/buyer" || location.pathname === "/farmer") {
       navigate("/");
     }
@@ -572,6 +584,9 @@ export default function App() {
         )}
       </header>
       {registerChoiceOpen && <RegisterChoiceModal onChoose={chooseRegistration} onClose={() => setRegisterChoiceOpen(false)} />}
+      {selectedNotification && (
+        <NotificationDetailDialog notification={selectedNotification} onClose={() => setSelectedNotification(null)} />
+      )}
 
       <Routes location={location}>
         <Route path="/" element={<HomePage setView={selectView} />} />

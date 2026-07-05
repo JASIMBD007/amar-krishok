@@ -45,6 +45,10 @@ function notificationMeta(title: string) {
       return { meta: "Supply approval", section: "supply", tone: "warning", type: "supply" };
     case "Lot status update":
       return { meta: "Supply Lots", section: "supply", tone: "info", type: "supply" };
+    case "Farmer lot updated":
+      return { meta: "Supply update", section: "supply", tone: "info", type: "supply" };
+    case "Farmer lot status changed":
+      return { meta: "Supply status", section: "supply", tone: "info", type: "supply" };
     case "Payment update":
       return { meta: "Payment protection", section: "payouts", tone: "success", type: "payout" };
     case "Admin replied to chat":
