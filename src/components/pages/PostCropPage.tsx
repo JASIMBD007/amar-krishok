@@ -285,7 +285,7 @@ export function PostCropPage({
         setBackendLots((current) => current.map((item) => (item.id === updatedLot.id ? updatedLot : item)));
         setSuccess(
           updatedLot.status.toUpperCase() === "DRAFT"
-            ? "Lot sent for admin approval."
+            ? "Lot moved to draft."
             : updatedLot.status.toUpperCase() === "ACTIVE"
               ? "Lot activated."
               : "Lot deactivated.",

@@ -26,6 +26,79 @@ const lotInclude = {
   },
 } satisfies Prisma.CropLotInclude;
 
+type IncludedLot = Prisma.CropLotGetPayload<{ include: typeof lotInclude }>;
+
+function formatLotLocation(lot: Pick<IncludedLot, "district" | "upazilla">) {
+  return lot.upazilla ? `${lot.upazilla}, ${lot.district.name}` : lot.district.name;
+}
+
+function formatLotStatus(status: LotStatus) {
+  const labels: Partial<Record<LotStatus, string>> = {
+    [LotStatus.ACTIVE]: "Active",
+    [LotStatus.CANCELLED]: "Inactive",
+    [LotStatus.DRAFT]: "Draft",
+    [LotStatus.RESERVED]: "Reserved",
+    [LotStatus.SOLD]: "Sold",
+  };
+  return labels[status] ?? status;
+}
+
+function formatOptionalDate(value: Date | string | null | undefined) {
+  if (!value) {
+    return "Not added";
+  }
+
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "Not added";
+  }
+
+  return date.toISOString().slice(0, 10);
+}
+
+function formatValue(value: { toString(): string } | string | number | null | undefined) {
+  if (value === null || value === undefined) {
+    return "Not added";
+  }
+
+  const formatted = value.toString().trim();
+  return formatted || "Not added";
+}
+
+function buildLotChangeList(before: IncludedLot, after: IncludedLot) {
+  const changes: string[] = [];
+  const addChange = (label: string, beforeValue: string, afterValue: string) => {
+    if (beforeValue !== afterValue) {
+      changes.push(`${label}: ${beforeValue} -> ${afterValue}`);
+    }
+  };
+
+  addChange("Crop", before.crop.name, after.crop.name);
+  addChange("Location", formatLotLocation(before), formatLotLocation(after));
+  addChange("Quantity", `${formatValue(before.quantityKg)} kg`, `${formatValue(after.quantityKg)} kg`);
+  addChange("Price", `৳${formatValue(before.pricePerKg)}/kg`, `৳${formatValue(after.pricePerKg)}/kg`);
+  addChange("Grade", before.grade, after.grade);
+  addChange("Harvest date", formatOptionalDate(before.harvestDate), formatOptionalDate(after.harvestDate));
+  addChange("Notes", formatValue(before.notes), formatValue(after.notes));
+  addChange("Crop image", before.imageUrl ? "Uploaded" : "Not added", after.imageUrl ? "Uploaded" : "Not added");
+
+  return changes.length > 0 ? changes : ["No visible field changed"];
+}
+
+function buildLotAuditBody(lot: IncludedLot, changes: string[]) {
+  return [
+    `Farmer: ${lot.farmer.name}`,
+    `Mobile: ${formatValue(lot.farmer.phone)}`,
+    `Crop: ${lot.crop.name}`,
+    `Location: ${formatLotLocation(lot)}`,
+    `Quantity: ${formatValue(lot.quantityKg)} kg`,
+    `Price: ৳${formatValue(lot.pricePerKg)}/kg`,
+    `Grade: ${lot.grade}`,
+    `Status: ${formatLotStatus(lot.status)}`,
+    `Changes: ${changes.join("; ")}`,
+  ].join("\n");
+}
+
 @Injectable()
 export class LotsService {
   constructor(
@@ -176,12 +249,20 @@ export class LotsService {
       title: "Lot details updated",
     });
 
+    if (user.role === Role.FARMER) {
+      await this.notifications.notifyAdmins({
+        body: buildLotAuditBody(lot, buildLotChangeList(existingLot, lot)),
+        title: "Farmer lot updated",
+      });
+    }
+
     return lot;
   }
 
   async setStatus(id: string, status: LotStatus, user: AuthenticatedUser) {
     const existingLot = await this.findEditableLot(id, user);
-    const nextStatus = user.role === Role.FARMER && status === LotStatus.ACTIVE ? LotStatus.DRAFT : status;
+    const nextStatus = status;
+    const statusChanged = existingLot.status !== nextStatus;
     const lot = await this.prisma.cropLot.update({
       data: { status: nextStatus },
       include: lotInclude,
@@ -194,15 +275,15 @@ export class LotsService {
         nextStatus === LotStatus.ACTIVE
           ? `${lot.crop.name} is active and visible in the marketplace.`
           : nextStatus === LotStatus.DRAFT
-            ? `${lot.crop.name} was sent for admin review.`
+            ? `${lot.crop.name} was moved to draft and hidden from the marketplace.`
             : `${lot.crop.name} is inactive and hidden from the marketplace.`,
       title: "Lot status update",
     });
 
-    if (user.role === Role.FARMER && nextStatus === LotStatus.DRAFT) {
+    if (user.role === Role.FARMER && statusChanged) {
       await this.notifications.notifyAdmins({
-        body: `${lot.farmer.name} · ${lot.crop.name} · ${lot.upazilla || lot.district.name}`,
-        title: "Supply lot needs review",
+        body: buildLotAuditBody(lot, [`Status: ${formatLotStatus(existingLot.status)} -> ${formatLotStatus(nextStatus)}`]),
+        title: "Farmer lot status changed",
       });
     }
 
