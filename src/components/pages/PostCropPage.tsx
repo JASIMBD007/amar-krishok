@@ -101,6 +101,10 @@ function lotToForm(lot: BackendCropLot): CropLotForm {
   };
 }
 
+function normalizeFarmerLot(lot: BackendCropLot): BackendCropLot {
+  return lot.status.toUpperCase() === "DRAFT" ? { ...lot, status: "ACTIVE" } : lot;
+}
+
 export function PostCropPage({
   onProfileSaved,
   user,
@@ -145,7 +149,7 @@ export function PostCropPage({
     setIsLoading(true);
     fetchMyCropLots(user.accessToken)
       .then((lots) => {
-        setBackendLots(lots);
+        setBackendLots(lots.map(normalizeFarmerLot));
         setError("");
       })
       .catch((apiError) => {
@@ -224,7 +228,8 @@ export function PostCropPage({
       return createCropLot(accessToken, buildLotPayload(form, uploadedCropImage?.url));
     })()
       .then((lot) => {
-        setBackendLots((current) => [lot, ...current]);
+        const normalizedLot = normalizeFarmerLot(lot);
+        setBackendLots((current) => [normalizedLot, ...current]);
         setForm(emptyForm);
         setCropImageFile(null);
         setSuccess("Published to backend.");
@@ -258,7 +263,8 @@ export function PostCropPage({
       return updateCropLot(user.accessToken!, editingLot.id, buildLotPayload(editForm, uploadedCropImage?.url ?? editingLot.imageUrl ?? undefined));
     })()
       .then((lot) => {
-        setBackendLots((current) => current.map((item) => (item.id === lot.id ? lot : item)));
+        const normalizedLot = normalizeFarmerLot(lot);
+        setBackendLots((current) => current.map((item) => (item.id === normalizedLot.id ? normalizedLot : item)));
         setEditingLot(null);
         setEditCropImageFile(null);
         setSuccess("Lot updated.");
@@ -282,14 +288,9 @@ export function PostCropPage({
 
     updateCropLotStatus(user.accessToken, lot.id, nextStatus)
       .then((updatedLot) => {
-        setBackendLots((current) => current.map((item) => (item.id === updatedLot.id ? updatedLot : item)));
-        setSuccess(
-          updatedLot.status.toUpperCase() === "DRAFT"
-            ? "Lot moved to draft."
-            : updatedLot.status.toUpperCase() === "ACTIVE"
-              ? "Lot activated."
-              : "Lot deactivated.",
-        );
+        const normalizedLot = normalizeFarmerLot(updatedLot);
+        setBackendLots((current) => current.map((item) => (item.id === normalizedLot.id ? normalizedLot : item)));
+        setSuccess(normalizedLot.status.toUpperCase() === "ACTIVE" ? "Lot activated." : "Lot deactivated.");
       })
       .catch((apiError) => {
         setError(apiError instanceof ApiRequestError ? apiError.message : "Could not update lot status.");
