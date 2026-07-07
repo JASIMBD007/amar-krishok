@@ -499,23 +499,23 @@ export function PostCropPage({
                       <strong>{t("Grade")} {t(lot.grade)}</strong>
                       <span>{formatLocalizedDate(lot.harvestDate, language, t("Ready date not set"))}</span>
                     </div>
-                    <div className="seller-lot-actions">
+                    <div className="seller-lot-status-cell">
                       <em className={`lot-status-pill ${lot.status.toLowerCase()}`}>{t(lot.status)}</em>
-                      <div>
-                        <button className="secondary-button compact-action" type="button" onClick={() => openEditLot(lot)}>
-                          <Pencil size={15} />
-                          {t("Edit")}
-                        </button>
-                        <button
-                          className={`secondary-button compact-action ${lot.status.toUpperCase() === "ACTIVE" ? "danger-button" : ""}`}
-                          type="button"
-                          disabled={statusUpdatingLotId === lot.id}
-                          onClick={() => toggleLotStatus(lot)}
-                        >
-                          <Power size={15} />
-                          {t(lot.status.toUpperCase() === "ACTIVE" ? "Deactivate" : "Activate")}
-                        </button>
-                      </div>
+                    </div>
+                    <div className="seller-lot-actions">
+                      <button className="secondary-button compact-action" type="button" onClick={() => openEditLot(lot)}>
+                        <Pencil size={15} />
+                        {t("Edit")}
+                      </button>
+                      <button
+                        className={`secondary-button compact-action ${lot.status.toUpperCase() === "ACTIVE" ? "danger-button" : ""}`}
+                        type="button"
+                        disabled={statusUpdatingLotId === lot.id}
+                        onClick={() => toggleLotStatus(lot)}
+                      >
+                        <Power size={15} />
+                        {t(lot.status.toUpperCase() === "ACTIVE" ? "Deactivate" : "Activate")}
+                      </button>
                     </div>
                   </article>
                 ))}
