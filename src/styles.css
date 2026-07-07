@@ -1076,13 +1076,20 @@ button {
 .seller-lot-item,
 .buyer-order-item {
   display: grid;
-  grid-template-columns: minmax(180px, 1fr) minmax(140px, 0.8fr) minmax(150px, 0.8fr) auto;
   gap: 14px;
   align-items: center;
   padding: 14px;
   border: 1px solid rgba(24, 48, 40, 0.1);
   border-radius: 8px;
   background: #fbfcf8;
+}
+
+.seller-lot-item {
+  grid-template-columns: minmax(180px, 1fr) minmax(130px, 0.7fr) minmax(150px, 0.75fr) minmax(115px, 0.5fr) auto;
+}
+
+.buyer-order-item {
+  grid-template-columns: minmax(180px, 1fr) minmax(140px, 0.8fr) minmax(150px, 0.8fr) auto;
 }
 
 .seller-lot-item strong,
@@ -1104,7 +1111,6 @@ button {
   font-size: 0.84rem;
 }
 
-.seller-lot-item > em,
 .lot-status-pill {
   justify-self: end;
   padding: 7px 10px;
@@ -1132,15 +1138,16 @@ button {
   background: #e6f1f6;
 }
 
-.seller-lot-actions {
-  display: grid;
-  gap: 8px;
-  justify-items: end;
+.seller-lot-status-cell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
 }
 
-.seller-lot-actions > div {
+.seller-lot-actions {
   display: flex;
   gap: 8px;
+  align-items: center;
   justify-content: flex-end;
   flex-wrap: wrap;
 }
@@ -4054,7 +4061,11 @@ th {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .seller-lot-item em,
+  .seller-lot-status-cell,
+  .seller-lot-actions {
+    justify-content: flex-start;
+  }
+
   .buyer-order-item em {
     justify-self: start;
   }
@@ -4261,6 +4272,11 @@ th {
 
   .registration-wide-field {
     grid-column: auto;
+  }
+
+  .seller-lot-status-cell,
+  .seller-lot-actions {
+    justify-content: flex-start;
   }
 
   .metrics-band {
