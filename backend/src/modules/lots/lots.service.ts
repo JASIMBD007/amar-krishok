@@ -120,6 +120,13 @@ export class LotsService {
   }
 
   async findMine(user: AuthenticatedUser) {
+    if (user.role === Role.FARMER) {
+      await this.prisma.cropLot.updateMany({
+        data: { status: LotStatus.ACTIVE },
+        where: { farmerId: user.id, status: LotStatus.DRAFT },
+      });
+    }
+
     return this.prisma.cropLot.findMany({
       include: lotInclude,
       orderBy: { createdAt: "desc" },
@@ -261,8 +268,12 @@ export class LotsService {
   }
 
   async setStatus(id: string, status: LotStatus, user: AuthenticatedUser) {
+    if (status === LotStatus.DRAFT) {
+      throw new BadRequestException("Crop lots can only be active or inactive.");
+    }
+
     const existingLot = await this.findEditableLot(id, user);
-    const nextStatus = status;
+    const nextStatus = status === LotStatus.CANCELLED ? LotStatus.CANCELLED : LotStatus.ACTIVE;
     const statusChanged = existingLot.status !== nextStatus;
     const lot = await this.prisma.cropLot.update({
       data: { status: nextStatus },
@@ -275,9 +286,7 @@ export class LotsService {
       body:
         nextStatus === LotStatus.ACTIVE
           ? `${lot.crop.name} is active and visible in the marketplace.`
-          : nextStatus === LotStatus.DRAFT
-            ? `${lot.crop.name} was moved to draft and hidden from the marketplace.`
-            : `${lot.crop.name} is inactive and hidden from the marketplace.`,
+          : `${lot.crop.name} is inactive and hidden from the marketplace.`,
       title: "Lot status update",
     });
 

@@ -81,6 +81,6 @@ export class UpdateLotDto {
 }
 
 export class UpdateLotStatusDto {
-  @IsIn([LotStatus.ACTIVE, LotStatus.CANCELLED, LotStatus.DRAFT])
+  @IsIn([LotStatus.ACTIVE, LotStatus.CANCELLED])
   status!: LotStatus;
 }

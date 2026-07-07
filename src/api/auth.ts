@@ -131,7 +131,7 @@ export type CreateCropLotPayload = {
 };
 
 export type UpdateCropLotPayload = Partial<CreateCropLotPayload>;
-export type CropLotStatusUpdate = "ACTIVE" | "CANCELLED" | "DRAFT";
+export type CropLotStatusUpdate = "ACTIVE" | "CANCELLED";
 
 export type BackendOrderItem = {
   id: string;
