@@ -1,6 +1,6 @@
 import { ChevronDown, MapPin, Search } from "lucide-react";
 import { useTranslate, useValueText } from "../../i18n";
-import type { CropLot, View } from "../../types";
+import type { AuthUser, CropLot, View } from "../../types";
 import { CropCard, SectionTitle } from "../shared";
 
 export function MarketplacePage({
@@ -13,6 +13,8 @@ export function MarketplacePage({
   setDistrict,
   setQuery,
   setView,
+  currentUser,
+  onEditLot,
 }: {
   district: string;
   districtOptions: string[];
@@ -23,6 +25,8 @@ export function MarketplacePage({
   setDistrict: (value: string) => void;
   setQuery: (value: string) => void;
   setView: (view: View) => void;
+  currentUser?: AuthUser | null;
+  onEditLot: (lot: CropLot) => void;
 }) {
   const t = useTranslate();
   const v = useValueText();
@@ -50,7 +54,19 @@ export function MarketplacePage({
       {!isLoading && filteredLots.length === 0 && <p className="empty-table-note">{t("No crop lots found")}</p>}
       <div className="listing-grid market-grid">
         {filteredLots.map((lot) => (
-          <CropCard lot={lot} key={lot.id} onOrder={() => setView("buyer")} t={t} v={v} />
+          <CropCard
+            canEdit={Boolean(
+              currentUser?.role === "farmer" &&
+                ((lot.farmerId && lot.farmerId === currentUser.accountId) ||
+                  (lot.farmerPhone && lot.farmerPhone === currentUser.phone)),
+            )}
+            lot={lot}
+            key={lot.id}
+            onEdit={() => onEditLot(lot)}
+            onOrder={() => setView("buyer")}
+            t={t}
+            v={v}
+          />
         ))}
       </div>
     </section>

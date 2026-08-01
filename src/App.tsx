@@ -125,6 +125,8 @@ function toMarketplaceLot(lot: BackendCropLot): CropLot {
     ask: `৳${Math.round(numericBackendValue(lot.pricePerKg)).toLocaleString("en-US")}/kg`,
     crop: lot.crop.name,
     district: lot.district.name,
+    farmerId: lot.farmer.id,
+    farmerPhone: lot.farmer.phone,
     farmer: lot.farmer.name,
     grade: lot.grade.replace(/^Grade\s+/i, ""),
     harvest: formatBackendHarvestDate(lot.harvestDate),
@@ -385,6 +387,10 @@ export default function App() {
   const selectView = (nextView: View) => {
     navigate(routeByView[nextView]);
     closeAllHeaderMenus();
+  };
+
+  const handleMarketplaceEditLot = (lot: CropLot) => {
+    navigate(`/farmer?editLot=${encodeURIComponent(lot.id)}`);
   };
 
   const chooseRole = (role: Role, targetView: View) => {
@@ -657,6 +663,8 @@ export default function App() {
               setDistrict={setDistrict}
               setQuery={setQuery}
               setView={selectView}
+              currentUser={user}
+              onEditLot={handleMarketplaceEditLot}
             />
           }
         />
