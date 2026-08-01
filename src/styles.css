@@ -1011,15 +1011,26 @@ button {
   text-overflow: ellipsis;
 }
 
-.profile-summary-grid article a {
+.profile-summary-grid article a,
+.profile-summary-grid article button.link-button {
   display: inline-flex;
   align-items: center;
   gap: 5px;
   width: fit-content;
+  border: none;
+  background: none;
+  padding: 0;
   color: #176b47;
+  font: inherit;
   font-size: 0.8rem;
   font-weight: 850;
   text-decoration: none;
+  cursor: pointer;
+}
+
+.profile-summary-grid article button.link-button:disabled {
+  opacity: 0.6;
+  cursor: default;
 }
 
 .profile-readiness-row {

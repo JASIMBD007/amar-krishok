@@ -7,6 +7,7 @@ import { AccountDirectoryTable, AccountModal, AdminSnackbar, DeleteConfirmModal,
 import { accountMatchesSearch } from "./searchHelpers";
 
 export function BuyersSection({
+  accessToken,
   onCreateAccount,
   onDeleteAccount,
   onUpdateAccount,
@@ -15,6 +16,7 @@ export function BuyersSection({
   searchTerm,
   verificationError,
 }: {
+  accessToken?: string;
   onCreateAccount: (payload: AdminAccountPayload) => Promise<void>;
   onDeleteAccount: (id: string) => Promise<void>;
   onUpdateAccount: (id: string, payload: Partial<AdminAccountPayload>) => Promise<void>;
@@ -121,6 +123,7 @@ export function BuyersSection({
         />
       </section>
       <AccountModal
+        accessToken={accessToken}
         editingAccount={editingBuyer}
         onClose={closeAccountModal}
         onCreateAccount={onCreateAccount}

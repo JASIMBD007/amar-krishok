@@ -14,6 +14,7 @@ import {
 import { accountMatchesSearch } from "./searchHelpers";
 
 export function FarmersSection({
+  accessToken,
   onCreateAccount,
   onDeleteAccount,
   onReviewLot,
@@ -25,6 +26,7 @@ export function FarmersSection({
   searchTerm,
   verificationError,
 }: {
+  accessToken?: string;
   onCreateAccount: (payload: AdminAccountPayload) => Promise<void>;
   onDeleteAccount: (id: string) => Promise<void>;
   onReviewLot: (lotId: string, action: "approve" | "reject") => Promise<void>;
@@ -181,6 +183,7 @@ export function FarmersSection({
         />
       </section>
       <AccountModal
+        accessToken={accessToken}
         editingAccount={editingFarmer}
         onClose={closeAccountModal}
         onCreateAccount={onCreateAccount}

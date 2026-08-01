@@ -1,7 +1,10 @@
-import { Body, Controller, Get, Param, Post } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, UseGuards } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
 import { Role } from "@prisma/client";
 import { Auth } from "../auth/decorators/auth.decorator";
+import { CurrentUser } from "../auth/decorators/current-user.decorator";
+import { OptionalAuthGuard } from "../auth/guards/optional-auth.guard";
+import { AuthenticatedUser } from "../auth/types/authenticated-user";
 import { ChatService } from "./chat.service";
 import { CreateChatMessageDto, CreateChatThreadDto } from "./dto/chat.dto";
 
@@ -16,13 +19,15 @@ export class ChatController {
     return this.chatService.findThreads();
   }
 
+  @UseGuards(OptionalAuthGuard)
   @Post("threads")
-  createThread(@Body() dto: CreateChatThreadDto) {
-    return this.chatService.createThread(dto);
+  createThread(@Body() dto: CreateChatThreadDto, @CurrentUser() user: AuthenticatedUser | undefined) {
+    return this.chatService.createThread(dto, user);
   }
 
+  @UseGuards(OptionalAuthGuard)
   @Post("threads/:id/messages")
-  createMessage(@Param("id") threadId: string, @Body() dto: CreateChatMessageDto) {
-    return this.chatService.createMessage(threadId, dto);
+  createMessage(@Param("id") threadId: string, @Body() dto: CreateChatMessageDto, @CurrentUser() user: AuthenticatedUser | undefined) {
+    return this.chatService.createMessage(threadId, dto, user);
   }
 }

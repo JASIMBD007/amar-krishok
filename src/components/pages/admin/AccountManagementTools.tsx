@@ -130,6 +130,7 @@ export function AdminSnackbar({ onClose, toast }: { onClose: () => void; toast: 
 }
 
 export function AccountModal({
+  accessToken,
   editingAccount,
   onClose,
   onCreateAccount,
@@ -138,6 +139,7 @@ export function AccountModal({
   open,
   role,
 }: {
+  accessToken?: string;
   editingAccount: RegisteredAccount | null;
   onClose: () => void;
   onCreateAccount: (payload: AdminAccountPayload) => Promise<void>;
@@ -165,6 +167,7 @@ export function AccountModal({
           </button>
         </div>
         <AccountManagementForm
+          accessToken={accessToken}
           editingAccount={editingAccount}
           onCreateAccount={onCreateAccount}
           onDone={(message) => {

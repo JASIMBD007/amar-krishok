@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { ExternalLink, FileImage, LockKeyhole, PencilLine, Save, Upload, X } from "lucide-react";
-import { ApiRequestError, fetchMyProfile, updateMyProfile, uploadFile, type UpdateProfilePayload } from "../../api/auth";
+import { ApiRequestError, fetchMyProfile, fetchUploadObjectUrl, isOwnUploadUrl, updateMyProfile, uploadFile, type UpdateProfilePayload } from "../../api/auth";
 import { getUpazillasForDistrict, serviceDistricts } from "../../data";
 import { useTranslate } from "../../i18n";
 import type { AuthUser, RegisteredAccount } from "../../types";
@@ -15,10 +15,6 @@ const emptyProfile: UpdateProfilePayload = {
   name: "",
   organization: "",
 };
-
-function isLinkedDocument(value: string) {
-  return value.startsWith("http://") || value.startsWith("https://") || value.startsWith("/api/uploads/") || value.startsWith("/uploads/");
-}
 
 export function AccountProfilePanel({
   onProfileSaved,
@@ -36,9 +32,27 @@ export function AccountProfilePanel({
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [isOpeningDocument, setIsOpeningDocument] = useState(false);
   const canEditProfile = user?.role === "buyer" || user?.role === "farmer";
-  const documentLink = isLinkedDocument(profile.identity) ? profile.identity : "";
+  const hasUploadedDocument = isOwnUploadUrl(profile.identity);
   const availableUpazillas = getUpazillasForDistrict(draftProfile.district);
+
+  const openUploadedDocument = async () => {
+    if (!user?.accessToken || isOpeningDocument) {
+      return;
+    }
+
+    setIsOpeningDocument(true);
+    setError("");
+    try {
+      const { url } = await fetchUploadObjectUrl(user.accessToken, profile.identity);
+      window.open(url, "_blank", "noopener,noreferrer");
+    } catch (apiError) {
+      setError(apiError instanceof ApiRequestError ? apiError.message : "Could not load the document.");
+    } finally {
+      setIsOpeningDocument(false);
+    }
+  };
 
   useEffect(() => {
     if (!user?.accessToken || !canEditProfile) {
@@ -204,11 +218,11 @@ export function AccountProfilePanel({
         <article>
           <span>{t("NID / trade license")}</span>
           <strong>{profile.identity ? t("Uploaded document saved") : t("No document uploaded")}</strong>
-          {documentLink && (
-            <a href={documentLink} target="_blank" rel="noreferrer">
+          {hasUploadedDocument && (
+            <button type="button" className="link-button" onClick={openUploadedDocument} disabled={isOpeningDocument}>
               <ExternalLink size={14} />
-              {t("View document")}
-            </a>
+              {t(isOpeningDocument ? "Loading document" : "View document")}
+            </button>
           )}
         </article>
         <article>

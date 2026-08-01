@@ -304,6 +304,54 @@ async function apiRequest<T>(path: string, options: RequestInit & { accessToken?
   return (await response.json()) as T;
 }
 
+/**
+ * True only for a URL our own upload endpoint issued. A registrant can put arbitrary text (including an
+ * attacker-controlled URL) in free-text profile fields like "identity", so callers must never render a
+ * value as an <img>/<iframe> src or open it just because it looks like an http(s) URL.
+ */
+export function isOwnUploadUrl(value: string): boolean {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return false;
+  }
+
+  if (trimmed.startsWith("/api/uploads/") || trimmed.startsWith("/uploads/")) {
+    return true;
+  }
+
+  try {
+    const parsed = new URL(trimmed, window.location.origin);
+    return parsed.origin === API_BASE_URL && /^\/(api\/)?uploads\//.test(parsed.pathname);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Loads a private upload (e.g. an identity document) with the caller's Bearer token and returns an
+ * object URL. Uploads other than public crop-lot images require the requester to be the owner or an
+ * admin, so a plain <img src>/<iframe src> (no Authorization header) would just 404.
+ */
+export async function fetchUploadObjectUrl(accessToken: string, value: string): Promise<{ mimeType: string; url: string }> {
+  const resolvedUrl = /^https?:\/\//.test(value) ? value : `${API_BASE_URL}${value.startsWith("/") ? value : `/${value}`}`;
+
+  let response: Response;
+  try {
+    response = await fetch(resolvedUrl, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+  } catch {
+    throw new ApiRequestError("Backend service is unavailable. Please try again.");
+  }
+
+  if (!response.ok) {
+    throw new ApiRequestError((await readApiMessage(response)) ?? "Could not load the document.", response.status);
+  }
+
+  const blob = await response.blob();
+  return { mimeType: blob.type, url: URL.createObjectURL(blob) };
+}
+
 async function publicProductionApiRequest<T>(path: string) {
   let response: Response;
 

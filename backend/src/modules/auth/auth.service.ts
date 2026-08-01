@@ -6,6 +6,7 @@ import { sign } from "jsonwebtoken";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { LoginDto, PasswordResetConfirmDto, PasswordResetLookupDto, RegisterAccountDto } from "./dto/register-account.dto";
+import { requireJwtSecret } from "./jwt-secret";
 import { normalizeUsername } from "./username";
 
 function publicUser(user: User) {
@@ -64,8 +65,8 @@ export class AuthService {
       throw new UnauthorizedException("Account is waiting for admin verification.");
     }
 
-    const secret = this.config.get<string>("JWT_SECRET") ?? "local-development-secret";
-    const accessToken = sign({ sub: user.id, role: user.role }, secret, { expiresIn: "7d" });
+    const secret = requireJwtSecret(this.config);
+    const accessToken = sign({ sub: user.id, role: user.role }, secret, { algorithm: "HS256", expiresIn: "7d" });
 
     return {
       accessToken,
@@ -81,17 +82,19 @@ export class AuthService {
 
   async resetPassword(dto: PasswordResetConfirmDto) {
     const cleanPhone = dto.phone.trim();
-    const user = await this.prisma.user.findUnique({
-      where: { phone_role: { phone: cleanPhone, role: dto.role } },
-    });
+    // Hash before the lookup (and unconditionally) so the response time doesn't reveal whether the account exists.
+    const [passwordHash, user] = await Promise.all([
+      hash(dto.password, 10),
+      this.prisma.user.findUnique({
+        where: { phone_role: { phone: cleanPhone, role: dto.role } },
+      }),
+    ]);
 
     if (!user || (user.role !== Role.BUYER && user.role !== Role.FARMER)) {
       return {
         message: "Password reset request sent. Admin will review it before the password changes.",
       };
     }
-
-    const passwordHash = await hash(dto.password, 10);
 
     const request = await this.prisma.$transaction(async (tx) => {
       await tx.passwordResetRequest.updateMany({

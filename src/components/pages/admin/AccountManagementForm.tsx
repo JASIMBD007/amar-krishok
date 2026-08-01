@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { ExternalLink, Eye, EyeOff, Plus, Save, X } from "lucide-react";
-import type { AdminAccountPayload } from "../../../api/auth";
+import { ApiRequestError, fetchUploadObjectUrl, isOwnUploadUrl, type AdminAccountPayload } from "../../../api/auth";
 import { getUpazillasForDistrict, serviceDistricts } from "../../../data";
 import { useTranslate } from "../../../i18n";
 import type { AccountStatus, RegisteredAccount, RegistrationRole } from "../../../types";
@@ -34,14 +34,18 @@ const emptyForm: AccountFormState = {
   username: "",
 };
 
+// Only our own upload endpoint is ever rendered inline or opened automatically. "identity" is a free-text
+// field, so an attacker-supplied external URL or data: URI must never be treated as a trusted document.
 function canPreviewDocument(value: string) {
-  const cleanValue = value.trim();
-  return cleanValue.startsWith("http://") || cleanValue.startsWith("https://") || cleanValue.startsWith("data:") || cleanValue.startsWith("/api/uploads/") || cleanValue.startsWith("/uploads/");
+  return isOwnUploadUrl(value);
 }
 
-function isImageDocument(value: string) {
-  const cleanValue = value.trim().toLowerCase();
-  return cleanValue.startsWith("data:image/") || /\.(apng|avif|gif|jpe?g|png|svg|webp)(\?|#|$)/.test(cleanValue);
+function isImageDocument(value: string, mimeType?: string) {
+  if (mimeType) {
+    return mimeType.startsWith("image/");
+  }
+
+  return /\.(apng|avif|gif|jpe?g|png|svg|webp)(\?|#|$)/.test(value.trim().toLowerCase());
 }
 
 function identityKind(value: string) {
@@ -54,6 +58,7 @@ function identityKind(value: string) {
 }
 
 export function AccountManagementForm({
+  accessToken,
   editingAccount,
   onCreateAccount,
   onDone,
@@ -61,6 +66,7 @@ export function AccountManagementForm({
   onUpdateAccount,
   role,
 }: {
+  accessToken?: string;
   editingAccount: RegisteredAccount | null;
   onCreateAccount: (payload: AdminAccountPayload) => Promise<void>;
   onDone: (message: string) => void;
@@ -71,6 +77,9 @@ export function AccountManagementForm({
   const t = useTranslate();
   const [form, setForm] = useState<AccountFormState>(emptyForm);
   const [documentPreviewOpen, setDocumentPreviewOpen] = useState(false);
+  const [documentPreview, setDocumentPreview] = useState<{ mimeType: string; url: string } | null>(null);
+  const [documentPreviewError, setDocumentPreviewError] = useState("");
+  const [documentPreviewLoading, setDocumentPreviewLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const isEditing = Boolean(editingAccount);
@@ -83,13 +92,51 @@ export function AccountManagementForm({
   const readonlyPasswordValue = isPasswordVisible ? form.password || t("Password protected") : "••••••••";
 
   useEffect(() => {
+    return () => {
+      if (documentPreview) {
+        URL.revokeObjectURL(documentPreview.url);
+      }
+    };
+  }, [documentPreview]);
+
+  const closeDocumentPreview = () => {
+    setDocumentPreviewOpen(false);
+    setDocumentPreviewError("");
+    if (documentPreview) {
+      URL.revokeObjectURL(documentPreview.url);
+      setDocumentPreview(null);
+    }
+  };
+
+  const openDocumentPreview = async () => {
+    setDocumentPreviewOpen(true);
+    setDocumentPreviewError("");
+
+    if (!accessToken) {
+      setDocumentPreviewError("Please sign in again to view this document.");
+      return;
+    }
+
+    setDocumentPreviewLoading(true);
+    try {
+      const loaded = await fetchUploadObjectUrl(accessToken, form.identity);
+      setDocumentPreview(loaded);
+    } catch (previewError) {
+      setDocumentPreviewError(previewError instanceof ApiRequestError ? previewError.message : "Could not load the document.");
+    } finally {
+      setDocumentPreviewLoading(false);
+    }
+  };
+
+  useEffect(() => {
     if (!editingAccount) {
       setForm(emptyForm);
-      setDocumentPreviewOpen(false);
+      closeDocumentPreview();
       setIsPasswordVisible(false);
       return;
     }
 
+    closeDocumentPreview();
     setForm({
       address: editingAccount.address,
       district: editingAccount.district,
@@ -255,7 +302,7 @@ export function AccountManagementForm({
           <div className="input-field">
             <span>{t("NID / trade license")}</span>
             <div className="admin-document-button-row">
-              <button className="secondary-button compact-action" type="button" onClick={() => setDocumentPreviewOpen(true)}>
+              <button className="secondary-button compact-action" type="button" onClick={openDocumentPreview}>
                 <Eye size={15} />
                 {t("View document")}
               </button>
@@ -286,23 +333,30 @@ export function AccountManagementForm({
                 <span>{t("NID / trade license")}</span>
                 <h2 id="document-preview-title">{t("Uploaded document preview")}</h2>
               </div>
-              <button className="icon-button" type="button" aria-label={t("Close modal")} onClick={() => setDocumentPreviewOpen(false)}>
+              <button className="icon-button" type="button" aria-label={t("Close modal")} onClick={closeDocumentPreview}>
                 <X size={18} />
               </button>
             </div>
             <div className="document-preview-body">
-              {isImageDocument(form.identity) ? (
-                <img src={form.identity} alt={t("Uploaded document preview")} />
-              ) : (
-                <iframe src={form.identity} title={t("Uploaded document preview")} />
-              )}
+              {documentPreviewLoading && <p>{t("Loading document...")}</p>}
+              {!documentPreviewLoading && documentPreviewError && <p className="auth-error">{t(documentPreviewError)}</p>}
+              {!documentPreviewLoading &&
+                !documentPreviewError &&
+                documentPreview &&
+                (isImageDocument(documentPreview.url, documentPreview.mimeType) ? (
+                  <img src={documentPreview.url} alt={t("Uploaded document preview")} />
+                ) : (
+                  <iframe src={documentPreview.url} sandbox="" title={t("Uploaded document preview")} />
+                ))}
             </div>
             <div className="document-preview-actions">
               <p>{t("If the preview is blank, open the document in a new tab.")}</p>
-              <a className="secondary-button compact-action" href={form.identity} target="_blank" rel="noreferrer">
-                <ExternalLink size={15} />
-                {t("Open document")}
-              </a>
+              {documentPreview && (
+                <a className="secondary-button compact-action" href={documentPreview.url} target="_blank" rel="noreferrer">
+                  <ExternalLink size={15} />
+                  {t("Open document")}
+                </a>
+              )}
             </div>
           </section>
         </div>

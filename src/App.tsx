@@ -141,6 +141,7 @@ export default function App() {
   const {
     addRegistration,
     chatThreads,
+    clearSession,
     closeHeaderMenus,
     district,
     language,
@@ -431,7 +432,7 @@ export default function App() {
   };
 
   const completeLogout = () => {
-    setUser(null);
+    clearSession();
     closeAllHeaderMenus();
     setLogoutConfirmOpen(false);
     setSelectedNotification(null);

@@ -4,6 +4,7 @@ import { AccountStatus, Role } from "@prisma/client";
 import { Request } from "express";
 import { JwtPayload, verify } from "jsonwebtoken";
 import { PrismaService } from "../../prisma/prisma.service";
+import { requireJwtSecret } from "../jwt-secret";
 import { AuthenticatedUser } from "../types/authenticated-user";
 
 type RequestWithUser = Request & {
@@ -38,8 +39,8 @@ export class JwtAuthGuard implements CanActivate {
       throw new UnauthorizedException("Authorization header must use Bearer token.");
     }
 
-    const secret = this.config.get<string>("JWT_SECRET") ?? "local-development-secret";
-    const payload = tokenPayload(verify(token, secret));
+    const secret = requireJwtSecret(this.config);
+    const payload = tokenPayload(verify(token, secret, { algorithms: ["HS256"] }));
 
     if (typeof payload.sub !== "string" || typeof payload.role !== "string") {
       throw new UnauthorizedException("Invalid access token payload.");

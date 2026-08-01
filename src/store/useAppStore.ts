@@ -145,6 +145,7 @@ type AppStore = {
   registrations: RegisteredAccount[];
   user: AuthUser | null;
   addRegistration: (account: RegisteredAccount) => void;
+  clearSession: () => void;
   closeHeaderMenus: () => void;
   markChatThreadOpen: (threadId: string) => void;
   sendAdminChatReply: (threadId: string, text: string) => void;
@@ -182,6 +183,10 @@ export const useAppStore = create<AppStore>()(
               : [account, ...state.registrations],
           };
         }),
+      // Registrations only ever cache the current browser's own submitted profile(s); clearing them on
+      // logout prevents another person on a shared device from reading the previous user's PII (NID,
+      // address, phone) out of localStorage. Admin/account views re-fetch from the backend on next login.
+      clearSession: () => set({ registrations: [], user: null }),
       closeHeaderMenus: () => set({ loginOpen: false, menuOpen: false }),
       markChatThreadOpen: (threadId) =>
         set((state) => ({

@@ -276,6 +276,7 @@ export function AdminPage({
       case "buyers":
         return (
           <BuyersSection
+            accessToken={user?.accessToken}
             registrations={effectiveRegistrations}
             onCreateAccount={createManagedAccount}
             onDeleteAccount={deleteManagedAccount}
@@ -290,6 +291,7 @@ export function AdminPage({
       case "farmers":
         return (
           <FarmersSection
+            accessToken={user?.accessToken}
             registrations={effectiveRegistrations}
             onCreateAccount={createManagedAccount}
             onDeleteAccount={deleteManagedAccount}

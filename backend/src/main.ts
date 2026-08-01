@@ -1,13 +1,30 @@
 import "reflect-metadata";
+import helmet from "helmet";
 import { ValidationPipe } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
+import { requireJwtSecret } from "./modules/auth/jwt-secret";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const config = app.get(ConfigService);
+  requireJwtSecret(config);
+  app.use(
+    helmet({
+      // The default CSP's script-src/style-src 'self' blocks Swagger UI's inline bootstrap script and
+      // styles at /api/docs; this API serves no other HTML, so relaxing those two directives is scoped
+      // to that page without weakening protection for the JSON endpoints.
+      contentSecurityPolicy: {
+        directives: {
+          ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+          "script-src": ["'self'", "'unsafe-inline'"],
+          "style-src": ["'self'", "'unsafe-inline'"],
+        },
+      },
+    }),
+  );
   const corsOrigin = config.get<string>("CORS_ORIGIN") ?? "http://localhost:5173";
   const localCorsOrigins = ["http://localhost:5173", "http://127.0.0.1:5173"];
   const corsOrigins = Array.from(

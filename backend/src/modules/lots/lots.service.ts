@@ -26,6 +26,22 @@ const lotInclude = {
   },
 } satisfies Prisma.CropLotInclude;
 
+// The public marketplace listing is reachable without authentication, so it must not expose the
+// farmer's phone number or account username to anonymous visitors/scrapers.
+const publicLotInclude = {
+  crop: true,
+  district: true,
+  farmer: {
+    select: {
+      focus: true,
+      id: true,
+      name: true,
+      organization: true,
+      upazilla: true,
+    },
+  },
+} satisfies Prisma.CropLotInclude;
+
 type IncludedLot = Prisma.CropLotGetPayload<{ include: typeof lotInclude }>;
 
 function formatLotLocation(lot: Pick<IncludedLot, "district" | "upazilla">) {
@@ -109,7 +125,7 @@ export class LotsService {
 
   async findAll(filters: { crop?: string; district?: string }) {
     return this.prisma.cropLot.findMany({
-      include: lotInclude,
+      include: publicLotInclude,
       orderBy: { createdAt: "desc" },
       where: {
         crop: filters.crop ? { name: { contains: filters.crop, mode: "insensitive" } } : undefined,
