@@ -39,7 +39,12 @@ export class JwtAuthGuard implements CanActivate {
     }
 
     const secret = this.config.get<string>("JWT_SECRET") ?? "local-development-secret";
-    const payload = tokenPayload(verify(token, secret));
+    let payload: JwtPayload;
+    try {
+      payload = tokenPayload(verify(token, secret));
+    } catch {
+      throw new UnauthorizedException("Invalid or expired access token.");
+    }
 
     if (typeof payload.sub !== "string" || typeof payload.role !== "string") {
       throw new UnauthorizedException("Invalid access token payload.");
