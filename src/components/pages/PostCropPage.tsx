@@ -101,8 +101,8 @@ function lotToForm(lot: BackendCropLot): CropLotForm {
   };
 }
 
-function normalizeFarmerLot(lot: BackendCropLot): BackendCropLot {
-  return lot.status.toUpperCase() === "DRAFT" ? { ...lot, status: "ACTIVE" } : lot;
+function preserveFarmerLotStatus(lot: BackendCropLot): BackendCropLot {
+  return lot;
 }
 
 export function PostCropPage({
@@ -149,7 +149,7 @@ export function PostCropPage({
     setIsLoading(true);
     fetchMyCropLots(user.accessToken)
       .then((lots) => {
-        setBackendLots(lots.map(normalizeFarmerLot));
+        setBackendLots(lots.map(preserveFarmerLotStatus));
         setError("");
       })
       .catch((apiError) => {
@@ -228,7 +228,7 @@ export function PostCropPage({
       return createCropLot(accessToken, buildLotPayload(form, uploadedCropImage?.url));
     })()
       .then((lot) => {
-        const normalizedLot = normalizeFarmerLot(lot);
+        const normalizedLot = preserveFarmerLotStatus(lot);
         setBackendLots((current) => [normalizedLot, ...current]);
         setForm(emptyForm);
         setCropImageFile(null);
@@ -263,7 +263,7 @@ export function PostCropPage({
       return updateCropLot(user.accessToken!, editingLot.id, buildLotPayload(editForm, uploadedCropImage?.url ?? editingLot.imageUrl ?? undefined));
     })()
       .then((lot) => {
-        const normalizedLot = normalizeFarmerLot(lot);
+        const normalizedLot = preserveFarmerLotStatus(lot);
         setBackendLots((current) => current.map((item) => (item.id === normalizedLot.id ? normalizedLot : item)));
         setEditingLot(null);
         setEditCropImageFile(null);
@@ -288,7 +288,7 @@ export function PostCropPage({
 
     updateCropLotStatus(user.accessToken, lot.id, nextStatus)
       .then((updatedLot) => {
-        const normalizedLot = normalizeFarmerLot(updatedLot);
+        const normalizedLot = preserveFarmerLotStatus(updatedLot);
         setBackendLots((current) => current.map((item) => (item.id === normalizedLot.id ? normalizedLot : item)));
         setSuccess(normalizedLot.status.toUpperCase() === "ACTIVE" ? "Lot activated." : "Lot deactivated.");
       })
