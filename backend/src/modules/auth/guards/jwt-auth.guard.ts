@@ -40,7 +40,12 @@ export class JwtAuthGuard implements CanActivate {
     }
 
     const secret = requireJwtSecret(this.config);
-    const payload = tokenPayload(verify(token, secret, { algorithms: ["HS256"] }));
+    let payload: JwtPayload;
+    try {
+      payload = tokenPayload(verify(token, secret, { algorithms: ["HS256"] }));
+    } catch {
+      throw new UnauthorizedException("Invalid or expired access token.");
+    }
 
     if (typeof payload.sub !== "string" || typeof payload.role !== "string") {
       throw new UnauthorizedException("Invalid access token payload.");

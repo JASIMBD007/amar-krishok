@@ -136,13 +136,6 @@ export class LotsService {
   }
 
   async findMine(user: AuthenticatedUser) {
-    if (user.role === Role.FARMER) {
-      await this.prisma.cropLot.updateMany({
-        data: { status: LotStatus.ACTIVE },
-        where: { farmerId: user.id, status: LotStatus.DRAFT },
-      });
-    }
-
     return this.prisma.cropLot.findMany({
       include: lotInclude,
       orderBy: { createdAt: "desc" },
@@ -258,7 +251,7 @@ export class LotsService {
       data.imageUrl = dto.imageUrl.trim() || null;
     }
 
-    if (user.role === Role.FARMER && existingLot.status === LotStatus.DRAFT) {
+    if (existingLot.status === LotStatus.DRAFT) {
       data.status = LotStatus.ACTIVE;
     }
 

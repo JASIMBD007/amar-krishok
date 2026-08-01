@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Navigate, NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import {
   ChevronDown,
@@ -22,6 +22,7 @@ import {
 } from "./api/auth";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { RegisterChoiceModal } from "./components/RegisterChoiceModal";
+import { LaunchNoticeModal } from "./components/LaunchNoticeModal";
 import { Seo } from "./components/Seo";
 import { FloatingSupportChat } from "./components/chat/FloatingSupportChat";
 import { NotificationCenter } from "./components/notifications/NotificationCenter";
@@ -138,6 +139,7 @@ function toMarketplaceLot(lot: BackendCropLot): CropLot {
 export default function App() {
   const navigate = useNavigate();
   const location = useLocation();
+  const sessionExpiryHandled = useRef(false);
   const {
     addRegistration,
     chatThreads,
@@ -168,13 +170,34 @@ export default function App() {
   const [notificationLots, setNotificationLots] = useState<BackendCropLot[]>([]);
   const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
   const [notificationError, setNotificationError] = useState("");
-  const [marketplaceError, setMarketplaceError] = useState("");
-  const [marketplaceLots, setMarketplaceLots] = useState<CropLot[]>(lots);
-  const [marketplaceLoading, setMarketplaceLoading] = useState(false);
+    const [marketplaceError, setMarketplaceError] = useState("");
+    const [marketplaceLots, setMarketplaceLots] = useState<CropLot[]>([]);
+    const [marketplaceLoading, setMarketplaceLoading] = useState(false);
+    const [launchNoticeOpen, setLaunchNoticeOpen] = useState(false);
   const [registerChoiceOpen, setRegisterChoiceOpen] = useState(false);
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const [reviewedNotificationIds, setReviewedNotificationIds] = useState<string[]>([]);
   const [selectedNotification, setSelectedNotification] = useState<AppNotification | null>(null);
+
+  const handleProtectedRequestError = useCallback(
+    (error: unknown) => {
+      if (!(error instanceof ApiRequestError) || error.status !== 401) {
+        return false;
+      }
+
+      if (sessionExpiryHandled.current) {
+        return true;
+      }
+
+      sessionExpiryHandled.current = true;
+      setUser(null);
+      setNotificationPanelOpen(false);
+      setNotificationError("");
+      navigate(`/login?next=${encodeURIComponent(location.pathname)}`, { replace: true });
+      return true;
+    },
+    [location.pathname, navigate, setUser],
+  );
 
   const closeAllHeaderMenus = () => {
     closeHeaderMenus();
@@ -213,7 +236,7 @@ export default function App() {
         }
 
         const mappedLots = backendLots.map(toMarketplaceLot);
-        setMarketplaceLots(mappedLots.length > 0 ? mappedLots : lots);
+        setMarketplaceLots(mappedLots);
         setMarketplaceError("");
       })
       .catch((error) => {
@@ -221,7 +244,7 @@ export default function App() {
           return;
         }
 
-        setMarketplaceLots(lots);
+        setMarketplaceLots([]);
         setMarketplaceError(error instanceof ApiRequestError ? error.message : "Could not load marketplace lots.");
       })
       .finally(() => {
@@ -244,6 +267,25 @@ export default function App() {
 
     return undefined;
   }, [location.pathname, refreshMarketplaceLots]);
+
+  useEffect(() => {
+    if (location.pathname !== "/") {
+      setLaunchNoticeOpen(false);
+      return;
+    }
+
+    try {
+      if (window.sessionStorage.getItem("amarKrishokLaunchNoticeSeen") === "1") {
+        return;
+      }
+
+      window.sessionStorage.setItem("amarKrishokLaunchNoticeSeen", "1");
+    } catch {
+      // The modal still works for the current render if session storage is unavailable.
+    }
+
+    setLaunchNoticeOpen(true);
+  }, [location.pathname]);
 
   const marketplaceDistricts = useMemo(
     () => Array.from(new Set([...serviceDistricts, ...marketplaceLots.map((lot) => lot.district)])).sort(),
@@ -277,6 +319,7 @@ export default function App() {
 
   useEffect(() => {
     if (!user?.accessToken) {
+      sessionExpiryHandled.current = false;
       setBackendNotifications(null);
       setNotificationOrders([]);
       setNotificationLots([]);
@@ -294,6 +337,7 @@ export default function App() {
         setNotificationError("");
       })
       .catch((error) => {
+        if (handleProtectedRequestError(error)) return;
         setBackendNotifications(null);
         setNotificationError(error instanceof ApiRequestError ? error.message : "Backend service is unavailable. Please try again.");
       });
@@ -301,7 +345,10 @@ export default function App() {
     if (user.role === "buyer" || user.role === "admin") {
       fetchMyOrders(accessToken)
         .then((orders) => setNotificationOrders(orders))
-        .catch(() => setNotificationOrders([]));
+        .catch((error) => {
+          if (handleProtectedRequestError(error)) return;
+          setNotificationOrders([]);
+        });
     } else {
       setNotificationOrders([]);
     }
@@ -309,11 +356,14 @@ export default function App() {
     if (user.role === "farmer" || user.role === "admin") {
       fetchMyCropLots(accessToken)
         .then((cropLots) => setNotificationLots(cropLots))
-        .catch(() => setNotificationLots([]));
+        .catch((error) => {
+          if (handleProtectedRequestError(error)) return;
+          setNotificationLots([]);
+        });
     } else {
       setNotificationLots([]);
     }
-  }, [user?.accessToken, user?.role]);
+  }, [handleProtectedRequestError, user?.accessToken, user?.role]);
 
   const fallbackNotifications = useMemo(
     () =>
@@ -380,6 +430,7 @@ export default function App() {
           setNotificationError("");
         })
         .catch((error) => {
+          if (handleProtectedRequestError(error)) return;
           setNotificationError(error instanceof ApiRequestError ? error.message : "Backend service is unavailable. Please try again.");
         });
     }
@@ -411,6 +462,7 @@ export default function App() {
     const optimisticReadAt = new Date().toISOString();
     setBackendNotifications((current) => current?.map((notification) => ({ ...notification, readAt: notification.readAt ?? optimisticReadAt })) ?? current);
     markAllNotificationsRead(user.accessToken).catch((error) => {
+      if (handleProtectedRequestError(error)) return;
       setNotificationError(error instanceof ApiRequestError ? error.message : "Backend service is unavailable. Please try again.");
     });
   };
@@ -584,10 +636,11 @@ export default function App() {
           </nav>
         )}
       </header>
-      {registerChoiceOpen && <RegisterChoiceModal onChoose={chooseRegistration} onClose={() => setRegisterChoiceOpen(false)} />}
-      {selectedNotification && (
-        <NotificationDetailDialog notification={selectedNotification} onClose={() => setSelectedNotification(null)} />
-      )}
+        {registerChoiceOpen && <RegisterChoiceModal onChoose={chooseRegistration} onClose={() => setRegisterChoiceOpen(false)} />}
+        {launchNoticeOpen && <LaunchNoticeModal onClose={() => setLaunchNoticeOpen(false)} />}
+        {selectedNotification && (
+          <NotificationDetailDialog notification={selectedNotification} onClose={() => setSelectedNotification(null)} />
+        )}
 
       <Routes location={location}>
         <Route path="/" element={<HomePage setView={selectView} />} />
