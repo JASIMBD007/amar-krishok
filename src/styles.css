@@ -5438,3 +5438,49 @@ tbody tr:hover td { background: #f6f8f5; }
 .market-grid .crop-card-footer {
   margin: -2px 0 9px;
 }
+
+/* =====================================================================
+   CLOSE BUTTONS: red cross on hover  +  publish snackbar toast
+   ===================================================================== */
+.icon-button.close-button {
+  transition: color .15s ease, background-color .15s ease, box-shadow .15s ease, transform .15s var(--ak-ease);
+}
+.icon-button.close-button:hover,
+.icon-button.close-button:focus-visible {
+  color: #d1362f;
+  background: #fdecea;
+  box-shadow: inset 0 0 0 1px rgba(209, 54, 47, 0.35);
+}
+.icon-button.close-button:hover svg {
+  color: #d1362f;
+}
+
+.snackbar {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  z-index: 80;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  max-width: calc(100vw - 32px);
+  padding: 13px 20px;
+  border-radius: 14px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--ak-green-bright), var(--ak-green-deep));
+  box-shadow: var(--ak-shadow-lg);
+  font-weight: 800;
+  animation: snackbar-in 0.28s var(--ak-ease);
+}
+.snackbar svg {
+  flex: 0 0 auto;
+  color: #eafaf1;
+}
+@keyframes snackbar-in {
+  from { opacity: 0; transform: translate(-50%, 12px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .snackbar { animation: none; }
+}

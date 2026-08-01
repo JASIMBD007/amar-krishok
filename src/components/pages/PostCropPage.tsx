@@ -136,6 +136,7 @@ export function PostCropPage({
   const [statusUpdatingLotId, setStatusUpdatingLotId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [snackbar, setSnackbar] = useState("");
   const availableUpazillas = getUpazillasForDistrict(form.district);
   const availableEditUpazillas = getUpazillasForDistrict(editForm.district);
   const activeBackendLots = useMemo(() => backendLots.filter((lot) => lot.status.toUpperCase() === "ACTIVE"), [backendLots]);
@@ -188,6 +189,15 @@ export function PostCropPage({
       return next;
     }, { replace: true });
   }, [backendLots, editingLot, requestedEditLotId, setSearchParams]);
+
+  useEffect(() => {
+    if (!snackbar) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => setSnackbar(""), 3500);
+    return () => window.clearTimeout(timeoutId);
+  }, [snackbar]);
 
   const updateField = (field: keyof CropLotForm, value: string) => {
     setForm((current) => ({ ...current, [field]: value, ...(field === "district" ? { upazilla: "" } : {}) }));
@@ -263,7 +273,7 @@ export function PostCropPage({
         setBackendLots((current) => [normalizedLot, ...current]);
         setForm(emptyForm);
         setCropImageFile(null);
-        setSuccess("Published to backend.");
+        setSnackbar("Published to the marketplace");
       })
       .catch((apiError) => {
         setError(apiError instanceof ApiRequestError ? apiError.message : "Could not publish crop lot.");
@@ -645,7 +655,7 @@ export function PostCropPage({
                 <span>{t("Edit lot")}</span>
                 <h2 id="farmer-edit-lot-title">{t(editingLot.crop.name)}</h2>
               </div>
-              <button className="icon-button" type="button" aria-label={t("Close modal")} onClick={() => setEditingLot(null)}>
+              <button className="icon-button close-button" type="button" aria-label={t("Close modal")} onClick={() => setEditingLot(null)}>
                 <X size={18} />
               </button>
             </div>
@@ -735,6 +745,12 @@ export function PostCropPage({
               </div>
             </form>
           </section>
+        </div>
+      )}
+      {snackbar && (
+        <div className="snackbar" role="status" aria-live="polite">
+          <CheckCircle2 size={18} />
+          <span>{t(snackbar)}</span>
         </div>
       )}
     </section>

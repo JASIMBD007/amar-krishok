@@ -59,7 +59,7 @@ export function NotificationDetailDialog({
             <span>{t("Notification details")}</span>
             <h2 id="notification-detail-title">{t(notification.title)}</h2>
           </div>
-          <button className="icon-button" type="button" aria-label={t("Close modal")} onClick={onClose}>
+          <button className="icon-button close-button" type="button" aria-label={t("Close modal")} onClick={onClose}>
             <X size={20} />
           </button>
         </div>

@@ -22,7 +22,7 @@ export function LaunchNoticeModal({ onClose }: { onClose: () => void }) {
       >
         <button
           aria-label={t("Close")}
-          className="icon-button launch-notice-close"
+          className="icon-button close-button launch-notice-close"
           onClick={onClose}
           title={t("Close")}
           type="button"

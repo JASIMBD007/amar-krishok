@@ -239,7 +239,7 @@ export function AccountProfilePanel({
                 <span>{t("My profile")}</span>
                 <h2>{t("Edit account information")}</h2>
               </div>
-              <button className="icon-button" type="button" aria-label={t("Close modal")} onClick={closeEditModal}>
+              <button className="icon-button close-button" type="button" aria-label={t("Close modal")} onClick={closeEditModal}>
                 <X size={18} />
               </button>
             </div>
