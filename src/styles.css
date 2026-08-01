@@ -4760,3 +4760,547 @@ th {
     font-size: 16px;
   }
 }
+
+/* =====================================================================
+   UI enhancement layer — rough visual refresh (v1)
+   Additive overrides only. Elevates depth, radii, gradients and
+   micro-interactions on top of the existing green farming identity.
+   ===================================================================== */
+
+:root {
+  /* Brand */
+  --ak-green: #176b47;
+  --ak-green-deep: #0f5537;
+  --ak-green-bright: #1f8a5b;
+  --ak-ink: #14261e;
+  --ak-harvest: #c2610c;
+
+  /* Surfaces */
+  --ak-surface: #ffffff;
+  --ak-line: rgba(22, 50, 37, 0.10);
+  --ak-line-strong: rgba(22, 50, 37, 0.16);
+
+  /* Radii */
+  --ak-r-sm: 12px;
+  --ak-r-md: 16px;
+  --ak-r-lg: 22px;
+
+  /* Layered, colour-tinted shadows */
+  --ak-shadow-sm: 0 1px 2px rgba(20, 38, 30, 0.06), 0 4px 12px rgba(20, 38, 30, 0.06);
+  --ak-shadow-md: 0 2px 6px rgba(20, 38, 30, 0.06), 0 14px 34px rgba(20, 38, 30, 0.10);
+  --ak-shadow-lg: 0 6px 16px rgba(20, 38, 30, 0.08), 0 26px 60px rgba(20, 38, 30, 0.14);
+  --ak-shadow-brand: 0 10px 24px rgba(15, 85, 55, 0.28);
+
+  --ak-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ---- Header: crisper glass ---- */
+.site-header {
+  border-bottom: 1px solid var(--ak-line);
+  background: rgba(248, 247, 242, 0.82);
+  backdrop-filter: saturate(1.4) blur(18px);
+  -webkit-backdrop-filter: saturate(1.4) blur(18px);
+}
+
+.brand-mark {
+  border-radius: 12px;
+  background: linear-gradient(150deg, var(--ak-green-bright), var(--ak-green-deep));
+  box-shadow: var(--ak-shadow-brand);
+}
+
+/* ---- Buttons: gradient fill + spring lift ---- */
+.secondary-button,
+.primary-button,
+.order-button {
+  border-radius: var(--ak-r-sm);
+  transition: transform 220ms var(--ak-ease), box-shadow 220ms var(--ak-ease),
+    background-color 180ms ease, color 180ms ease;
+}
+
+.primary-button {
+  background: linear-gradient(135deg, var(--ak-green-bright) 0%, var(--ak-green-deep) 100%);
+  box-shadow: var(--ak-shadow-brand);
+}
+
+.primary-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 34px rgba(15, 85, 55, 0.34);
+}
+
+.primary-button:active {
+  transform: translateY(0);
+}
+
+.secondary-button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--ak-shadow-md);
+}
+
+.order-button:hover {
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--ak-green-bright), var(--ak-green-deep));
+  box-shadow: var(--ak-shadow-brand);
+  transform: translateY(-1px);
+}
+
+.icon-button {
+  border-radius: 12px;
+  transition: transform 180ms var(--ak-ease), box-shadow 180ms var(--ak-ease);
+}
+
+.icon-button:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--ak-shadow-sm);
+}
+
+/* Shared focus ring for keyboard users */
+.primary-button:focus-visible,
+.secondary-button:focus-visible,
+.order-button:focus-visible,
+.icon-button:focus-visible {
+  outline: 3px solid rgba(31, 138, 91, 0.45);
+  outline-offset: 2px;
+}
+
+/* ---- Status pill: soft brand tint ---- */
+.status-pill {
+  padding: 0 14px;
+  min-height: 36px;
+  background: linear-gradient(180deg, #ffffff, #f2f8f2);
+  box-shadow: inset 0 0 0 1px rgba(23, 107, 71, 0.18), var(--ak-shadow-sm);
+}
+
+/* ---- Elevated surfaces: rounder + layered depth ---- */
+.market-console,
+.panel,
+.crop-card,
+.stat-card,
+.workflow-card,
+.trust-panel,
+.buyer-card {
+  border: 1px solid var(--ak-line);
+  border-radius: var(--ak-r-md);
+  box-shadow: var(--ak-shadow-md);
+}
+
+.market-console {
+  border-radius: var(--ak-r-lg);
+  box-shadow: var(--ak-shadow-lg);
+}
+
+/* ---- Crop cards: lift + image zoom on hover ---- */
+.crop-card {
+  border-radius: var(--ak-r-md);
+  transition: transform 260ms var(--ak-ease), box-shadow 260ms var(--ak-ease);
+}
+
+.crop-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--ak-shadow-lg);
+}
+
+.crop-card img {
+  transition: transform 500ms var(--ak-ease);
+}
+
+.crop-card:hover img {
+  transform: scale(1.04);
+}
+
+/* ---- Metrics band: gradient depth instead of flat blocks ---- */
+.metrics-band {
+  border-radius: var(--ak-r-lg);
+  box-shadow: var(--ak-shadow-lg);
+  background: var(--ak-line-strong);
+}
+
+.metrics-band div {
+  background: linear-gradient(160deg, #1c3a2d 0%, #122019 100%);
+  position: relative;
+}
+
+.metrics-band strong {
+  background: linear-gradient(120deg, #ffffff, #bfe6cf);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ---- Workflow cards: chipped icon + hover lift ---- */
+.workflow-card {
+  border-radius: var(--ak-r-md);
+  transition: transform 240ms var(--ak-ease), box-shadow 240ms var(--ak-ease);
+}
+
+.workflow-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--ak-shadow-lg);
+}
+
+.workflow-card svg {
+  box-sizing: content-box;
+  width: 24px;
+  height: 24px;
+  padding: 11px;
+  border-radius: 14px;
+  color: var(--ak-harvest);
+  background: linear-gradient(150deg, rgba(194, 97, 12, 0.14), rgba(194, 97, 12, 0.06));
+}
+
+/* ---- Trust list rows: subtle interactive feel ---- */
+.trust-list div {
+  border-radius: var(--ak-r-sm);
+  transition: transform 200ms var(--ak-ease), background-color 200ms ease;
+}
+
+.trust-list div:hover {
+  transform: translateX(3px);
+  background: #eaf3e6;
+}
+
+.buyer-card {
+  border-radius: var(--ak-r-md);
+  box-shadow: var(--ak-shadow-lg);
+}
+
+/* ---- Respect reduced-motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  .primary-button,
+  .secondary-button,
+  .order-button,
+  .icon-button,
+  .crop-card,
+  .crop-card img,
+  .workflow-card,
+  .trust-list div {
+    transition: none;
+  }
+
+  .primary-button:hover,
+  .secondary-button:hover,
+  .crop-card:hover,
+  .workflow-card:hover {
+    transform: none;
+  }
+}
+
+/* =====================================================================
+   Colorful icon layer — same icons, semantic multi-hue accents.
+   Lucide icons use stroke: currentColor, so `color` tints them.
+   ===================================================================== */
+
+:root {
+  --ic-blue: #2f7ed8;
+  --ic-orange: #c2610c;
+  --ic-green: #1f8a5b;
+  --ic-violet: #7c5cd0;
+  --ic-teal: #0e9c8a;
+  --ic-rose: #d9557b;
+}
+
+/* ---- Crop card meta: location / quantity / grade / harvest ---- */
+.crop-meta span:nth-of-type(1) svg { color: var(--ic-blue); }
+.crop-meta span:nth-of-type(2) svg { color: var(--ic-orange); }
+.crop-meta span:nth-of-type(3) svg { color: var(--ic-green); }
+.crop-meta span:nth-of-type(4) svg { color: var(--ic-violet); }
+.crop-post-date svg { color: var(--ic-teal); }
+
+/* ---- Home workflow cards: distinct hue per step chip ---- */
+.workflow-section .workflow-card:nth-of-type(1) svg { color: var(--ic-green);
+  background: linear-gradient(150deg, rgba(31,138,91,.16), rgba(31,138,91,.05)); }
+.workflow-section .workflow-card:nth-of-type(2) svg { color: var(--ic-blue);
+  background: linear-gradient(150deg, rgba(47,126,216,.16), rgba(47,126,216,.05)); }
+.workflow-section .workflow-card:nth-of-type(3) svg { color: var(--ic-orange);
+  background: linear-gradient(150deg, rgba(194,97,12,.16), rgba(194,97,12,.05)); }
+.workflow-section .workflow-card:nth-of-type(4) svg { color: var(--ic-violet);
+  background: linear-gradient(150deg, rgba(124,92,208,.16), rgba(124,92,208,.05)); }
+
+/* ---- Home trust list ---- */
+.trust-list div:nth-of-type(1) svg { color: var(--ic-green); }
+.trust-list div:nth-of-type(2) svg { color: var(--ic-blue); }
+.trust-list div:nth-of-type(3) svg { color: var(--ic-rose); }
+
+/* ---- Buyer request card header ---- */
+.buyer-card-header svg { color: var(--ic-blue); }
+
+/* ---- Dashboard side navigation (admin / farmer / buyer): cycling hues ---- */
+.side-nav button:nth-of-type(6n + 1) svg { color: var(--ic-green); }
+.side-nav button:nth-of-type(6n + 2) svg { color: var(--ic-blue); }
+.side-nav button:nth-of-type(6n + 3) svg { color: var(--ic-orange); }
+.side-nav button:nth-of-type(6n + 4) svg { color: var(--ic-violet); }
+.side-nav button:nth-of-type(6n + 5) svg { color: var(--ic-teal); }
+.side-nav button:nth-of-type(6n + 6) svg { color: var(--ic-rose); }
+
+/* ---- Farmer / buyer stat cards: tinted icon chip, hue per card ---- */
+.stat-card .stat-card-label svg {
+  box-sizing: content-box;
+  padding: 8px;
+  border-radius: 11px;
+}
+.stats-grid .stat-card:nth-of-type(4n + 1) .stat-card-label svg { color: var(--ic-green);  background: rgba(31,138,91,.12); }
+.stats-grid .stat-card:nth-of-type(4n + 2) .stat-card-label svg { color: var(--ic-blue);   background: rgba(47,126,216,.12); }
+.stats-grid .stat-card:nth-of-type(4n + 3) .stat-card-label svg { color: var(--ic-orange); background: rgba(194,97,12,.12); }
+.stats-grid .stat-card:nth-of-type(4n + 4) .stat-card-label svg { color: var(--ic-violet); background: rgba(124,92,208,.13); }
+
+/* ---- Sidebar trust summary badge ---- */
+.trust-summary svg { color: var(--ic-green); }
+
+/* =====================================================================
+   DASHBOARD REDESIGN LAYER (v2)
+   Shared shell used by Farmer / Buyer / Admin. Additive overrides only —
+   modernises the rail, stat cards, inputs, panels, tables and chips
+   without touching page JSX/logic. Uses the --ak-* tokens.
+   ===================================================================== */
+
+/* ---- Shell background: calmer, single wash ---- */
+.dashboard-shell {
+  background: #eef2ec;
+}
+.farmer-dashboard-shell,
+.buyer-dashboard-shell {
+  background:
+    radial-gradient(1200px 300px at 85% -10%, rgba(31,138,91,.10), transparent 60%),
+    #eef2ec;
+}
+
+/* ---- Sidebar: clean app rail ---- */
+.sidebar {
+  gap: 4px;
+  padding: 20px 14px;
+  border-right: 1px solid var(--ak-line);
+  background: rgba(255,255,255,.72);
+  backdrop-filter: blur(8px);
+}
+.admin-brand {
+  gap: 12px;
+  margin-bottom: 18px;
+  padding: 4px 6px;
+}
+.admin-brand > svg {
+  box-sizing: content-box;
+  width: 22px; height: 22px;
+  padding: 9px;
+  border-radius: 12px;
+  color: #fff;
+  background: linear-gradient(150deg, var(--ak-green-bright), var(--ak-green-deep));
+  box-shadow: var(--ak-shadow-brand);
+}
+.admin-brand strong { font-size: .98rem; letter-spacing: -.01em; }
+.admin-brand small { color: var(--muted, #687b72); }
+
+/* Nav items: soft active state + left accent, coloured icons kept */
+.sidebar button,
+.side-nav button {
+  position: relative;
+  min-height: 44px;
+  border-radius: 11px;
+  color: #47584f;
+  font-weight: 750;
+  transition: background-color .16s var(--ak-ease), color .16s var(--ak-ease), transform .16s var(--ak-ease);
+}
+.sidebar button:hover,
+.side-nav button:hover {
+  color: #14261e;
+  background: rgba(23,107,71,.07);
+  box-shadow: none;
+  transform: none;
+}
+.sidebar button.active,
+.side-nav button.active {
+  color: var(--ak-green-deep);
+  background: #e6f3ea;
+  box-shadow: none;
+  font-weight: 860;
+}
+.sidebar button.active::before,
+.side-nav button.active::before {
+  content: "";
+  position: absolute;
+  left: 3px; top: 10px; bottom: 10px;
+  width: 3px; border-radius: 3px;
+  background: var(--ak-green-bright);
+}
+/* keep the chat badge readable on the soft active tint */
+.side-nav button.active .chat-nav-badge,
+.side-nav button:hover .chat-nav-badge {
+  color: #fff;
+  background: var(--ak-harvest);
+}
+
+/* ---- Trust / payout summary: brand gradient card ---- */
+.trust-summary {
+  border-radius: var(--ak-r-md);
+  background: linear-gradient(155deg, var(--ak-green-bright), var(--ak-green-deep));
+  box-shadow: var(--ak-shadow-brand);
+}
+.trust-summary svg { color: #eafaf1 !important; }
+
+/* ---- Topbar ---- */
+.page-title span { color: var(--ak-green); letter-spacing: .04em; }
+.page-title h1 { letter-spacing: -.01em; }
+
+/* ---- Stat cards -> KPI feel ---- */
+.stat-card {
+  border-radius: var(--ak-r-md);
+  padding: 20px;
+  transition: transform .24s var(--ak-ease), box-shadow .24s var(--ak-ease);
+}
+.dashboard-stat:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--ak-shadow-lg);
+}
+.stat-card-label span { color: #6a7b72; font-weight: 820; }
+.stat-card strong {
+  margin-top: 16px;
+  font-weight: 900;
+  letter-spacing: -.02em;
+  font-size: clamp(1.7rem, 2.7vw, 2.2rem);
+}
+.stat-card .stat-card-label svg {
+  box-sizing: content-box;
+  width: 18px; height: 18px;
+  padding: 8px;
+  border-radius: 10px;
+}
+
+/* ---- Panels ---- */
+.panel-header h2 { letter-spacing: -.01em; }
+.dashboard-grid .panel,
+.supply-lots-insight-grid .panel { padding: 20px 22px; }
+
+/* ---- Inputs: bigger, rounder, clear focus ring ---- */
+.input-field input:not([type="file"]),
+.input-field select,
+.full-field textarea,
+.search-field input,
+.select-field select {
+  min-height: 50px;
+  border-radius: 11px;
+  border: 1px solid var(--ak-line-strong);
+  background: #fff;
+  font-weight: 700;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.full-field textarea { min-height: 96px; padding-top: 12px; line-height: 1.55; }
+.input-field input:not([type="file"]):hover,
+.input-field select:hover,
+.full-field textarea:hover {
+  border-color: rgba(31,138,91,.42);
+}
+.input-field input:not([type="file"]):focus,
+.input-field select:focus,
+.full-field textarea:focus,
+.search-field input:focus,
+.select-field select:focus {
+  outline: none;
+  border-color: var(--ak-green-bright);
+  box-shadow: 0 0 0 3px rgba(31,138,91,.18);
+  background: #fff;
+}
+.file-picker-row { min-height: 50px; border-radius: 11px; border-color: var(--ak-line-strong); background:#fff; }
+.file-picker-button {
+  border-radius: 9px;
+  background: #e8f3e8;
+  color: var(--ak-green-deep);
+  font-weight: 800;
+}
+
+/* ---- Seller lot rows ---- */
+.seller-lot-item {
+  border-radius: var(--ak-r-sm);
+  transition: background-color .16s ease, box-shadow .16s ease;
+}
+.seller-lot-item:hover {
+  background: #f4f8f3;
+  box-shadow: inset 0 0 0 1px var(--ak-line);
+}
+
+/* ---- Status pills (lots) ---- */
+.lot-status-pill {
+  border-radius: 999px;
+  font-weight: 850;
+  font-size: .74rem;
+  letter-spacing: .02em;
+}
+.lot-status-pill.active { color:#0f7a4a; background:#e6f4ec; }
+.lot-status-pill.draft { color:#5f7169; background:#eef1ee; }
+.lot-status-pill.cancelled { color:#a1442a; background:#fbeae3; }
+.lot-status-pill.reserved,
+.lot-status-pill.sold { color:#1d5fb0; background:#e4eefb; }
+
+/* ---- Tables: row hover + rounded pills ---- */
+tbody tr { transition: background-color .14s ease; }
+tbody tr:hover td { background: #f6f8f5; }
+.status-pill.small { font-weight: 850; }
+
+/* ---- Right-rail panels ---- */
+.farmer-rail-panel { border-radius: var(--ak-r-md); }
+.farmer-rail-header svg {
+  box-sizing: content-box;
+  width: 20px; height: 20px;
+  padding: 8px;
+  border-radius: 11px;
+  color: var(--ak-green);
+  background: #e8f3e8;
+}
+.checklist.compact span, .checklist span {
+  border-radius: 10px;
+  transition: background-color .15s ease;
+}
+
+/* ---- Reduced motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-stat:hover, .seller-lot-item, .sidebar button, .side-nav button { transition: none; transform: none; }
+}
+
+/* =====================================================================
+   PUBLIC + AUTH POLISH LAYER (v2)
+   Marketplace image fallback, price-table readability, auth card accent.
+   ===================================================================== */
+
+/* ---- Crop image: graceful placeholder when the image is missing/broken ---- */
+.crop-card img {
+  color: transparent;            /* hide broken-image alt text */
+  font-size: 0;
+  background:
+    radial-gradient(120% 120% at 20% 0%, rgba(31,138,91,.16), transparent 60%),
+    linear-gradient(150deg, #e8f3e8, #dbe9db);
+}
+
+/* ---- Filter bar: give search room, align controls ---- */
+.filter-bar .search-field { flex: 1; }
+.filter-bar .select-field { min-width: 220px; }
+
+/* ---- Price table: readable rows, hover, retail emphasis ---- */
+.price-row {
+  border-radius: 12px;
+  transition: background-color .15s ease;
+}
+.price-row:hover { background: #f4f8f3; }
+.price-row > div:nth-child(4) strong { color: var(--ak-green-deep); }
+.price-row em { /* trend pill */
+  font-weight: 850;
+  letter-spacing: .01em;
+}
+
+/* ---- Auth card: brand accent + gradient icon chip ---- */
+.auth-panel {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--ak-r-lg);
+  box-shadow: var(--ak-shadow-lg);
+}
+.auth-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--ak-green-bright), var(--ak-green-deep));
+}
+.auth-icon {
+  color: #fff;
+  background: linear-gradient(150deg, var(--ak-green-bright), var(--ak-green-deep));
+  box-shadow: var(--ak-shadow-brand);
+  border-radius: 14px;
+}
+.auth-submit-button { margin-top: 4px; }
