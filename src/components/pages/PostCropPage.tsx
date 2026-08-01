@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   BadgeCheck,
   CheckCircle2,
@@ -115,6 +116,8 @@ export function PostCropPage({
   const language = useLanguage();
   const t = useTranslate();
   const v = useValueText();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedEditLotId = searchParams.get("editLot");
   const [backendLots, setBackendLots] = useState<BackendCropLot[]>([]);
   const [form, setForm] = useState<CropLotForm>(emptyForm);
   const [cropImageFile, setCropImageFile] = useState<File | null>(null);
@@ -157,6 +160,28 @@ export function PostCropPage({
       })
       .finally(() => setIsLoading(false));
   }, [user?.accessToken]);
+
+  useEffect(() => {
+    if (!requestedEditLotId || editingLot) {
+      return;
+    }
+
+    const targetLot = backendLots.find((lot) => lot.id === requestedEditLotId);
+    if (!targetLot) {
+      return;
+    }
+
+    setEditingLot(targetLot);
+    setEditForm(lotToForm(targetLot));
+    setEditCropImageFile(null);
+    setError("");
+    setSuccess("");
+    setSearchParams((current) => {
+      const next = new URLSearchParams(current);
+      next.delete("editLot");
+      return next;
+    }, { replace: true });
+  }, [backendLots, editingLot, requestedEditLotId, setSearchParams]);
 
   const updateField = (field: keyof CropLotForm, value: string) => {
     setForm((current) => ({ ...current, [field]: value, ...(field === "district" ? { upazilla: "" } : {}) }));

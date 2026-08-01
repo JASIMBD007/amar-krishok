@@ -1,6 +1,6 @@
 import React from "react";
 import type { LucideIcon } from "lucide-react";
-import { BadgeCheck, Banknote, CalendarClock, CalendarDays, MapPin, PackageCheck } from "lucide-react";
+import { BadgeCheck, Banknote, CalendarClock, CalendarDays, MapPin, PackageCheck, PenLine } from "lucide-react";
 import { useLanguage } from "../i18n";
 import type { CropLot } from "../types";
 
@@ -26,11 +26,15 @@ function formatPostedDate(value: string | undefined, language: "en" | "bn") {
 export function CropCard({
   lot,
   onOrder,
+  onEdit,
+  canEdit = false,
   t,
   v,
 }: {
   lot: CropLot;
   onOrder: () => void;
+  onEdit?: () => void;
+  canEdit?: boolean;
   t: Translator;
   v: ValueFormatter;
 }) {
@@ -63,7 +67,15 @@ export function CropCard({
             </span>
           </div>
         )}
-        <button className="order-button" type="button" onClick={onOrder}>{t("Order this lot")}</button>
+        <div className="crop-card-actions">
+          <button className="order-button" type="button" onClick={onOrder}>{t("Order this lot")}</button>
+          {canEdit && onEdit ? (
+            <button className="edit-lot-button" type="button" onClick={onEdit}>
+              <PenLine aria-hidden="true" size={16} />
+              {t("Edit lot")}
+            </button>
+          ) : null}
+        </div>
       </div>
     </article>
   );
