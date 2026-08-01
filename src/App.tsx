@@ -594,7 +594,8 @@ export default function App() {
                   <span>{t("Account access")}</span>
                 )}
                 {user ? (
-                  roleOptions.map((option) => {
+                  // Admins can switch into any workspace; farmers and buyers only see their own.
+                  (user.role === "admin" ? roleOptions : roleOptions.filter((option) => option.role === user.role)).map((option) => {
                     const Icon = option.icon;
                     return (
                       <button className="role-option" key={option.role} type="button" role="menuitem" onClick={() => chooseRole(option.role, option.view)}>
