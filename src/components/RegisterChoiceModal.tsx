@@ -19,7 +19,7 @@ export function RegisterChoiceModal({
             <span>{t("Create account")}</span>
             <h2 id="registration-choice-title">{t("Do you want to buy or sell?")}</h2>
           </div>
-          <button className="icon-button" type="button" aria-label={t("Close modal")} onClick={onClose}>
+          <button className="icon-button close-button" type="button" aria-label={t("Close modal")} onClick={onClose}>
             <X size={18} />
           </button>
         </div>

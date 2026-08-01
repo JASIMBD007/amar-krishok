@@ -161,7 +161,7 @@ export function FloatingSupportChat({
               <span>{t("Admin support")}</span>
               <h2 id="floating-chat-title">{t("Need help? Chat with us")}</h2>
             </div>
-            <button className="icon-button" type="button" aria-label={t("Close chat")} onClick={() => setIsOpen(false)}>
+            <button className="icon-button close-button" type="button" aria-label={t("Close chat")} onClick={() => setIsOpen(false)}>
               <X size={18} />
             </button>
           </div>

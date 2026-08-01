@@ -162,7 +162,7 @@ export function AccountModal({
             <span>{t(editingAccount ? "Edit account" : "Create account")}</span>
             <h2 id={`${role}-account-modal-title`}>{t(role === "buyer" ? "Buyer / customer" : "Seller / farmer")}</h2>
           </div>
-          <button className="icon-button" type="button" aria-label={t("Close modal")} onClick={onClose}>
+          <button className="icon-button close-button" type="button" aria-label={t("Close modal")} onClick={onClose}>
             <X size={18} />
           </button>
         </div>
@@ -208,7 +208,7 @@ export function DeleteConfirmModal({
             <span>{t("Delete confirmation")}</span>
             <h2 id="delete-account-title">{t("Delete account")}</h2>
           </div>
-          <button className="icon-button" type="button" aria-label={t("Close modal")} onClick={onClose}>
+          <button className="icon-button close-button" type="button" aria-label={t("Close modal")} onClick={onClose}>
             <X size={18} />
           </button>
         </div>
@@ -405,7 +405,7 @@ function LotEditModal({
             <span>{t("Edit lot")}</span>
             <h2 id="admin-edit-lot-title">{t(lot.crop)}</h2>
           </div>
-          <button className="icon-button" type="button" aria-label={t("Close modal")} onClick={onClose}>
+          <button className="icon-button close-button" type="button" aria-label={t("Close modal")} onClick={onClose}>
             <X size={18} />
           </button>
         </div>
@@ -522,7 +522,7 @@ export function FarmerLotDetailsModal({
             <span>{t("Farmer lot details")}</span>
             <h2 id="farmer-lot-details-title">{account.name}</h2>
           </div>
-          <button className="icon-button" type="button" aria-label={t("Close modal")} onClick={onClose}>
+          <button className="icon-button close-button" type="button" aria-label={t("Close modal")} onClick={onClose}>
             <X size={18} />
           </button>
         </div>

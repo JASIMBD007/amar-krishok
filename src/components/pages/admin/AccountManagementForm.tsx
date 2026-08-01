@@ -333,7 +333,7 @@ export function AccountManagementForm({
                 <span>{t("NID / trade license")}</span>
                 <h2 id="document-preview-title">{t("Uploaded document preview")}</h2>
               </div>
-              <button className="icon-button" type="button" aria-label={t("Close modal")} onClick={closeDocumentPreview}>
+              <button className="icon-button close-button" type="button" aria-label={t("Close modal")} onClick={closeDocumentPreview}>
                 <X size={18} />
               </button>
             </div>
