@@ -90,15 +90,21 @@ function formatMoney(value: number) {
 }
 
 function lotToForm(lot: BackendCropLot): CropLotForm {
+  const district = lot.district.name;
+  // The lot's own upazilla may be empty (older lots stored it only on the farmer
+  // profile). Fall back to the farmer's upazilla, but only when it is a valid
+  // upazilla for this district so we never prefill a mismatched value.
+  const farmerUpazilla = lot.farmer?.upazilla ?? "";
+  const upazilla = lot.upazilla || (getUpazillasForDistrict(district).includes(farmerUpazilla) ? farmerUpazilla : "");
   return {
     crop: lot.crop.name,
-    district: lot.district.name,
+    district,
     grade: lot.grade,
     harvestDate: lot.harvestDate ? lot.harvestDate.slice(0, 10) : "",
     notes: lot.notes ?? "",
     pricePerKg: String(numericValue(lot.pricePerKg) || ""),
     quantityKg: String(numericValue(lot.quantityKg) || ""),
-    upazilla: lot.upazilla ?? "",
+    upazilla,
   };
 }
 
@@ -716,6 +722,8 @@ export function PostCropPage({
                 <span>{t("Notes")}</span>
                 <textarea value={editForm.notes} onChange={(event) => updateEditField("notes", event.target.value)} />
               </label>
+              {error && <p className="auth-error">{t(error)}</p>}
+              {success && <p className="auth-notice">{t(success)}</p>}
               <div className="modal-action-row">
                 <button className="secondary-button" type="button" onClick={() => setEditingLot(null)} disabled={isUpdatingLot}>
                   {t("Cancel")}
