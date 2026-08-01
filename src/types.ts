@@ -64,6 +64,8 @@ export type RegisteredCropLotRecord = {
 };
 
 export type CropLot = {
+  farmerId?: string;
+  farmerPhone?: string;
   id: string;
   crop: string;
   farmer: string;

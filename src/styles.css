@@ -516,6 +516,43 @@ button {
   font-weight: 850;
 }
 
+.crop-card-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.crop-card-actions .order-button {
+  width: auto;
+}
+
+.edit-lot-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid #dbe4df;
+  border-radius: 10px;
+  color: #17382b;
+  background: #fff;
+  font-weight: 850;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.edit-lot-button:hover {
+  border-color: #176b47;
+  color: #176b47;
+}
+
+@media (max-width: 680px) {
+  .crop-card-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (min-width: 1161px) {
   .market-console .console-header {
     min-height: 50px;
