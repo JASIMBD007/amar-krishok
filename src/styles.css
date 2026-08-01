@@ -5371,3 +5371,30 @@ tbody tr:hover td { background: #f6f8f5; }
   font-weight: 850;
   color: var(--ak-ink);
 }
+
+/* =====================================================================
+   CROP CARD: denser-grid fixes
+   Stack the action buttons so labels never wrap at narrow card widths,
+   and make the posted date read like a meta row (left-aligned, under
+   "Ready today", same size/weight).
+   ===================================================================== */
+.crop-card-actions {
+  grid-template-columns: 1fr;
+}
+.crop-card-actions .order-button,
+.crop-card-actions .edit-lot-button {
+  width: 100%;
+  white-space: nowrap;
+}
+
+.crop-card-footer {
+  justify-content: flex-start;
+  margin: -2px 0 12px;
+}
+.crop-post-date {
+  gap: 7px;
+  color: #708277;
+  font-size: 0.82rem;
+  font-weight: 400;
+}
+.crop-post-date svg { color: #176b47; }
