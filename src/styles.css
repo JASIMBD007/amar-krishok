@@ -5208,9 +5208,7 @@ th {
 /* ---- Inputs: bigger, rounder, clear focus ring ---- */
 .input-field input:not([type="file"]),
 .input-field select,
-.full-field textarea,
-.search-field input,
-.select-field select {
+.full-field textarea {
   min-height: 50px;
   border-radius: 11px;
   border: 1px solid var(--ak-line-strong);
@@ -5226,9 +5224,7 @@ th {
 }
 .input-field input:not([type="file"]):focus,
 .input-field select:focus,
-.full-field textarea:focus,
-.search-field input:focus,
-.select-field select:focus {
+.full-field textarea:focus {
   outline: none;
   border-color: var(--ak-green-bright);
   box-shadow: 0 0 0 3px rgba(31,138,91,.18);
@@ -5303,10 +5299,6 @@ tbody tr:hover td { background: #f6f8f5; }
     radial-gradient(120% 120% at 20% 0%, rgba(31,138,91,.16), transparent 60%),
     linear-gradient(150deg, #e8f3e8, #dbe9db);
 }
-
-/* ---- Filter bar: give search room, align controls ---- */
-.filter-bar .search-field { flex: 1; }
-.filter-bar .select-field { min-width: 220px; }
 
 /* ---- Price table: readable rows, hover, retail emphasis ---- */
 .price-row {
