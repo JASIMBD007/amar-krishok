@@ -68,11 +68,11 @@ export function CropCard({
           </div>
         )}
         <div className="crop-card-actions">
-          <button className="order-button" type="button" onClick={onOrder}>{t("Order this lot")}</button>
+          <button className="order-button" type="button" onClick={onOrder}>{t("Order")}</button>
           {canEdit && onEdit ? (
             <button className="edit-lot-button" type="button" onClick={onEdit}>
               <PenLine aria-hidden="true" size={16} />
-              {t("Edit lot")}
+              {t("Edit")}
             </button>
           ) : null}
         </div>
