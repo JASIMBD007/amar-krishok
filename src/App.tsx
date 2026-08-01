@@ -30,7 +30,7 @@ import { NotificationDetailDialog } from "./components/notifications/Notificatio
 import { makeRoleNotifications, mergeNotifications, toAppNotification } from "./components/notifications/roleNotifications";
 import { roleCanOpenPath } from "./components/pages/pageHelpers";
 import { LanguageContext, translate } from "./i18n";
-import { lots, roleOptions, routeByView, serviceDistricts, views } from "./data";
+import { lots, roleHomePath, roleOptions, routeByView, serviceDistricts, views } from "./data";
 import { AdminPage, HomePage, LoginPage, MarketplacePage, OrderPage, PostCropPage, PricesPage, RegisterPage } from "./components/pages";
 import { useAppStore } from "./store/useAppStore";
 import type { AppNotification, AuthUser, CropLot, RegisteredAccount, RegistrationRole, Role, View } from "./types";
@@ -506,6 +506,12 @@ export default function App() {
 
   const roleLabel = user ? roleOptions.find((item) => item.role === user.role)?.label : null;
 
+  // The former "Admin" tab becomes a role-aware "Dashboard" link that sends each
+  // signed-in user to their own workspace (farmer/buyer/admin), or to login otherwise.
+  const navItems = views.map((item) =>
+    item.id === "admin" ? { ...item, label: "Dashboard", path: user ? roleHomePath[user.role] : "/login" } : item,
+  );
+
   return (
     <LanguageContext.Provider value={language}>
     <Seo language={language} pathname={location.pathname} />
@@ -534,7 +540,7 @@ export default function App() {
         </NavLink>
 
         <nav className="main-nav" aria-label={t("Main navigation")}>
-          {views.map((item) => (
+          {navItems.map((item) => (
             <NavLink end={item.path === "/"} key={item.id} to={item.path} onClick={closeAllHeaderMenus}>
               {t(item.label)}
             </NavLink>
@@ -634,7 +640,7 @@ export default function App() {
 
         {menuOpen && (
           <nav className="mobile-menu-panel" aria-label={t("Mobile navigation")}>
-            {views.map((item) => (
+            {navItems.map((item) => (
               <NavLink end={item.path === "/"} key={item.id} to={item.path} onClick={closeAllHeaderMenus}>
                 {t(item.label)}
               </NavLink>
