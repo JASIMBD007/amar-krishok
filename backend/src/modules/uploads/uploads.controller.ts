@@ -20,6 +20,12 @@ export class UploadsController {
   async show(@Param("id") id: string, @CurrentUser() user: AuthenticatedUser | undefined, @Res() response: Response) {
     const uploadedFile = await this.uploadsService.getUpload(id, user);
     const isPublicUpload = uploadedFile.purpose === PUBLIC_UPLOAD_PURPOSE;
+    // Helmet applies Cross-Origin-Resource-Policy: same-origin globally, which blocks the frontend
+    // (a different origin) from embedding these images via <img>. Public crop images are meant to be
+    // embeddable anywhere, so relax CORP for them only; private uploads keep the same-origin default.
+    if (isPublicUpload) {
+      response.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+    }
     response.setHeader("Cache-Control", isPublicUpload ? "public, max-age=31536000, immutable" : "private, max-age=31536000, immutable");
     response.setHeader("Content-Disposition", `inline; filename="${uploadedFile.key}"`);
     response.setHeader("Content-Length", uploadedFile.size.toString());
