@@ -21,10 +21,10 @@ export function LaunchNoticeModal({ onClose }: { onClose: () => void }) {
         aria-labelledby="launch-notice-title"
       >
         <button
-          aria-label={t("Close modal")}
+          aria-label={t("Close")}
           className="icon-button launch-notice-close"
           onClick={onClose}
-          title={t("Close modal")}
+          title={t("Close")}
           type="button"
         >
           <X size={20} />

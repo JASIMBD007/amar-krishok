@@ -188,6 +188,7 @@ const bn: Record<string, string> = {
   "Seller / farmer": "বিক্রেতা / কৃষক",
   "New account": "নতুন অ্যাকাউন্ট",
   "Close notification": "নোটিফিকেশন বন্ধ করুন",
+  "Close": "বন্ধ করুন",
   "Close modal": "মডাল বন্ধ করুন",
   "Launching soon": "শিগগিরই শুরু হচ্ছে",
   "A fairer harvest journey is coming": "ন্যায্য কৃষিবাজারের নতুন যাত্রা আসছে",
