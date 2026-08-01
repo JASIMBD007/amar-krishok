@@ -191,7 +191,7 @@ const bn: Record<string, string> = {
   "Close modal": "মডাল বন্ধ করুন",
   "Launching soon": "শিগগিরই শুরু হচ্ছে",
   "A fairer harvest journey is coming": "ন্যায্য কৃষিবাজারের নতুন যাত্রা আসছে",
-  "AmarKrishok is preparing to connect farmers, buyers, and trusted delivery partners across Bangladesh.": "AmarKrishok বাংলাদেশজুড়ে কৃষক, ক্রেতা ও বিশ্বস্ত ডেলিভারি অংশীদারদের যুক্ত করার প্রস্তুতি নিচ্ছে।",
+  "AmarKrishok is preparing to connect farmers, buyers, and trusted delivery partners across Bangladesh.": "আমার কৃষক বাংলাদেশজুড়ে কৃষক, ক্রেতা ও বিশ্বস্ত ডেলিভারি অংশীদারদের যুক্ত করার প্রস্তুতি নিচ্ছে।",
   "Explore the preview": "প্রিভিউ দেখুন",
   "Delete confirmation": "ডিলিট নিশ্চিতকরণ",
   "Are you sure you want to delete this account?": "আপনি কি নিশ্চিতভাবে এই অ্যাকাউন্ট ডিলিট করতে চান?",
