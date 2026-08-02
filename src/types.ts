@@ -103,6 +103,9 @@ export type DashboardStat = {
   value: string;
   detail: string;
   trend: "up" | "down" | "steady";
+  delta?: string;
+  spark?: number[];
+  icon?: import("lucide-react").LucideIcon;
 };
 
 export type AdminRoute = {

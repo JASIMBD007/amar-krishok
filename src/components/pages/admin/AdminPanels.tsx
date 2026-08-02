@@ -134,22 +134,63 @@ function toApprovedSupplyLot(account: RegisteredAccount, lot: RegisteredCropLotR
   };
 }
 
+const KPI_SPARK_WIDTH = 120;
+const KPI_SPARK_PAD = 4;
+const KPI_SPARK_LAST_X = KPI_SPARK_WIDTH - KPI_SPARK_PAD;
+
+function kpiSparkPoints(spark: number[]) {
+  if (spark.length < 2) {
+    return "";
+  }
+
+  const step = (KPI_SPARK_WIDTH - KPI_SPARK_PAD * 2) / (spark.length - 1);
+  return spark.map((y, index) => `${(KPI_SPARK_PAD + index * step).toFixed(1)},${y}`).join(" ");
+}
+
 export function StatsPanel() {
   const t = useTranslate();
   const v = useValueText();
 
   return (
-    <section className="stats-grid" aria-label={t("Business metrics")}>
-      {dashboardStats.map((stat) => (
-        <article className="stat-card dashboard-stat" key={stat.label}>
-          <div className={`trend ${stat.trend}`}>
-            <TrendIcon trend={stat.trend} />
-          </div>
-          <span>{t(stat.label)}</span>
-          <strong>{v(stat.value)}</strong>
-          <p>{t(stat.detail)}</p>
-        </article>
-      ))}
+    <section className="stats-grid kpi-grid" aria-label={t("Business metrics")}>
+      {dashboardStats.map((stat) => {
+        const Icon = stat.icon;
+        return (
+          <article className="stat-card dashboard-stat kpi-card" key={stat.label}>
+            <div className="kpi-top">
+              {Icon ? (
+                <span className="kpi-icon">
+                  <Icon size={17} />
+                </span>
+              ) : (
+                <span />
+              )}
+              {stat.delta ? (
+                <span className={`kpi-delta ${stat.trend}`}>
+                  <TrendIcon trend={stat.trend} />
+                  {stat.delta}
+                </span>
+              ) : null}
+            </div>
+            <span className="kpi-label">{t(stat.label)}</span>
+            <strong className="kpi-value">{v(stat.value)}</strong>
+            {stat.spark ? (
+              <svg className="kpi-spark" viewBox={`0 0 ${KPI_SPARK_WIDTH} 38`} preserveAspectRatio="none" aria-hidden="true">
+                <polyline
+                  points={kpiSparkPoints(stat.spark)}
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <circle cx={KPI_SPARK_LAST_X} cy={stat.spark[stat.spark.length - 1]} r={3} />
+              </svg>
+            ) : null}
+            <p className="kpi-detail">{t(stat.detail)}</p>
+          </article>
+        );
+      })}
     </section>
   );
 }
