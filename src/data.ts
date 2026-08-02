@@ -23,8 +23,7 @@ export const lots: CropLot[] = [
     ask: "৳34/kg",
     grade: "B",
     harvest: "Ready tomorrow",
-    image:
-      "https://images.unsplash.com/photo-1592841200221-a6898f307baa?auto=format&fit=crop&w=900&q=80",
+    image: "/assets/crops/tomato.jpg",
     postedAt: "2026-06-07T08:30:00.000Z",
   },
   {
@@ -50,8 +49,7 @@ export const lots: CropLot[] = [
     ask: "৳21/kg",
     grade: "A",
     harvest: "Cold stored",
-    image:
-      "https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=900&q=80",
+    image: "/assets/crops/potato.jpg",
     postedAt: "2026-06-06T16:10:00.000Z",
   },
   {
@@ -103,8 +101,7 @@ export const lots: CropLot[] = [
     ask: "৳24/kg",
     grade: "A",
     harvest: "Ready in 2 days",
-    image:
-      "https://images.unsplash.com/photo-1449300079323-02e209d9d3a6?auto=format&fit=crop&w=900&q=80",
+    image: "/assets/crops/cucumber.jpg",
     postedAt: "2026-06-04T14:30:00.000Z",
   },
   {

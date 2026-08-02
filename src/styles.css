@@ -305,7 +305,7 @@ button {
   padding: clamp(34px, 6vw, 78px) clamp(16px, 4vw, 56px) 34px;
   background:
     linear-gradient(120deg, rgba(246, 244, 238, 0.98) 0%, rgba(246, 244, 238, 0.84) 46%, rgba(232, 239, 224, 0.5) 100%),
-    url("https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1800&q=80");
+    url("/assets/hero-field.jpg");
   background-position: center;
   background-size: cover;
 }
@@ -694,7 +694,7 @@ button {
   padding: 24px;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.98)),
-    url("https://images.unsplash.com/photo-1523741543316-beb7fc7023d8?auto=format&fit=crop&w=900&q=80");
+    url("/assets/buyer-field.jpg");
   background-position: center;
   background-size: cover;
 }
