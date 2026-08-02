@@ -9,6 +9,7 @@ import {
   ListChecks,
   MapPin,
   PackageCheck,
+  Plus,
   SendHorizontal,
   ShieldCheck,
   ShoppingBag,
@@ -24,6 +25,7 @@ import type { AuthUser, ChatThread, RegisteredAccount } from "../../types";
 import { formatLocalizedDate, normalizeDateInput } from "../../utils/dateInput";
 import { AccountProfilePanel } from "../account/AccountProfilePanel";
 import { KpiCard, sparklineFromRecords } from "../KpiCard";
+import { EmptyState, ListLoading } from "../EmptyState";
 import { FormGrid } from "../shared";
 
 type BuyerOrderForm = {
@@ -382,8 +384,20 @@ export function OrderPage({
                 <ClipboardList size={22} />
               </div>
               <div className="buyer-dashboard-list">
-                {isLoading && <em>{t("Loading buyer orders...")}</em>}
-                {!isLoading && backendOrders.length === 0 && <em>{t("No backend orders yet.")}</em>}
+                {isLoading && <ListLoading label={t("Loading buyer orders...")} />}
+                {!isLoading && backendOrders.length === 0 && (
+                  <EmptyState
+                    icon={ClipboardList}
+                    title={t("No orders yet")}
+                    hint={t("Post a supply request and matching farmers will respond.")}
+                    action={
+                      <button className="primary-button" type="button" onClick={() => scrollToSection("buyer-order-form")}>
+                        <Plus size={18} />
+                        {t("Request supply")}
+                      </button>
+                    }
+                  />
+                )}
                 {backendOrders.map((order) => (
                   <article className="buyer-order-item" key={order.id}>
                     <div>

@@ -5584,3 +5584,63 @@ tbody tr:hover td { background: #f6f8f5; }
   color: #8a998f;
   font-size: 0.78rem;
 }
+
+/* =====================================================================
+   EMPTY & LOADING STATES (farmer lots / buyer orders lists)
+   ===================================================================== */
+.empty-state {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  gap: 8px;
+  padding: 34px 18px;
+  border: 1px dashed var(--ak-line-strong);
+  border-radius: var(--ak-r-md);
+  background: linear-gradient(180deg, rgba(31, 138, 91, 0.04), transparent);
+}
+.empty-state-icon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  color: var(--ak-green);
+  background: #e8f3e8;
+}
+.empty-state strong {
+  font-size: 1.05rem;
+  color: var(--ak-ink);
+}
+.empty-state p {
+  margin: 0;
+  max-width: 320px;
+  color: #6a7b72;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+.empty-state-action {
+  margin-top: 6px;
+}
+
+.list-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 4px;
+  color: #6a7b72;
+  font-weight: 700;
+}
+.list-loading-spinner {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid rgba(31, 138, 91, 0.25);
+  border-top-color: var(--ak-green-bright);
+  animation: list-spin 0.7s linear infinite;
+}
+@keyframes list-spin {
+  to { transform: rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .list-loading-spinner { animation: none; }
+}

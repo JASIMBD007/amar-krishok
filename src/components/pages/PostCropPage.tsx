@@ -33,6 +33,7 @@ import {
 } from "../../api/auth";
 import { AccountProfilePanel } from "../account/AccountProfilePanel";
 import { KpiCard, sparklineFromRecords } from "../KpiCard";
+import { EmptyState, ListLoading } from "../EmptyState";
 import { getUpazillasForDistrict, serviceDistricts } from "../../data";
 import { useLanguage, useTranslate, useValueText } from "../../i18n";
 import type { AuthUser, RegisteredAccount } from "../../types";
@@ -525,8 +526,20 @@ export function PostCropPage({
                 <Sprout size={22} />
               </div>
               <div className="seller-lot-list">
-                {isLoading && <em>{t("Loading your backend lots...")}</em>}
-                {!isLoading && backendLots.length === 0 && <em>{t("No backend lots posted yet.")}</em>}
+                {isLoading && <ListLoading label={t("Loading your backend lots...")} />}
+                {!isLoading && backendLots.length === 0 && (
+                  <EmptyState
+                    icon={Sprout}
+                    title={t("No crop lots yet")}
+                    hint={t("Post your first crop to start receiving buyer requests.")}
+                    action={
+                      <button className="primary-button" type="button" onClick={() => scrollToSection("publish-crop")}>
+                        <Plus size={18} />
+                        {t("Post a crop")}
+                      </button>
+                    }
+                  />
+                )}
                 {backendLots.map((lot) => (
                   <article className="seller-lot-item" key={lot.id}>
                     <div>
