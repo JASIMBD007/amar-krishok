@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import type { DashboardStat } from "../types";
+import { KpiTrendChart, type KpiTrendPoint } from "./KpiTrendChart";
 import { TrendIcon } from "./pages/pageHelpers";
 
 const SPARK_WIDTH = 120;
@@ -21,6 +22,8 @@ export function KpiCard({
   value,
   detail,
   spark,
+  trendData,
+  trendColor,
   delta,
   trend = "up",
 }: {
@@ -29,6 +32,8 @@ export function KpiCard({
   value: string | number;
   detail: string;
   spark?: number[];
+  trendData?: KpiTrendPoint[];
+  trendColor?: string;
   delta?: string;
   trend?: DashboardStat["trend"];
 }) {
@@ -51,7 +56,9 @@ export function KpiCard({
       </div>
       <span className="kpi-label">{label}</span>
       <strong className="kpi-value">{value}</strong>
-      {spark && spark.length > 1 ? (
+      {trendData && trendData.length > 1 ? (
+        <KpiTrendChart data={trendData} color={trendColor} />
+      ) : spark && spark.length > 1 ? (
         <svg className="kpi-spark" viewBox={`0 0 ${SPARK_WIDTH} 38`} preserveAspectRatio="none" aria-hidden="true">
           <polyline points={sparkPoints(spark)} fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
           <circle cx={SPARK_LAST_X} cy={spark[spark.length - 1]} r={3} />
@@ -103,4 +110,27 @@ export function sparklineFromRecords(records: Array<{ date?: string | null; valu
   const range = max - min || 1;
   // Higher values sit nearer the top (smaller y); keep a 6-34 band inside the 0-38 viewBox.
   return series.map((value) => Number((34 - ((value - min) / range) * 28).toFixed(1)));
+}
+
+export function trendDataFromRecords(
+  records: Array<{ date?: string | null; value: number }>,
+  days = 7,
+): KpiTrendPoint[] | undefined {
+  const series = bucketByDay(records, days);
+  if (!series.some((value) => value > 0)) {
+    return undefined;
+  }
+
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  start.setDate(start.getDate() - (days - 1));
+
+  return series.map((value, index) => {
+    const date = new Date(start);
+    date.setDate(start.getDate() + index);
+    return {
+      label: date.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+      value,
+    };
+  });
 }

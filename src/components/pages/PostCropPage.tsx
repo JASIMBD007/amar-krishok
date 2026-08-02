@@ -32,7 +32,7 @@ import {
   type CreateCropLotPayload,
 } from "../../api/auth";
 import { AccountProfilePanel } from "../account/AccountProfilePanel";
-import { KpiCard, sparklineFromRecords } from "../KpiCard";
+import { KpiCard, trendDataFromRecords } from "../KpiCard";
 import { EmptyState, ListLoading } from "../EmptyState";
 import { getUpazillasForDistrict, serviceDistricts } from "../../data";
 import { useLanguage, useTranslate, useValueText } from "../../i18n";
@@ -152,11 +152,19 @@ export function PostCropPage({
   }, [activeBackendLots]);
   const estimatedPayout = totalQuantityKg * averageAsk;
   const latestLot = backendLots[0];
-  // Honest 7-day sparklines built from the farmer's own posting activity.
-  const lotsPostedSpark = useMemo(() => sparklineFromRecords(backendLots.map((lot) => ({ date: lot.createdAt, value: 1 }))), [backendLots]);
-  const quantityPostedSpark = useMemo(
-    () => sparklineFromRecords(backendLots.map((lot) => ({ date: lot.createdAt, value: numericValue(lot.quantityKg) }))),
+  // Keep the chart honest: all trend points come from this farmer's backend records.
+  const lotsPostedTrend = useMemo(() => trendDataFromRecords(backendLots.map((lot) => ({ date: lot.createdAt, value: 1 }))), [backendLots]);
+  const quantityPostedTrend = useMemo(
+    () => trendDataFromRecords(backendLots.map((lot) => ({ date: lot.createdAt, value: numericValue(lot.quantityKg) }))),
     [backendLots],
+  );
+  const averageAskTrend = useMemo(
+    () => trendDataFromRecords(activeBackendLots.map((lot) => ({ date: lot.createdAt, value: numericValue(lot.pricePerKg) }))),
+    [activeBackendLots],
+  );
+  const payoutTrend = useMemo(
+    () => trendDataFromRecords(activeBackendLots.map((lot) => ({ date: lot.createdAt, value: numericValue(lot.quantityKg) * numericValue(lot.pricePerKg) }))),
+    [activeBackendLots],
   );
 
   useEffect(() => {
@@ -399,26 +407,31 @@ export function PostCropPage({
             label={t("Active lots")}
             value={v(activeBackendLots.length)}
             detail={t("Ready for buyer requests")}
-            spark={lotsPostedSpark}
+      trendData={lotsPostedTrend}
           />
           <KpiCard
             icon={Sprout}
             label={t("Listed quantity")}
             value={v(formatQuantity(totalQuantityKg))}
             detail={t("From your active lots")}
-            spark={quantityPostedSpark}
+      trendData={quantityPostedTrend}
+      trendColor="#4f9e6f"
           />
           <KpiCard
             icon={BadgeCheck}
             label={t("Average ask")}
-            value={v(`৳${averageAsk}/kg`)}
-            detail={t("Based on listed price")}
+      value={v(`৳${averageAsk}/kg`)}
+      detail={t("Based on listed price")}
+      trendData={averageAskTrend}
+      trendColor="#d28a3b"
           />
           <KpiCard
             icon={WalletCards}
             label={t("Estimated payout")}
-            value={v(formatMoney(estimatedPayout))}
-            detail={t("After buyer confirmation")}
+      value={v(formatMoney(estimatedPayout))}
+      detail={t("After buyer confirmation")}
+      trendData={payoutTrend}
+      trendColor="#166b4a"
           />
         </section>
 

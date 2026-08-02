@@ -24,7 +24,7 @@ import { useLanguage, useTranslate, useValueText } from "../../i18n";
 import type { AuthUser, ChatThread, RegisteredAccount } from "../../types";
 import { formatLocalizedDate, normalizeDateInput } from "../../utils/dateInput";
 import { AccountProfilePanel } from "../account/AccountProfilePanel";
-import { KpiCard, sparklineFromRecords } from "../KpiCard";
+import { KpiCard, trendDataFromRecords } from "../KpiCard";
 import { EmptyState, ListLoading } from "../EmptyState";
 import { FormGrid } from "../shared";
 
@@ -136,9 +136,9 @@ export function OrderPage({
   );
   const latestOrder = activeOrders[0] ?? backendOrders[0];
   // Honest 7-day sparklines built from the buyer's own order activity.
-  const ordersPlacedSpark = useMemo(() => sparklineFromRecords(backendOrders.map((order) => ({ date: order.createdAt, value: 1 }))), [backendOrders]);
-  const orderValueSpark = useMemo(
-    () => sparklineFromRecords(backendOrders.map((order) => ({ date: order.createdAt, value: numericValue(order.totalValue) }))),
+  const ordersPlacedTrend = useMemo(() => trendDataFromRecords(backendOrders.map((order) => ({ date: order.createdAt, value: 1 }))), [backendOrders]);
+  const orderValueTrend = useMemo(
+    () => trendDataFromRecords(backendOrders.map((order) => ({ date: order.createdAt, value: numericValue(order.totalValue) }))),
     [backendOrders],
   );
 
@@ -273,7 +273,7 @@ export function OrderPage({
             label={t("Active order requests")}
             value={v(activeOrders.length)}
             detail={t("Being reviewed by the team")}
-            spark={ordersPlacedSpark}
+      trendData={ordersPlacedTrend}
           />
           <KpiCard
             icon={Store}
@@ -286,7 +286,8 @@ export function OrderPage({
             label={t("Protected order value")}
             value={v(formatCurrency(activeOrderValue))}
             detail={t("Held until confirmation")}
-            spark={orderValueSpark}
+      trendData={orderValueTrend}
+      trendColor="#4f9e6f"
           />
           <KpiCard
             icon={Truck}
