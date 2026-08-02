@@ -5484,3 +5484,38 @@ tbody tr:hover td { background: #f6f8f5; }
 @media (prefers-reduced-motion: reduce) {
   .snackbar { animation: none; }
 }
+
+/* =====================================================================
+   PASSWORD FIELD FIX
+   The input restyle re-bordered the inner password input, producing a
+   box-in-a-box inside the .password-control wrapper. Keep the inner input
+   borderless and style the wrapper like the other inputs (single rounded
+   border + focus-within ring). Specificity beats the login-panel rules.
+   ===================================================================== */
+.input-field .password-control {
+  min-height: 50px;
+  border-radius: 11px;
+  border: 1px solid var(--ak-line-strong);
+  background: #fff;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.input-field .password-control:hover {
+  border-color: rgba(31, 138, 91, 0.42);
+}
+.input-field .password-control:focus-within {
+  border-color: var(--ak-green-bright);
+  box-shadow: 0 0 0 3px rgba(31, 138, 91, 0.18);
+}
+.input-field .password-control input:not([type="file"]) {
+  min-height: 46px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.input-field .password-control input:not([type="file"]):hover,
+.input-field .password-control input:not([type="file"]):focus {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
