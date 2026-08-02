@@ -34,7 +34,7 @@ import {
 import { AccountProfilePanel } from "../account/AccountProfilePanel";
 import { KpiCard, trendDataFromRecords } from "../KpiCard";
 import { EmptyState, ListLoading } from "../EmptyState";
-import { getUpazillasForDistrict, serviceDistricts } from "../../data";
+import { getUpazillasForDistrict, lots, serviceDistricts } from "../../data";
 import { useLanguage, useTranslate, useValueText } from "../../i18n";
 import type { AuthUser, RegisteredAccount } from "../../types";
 import { formatLocalizedDate, normalizeDateInput } from "../../utils/dateInput";
@@ -72,6 +72,10 @@ const farmerNavItems = [
 
 function numericValue(value: string | number) {
   return Number(value);
+}
+
+function fallbackImageForCrop(crop: string) {
+  return lots.find((lot) => lot.crop.toLowerCase() === crop.toLowerCase())?.image ?? "/assets/crops/rice.png";
 }
 
 function formatQuantity(value: string | number) {
@@ -566,6 +570,13 @@ export function PostCropPage({
                     <div>
                       <strong>{t("Grade")} {t(lot.grade)}</strong>
                       <span>{formatLocalizedDate(lot.harvestDate, language, t("Ready date not set"))}</span>
+                    </div>
+                    <div className="seller-lot-image-cell">
+                      <img
+                        src={lot.imageUrl || fallbackImageForCrop(lot.crop.name)}
+                        alt={`${t(lot.crop.name)} ${t("crop image")}`}
+                        loading="lazy"
+                      />
                     </div>
                     <div className="seller-lot-status-cell">
                       <em className={`lot-status-pill ${lot.status.toLowerCase()}`}>{t(lot.status)}</em>
