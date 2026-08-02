@@ -5519,3 +5519,68 @@ tbody tr:hover td { background: #f6f8f5; }
   background: transparent;
   box-shadow: none;
 }
+
+/* =====================================================================
+   ADMIN KPI CARDS (StatsPanel) — icon chip + trend delta + sparkline
+   ===================================================================== */
+.kpi-grid .kpi-card {
+  display: grid;
+  align-content: start;
+  gap: 0;
+  min-height: 0;
+}
+.kpi-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.kpi-icon {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  color: var(--ak-green);
+  background: #e8f3e8;
+}
+.kpi-delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 850;
+  letter-spacing: 0;
+}
+.kpi-delta svg { width: 13px; height: 13px; }
+.kpi-delta.up { color: #0f7a4a; background: #e6f4ec; }
+.kpi-delta.down { color: #a34325; background: #faece6; }
+.kpi-delta.steady { color: #2e607a; background: #e6f0f4; }
+.kpi-label {
+  margin-top: 14px;
+  color: #6a7b72;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.kpi-value {
+  margin-top: 2px;
+  font-size: clamp(1.65rem, 2.6vw, 2.05rem);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+.kpi-spark {
+  display: block;
+  width: 100%;
+  height: 34px;
+  margin-top: 10px;
+  color: var(--ak-green-bright);
+}
+.kpi-spark circle { fill: var(--ak-green-deep); }
+.kpi-detail {
+  margin: 8px 0 0;
+  color: #8a998f;
+  font-size: 0.78rem;
+}

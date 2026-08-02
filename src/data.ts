@@ -1,4 +1,4 @@
-import { LayoutDashboard, MessageSquareText, Settings, ShoppingBag, Sprout, Truck, UsersRound, WalletCards } from "lucide-react";
+import { BarChart3, LayoutDashboard, MessageSquareText, Settings, ShoppingBag, Sprout, TrendingUp, Truck, UsersRound, WalletCards } from "lucide-react";
 import type {
   AdminPriceSignal,
   AdminRoute,
@@ -181,10 +181,10 @@ export const roleHomePath: Record<Role, string> = {
 };
 
 export const dashboardStats: DashboardStat[] = [
-  { label: "GMV today", value: "৳4.82L", detail: "18 orders confirmed", trend: "up" },
-  { label: "Farmer payout", value: "৳3.96L", detail: "৳82K pending escrow", trend: "up" },
-  { label: "Active supply", value: "34.1 tons", detail: "78 verified lots", trend: "steady" },
-  { label: "Avg price lift", value: "16.8%", detail: "vs local middleman rate", trend: "up" },
+  { label: "GMV today", value: "৳4.82L", detail: "18 orders confirmed", trend: "up", delta: "+12%", icon: BarChart3, spark: [30, 27, 28, 20, 22, 12, 6] },
+  { label: "Farmer payout", value: "৳3.96L", detail: "৳82K pending escrow", trend: "up", delta: "+9%", icon: WalletCards, spark: [28, 29, 24, 25, 18, 16, 9] },
+  { label: "Active supply", value: "34.1 tons", detail: "78 verified lots", trend: "steady", delta: "+4%", icon: Sprout, spark: [20, 22, 17, 21, 15, 18, 13] },
+  { label: "Avg price lift", value: "16.8%", detail: "vs local middleman rate", trend: "up", delta: "+1.4pt", icon: TrendingUp, spark: [26, 24, 25, 19, 17, 14, 10] },
 ];
 
 export const adminRoutes: AdminRoute[] = [
