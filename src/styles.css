@@ -5578,11 +5578,28 @@ tbody tr:hover td { background: #f6f8f5; }
   margin-top: 10px;
   color: var(--ak-green-bright);
 }
+
+.kpi-chart {
+  width: 100%;
+  height: 52px;
+  margin-top: 8px;
+}
+
+.kpi-chart svg {
+  display: block;
+  overflow: visible;
+}
 .kpi-spark circle { fill: var(--ak-green-deep); }
 .kpi-detail {
   margin: 8px 0 0;
   color: #8a998f;
   font-size: 0.78rem;
+}
+
+@media (max-width: 640px) {
+  .kpi-chart {
+    height: 42px;
+  }
 }
 
 /* =====================================================================
