@@ -1133,7 +1133,22 @@ button {
 }
 
 .seller-lot-item {
-  grid-template-columns: minmax(180px, 1fr) minmax(130px, 0.7fr) minmax(150px, 0.75fr) minmax(115px, 0.5fr) auto;
+  grid-template-columns: minmax(180px, 1fr) minmax(130px, 0.7fr) minmax(150px, 0.75fr) minmax(82px, 0.35fr) minmax(115px, 0.5fr) auto;
+}
+
+.seller-lot-image-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.seller-lot-image-cell img {
+  width: 72px;
+  height: 56px;
+  object-fit: cover;
+  border: 1px solid rgba(24, 48, 40, 0.1);
+  border-radius: 8px;
+  background: #eef4ed;
 }
 
 .buyer-order-item {
