@@ -32,6 +32,7 @@ import {
   type CreateCropLotPayload,
 } from "../../api/auth";
 import { AccountProfilePanel } from "../account/AccountProfilePanel";
+import { KpiCard, sparklineFromRecords } from "../KpiCard";
 import { getUpazillasForDistrict, serviceDistricts } from "../../data";
 import { useLanguage, useTranslate, useValueText } from "../../i18n";
 import type { AuthUser, RegisteredAccount } from "../../types";
@@ -150,6 +151,12 @@ export function PostCropPage({
   }, [activeBackendLots]);
   const estimatedPayout = totalQuantityKg * averageAsk;
   const latestLot = backendLots[0];
+  // Honest 7-day sparklines built from the farmer's own posting activity.
+  const lotsPostedSpark = useMemo(() => sparklineFromRecords(backendLots.map((lot) => ({ date: lot.createdAt, value: 1 }))), [backendLots]);
+  const quantityPostedSpark = useMemo(
+    () => sparklineFromRecords(backendLots.map((lot) => ({ date: lot.createdAt, value: numericValue(lot.quantityKg) }))),
+    [backendLots],
+  );
 
   useEffect(() => {
     if (!user?.accessToken) {
@@ -385,39 +392,33 @@ export function PostCropPage({
           </div>
         </header>
 
-        <section className="stats-grid farmer-stats-grid" aria-label={t("Seller backend metrics")}>
-          <article className="panel stat-card dashboard-stat">
-            <div className="stat-card-label">
-              <PackageCheck size={20} />
-              <span>{t("Active lots")}</span>
-            </div>
-            <strong>{v(activeBackendLots.length)}</strong>
-            <p>{t("Ready for buyer requests")}</p>
-          </article>
-          <article className="panel stat-card dashboard-stat">
-            <div className="stat-card-label">
-              <Sprout size={20} />
-              <span>{t("Listed quantity")}</span>
-            </div>
-            <strong>{v(formatQuantity(totalQuantityKg))}</strong>
-            <p>{t("From your active lots")}</p>
-          </article>
-          <article className="panel stat-card dashboard-stat">
-            <div className="stat-card-label">
-              <BadgeCheck size={20} />
-              <span>{t("Average ask")}</span>
-            </div>
-            <strong>{v(`৳${averageAsk}/kg`)}</strong>
-            <p>{t("Based on listed price")}</p>
-          </article>
-          <article className="panel stat-card dashboard-stat">
-            <div className="stat-card-label">
-              <WalletCards size={20} />
-              <span>{t("Estimated payout")}</span>
-            </div>
-            <strong>{v(formatMoney(estimatedPayout))}</strong>
-            <p>{t("After buyer confirmation")}</p>
-          </article>
+        <section className="stats-grid farmer-stats-grid kpi-grid" aria-label={t("Seller backend metrics")}>
+          <KpiCard
+            icon={PackageCheck}
+            label={t("Active lots")}
+            value={v(activeBackendLots.length)}
+            detail={t("Ready for buyer requests")}
+            spark={lotsPostedSpark}
+          />
+          <KpiCard
+            icon={Sprout}
+            label={t("Listed quantity")}
+            value={v(formatQuantity(totalQuantityKg))}
+            detail={t("From your active lots")}
+            spark={quantityPostedSpark}
+          />
+          <KpiCard
+            icon={BadgeCheck}
+            label={t("Average ask")}
+            value={v(`৳${averageAsk}/kg`)}
+            detail={t("Based on listed price")}
+          />
+          <KpiCard
+            icon={WalletCards}
+            label={t("Estimated payout")}
+            value={v(formatMoney(estimatedPayout))}
+            detail={t("After buyer confirmation")}
+          />
         </section>
 
         <section className="dashboard-grid farmer-dashboard-grid">

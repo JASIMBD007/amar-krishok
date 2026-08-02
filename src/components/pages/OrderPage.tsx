@@ -23,6 +23,7 @@ import { useLanguage, useTranslate, useValueText } from "../../i18n";
 import type { AuthUser, ChatThread, RegisteredAccount } from "../../types";
 import { formatLocalizedDate, normalizeDateInput } from "../../utils/dateInput";
 import { AccountProfilePanel } from "../account/AccountProfilePanel";
+import { KpiCard, sparklineFromRecords } from "../KpiCard";
 import { FormGrid } from "../shared";
 
 type BuyerOrderForm = {
@@ -132,6 +133,12 @@ export function OrderPage({
     [activeOrders],
   );
   const latestOrder = activeOrders[0] ?? backendOrders[0];
+  // Honest 7-day sparklines built from the buyer's own order activity.
+  const ordersPlacedSpark = useMemo(() => sparklineFromRecords(backendOrders.map((order) => ({ date: order.createdAt, value: 1 }))), [backendOrders]);
+  const orderValueSpark = useMemo(
+    () => sparklineFromRecords(backendOrders.map((order) => ({ date: order.createdAt, value: numericValue(order.totalValue) }))),
+    [backendOrders],
+  );
 
   useEffect(() => {
     if (!user?.accessToken) {
@@ -258,39 +265,33 @@ export function OrderPage({
           </div>
         </header>
 
-        <section className="stats-grid buyer-stats-grid" aria-label={t("Buyer order metrics")}>
-          <article className="panel stat-card dashboard-stat">
-            <div className="stat-card-label">
-              <ClipboardList size={20} />
-              <span>{t("Active order requests")}</span>
-            </div>
-            <strong>{v(activeOrders.length)}</strong>
-            <p>{t("Being reviewed by the team")}</p>
-          </article>
-          <article className="panel stat-card dashboard-stat">
-            <div className="stat-card-label">
-              <Store size={20} />
-              <span>{t("Matched supply lots")}</span>
-            </div>
-            <strong>{v(matchedLots.length)}</strong>
-            <p>{t("Ready for quick ordering")}</p>
-          </article>
-          <article className="panel stat-card dashboard-stat">
-            <div className="stat-card-label">
-              <WalletCards size={20} />
-              <span>{t("Protected order value")}</span>
-            </div>
-            <strong>{v(formatCurrency(activeOrderValue))}</strong>
-            <p>{t("Held until confirmation")}</p>
-          </article>
-          <article className="panel stat-card dashboard-stat">
-            <div className="stat-card-label">
-              <Truck size={20} />
-              <span>{t("Next delivery")}</span>
-            </div>
-            <strong>{latestOrder ? formatLocalizedDate(latestOrder.targetDate, language, t("Pending")) : t("None")}</strong>
-            <p>{latestOrder ? t(formatStatus(latestOrder.status)) : t("Create an order to start")}</p>
-          </article>
+        <section className="stats-grid buyer-stats-grid kpi-grid" aria-label={t("Buyer order metrics")}>
+          <KpiCard
+            icon={ClipboardList}
+            label={t("Active order requests")}
+            value={v(activeOrders.length)}
+            detail={t("Being reviewed by the team")}
+            spark={ordersPlacedSpark}
+          />
+          <KpiCard
+            icon={Store}
+            label={t("Matched supply lots")}
+            value={v(matchedLots.length)}
+            detail={t("Ready for quick ordering")}
+          />
+          <KpiCard
+            icon={WalletCards}
+            label={t("Protected order value")}
+            value={v(formatCurrency(activeOrderValue))}
+            detail={t("Held until confirmation")}
+            spark={orderValueSpark}
+          />
+          <KpiCard
+            icon={Truck}
+            label={t("Next delivery")}
+            value={latestOrder ? formatLocalizedDate(latestOrder.targetDate, language, t("Pending")) : t("None")}
+            detail={latestOrder ? t(formatStatus(latestOrder.status)) : t("Create an order to start")}
+          />
         </section>
 
         <section className="dashboard-grid buyer-dashboard-grid">
