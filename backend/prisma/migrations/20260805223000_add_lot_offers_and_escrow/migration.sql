@@ -10,7 +10,8 @@ CREATE TABLE "LotOffer" (
   "status" "OfferStatus" NOT NULL DEFAULT 'OPEN',
   "note" TEXT,
   "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  -- No SQL default: Prisma sets @updatedAt on every write, matching the initial migration.
+  "updatedAt" TIMESTAMP(3) NOT NULL,
   "respondedAt" TIMESTAMP(3),
   CONSTRAINT "LotOffer_pkey" PRIMARY KEY ("id")
 );
