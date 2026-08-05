@@ -58,6 +58,34 @@ function PasswordField({
   );
 }
 
+/**
+ * Why the visitor was sent to the login page. The gated destination is remembered in `next`, so the
+ * banner explains the redirect instead of leaving it looking like a dead end.
+ */
+function gateReasonFor(next: string) {
+  if (next.startsWith("/farmer")) {
+    return "Log in to reach your farmer desk, listings and payouts.";
+  }
+
+  if (next.startsWith("/checkout")) {
+    return "Log in to pay into escrow. Nothing is charged until you confirm.";
+  }
+
+  if (next.startsWith("/orders")) {
+    return "Log in to see your orders and escrow balances.";
+  }
+
+  if (next.startsWith("/buyer")) {
+    return "Log in to reach your buyer workspace.";
+  }
+
+  if (next.startsWith("/admin")) {
+    return "Staff sign-in. Every action you take is written to the audit log.";
+  }
+
+  return "";
+}
+
 export function LoginPage({
   onLogin,
   user,
@@ -87,6 +115,7 @@ export function LoginPage({
   const [isRegisterChoiceOpen, setIsRegisterChoiceOpen] = useState(false);
   const credentialLabel = accountType === "admin" ? "Username" : "Mobile";
   const credentialPlaceholder = accountType === "admin" ? "Account username" : "Your mobile number";
+  const gateReason = gateReasonFor(safeNext);
 
   const chooseRegistration = (role: RegistrationRole) => {
     setIsRegisterChoiceOpen(false);
@@ -263,6 +292,14 @@ export function LoginPage({
       <form className="panel auth-panel login-panel" onSubmit={submitLogin}>
         <h1>{t("Login to AmarKrishok")}</h1>
         <p className="login-intro">{t("To use AmarKrishok, please log in with your account details.")}</p>
+
+        {/* Say why the user landed here. Being redirected without an explanation reads like a bug. */}
+        {gateReason ? (
+          <p className="login-gate-reason" role="status">
+            <LockKeyhole aria-hidden="true" size={16} />
+            {t(gateReason)}
+          </p>
+        ) : null}
 
         <label className="input-field">
           <span>

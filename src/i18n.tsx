@@ -1069,6 +1069,51 @@ const bn: Record<string, string> = {
   "Today's rates are published. Every listing delta, alert and fair-price panel now uses them.":
     "আজকের দর প্রকাশ হয়েছে। প্রতিটি লিস্টিং পার্থক্য, সতর্কতা ও ন্যায্য-দাম প্যানেল এখন এটিই ব্যবহার করছে।",
 
+  // Footer, login gating, logout escrow warning and the post-a-crop wizard.
+  "A direct farmer-to-buyer supply chain for Bangladesh. Fair prices, visible to everyone.":
+    "বাংলাদেশের জন্য কৃষক-থেকে-ক্রেতা সরাসরি সরবরাহ ব্যবস্থা। ন্যায্য দাম, সবার জন্য দৃশ্যমান।",
+  Company: "কোম্পানি",
+  About: "আমাদের সম্পর্কে",
+  "Field agents": "মাঠকর্মী",
+  Contact: "যোগাযোগ",
+  "Log in to reach your farmer desk, listings and payouts.":
+    "আপনার কৃষক ডেস্ক, লিস্টিং ও পরিশোধ দেখতে লগইন করুন।",
+  "Log in to pay into escrow. Nothing is charged until you confirm.":
+    "এসক্রোতে টাকা দিতে লগইন করুন। আপনি নিশ্চিত না করা পর্যন্ত কোনো টাকা কাটা হবে না।",
+  "Log in to see your orders and escrow balances.": "আপনার অর্ডার ও এসক্রো ব্যালেন্স দেখতে লগইন করুন।",
+  "Log in to reach your buyer workspace.": "আপনার ক্রেতা ওয়ার্কস্পেসে যেতে লগইন করুন।",
+  "Staff sign-in. Every action you take is written to the audit log.":
+    "কর্মী লগইন। আপনার প্রতিটি পদক্ষেপ অডিট লগে লেখা হয়।",
+  "You have": "আপনার আছে",
+  "order still in escrow.": "অর্ডার এখনো এসক্রোতে আছে।",
+  "orders still in escrow.": "অর্ডার এখনো এসক্রোতে আছে।",
+  "Escrow keeps running whether you are signed in or not.":
+    "আপনি লগইন থাকুন বা না থাকুন, এসক্রো চলতেই থাকে।",
+  Step: "ধাপ",
+  "What are you selling?": "আপনি কী বিক্রি করছেন?",
+  "How much, and at what price?": "কত পরিমাণ, আর কী দামে?",
+  "Photos and pickup": "ছবি ও পিকআপ",
+  Summary: "সারসংক্ষেপ",
+  Continue: "পরবর্তী",
+  Back: "পেছনে",
+  "Publish listing": "লিস্টিং প্রকাশ করুন",
+  "Your crop": "আপনার ফসল",
+  total: "মোট",
+  "Please fill in crop, grade, district and upazilla.": "ফসল, গ্রেড, জেলা ও উপজেলা পূরণ করুন।",
+  "Staff opened a dispute on this order. The timeline is paused while it is reviewed.":
+    "কর্মীরা এই অর্ডারে বিরোধ খুলেছেন। পর্যালোচনার সময় অগ্রগতি থেমে থাকবে।",
+  "Payment refunded": "পেমেন্ট ফেরত হয়েছে",
+  "Refunded to your account.": "আপনার অ্যাকাউন্টে ফেরত দেওয়া হয়েছে।",
+  "Paid with": "পরিশোধ হয়েছে",
+  "Loading your orders...": "আপনার অর্ডার লোড হচ্ছে...",
+  "Loading buyer offers...": "ক্রেতার প্রস্তাব লোড হচ্ছে...",
+  "Loading market data...": "বাজারের তথ্য লোড হচ্ছে...",
+  "Sending offer": "প্রস্তাব পাঠানো হচ্ছে",
+  "Paying into escrow": "এসক্রোতে পরিশোধ চলছে",
+  Working: "চলছে",
+  "No rates published yet": "এখনো কোনো দর প্রকাশ হয়নি",
+  "Publish a rate for each crop you track and the whole platform starts comparing against it.":
+    "আপনি যেসব ফসল দেখেন তার প্রতিটির দর প্রকাশ করুন, পুরো প্ল্যাটফর্ম সেটির সঙ্গে তুলনা শুরু করবে।",
 };
 
 export const LanguageContext = React.createContext<Language>("en");

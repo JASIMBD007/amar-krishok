@@ -32,6 +32,7 @@ import {
   type CreateCropLotPayload,
 } from "../../api/auth";
 import { fetchFarmerEscrow } from "../../api/market";
+import { MON_IN_KG, kgToMon, perKgToPerMon, taka } from "../../market/marketData";
 import { AccountProfilePanel } from "../account/AccountProfilePanel";
 import { MarketCheckPanel } from "../market/MarketCheckPanel";
 import {
@@ -152,6 +153,7 @@ export function PostCropPage({
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [snackbar, setSnackbar] = useState("");
+  const [step, setStep] = useState(1);
   const [escrowSummary, setEscrowSummary] = useState<FarmerEscrowSummary>({
     grossValue: 0,
     held: 0,
@@ -271,6 +273,28 @@ export function PostCropPage({
     return () => window.clearTimeout(timeoutId);
   }, [snackbar]);
 
+  /** Each step only gates on its own fields, so a farmer is never told about a field they can't see. */
+  const goToNextStep = () => {
+    if (step === 1) {
+      if (!form.crop.trim() || !form.grade.trim() || !form.district.trim() || !form.upazilla.trim()) {
+        setError("Please fill in crop, grade, district and upazilla.");
+        return;
+      }
+    }
+
+    if (step === 2) {
+      const quantityKg = Number(form.quantityKg);
+      const pricePerKg = Number(form.pricePerKg);
+      if (!quantityKg || !pricePerKg || quantityKg <= 0 || pricePerKg <= 0) {
+        setError("Quantity and price must be greater than zero.");
+        return;
+      }
+    }
+
+    setError("");
+    setStep((current) => Math.min(3, current + 1));
+  };
+
   const updateField = (field: keyof CropLotForm, value: string) => {
     setForm((current) => ({ ...current, [field]: value, ...(field === "district" ? { upazilla: "" } : {}) }));
   };
@@ -345,6 +369,7 @@ export function PostCropPage({
         setBackendLots((current) => [normalizedLot, ...current]);
         setForm(emptyForm);
         setCropImageFile(null);
+        setStep(1);
         setSnackbar("Published to the marketplace");
       })
       .catch((apiError) => {
@@ -503,89 +528,150 @@ export function PostCropPage({
                   <p>{t("Keep the required fields short and accurate. You can add packaging or pickup details in notes.")}</p>
                 </div>
               </div>
-              <FormGrid>
-                <label className="input-field">
-                  <span>{t("Crop name")}</span>
-                  <input value={form.crop} onChange={(event) => updateField("crop", event.target.value)} placeholder={t("Tomato")} />
-                </label>
-                <label className="input-field">
-                  <span>{t("District")}</span>
-                  <select value={form.district} onChange={(event) => updateField("district", event.target.value)}>
-                    <option value="" disabled>
-                      {t("Select service district")}
-                    </option>
-                    {serviceDistricts.map((district) => (
-                      <option key={district} value={district}>
-                        {t(district)}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="input-field">
-                  <span>{t("Upazilla")}</span>
-                  <select value={form.upazilla} onChange={(event) => updateField("upazilla", event.target.value)} disabled={!form.district}>
-                    <option value="" disabled>
-                      {t(form.district ? "Select upazilla" : "Select district first")}
-                    </option>
-                    {availableUpazillas.map((upazilla) => (
-                      <option key={upazilla} value={upazilla}>
-                        {t(upazilla)}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="input-field">
-                  <span>{t("Quantity (kg)")}</span>
-                  <input value={form.quantityKg} min="1" onChange={(event) => updateField("quantityKg", event.target.value)} placeholder="1200" type="number" />
-                </label>
-                <label className="input-field">
-                  <span>{t("Price per kg")}</span>
-                  <input value={form.pricePerKg} min="1" onChange={(event) => updateField("pricePerKg", event.target.value)} placeholder="34" type="number" />
-                </label>
-                <label className="input-field">
-                  <span>{t("Harvest date")}</span>
-                  <input value={form.harvestDate} onChange={(event) => updateField("harvestDate", event.target.value)} type="date" />
-                </label>
-                <label className="input-field">
-                  <span>{t("Grade")}</span>
-                  <select value={form.grade} onChange={(event) => updateField("grade", event.target.value)}>
-                    <option value="" disabled>
-                      {t("Select grade")}
-                    </option>
-                    {["A", "B", "C"].map((grade) => (
-                      <option key={grade} value={grade}>
-                        {t(grade)}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <div className="input-field upload-field">
-                  <span>{t("Crop image")}</span>
-                  <div className="file-picker-row">
-                    <label className="file-picker-button">
-                      <input className="hidden-file-input" accept="image/*" onChange={(event) => setCropImageFile(event.target.files?.[0] ?? null)} type="file" />
-                      <FileImage size={16} />
-                      {t("Choose file")}
+              {/* Three steps, so pricing gets its own screen with the market check beside it. */}
+              <div className="wizard-progress" role="group" aria-label={`${t("Step")} ${step} / 3`}>
+                {[1, 2, 3].map((index) => (
+                  <span className={index <= step ? "on" : ""} key={index} />
+                ))}
+              </div>
+
+              {step === 1 ? (
+                <>
+                  <span className="wizard-step-title">{t("What are you selling?")}</span>
+                  <FormGrid>
+                    <label className="input-field">
+                      <span>{t("Crop name")}</span>
+                      <input value={form.crop} onChange={(event) => updateField("crop", event.target.value)} placeholder={t("Tomato")} />
                     </label>
-                    <span className="file-picker-name">{cropImageFile?.name ?? t("No file chosen")}</span>
+                    <label className="input-field">
+                      <span>{t("Grade")}</span>
+                      <select value={form.grade} onChange={(event) => updateField("grade", event.target.value)}>
+                        <option value="" disabled>
+                          {t("Select grade")}
+                        </option>
+                        {["A", "B", "C"].map((grade) => (
+                          <option key={grade} value={grade}>
+                            {t(grade)}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="input-field">
+                      <span>{t("District")}</span>
+                      <select value={form.district} onChange={(event) => updateField("district", event.target.value)}>
+                        <option value="" disabled>
+                          {t("Select service district")}
+                        </option>
+                        {serviceDistricts.map((district) => (
+                          <option key={district} value={district}>
+                            {t(district)}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="input-field">
+                      <span>{t("Upazilla")}</span>
+                      <select value={form.upazilla} onChange={(event) => updateField("upazilla", event.target.value)} disabled={!form.district}>
+                        <option value="" disabled>
+                          {t(form.district ? "Select upazilla" : "Select district first")}
+                        </option>
+                        {availableUpazillas.map((upazilla) => (
+                          <option key={upazilla} value={upazilla}>
+                            {t(upazilla)}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </FormGrid>
+                </>
+              ) : null}
+
+              {step === 2 ? (
+                <>
+                  <span className="wizard-step-title">{t("How much, and at what price?")}</span>
+                  <FormGrid>
+                    <label className="input-field">
+                      <span>{t("Quantity (kg)")}</span>
+                      <input value={form.quantityKg} min="1" onChange={(event) => updateField("quantityKg", event.target.value)} placeholder="1200" type="number" />
+                    </label>
+                    <label className="input-field">
+                      <span>{t("Price per kg")}</span>
+                      <input value={form.pricePerKg} min="1" onChange={(event) => updateField("pricePerKg", event.target.value)} placeholder="34" type="number" />
+                    </label>
+                  </FormGrid>
+                  {form.quantityKg ? (
+                    <span className="wizard-hint">
+                      {v(Math.round(kgToMon(Number(form.quantityKg) || 0)))} {t("mon")} ({v(MON_IN_KG)} {t("kg")} = 1 {t("mon")})
+                    </span>
+                  ) : null}
+                  <MarketCheckPanel crop={form.crop} district={form.district} pricePerKg={Number(form.pricePerKg) || 0} />
+                </>
+              ) : null}
+
+              {step === 3 ? (
+                <>
+                  <span className="wizard-step-title">{t("Photos and pickup")}</span>
+                  <FormGrid>
+                    <label className="input-field">
+                      <span>{t("Harvest date")}</span>
+                      <input value={form.harvestDate} onChange={(event) => updateField("harvestDate", event.target.value)} type="date" />
+                    </label>
+                    <div className="input-field upload-field">
+                      <span>{t("Crop image")}</span>
+                      <div className="file-picker-row">
+                        <label className="file-picker-button">
+                          <input className="hidden-file-input" accept="image/*" onChange={(event) => setCropImageFile(event.target.files?.[0] ?? null)} type="file" />
+                          <FileImage size={16} />
+                          {t("Choose file")}
+                        </label>
+                        <span className="file-picker-name">{cropImageFile?.name ?? t("No file chosen")}</span>
+                      </div>
+                      <em className="upload-note">
+                        <FileImage size={16} />
+                        {cropImageFile?.name ?? t("Choose crop image")}
+                      </em>
+                    </div>
+                  </FormGrid>
+                  <label className="full-field">
+                    <span>{t("Notes")}</span>
+                    <textarea value={form.notes} onChange={(event) => updateField("notes", event.target.value)} placeholder={t("Packaging, pickup point, storage condition...")} />
+                  </label>
+                  <div className="wizard-summary">
+                    <span className="filter-eyebrow">{t("Summary")}</span>
+                    <strong>
+                      {t(form.crop || "Your crop")} · {t("Grade")} {v(form.grade || "-")} ·{" "}
+                      {v(Math.round(kgToMon(Number(form.quantityKg) || 0)))} {t("mon")}
+                    </strong>
+                    <span>
+                      {v(taka(perKgToPerMon(Number(form.pricePerKg) || 0)))} / {t("mon")} · {t("total")}{" "}
+                      {v(taka((Number(form.pricePerKg) || 0) * (Number(form.quantityKg) || 0)))} ·{" "}
+                      {form.upazilla ? `${t(form.upazilla)}, ` : ""}
+                      {t(form.district || "-")}
+                    </span>
                   </div>
-                  <em className="upload-note">
-                    <FileImage size={16} />
-                    {cropImageFile?.name ?? t("Choose crop image")}
-                  </em>
-                </div>
-              </FormGrid>
-              <MarketCheckPanel crop={form.crop} district={form.district} pricePerKg={Number(form.pricePerKg) || 0} />
-              <label className="full-field">
-                <span>{t("Notes")}</span>
-                <textarea value={form.notes} onChange={(event) => updateField("notes", event.target.value)} placeholder={t("Packaging, pickup point, storage condition...")} />
-              </label>
+                </>
+              ) : null}
+
               {error && <p className="auth-error">{t(error)}</p>}
               {success && <p className="auth-notice">{t(success)}</p>}
-              <button className="primary-button full" type="submit" disabled={isPublishing}>
-                {cropImageFile ? <Upload size={18} /> : <Plus size={18} />}
-                {t(isPublishing ? "Publishing" : "Publish crop lot")}
-              </button>
+
+              <div className="wizard-actions">
+                {step > 1 ? (
+                  <button className="secondary-button" type="button" onClick={() => setStep((current) => current - 1)}>
+                    {t("Back")}
+                  </button>
+                ) : null}
+                {step < 3 ? (
+                  <button className="primary-button" type="button" onClick={goToNextStep}>
+                    {t("Continue")}
+                  </button>
+                ) : (
+                  <button className="primary-button" type="submit" disabled={isPublishing}>
+                    {cropImageFile ? <Upload size={18} /> : <Plus size={18} />}
+                    {t(isPublishing ? "Publishing" : "Publish listing")}
+                  </button>
+                )}
+              </div>
             </form>
 
             <section className="panel seller-lots-panel farmer-lots-panel" id="published-lots">

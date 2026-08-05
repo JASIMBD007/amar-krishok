@@ -24,6 +24,7 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { RegisterChoiceModal } from "./components/RegisterChoiceModal";
 import { LaunchNoticeModal } from "./components/LaunchNoticeModal";
 import { Seo } from "./components/Seo";
+import { SiteFooter } from "./components/SiteFooter";
 import { FloatingSupportChat } from "./components/chat/FloatingSupportChat";
 import { RateTicker } from "./components/market/RateTicker";
 import { NotificationCenter } from "./components/notifications/NotificationCenter";
@@ -523,6 +524,11 @@ export default function App() {
     setLogoutConfirmOpen(true);
   };
 
+  // Orders whose escrow balance is still held, so the logout warning can name a real number.
+  const heldOrderCount = notificationOrders.filter((order) =>
+    (order.payments ?? []).some((payment) => payment.status === "HELD"),
+  ).length;
+
   const roleLabel = user ? roleOptions.find((item) => item.role === user.role)?.label : null;
 
   // The former "Admin" tab becomes a role-aware "Dashboard" link that sends each
@@ -774,6 +780,7 @@ export default function App() {
         <Route path="/market" element={<Navigate to="/marketplace" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <SiteFooter />
       <FloatingSupportChat chatThreads={chatThreads} user={user} onSendMessage={sendParticipantChatMessage} />
       {logoutConfirmOpen && (
         <div
@@ -798,7 +805,16 @@ export default function App() {
             <div className="confirm-modal-body">
               <LogOut size={22} />
               <strong>{t("Do you want to log out?")}</strong>
-              <p>{t("You can stay signed in or log out of this device.")}</p>
+              {/* Escrow keeps running whether or not you are signed in — say so when money is held. */}
+              {heldOrderCount > 0 ? (
+                <p>
+                  {t("You have")} {t(String(heldOrderCount))}{" "}
+                  {t(heldOrderCount === 1 ? "order still in escrow." : "orders still in escrow.")}{" "}
+                  {t("Escrow keeps running whether you are signed in or not.")}
+                </p>
+              ) : (
+                <p>{t("You can stay signed in or log out of this device.")}</p>
+              )}
             </div>
             <div className="confirm-modal-actions">
               <button className="secondary-button" type="button" onClick={() => setLogoutConfirmOpen(false)}>
