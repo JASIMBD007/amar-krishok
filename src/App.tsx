@@ -25,13 +25,28 @@ import { RegisterChoiceModal } from "./components/RegisterChoiceModal";
 import { LaunchNoticeModal } from "./components/LaunchNoticeModal";
 import { Seo } from "./components/Seo";
 import { FloatingSupportChat } from "./components/chat/FloatingSupportChat";
+import { RateTicker } from "./components/market/RateTicker";
 import { NotificationCenter } from "./components/notifications/NotificationCenter";
 import { NotificationDetailDialog } from "./components/notifications/NotificationDetailDialog";
 import { makeRoleNotifications, mergeNotifications, toAppNotification } from "./components/notifications/roleNotifications";
 import { roleCanOpenPath } from "./components/pages/pageHelpers";
 import { LanguageContext, translate } from "./i18n";
 import { lots, roleHomePath, roleOptions, routeByView, serviceDistricts, views } from "./data";
-import { AdminPage, HomePage, LoginPage, MarketplacePage, OrderPage, PostCropPage, PricesPage, RegisterPage } from "./components/pages";
+import {
+  AdminPage,
+  CheckoutPage,
+  HomePage,
+  LotDetailPage,
+  LoginPage,
+  MarketplacePage,
+  MyOrdersPage,
+  OrderPage,
+  OrderPlacedPage,
+  OrderTrackingPage,
+  PostCropPage,
+  PricesPage,
+  RegisterPage,
+} from "./components/pages";
 import { useAppStore } from "./store/useAppStore";
 import type { AppNotification, AuthUser, CropLot, RegisteredAccount, RegistrationRole, Role, View } from "./types";
 import { matchesSearch } from "./utils/search";
@@ -127,13 +142,17 @@ function toMarketplaceLot(lot: BackendCropLot): CropLot {
     district: lot.district.name,
     farmerId: lot.farmer.id,
     farmerPhone: lot.farmer.phone,
+    farmerStatus: lot.farmer.status,
     farmer: lot.farmer.name,
     grade: lot.grade.replace(/^Grade\s+/i, ""),
     harvest: formatBackendHarvestDate(lot.harvestDate),
     id: lot.id,
     image: lot.imageUrl || staticLot?.image || "/assets/crops/rice.png",
     postedAt: lot.createdAt,
+    pricePerKg: numericBackendValue(lot.pricePerKg),
     quantity: formatBackendQuantity(lot.quantityKg),
+    quantityKg: numericBackendValue(lot.quantityKg),
+    status: lot.status,
     upazilla: lot.upazilla ?? lot.farmer.upazilla ?? staticLot?.upazilla,
   };
 }
@@ -508,9 +527,17 @@ export default function App() {
 
   // The former "Admin" tab becomes a role-aware "Dashboard" link that sends each
   // signed-in user to their own workspace (farmer/buyer/admin), or to login otherwise.
-  const navItems = views.map((item) =>
-    item.id === "admin" ? { ...item, label: "Dashboard", path: user ? roleHomePath[user.role] : "/login" } : item,
-  );
+  const navItems = views
+    .map((item) =>
+      item.id === "admin" ? { ...item, label: "Dashboard", path: user ? roleHomePath[user.role] : "/login" } : item,
+    )
+    // Escrow is the promise the product is built on, so orders sit in the main nav rather than
+    // hidden inside a workspace. Signing in is prompted on arrival when there is no session.
+    .flatMap((item) =>
+      item.id === "prices"
+        ? [item, { id: "orders" as const, label: "My orders", path: user ? "/orders" : "/login" }]
+        : [item],
+    );
 
   return (
     <LanguageContext.Provider value={language}>
@@ -649,6 +676,7 @@ export default function App() {
           </nav>
         )}
       </header>
+        <RateTicker />
         {registerChoiceOpen && <RegisterChoiceModal onChoose={chooseRegistration} onClose={() => setRegisterChoiceOpen(false)} />}
         {launchNoticeOpen && <LaunchNoticeModal onClose={() => setLaunchNoticeOpen(false)} />}
         {selectedNotification && (
@@ -669,10 +697,42 @@ export default function App() {
               query={query}
               setDistrict={setDistrict}
               setQuery={setQuery}
-              setView={selectView}
               currentUser={user}
               onEditLot={handleMarketplaceEditLot}
             />
+          }
+        />
+        <Route path="/lot/:lotId" element={<LotDetailPage lots={marketplaceLots} user={user} />} />
+        <Route
+          path="/checkout/:lotId"
+          element={
+            <ProtectedRoute allowedRoles={["admin", "buyer", "farmer"]} user={user} t={t}>
+              <CheckoutPage lots={marketplaceLots} user={user} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/orders"
+          element={
+            <ProtectedRoute allowedRoles={["admin", "buyer", "farmer"]} user={user} t={t}>
+              <MyOrdersPage user={user} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/orders/:orderId/placed"
+          element={
+            <ProtectedRoute allowedRoles={["admin", "buyer", "farmer"]} user={user} t={t}>
+              <OrderPlacedPage user={user} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/orders/:orderId"
+          element={
+            <ProtectedRoute allowedRoles={["admin", "buyer", "farmer"]} user={user} t={t}>
+              <OrderTrackingPage user={user} />
+            </ProtectedRoute>
           }
         />
         <Route

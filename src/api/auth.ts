@@ -137,8 +137,28 @@ export type BackendOrderItem = {
   id: string;
   crop: { name: string };
   cropLotId: string | null;
+  /** Present when the order was placed against a specific lot, which is the marketplace path. */
+  cropLot?: {
+    farmer?: { id: string; name: string } | null;
+    grade?: string;
+    id: string;
+  } | null;
   offeredPricePerKg: string | number;
   quantityKg: string | number;
+};
+
+export type BackendPaymentStatus = "PENDING" | "HELD" | "RELEASED" | "REFUNDED" | "FAILED";
+
+export type BackendPayment = {
+  id: string;
+  amount: string | number;
+  transportFee: string | number;
+  platformFee: string | number;
+  method: string | null;
+  status: BackendPaymentStatus;
+  releasedAt: string | null;
+  refundedAt: string | null;
+  createdAt: string;
 };
 
 export type BackendOrder = {
@@ -147,9 +167,11 @@ export type BackendOrder = {
   createdAt: string;
   deliveryAddress: string;
   district: { name: string };
+  disputeOpenedAt?: string | null;
   upazilla: string | null;
   items: BackendOrderItem[];
   notes: string | null;
+  payments?: BackendPayment[];
   status: string;
   targetDate: string | null;
   totalValue: string | number;
@@ -160,6 +182,8 @@ export type CreateOrderPayload = {
   buyerId?: string;
   deliveryAddress: string;
   district: string;
+  paymentMethod?: string;
+  transportFee?: number;
   upazilla: string;
   items: Array<{
     crop: string;
@@ -280,7 +304,7 @@ async function readApiMessage(response: Response) {
   }
 }
 
-async function apiRequest<T>(path: string, options: RequestInit & { accessToken?: string } = {}) {
+export async function apiRequest<T>(path: string, options: RequestInit & { accessToken?: string } = {}) {
   const { accessToken, headers, ...requestOptions } = options;
   let response: Response;
 

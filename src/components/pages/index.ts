@@ -1,7 +1,10 @@
 export { AdminPage } from "./AdminPage";
 export { LoginPage, RegisterPage } from "./AuthPages";
+export { CheckoutPage } from "./CheckoutPage";
 export { HomePage } from "./HomePage";
+export { LotDetailPage } from "./LotDetailPage";
 export { MarketplacePage } from "./MarketplacePage";
+export { MyOrdersPage, OrderPlacedPage, OrderTrackingPage } from "./OrdersPages";
 export { OrderPage } from "./OrderPage";
 export { PostCropPage } from "./PostCropPage";
 export { PricesPage } from "./PricesPage";

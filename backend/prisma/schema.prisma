@@ -66,6 +66,12 @@ enum ChatStatus {
   RESOLVED
 }
 
+enum OfferStatus {
+  OPEN
+  ACCEPTED
+  DECLINED
+}
+
 model User {
   id                   String                 @id @default(cuid())
   username             String                 @unique
@@ -88,6 +94,7 @@ model User {
   farmerProfile        FarmerProfile?
   cropLots             CropLot[]              @relation("FarmerLots")
   orders               Order[]                @relation("BuyerOrders")
+  lotOffers            LotOffer[]             @relation("BuyerOffers")
   payouts              Payout[]               @relation("FarmerPayouts")
   notifications        Notification[]
   auditLogs            AuditLog[]
@@ -166,9 +173,28 @@ model CropLot {
   orderItems    OrderItem[]
   logisticsJobs LogisticsJob[]
   qualityChecks QualityCheck[]
+  offers        LotOffer[]
 
   @@index([cropId, districtId, status])
   @@index([farmerId, status])
+}
+
+/// A buyer's counter-offer on a lot. The farmer accepts or declines; no money moves either way.
+model LotOffer {
+  id          String      @id @default(cuid())
+  cropLotId   String
+  buyerId     String
+  pricePerKg  Decimal     @db.Decimal(12, 2)
+  status      OfferStatus @default(OPEN)
+  note        String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  respondedAt DateTime?
+  cropLot     CropLot     @relation(fields: [cropLotId], references: [id], onDelete: Cascade)
+  buyer       User        @relation("BuyerOffers", fields: [buyerId], references: [id], onDelete: Cascade)
+
+  @@index([cropLotId, status])
+  @@index([buyerId, status])
 }
 
 model Order {
@@ -181,6 +207,8 @@ model Order {
   targetDate      DateTime?
   totalValue      Decimal        @default(0) @db.Decimal(12, 2)
   notes           String?
+  /// Set while staff are investigating a delivery or quality claim; cleared when the dispute closes.
+  disputeOpenedAt DateTime?
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   buyer           User           @relation("BuyerOrders", fields: [buyerId], references: [id])
@@ -254,15 +282,23 @@ model QualityCheck {
 }
 
 model Payment {
-  id        String        @id @default(cuid())
-  orderId   String
-  amount    Decimal       @db.Decimal(12, 2)
-  status    PaymentStatus @default(PENDING)
-  escrowRef String?
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
-  order     Order         @relation(fields: [orderId], references: [id])
-  payouts   Payout[]
+  id           String        @id @default(cuid())
+  orderId      String
+  /// The full amount held in escrow: crop value + transport + platform fee.
+  amount       Decimal       @db.Decimal(12, 2)
+  transportFee Decimal       @default(0) @db.Decimal(12, 2)
+  platformFee  Decimal       @default(0) @db.Decimal(12, 2)
+  method       String?
+  status       PaymentStatus @default(PENDING)
+  escrowRef    String?
+  releasedAt   DateTime?
+  refundedAt   DateTime?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  order        Order         @relation(fields: [orderId], references: [id])
+  payouts      Payout[]
+
+  @@index([orderId, status])
 }
 
 model Payout {

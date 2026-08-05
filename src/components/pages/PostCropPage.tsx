@@ -31,7 +31,16 @@ import {
   type BackendCropLot,
   type CreateCropLotPayload,
 } from "../../api/auth";
+import { fetchFarmerEscrow } from "../../api/market";
 import { AccountProfilePanel } from "../account/AccountProfilePanel";
+import { MarketCheckPanel } from "../market/MarketCheckPanel";
+import {
+  FarmerEscrowKpis,
+  FarmerListingsVsMarket,
+  FarmerOffersPanel,
+  type FarmerEscrowSummary,
+  type FarmerLotSummary,
+} from "./farmer/FarmerMarketPanels";
 import { KpiCard, sparklineFromRecords } from "../KpiCard";
 import { EmptyState, ListLoading } from "../EmptyState";
 import { getUpazillasForDistrict, serviceDistricts } from "../../data";
@@ -139,6 +148,14 @@ export function PostCropPage({
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [snackbar, setSnackbar] = useState("");
+  const [escrowSummary, setEscrowSummary] = useState<FarmerEscrowSummary>({
+    grossValue: 0,
+    held: 0,
+    heldCount: 0,
+    orderCount: 0,
+    released: 0,
+    releasedCount: 0,
+  });
   const availableUpazillas = getUpazillasForDistrict(form.district);
   const availableEditUpazillas = getUpazillasForDistrict(editForm.district);
   const activeBackendLots = useMemo(() => backendLots.filter((lot) => lot.status.toUpperCase() === "ACTIVE"), [backendLots]);
@@ -152,6 +169,20 @@ export function PostCropPage({
   }, [activeBackendLots]);
   const estimatedPayout = totalQuantityKg * averageAsk;
   const latestLot = backendLots[0];
+  // The market layer works in mon and needs the numeric ask, so the lots are summarised once here.
+  const farmerLotSummaries = useMemo<FarmerLotSummary[]>(
+    () =>
+      backendLots.map((lot) => ({
+        active: lot.status.toUpperCase() === "ACTIVE",
+        crop: lot.crop.name,
+        district: lot.district.name,
+        grade: lot.grade,
+        id: lot.id,
+        pricePerKg: numericValue(lot.pricePerKg),
+        quantityKg: numericValue(lot.quantityKg),
+      })),
+    [backendLots],
+  );
   // Honest 7-day sparklines built from the farmer's own posting activity.
   const lotsPostedSpark = useMemo(() => sparklineFromRecords(backendLots.map((lot) => ({ date: lot.createdAt, value: 1 }))), [backendLots]);
   const quantityPostedSpark = useMemo(
@@ -174,6 +205,27 @@ export function PostCropPage({
         setError(apiError instanceof ApiRequestError ? apiError.message : "Could not load seller lots.");
       })
       .finally(() => setIsLoading(false));
+  }, [user?.accessToken]);
+
+  useEffect(() => {
+    if (!user?.accessToken) {
+      return;
+    }
+
+    let active = true;
+    fetchFarmerEscrow(user.accessToken)
+      .then((summary) => {
+        if (active) {
+          setEscrowSummary(summary);
+        }
+      })
+      .catch(() => {
+        // The escrow cards fall back to ৳ 0 rather than blocking the rest of the desk.
+      });
+
+    return () => {
+      active = false;
+    };
   }, [user?.accessToken]);
 
   useEffect(() => {
@@ -422,6 +474,8 @@ export function PostCropPage({
           />
         </section>
 
+        <FarmerEscrowKpis summary={escrowSummary} />
+
         <section className="dashboard-grid farmer-dashboard-grid">
           <div className="farmer-main-column">
             <form className="panel form-panel farmer-form-panel" id="publish-crop" onSubmit={submitLot}>
@@ -504,6 +558,7 @@ export function PostCropPage({
                   </em>
                 </div>
               </FormGrid>
+              <MarketCheckPanel crop={form.crop} district={form.district} pricePerKg={Number(form.pricePerKg) || 0} />
               <label className="full-field">
                 <span>{t("Notes")}</span>
                 <textarea value={form.notes} onChange={(event) => updateField("notes", event.target.value)} placeholder={t("Packaging, pickup point, storage condition...")} />
@@ -577,12 +632,16 @@ export function PostCropPage({
               </div>
             </section>
 
+            <FarmerListingsVsMarket lots={farmerLotSummaries} />
+
             <div id="farmer-profile">
               <AccountProfilePanel user={user} onProfileSaved={onProfileSaved} />
             </div>
           </div>
 
           <aside className="farmer-right-rail">
+            <FarmerOffersPanel user={user} />
+
             <section className="panel farmer-rail-panel">
               <div className="farmer-rail-header">
                 <UserRoundCheck size={22} />
