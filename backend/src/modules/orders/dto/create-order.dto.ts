@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { ArrayNotEmpty, IsDateString, IsNotEmpty, IsNumber, IsOptional, IsString, Min, ValidateNested } from "class-validator";
+import { ArrayNotEmpty, IsDateString, IsIn, IsNotEmpty, IsNumber, IsOptional, IsString, Min, ValidateNested } from "class-validator";
 
 export class CreateOrderItemDto {
   @IsString()
@@ -22,6 +22,16 @@ export class CreateOrderDto {
   @IsString()
   @IsOptional()
   buyerId?: string;
+
+  /** How the buyer funds escrow. Recorded on the payment so staff can reconcile a refund. */
+  @IsIn(["bKash", "Nagad", "Bank transfer"])
+  @IsOptional()
+  paymentMethod?: string;
+
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  transportFee?: number;
 
   @IsString()
   district!: string;

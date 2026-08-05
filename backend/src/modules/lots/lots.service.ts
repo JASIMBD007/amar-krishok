@@ -33,10 +33,14 @@ const publicLotInclude = {
   district: true,
   farmer: {
     select: {
+      createdAt: true,
       focus: true,
       id: true,
       name: true,
       organization: true,
+      // The verified-farm badge is part of the trust model, so account status is public. It is not
+      // PII, unlike the phone number and username deliberately left out above.
+      status: true,
       upazilla: true,
     },
   },

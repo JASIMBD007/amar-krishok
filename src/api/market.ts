@@ -1,0 +1,123 @@
+import { apiRequest, type BackendOrder } from "./auth";
+
+/**
+ * The market layer's server API: published district rates, buyer offers, and the escrow decisions
+ * on an order. These used to be client-side state; they are now the backend's record.
+ */
+
+export type BackendRatePoint = {
+  date: string;
+  ratePerMon: number;
+};
+
+export type BackendCropRate = {
+  crop: string;
+  history: BackendRatePoint[];
+  previousRatePerMon: number;
+  publishedAt: string;
+  ratePerMon: number;
+};
+
+export type BackendPublishedRates = {
+  district: string;
+  monInKg: number;
+  rates: BackendCropRate[];
+};
+
+export type BackendOfferStatus = "OPEN" | "ACCEPTED" | "DECLINED";
+
+export type BackendLotOffer = {
+  id: string;
+  buyer: { id: string; name: string; organization: string | null };
+  cropLot: {
+    crop: { name: string };
+    district: { name: string };
+    farmerId: string;
+    grade: string;
+    id: string;
+    pricePerKg: string | number;
+    quantityKg: string | number;
+    status: string;
+  };
+  createdAt: string;
+  note: string | null;
+  pricePerKg: string | number;
+  respondedAt: string | null;
+  status: BackendOfferStatus;
+};
+
+/** Public: the benchmark is visible before signing in, which is the whole point of the ticker. */
+export function fetchPublishedRates(district?: string) {
+  const query = district && district !== "All districts" ? `?district=${encodeURIComponent(district)}` : "";
+  return apiRequest<BackendPublishedRates>(`/api/market-prices/rates${query}`);
+}
+
+export function publishRates(
+  accessToken: string,
+  rates: Array<{ crop: string; ratePerMon: number }>,
+  district?: string,
+) {
+  return apiRequest<BackendPublishedRates>("/api/market-prices/publish", {
+    accessToken,
+    body: JSON.stringify({ district, rates }),
+    method: "POST",
+  });
+}
+
+export type BackendFarmerEscrow = {
+  grossValue: number;
+  held: number;
+  heldCount: number;
+  orderCount: number;
+  released: number;
+  releasedCount: number;
+};
+
+/** A farmer's own escrow and payout totals. Does not expose the buyers' orders. */
+export function fetchFarmerEscrow(accessToken: string) {
+  return apiRequest<BackendFarmerEscrow>("/api/orders/farmer-escrow", { accessToken });
+}
+
+export function fetchLotOffers(accessToken: string) {
+  return apiRequest<BackendLotOffer[]>("/api/offers", { accessToken });
+}
+
+export function createLotOffer(accessToken: string, payload: { cropLotId: string; note?: string; pricePerKg: number }) {
+  return apiRequest<BackendLotOffer>("/api/offers", {
+    accessToken,
+    body: JSON.stringify(payload),
+    method: "POST",
+  });
+}
+
+export function respondToLotOffer(accessToken: string, id: string, action: "accept" | "decline") {
+  return apiRequest<BackendLotOffer>(`/api/offers/${id}/respond`, {
+    accessToken,
+    body: JSON.stringify({ action }),
+    method: "PATCH",
+  });
+}
+
+/** The buyer moving their own order one step along the escrow timeline. */
+export function advanceOrderStage(accessToken: string, id: string) {
+  return apiRequest<BackendOrder>(`/api/orders/${id}/advance`, {
+    accessToken,
+    method: "PATCH",
+  });
+}
+
+export function decideOrderEscrow(accessToken: string, id: string, action: "release" | "refund", reason?: string) {
+  return apiRequest<BackendOrder>(`/api/orders/${id}/escrow`, {
+    accessToken,
+    body: JSON.stringify({ action, reason }),
+    method: "PATCH",
+  });
+}
+
+export function decideOrderDispute(accessToken: string, id: string, action: "open" | "close", reason?: string) {
+  return apiRequest<BackendOrder>(`/api/orders/${id}/dispute`, {
+    accessToken,
+    body: JSON.stringify({ action, reason }),
+    method: "PATCH",
+  });
+}

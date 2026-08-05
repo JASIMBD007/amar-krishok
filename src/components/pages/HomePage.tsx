@@ -1,13 +1,17 @@
-import { Clock3, ClipboardCheck, HeartHandshake, ListFilter, ShieldCheck, ShoppingBag, Sprout, Truck, WalletCards } from "lucide-react";
+import { NavLink } from "react-router-dom";
+import { Clock3, ClipboardCheck, HeartHandshake, Leaf, ShieldCheck, ShoppingBag, Sprout, Truck, WalletCards } from "lucide-react";
 import { lots } from "../../data";
 import { useTranslate, useValueText } from "../../i18n";
+import { cheapestVsMarket } from "../../market/deriveLots";
+import { useMarketLots } from "../../market/useMarket";
 import type { View } from "../../types";
-import { CropCard } from "../shared";
+import { DeltaPill } from "../market/MarketBits";
 
 export function HomePage({ setView }: { setView: (view: View) => void }) {
   const t = useTranslate();
   const v = useValueText();
-  const visibleLots = lots.slice(0, 3);
+  const marketLots = useMarketLots(lots);
+  const cheapestLots = cheapestVsMarket(marketLots, 3);
 
   return (
     <>
@@ -35,15 +39,38 @@ export function HomePage({ setView }: { setView: (view: View) => void }) {
           <div className="console-header">
             <div>
               <span>{t("Today's supply")}</span>
-              <strong>{t("Live lots from verified farmers")}</strong>
+              <strong>{t("Cheapest lots right now")}</strong>
             </div>
-            <ListFilter size={20} />
+            <NavLink className="link-button" to="/marketplace">
+              {t("See all")}
+            </NavLink>
           </div>
-          <div className="listing-grid compact">
-            {visibleLots.map((lot) => (
-              <CropCard lot={lot} key={lot.id} onOrder={() => setView("buyer")} t={t} v={v} />
+          {/* Cheapest against their own district rate — the fair-price claim, proven before signup. */}
+          <div className="cheapest-lots">
+            {cheapestLots.map((lot) => (
+              <NavLink className="cheapest-lot" key={lot.id} to={`/lot/${lot.id}`}>
+                <span className="cheapest-lot-tile" aria-hidden="true">
+                  <Leaf size={19} />
+                </span>
+                <span className="cheapest-lot-copy">
+                  <strong>
+                    {t(lot.crop)} · {t("Grade")} {v(lot.grade)}
+                  </strong>
+                  <small>
+                    {t(lot.farmer)} · {t(lot.district)} · {v(lot.quantityMon)} {t("mon")}
+                  </small>
+                </span>
+                <span className="cheapest-lot-price">
+                  <strong className="mono-figure">{v(lot.priceLabel)}</strong>
+                  <DeltaPill delta={lot.delta} withSuffix />
+                </span>
+              </NavLink>
             ))}
           </div>
+          <p className="console-escrow-note">
+            <ShieldCheck aria-hidden="true" size={18} />
+            {t("Every order is paid into escrow and released after the buyer confirms delivery.")}
+          </p>
         </div>
       </section>
 

@@ -11,6 +11,7 @@ import { HealthModule } from "./modules/health/health.module";
 import { LotsModule } from "./modules/lots/lots.module";
 import { MarketPricesModule } from "./modules/market-prices/market-prices.module";
 import { NotificationsModule } from "./modules/notifications/notifications.module";
+import { OffersModule } from "./modules/offers/offers.module";
 import { OrdersModule } from "./modules/orders/orders.module";
 import { PrismaModule } from "./modules/prisma/prisma.module";
 import { UploadsModule } from "./modules/uploads/uploads.module";
@@ -26,6 +27,7 @@ import { UploadsModule } from "./modules/uploads/uploads.module";
     AdminModule,
     DistrictsModule,
     LotsModule,
+    OffersModule,
     OrdersModule,
     NotificationsModule,
     MarketPricesModule,

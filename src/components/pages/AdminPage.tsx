@@ -32,6 +32,7 @@ import {
   DashboardSection,
   FarmersSection,
   LogisticsSection,
+  MarketSection,
   OrdersSection,
   PayoutsSection,
   SettingsSection,
@@ -273,6 +274,15 @@ export function AdminPage({
     switch (activeAdminSection) {
       case "orders":
         return <OrdersSection backendOrders={backendOrders} onOpenSection={openAdminSection} orderError={orderError} searchTerm={searchTerm} />;
+      case "market":
+        return (
+          <MarketSection
+            onUpdateRegistration={updateRegistration}
+            registrations={effectiveRegistrations}
+            searchTerm={searchTerm}
+            user={user}
+          />
+        );
       case "buyers":
         return (
           <BuyersSection

@@ -1,5 +1,15 @@
 export type View = "home" | "market" | "farmer" | "buyer" | "prices" | "admin";
-export type AdminSection = "dashboard" | "orders" | "buyers" | "supply" | "farmers" | "logistics" | "payouts" | "chat" | "settings";
+export type AdminSection =
+  | "dashboard"
+  | "orders"
+  | "market"
+  | "buyers"
+  | "supply"
+  | "farmers"
+  | "logistics"
+  | "payouts"
+  | "chat"
+  | "settings";
 export type Language = "en" | "bn";
 export type Role = "admin" | "buyer" | "farmer";
 export type RegistrationRole = "buyer" | "farmer";
@@ -77,6 +87,19 @@ export type CropLot = {
   harvest: string;
   image: string;
   postedAt?: string;
+  // Numeric source values for the market layer, which quotes ৳ / mon (1 mon = 40 kg) and needs
+  // to compare every ask against today's district rate. `quantity` and `ask` stay as the
+  // display strings the cards already use.
+  pricePerKg?: number;
+  quantityKg?: number;
+  completedOrders?: number;
+  farmingSince?: number;
+  rating?: number;
+  transportIncluded?: boolean;
+  /** The farmer's account status: ACTIVE means staff verified their NID and land papers. */
+  farmerStatus?: string;
+  /** The lot's own status. Anything other than ACTIVE is hidden from the marketplace. */
+  status?: string;
 };
 
 export type MarketPrice = {
