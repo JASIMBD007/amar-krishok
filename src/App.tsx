@@ -48,6 +48,7 @@ import {
   PostCropPage,
   PricesPage,
   RegisterPage,
+  SignedOutPage,
 } from "./components/pages";
 import { useAppStore } from "./store/useAppStore";
 import type { AppNotification, AuthUser, CropLot, RegisteredAccount, RegistrationRole, Role, View } from "./types";
@@ -515,9 +516,8 @@ export default function App() {
     closeAllHeaderMenus();
     setLogoutConfirmOpen(false);
     setSelectedNotification(null);
-    if (location.pathname === "/admin" || location.pathname === "/buyer" || location.pathname === "/farmer") {
-      navigate("/");
-    }
+    // Signing out always lands on the confirmation, which says escrow keeps running regardless.
+    navigate("/signed-out");
   };
 
   const requestLogout = () => {
@@ -830,6 +830,7 @@ export default function App() {
         <Route path="/register" element={<Navigate to="/register/buyer" replace />} />
         <Route path="/register/buyer" element={<RegisterPage role="buyer" onRegister={handleRegister} />} />
         <Route path="/register/farmer" element={<RegisterPage role="farmer" onRegister={handleRegister} />} />
+        <Route path="/signed-out" element={<SignedOutPage />} />
         <Route path="/market" element={<Navigate to="/marketplace" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

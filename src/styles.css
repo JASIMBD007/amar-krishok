@@ -8056,3 +8056,39 @@ textarea:focus-visible {
     display: none;
   }
 }
+
+/* ---- Bangla second voice, staff badge, withdraw action ---- */
+.hero-subtitle-bn {
+  display: block;
+  margin-top: 8px;
+  color: var(--fg-muted);
+  font-family: Inter, "Noto Sans Bengali", sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+}
+.staff-access-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  color: var(--brand);
+  background: var(--mk-danger-soft);
+  font-size: 12px;
+  font-weight: 600;
+}
+.withdraw-button {
+  margin-top: 10px;
+  min-height: 38px;
+  font-size: 13px;
+}
+.desk-identity {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  color: var(--fg-muted);
+  font-size: 13px;
+}

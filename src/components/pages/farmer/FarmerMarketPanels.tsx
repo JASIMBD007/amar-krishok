@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Handshake, Sprout, TrendingUp, WalletCards, X } from "lucide-react";
+import { BadgeCheck, Clock3, Handshake, Sprout, TrendingUp, WalletCards, X } from "lucide-react";
 import { ApiRequestError } from "../../../api/auth";
-import { fetchLotOffers, respondToLotOffer, type BackendLotOffer } from "../../../api/market";
+import { fetchLotOffers, requestPayout, respondToLotOffer, type BackendLotOffer } from "../../../api/market";
 import { useLanguage, useTranslate, useValueText } from "../../../i18n";
 import { decorateLot, farmerInitials } from "../../../market/deriveLots";
 import { cropNamesBn, kgToMon, perKgToPerMon, taka } from "../../../market/marketData";
@@ -38,41 +38,100 @@ export type FarmerEscrowSummary = {
  * The money side of the farmer desk. Every figure comes from the backend's payment and payout
  * records, so a newly registered farmer sees ৳ 0 rather than an inherited demo balance.
  */
-export function FarmerEscrowKpis({ summary }: { summary: FarmerEscrowSummary }) {
+export function FarmerEscrowKpis({
+  activeListings,
+  listedMon,
+  summary,
+  user,
+}: {
+  activeListings: number;
+  listedMon: number;
+  summary: FarmerEscrowSummary;
+  user: AuthUser | null;
+}) {
   const t = useTranslate();
   const v = useValueText();
+  const [withdrawNotice, setWithdrawNotice] = useState("");
+  const [isWithdrawing, setIsWithdrawing] = useState(false);
+
+  const withdraw = () => {
+    if (!user?.accessToken) {
+      return;
+    }
+
+    setIsWithdrawing(true);
+    requestPayout(user.accessToken)
+      .then((result) =>
+        setWithdrawNotice(
+          `${t("Withdrawal requested")}: ${taka(result.amount)} · ${result.reference}. ${t("Payouts reach bKash within a few hours on working days.")}`,
+        ),
+      )
+      .catch((error) =>
+        setWithdrawNotice(error instanceof ApiRequestError ? error.message : "Could not request a withdrawal."),
+      )
+      .finally(() => setIsWithdrawing(false));
+  };
 
   return (
-    <section className="stats-grid kpi-grid farmer-escrow-grid" aria-label={t("Escrow and payouts")}>
-      <KpiCard
-        icon={WalletCards}
-        label={t("Ready to withdraw")}
-        value={v(taka(summary.released))}
-        detail={
-          summary.releasedCount
-            ? `${t("From")} ${v(summary.releasedCount)} ${t("released orders")}`
-            : t("Nothing released yet")
-        }
-      />
-      <KpiCard
-        icon={Handshake}
-        label={t("In escrow")}
-        value={v(taka(summary.held))}
-        detail={`${t("Across")} ${v(summary.heldCount)} ${t("live orders")}`}
-      />
-      <KpiCard
-        icon={Sprout}
-        label={t("Orders this season")}
-        value={v(summary.orderCount)}
-        detail={t("Buyer orders on your lots")}
-      />
-      <KpiCard
-        icon={TrendingUp}
-        label={t("This season")}
-        value={v(taka(summary.grossValue))}
-        detail={summary.orderCount ? t("Gross value of your orders") : t("First season on AmarKrishok")}
-      />
-    </section>
+    <>
+      <section className="stats-grid kpi-grid farmer-escrow-grid" aria-label={t("Escrow and payouts")}>
+        <article className="stat-card dashboard-stat kpi-card">
+          <div className="kpi-top">
+            <span className="kpi-icon">
+              <WalletCards size={17} />
+            </span>
+          </div>
+          <span className="kpi-label">{t("Ready to withdraw")}</span>
+          <strong className="kpi-value mono-figure">{v(taka(summary.released))}</strong>
+          <button
+            className="primary-button full withdraw-button"
+            disabled={isWithdrawing || summary.released <= 0}
+            type="button"
+            onClick={withdraw}
+          >
+            {t(isWithdrawing ? "Requesting" : "Withdraw to bKash")}
+          </button>
+        </article>
+        <KpiCard
+          icon={Handshake}
+          label={t("In escrow")}
+          value={v(taka(summary.held))}
+          detail={`${t("Across")} ${v(summary.heldCount)} ${t("live orders")}`}
+        />
+        <KpiCard
+          icon={Sprout}
+          label={t("Active listings")}
+          value={v(activeListings)}
+          detail={`${v(listedMon.toLocaleString("en-IN"))} ${t("mon on the market")}`}
+        />
+        <KpiCard
+          icon={TrendingUp}
+          label={t("This season")}
+          value={v(taka(summary.grossValue))}
+          detail={summary.orderCount ? t("Gross value of your orders") : t("First season on AmarKrishok")}
+        />
+      </section>
+      {withdrawNotice ? (
+        <p className="soft-notice" role="status">
+          {withdrawNotice}
+        </p>
+      ) : null}
+    </>
+  );
+}
+
+/** The desk header's identity line: who this is, where, and whether staff have verified them. */
+export function FarmerDeskBadge({ district, verified }: { district: string; verified: boolean }) {
+  const t = useTranslate();
+
+  return (
+    <span className="desk-identity">
+      {district ? t(district) : null}
+      <span className={verified ? "verify-badge verified" : "verify-badge pending"}>
+        {verified ? <BadgeCheck aria-hidden="true" size={11} /> : <Clock3 aria-hidden="true" size={11} />}
+        {t(verified ? "Verified" : "Verification in progress")}
+      </span>
+    </span>
   );
 }
 

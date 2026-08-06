@@ -381,6 +381,12 @@ export function AdminPage({
           <div className="page-title">
             <span>{t(activeEyebrow)}</span>
             <h1>{t(activeTitle)}</h1>
+            {/* Staff need to see, on every screen, that what they do here is attributable. */}
+            <span className="staff-access-badge">
+              <ShieldCheck aria-hidden="true" size={13} />
+              {t("Staff access")}
+              {user?.name ? ` · ${user.name}` : ""} · {t("every action is logged")}
+            </span>
           </div>
 
           <div className="topbar-actions">

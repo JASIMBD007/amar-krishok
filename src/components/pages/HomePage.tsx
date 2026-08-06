@@ -79,6 +79,8 @@ export function HomePage({ setView }: { setView: (view: View) => void }) {
             {t("Verified farmers · protected payments")}
           </span>
           <h1>{t("Sell your harvest at today's real price.")}</h1>
+          {/* The demo carries the Bangla line under the headline as a second voice, not a swap. */}
+          {language === "bn" ? <span className="hero-subtitle-bn">আজকের সঠিক দামে ফসল বিক্রি করুন।</span> : null}
           <p>
             {t("Farmers post the crop, buyers order directly, and we hold the money until delivery is confirmed. Every price sits next to today's district rate.")}
           </p>

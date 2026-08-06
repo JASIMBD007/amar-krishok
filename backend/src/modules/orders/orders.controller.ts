@@ -26,6 +26,13 @@ export class OrdersController {
     return this.ordersService.farmerEscrowSummary(user);
   }
 
+  /** Records a farmer's withdrawal request for staff. Does not move money. */
+  @Auth(Role.FARMER)
+  @Post("payout-request")
+  requestPayout(@CurrentUser() user: AuthenticatedUser) {
+    return this.ordersService.requestPayout(user);
+  }
+
   @Auth(Role.ADMIN, Role.BUYER)
   @Post()
   create(@Body() dto: CreateOrderDto, @CurrentUser() user: AuthenticatedUser) {

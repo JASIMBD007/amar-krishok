@@ -91,6 +91,14 @@ export function fetchFarmerEscrow(accessToken: string) {
   return apiRequest<BackendFarmerEscrow>("/api/orders/farmer-escrow", { accessToken });
 }
 
+/** Records a withdrawal request for staff. Does not move money — bKash disbursement is manual. */
+export function requestPayout(accessToken: string) {
+  return apiRequest<{ amount: number; reference: string; requestedPayouts: number }>("/api/orders/payout-request", {
+    accessToken,
+    method: "POST",
+  });
+}
+
 export function fetchLotOffers(accessToken: string) {
   return apiRequest<BackendLotOffer[]>("/api/offers", { accessToken });
 }

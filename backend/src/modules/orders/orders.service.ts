@@ -91,6 +91,52 @@ export class OrdersService {
     };
   }
 
+  /**
+   * A farmer asking for their released balance to be paid out. This records the request and puts
+   * it in front of staff; it deliberately does not move money, because disbursement runs through
+   * bKash outside this system. The balance stays visible until staff confirm the transfer.
+   */
+  async requestPayout(user: AuthenticatedUser) {
+    const payouts = await this.prisma.payout.findMany({
+      where: { farmerId: user.id, status: PaymentStatus.RELEASED, walletRef: null },
+    });
+
+    const amount = payouts.reduce((total, payout) => total + Number(payout.amount), 0);
+    if (amount <= 0) {
+      throw new BadRequestException("There is nothing released to withdraw yet.");
+    }
+
+    const reference = `WD-${Date.now().toString(36).toUpperCase()}`;
+
+    await this.prisma.$transaction(async (tx) => {
+      // Stamping the reference marks these payouts as claimed so a second tap cannot double-request.
+      await tx.payout.updateMany({
+        data: { walletRef: reference },
+        where: { farmerId: user.id, status: PaymentStatus.RELEASED, walletRef: null },
+      });
+
+      await tx.auditLog.create({
+        data: {
+          action: "payout.request",
+          actorId: user.id,
+          metadata: { amount: amount.toFixed(2), payoutCount: payouts.length, reference },
+          target: `User:${user.id}`,
+        },
+      });
+    });
+
+    await this.notifications.notifyAdmins({
+      body: `${user.name} requested a payout of ৳${amount.toFixed(2)} (${reference}).`,
+      title: "Payout requested",
+    });
+    await this.notifications.notifyUser(user.id, {
+      body: `We have your request for ৳${amount.toFixed(2)}. Payouts reach bKash within a few hours on working days.`,
+      title: "Withdrawal requested",
+    });
+
+    return { amount, reference, requestedPayouts: payouts.length };
+  }
+
   async create(dto: CreateOrderDto, user: AuthenticatedUser) {
     const buyerId = user.role === Role.BUYER ? user.id : dto.buyerId;
     if (!buyerId) {

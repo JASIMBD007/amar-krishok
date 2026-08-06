@@ -37,7 +37,10 @@ export function PricesPage() {
   return (
     <section className="page-wrap rates-page">
       <div className="rates-head">
-        <SectionTitle eyebrow="Market rates" title="Today's district rate for every crop we track." t={t} />
+        <div>
+          <SectionTitle eyebrow="Market rates" title="Today's district rate for every crop we track." t={t} />
+          {language === "bn" ? <span className="hero-subtitle-bn">আজকের বাজারদর · ৪২টি পাইকারি বাজার</span> : null}
+        </div>
         <span>
           {t("Collected from 42 wholesale markets · updated")} {v(publishedStamp(ratesPublishedAt, language))}
         </span>

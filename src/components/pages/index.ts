@@ -8,3 +8,4 @@ export { MyOrdersPage, OrderPlacedPage, OrderTrackingPage } from "./OrdersPages"
 export { OrderPage } from "./OrderPage";
 export { PostCropPage } from "./PostCropPage";
 export { PricesPage } from "./PricesPage";
+export { SignedOutPage } from "./SignedOutPage";

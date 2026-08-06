@@ -34,11 +34,21 @@ import {
   type CreateCropLotPayload,
 } from "../../api/auth";
 import { fetchFarmerEscrow } from "../../api/market";
-import { MON_IN_KG, cropNamesBn, kgToMon, perKgToPerMon, taka } from "../../market/marketData";
+import {
+  MON_IN_KG,
+  cropNamesBn,
+  kgToMon,
+  monToKg,
+  perKgToPerMon,
+  perMonToPerKg,
+  pickupOptions,
+  taka,
+} from "../../market/marketData";
 import { useMarketStore } from "../../store/useMarketStore";
 import { AccountProfilePanel } from "../account/AccountProfilePanel";
 import { MarketCheckPanel } from "../market/MarketCheckPanel";
 import {
+  FarmerDeskBadge,
   FarmerEscrowKpis,
   FarmerListingsVsMarket,
   FarmerOffersPanel,
@@ -159,6 +169,13 @@ export function PostCropPage({
   const rates = useMarketStore((state) => state.rates);
   const rateCrops = useMemo(() => Object.keys(rates).slice(0, 6), [rates]);
   const [step, setStep] = useState(1);
+  const [pickup, setPickup] = useState<string>(pickupOptions[0]);
+
+  // The wizard speaks mon; the form and the backend keep kg, so the two stay in step here.
+  const quantityMon = Math.round(kgToMon(Number(form.quantityKg) || 0));
+  const pricePerMon = perKgToPerMon(Number(form.pricePerKg) || 0);
+  const setQuantityMon = (mon: number) => updateField("quantityKg", String(monToKg(Math.max(0, mon))));
+  const setPricePerMon = (perMon: number) => updateField("pricePerKg", String(perMonToPerKg(Math.max(0, perMon))));
   const [escrowSummary, setEscrowSummary] = useState<FarmerEscrowSummary>({
     grossValue: 0,
     held: 0,
@@ -180,6 +197,10 @@ export function PostCropPage({
   }, [activeBackendLots]);
   const estimatedPayout = totalQuantityKg * averageAsk;
   const latestLot = backendLots[0];
+  // The desk header reads the farmer's own account status, the same record the verified badge on
+  // their listings comes from, so the two can never disagree.
+  const isVerifiedFarmer = (latestLot?.farmer?.status ?? "").toUpperCase() === "ACTIVE";
+  const farmerDistrict = latestLot?.district?.name ?? "";
   // The market layer works in mon and needs the numeric ask, so the lots are summarised once here.
   const farmerLotSummaries = useMemo<FarmerLotSummary[]>(
     () =>
@@ -367,7 +388,11 @@ export function PostCropPage({
 
     (async () => {
       const uploadedCropImage = cropImageFile ? await uploadFile(accessToken, cropImageFile, "crop-lot-image") : null;
-      return createCropLot(accessToken, buildLotPayload(form, uploadedCropImage?.url));
+      // Pickup readiness rides along in the notes so buyers see it on the lot page. The backend
+      // has no dedicated column for it yet.
+      const pickupNote = `${t("Pickup readiness")}: ${pickup}`;
+      const withPickup = { ...form, notes: form.notes.trim() ? `${form.notes.trim()}\n${pickupNote}` : pickupNote };
+      return createCropLot(accessToken, buildLotPayload(withPickup, uploadedCropImage?.url));
     })()
       .then((lot) => {
         const normalizedLot = preserveFarmerLotStatus(lot);
@@ -375,6 +400,7 @@ export function PostCropPage({
         setForm(emptyForm);
         setCropImageFile(null);
         setStep(1);
+        setPickup(pickupOptions[0]);
         setSnackbar("Published to the marketplace");
       })
       .catch((apiError) => {
@@ -473,7 +499,11 @@ export function PostCropPage({
         <header className="dashboard-topbar farmer-dashboard-topbar">
           <div className="page-title">
             <span>{t("Farmer workspace")}</span>
-            <h1>{t("Crop operations dashboard")}</h1>
+            <h1>
+              {t("Farmer desk")}
+              {user?.name ? ` · ${user.name}` : ""}
+            </h1>
+            <FarmerDeskBadge district={farmerDistrict} verified={isVerifiedFarmer} />
           </div>
           <div className="topbar-actions farmer-topbar-actions">
             <button className="secondary-button" onClick={() => scrollToSection("published-lots")} type="button">
@@ -521,7 +551,12 @@ export function PostCropPage({
           />
         </section>
 
-        <FarmerEscrowKpis summary={escrowSummary} />
+        <FarmerEscrowKpis
+          activeListings={activeBackendLots.length}
+          listedMon={Math.round(kgToMon(totalQuantityKg))}
+          summary={escrowSummary}
+          user={user}
+        />
 
         <section className="dashboard-grid farmer-dashboard-grid">
           <div className="farmer-main-column">
@@ -625,51 +660,49 @@ export function PostCropPage({
                 <>
                   <span className="wizard-step-title">{t("How much, and at what price?")}</span>
                   <div className="wizard-price-row">
+                    {/* The demo asks in mon because that is the unit farmers and wholesale markets
+                        use. We convert to the kg the backend stores on the way out. */}
                     <div className="wizard-field">
-                      <span className="filter-eyebrow">{t("Quantity (kg)")}</span>
+                      <span className="filter-eyebrow">{t("Quantity (mon)")}</span>
                       <div className="qty-stepper">
                         <button
                           aria-label={t("Reduce quantity")}
                           type="button"
-                          onClick={() => updateField("quantityKg", String(Math.max(0, (Number(form.quantityKg) || 0) - 40)))}
+                          onClick={() => setQuantityMon(Math.max(0, quantityMon - 10))}
                         >
                           <Minus aria-hidden="true" size={16} />
                         </button>
                         <input
-                          aria-label={t("Quantity (kg)")}
+                          aria-label={t("Quantity (mon)")}
                           className="mono-figure"
                           min="1"
-                          onChange={(event) => updateField("quantityKg", event.target.value)}
-                          placeholder="1200"
+                          onChange={(event) => setQuantityMon(Number(event.target.value) || 0)}
+                          placeholder="30"
                           type="number"
-                          value={form.quantityKg}
+                          value={quantityMon || ""}
                         />
-                        <button
-                          aria-label={t("Increase quantity")}
-                          type="button"
-                          onClick={() => updateField("quantityKg", String((Number(form.quantityKg) || 0) + 40))}
-                        >
+                        <button aria-label={t("Increase quantity")} type="button" onClick={() => setQuantityMon(quantityMon + 10)}>
                           <Plus aria-hidden="true" size={16} />
                         </button>
                       </div>
                       <span className="wizard-hint">
-                        {v(Math.round(kgToMon(Number(form.quantityKg) || 0)))} {t("mon")} ({v(MON_IN_KG)} {t("kg")} = 1{" "}
+                        {v(monToKg(quantityMon).toLocaleString("en-IN"))} {t("kg")} ({v(MON_IN_KG)} {t("kg")} = 1{" "}
                         {t("mon")})
                       </span>
                     </div>
 
                     <div className="wizard-field">
-                      <span className="filter-eyebrow">{t("Your asking price / kg")}</span>
+                      <span className="filter-eyebrow">{t("Your asking price / mon")}</span>
                       <label className="price-input">
                         <span aria-hidden="true">৳</span>
                         <input
-                          aria-label={t("Your asking price / kg")}
+                          aria-label={t("Your asking price / mon")}
                           className="mono-figure"
                           min="1"
-                          onChange={(event) => updateField("pricePerKg", event.target.value)}
-                          placeholder="34"
+                          onChange={(event) => setPricePerMon(Number(event.target.value) || 0)}
+                          placeholder="1290"
                           type="number"
-                          value={form.pricePerKg}
+                          value={pricePerMon || ""}
                         />
                       </label>
                       <span className="wizard-hint">
@@ -707,6 +740,24 @@ export function PostCropPage({
                       </em>
                     </div>
                   </FormGrid>
+                  <div className="wizard-grade-row">
+                    <span className="filter-eyebrow">{t("Pickup readiness")}</span>
+                    <div className="filter-pill-group" role="radiogroup" aria-label={t("Pickup readiness")}>
+                      {pickupOptions.map((option) => (
+                        <button
+                          aria-checked={pickup === option}
+                          className={pickup === option ? "filter-pill on" : "filter-pill"}
+                          key={option}
+                          role="radio"
+                          type="button"
+                          onClick={() => setPickup(option)}
+                        >
+                          {t(option)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
                   <label className="full-field">
                     <span>{t("Notes")}</span>
                     <textarea value={form.notes} onChange={(event) => updateField("notes", event.target.value)} placeholder={t("Packaging, pickup point, storage condition...")} />
@@ -714,12 +765,11 @@ export function PostCropPage({
                   <div className="wizard-summary">
                     <span className="filter-eyebrow">{t("Summary")}</span>
                     <strong>
-                      {t(form.crop || "Your crop")} · {t("Grade")} {v(form.grade || "-")} ·{" "}
-                      {v(Math.round(kgToMon(Number(form.quantityKg) || 0)))} {t("mon")}
+                      {t(form.crop || "Your crop")} · {t("Grade")} {v(form.grade || "-")} · {v(quantityMon)} {t("mon")}
                     </strong>
                     <span>
-                      {v(taka(perKgToPerMon(Number(form.pricePerKg) || 0)))} / {t("mon")} · {t("total")}{" "}
-                      {v(taka((Number(form.pricePerKg) || 0) * (Number(form.quantityKg) || 0)))} ·{" "}
+                      {v(taka(pricePerMon))} / {t("mon")} · {t("total")}{" "}
+                      {v(taka(pricePerMon * quantityMon))} · {t("pickup")} {t(pickup).toLowerCase()} ·{" "}
                       {form.upazilla ? `${t(form.upazilla)}, ` : ""}
                       {t(form.district || "-")}
                     </span>
