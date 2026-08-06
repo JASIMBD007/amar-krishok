@@ -116,6 +116,22 @@ const bn: Record<string, string> = {
   "Password reset complete. Please log in with your new password.": "পাসওয়ার্ড রিসেট হয়েছে। নতুন পাসওয়ার্ড দিয়ে লগইন করুন।",
   "Password reset request sent. Admin will review it before the password changes.": "পাসওয়ার্ড রিসেটের অনুরোধ পাঠানো হয়েছে। পাসওয়ার্ড বদলানোর আগে অ্যাডমিন দেখে অনুমোদন করবে।",
   "Send reset request": "রিসেট অনুরোধ পাঠান",
+  "Reset your password": "পাসওয়ার্ড রিসেট করুন",
+  "Your account stays protected during review": "রিভিউ চলার সময় আপনার অ্যাকাউন্ট সুরক্ষিত থাকবে",
+  "We notify you when the change is approved": "পরিবর্তন অনুমোদিত হলে আমরা জানাব",
+  "Log in with your phone number": "ফোন নম্বর দিয়ে লগইন করুন",
+  "Use your mobile number and password. The same number receives your rate alerts and payout confirmations.":
+    "মোবাইল নম্বর ও পাসওয়ার্ড ব্যবহার করুন। এই নম্বরেই বাজারদর ও পেমেন্টের খবর পাবেন।",
+  "Escrow-protected orders": "এসক্রো-সুরক্ষিত অর্ডার",
+  "Works on a slow connection": "ধীর ইন্টারনেটেও কাজ করে",
+  "Trouble signing in? Missed call to 16xxx": "লগইনে সমস্যা? ১৬xxx নম্বরে মিসড কল দিন",
+  "I am a": "আমি একজন",
+  Staff: "কর্মী",
+  "Staff ID": "কর্মী আইডি",
+  "Staff credentials are checked by the server. Every action is written to the audit log.":
+    "কর্মীর পরিচয় সার্ভার যাচাই করে। প্রতিটি কাজ অডিট লগে লেখা হয়।",
+  "New here?": "নতুন ব্যবহারকারী?",
+  "Create an account": "অ্যাকাউন্ট খুলুন",
   "No buyer or farmer account found with this mobile number.": "এই মোবাইল নম্বর দিয়ে কোনো ক্রেতা বা কৃষক অ্যাকাউন্ট পাওয়া যায়নি।",
   Active: "সক্রিয়",
   Approved: "অনুমোদিত",
@@ -242,6 +258,26 @@ const bn: Record<string, string> = {
   "Admin verification required": "অ্যাডমিন যাচাই লাগবে",
   "Your account is pending admin verification. You can sign in after approval.": "আপনার অ্যাকাউন্ট অ্যাডমিন যাচাইয়ের অপেক্ষায় আছে। অনুমোদনের পর লগইন করতে পারবেন।",
   "Back to login": "লগইনে ফিরুন",
+  "Create your account": "আপনার অ্যাকাউন্ট খুলুন",
+  "How will you use AmarKrishok?": "আমারকৃষক কীভাবে ব্যবহার করবেন?",
+  "Post harvests, see the district rate before pricing, get paid to bKash.":
+    "ফসল পোস্ট করুন, দাম ঠিক করার আগে জেলার বাজারদর দেখুন, বিকাশে টাকা নিন।",
+  "Source lots directly from verified farms with escrow protection.":
+    "এসক্রো সুরক্ষায় যাচাই করা খামার থেকে সরাসরি ফসলের লট কিনুন।",
+  "Your details": "আপনার তথ্য",
+  "Farmer accounts are reviewed by staff before the verified badge appears on listings.":
+    "লিস্টিংয়ে যাচাই ব্যাজ দেখানোর আগে কর্মীরা কৃষকের অ্যাকাউন্ট রিভিউ করেন।",
+  "Business buyers are reviewed by staff before account access is approved.":
+    "অ্যাকাউন্ট চালু করার আগে কর্মীরা ব্যবসায়িক ক্রেতার তথ্য রিভিউ করেন।",
+  "Secure your account": "আপনার অ্যাকাউন্ট সুরক্ষিত করুন",
+  "Create a password for server-verified sign-in. Staff permissions can only be granted by an existing administrator.":
+    "সার্ভার-যাচাই করা লগইনের জন্য পাসওয়ার্ড তৈরি করুন। শুধু বর্তমান অ্যাডমিন কর্মীর অনুমতি দিতে পারবেন।",
+  "Create password": "পাসওয়ার্ড তৈরি করুন",
+  "Confirm password": "পাসওয়ার্ড আবার দিন",
+  "By creating an account you accept the marketplace terms and the escrow payment rules.":
+    "অ্যাকাউন্ট খুলে আপনি মার্কেটপ্লেসের শর্ত ও এসক্রো পেমেন্টের নিয়ম মেনে নিচ্ছেন।",
+  "Already registered?": "আগেই নিবন্ধন করেছেন?",
+  "Log in instead": "লগইন করুন",
   "Please fill in all registration fields.": "নিবন্ধনের সব তথ্য পূরণ করুন।",
   "An account with this role and phone already exists.": "এই ভূমিকা ও ফোন নম্বর দিয়ে একটি অ্যাকাউন্ট আছে।",
   "This username is already taken.": "এই ইউজারনেমটি আগে থেকেই নেওয়া।",

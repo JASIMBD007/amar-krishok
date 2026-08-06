@@ -21,7 +21,6 @@ import {
   type BackendOrder,
 } from "./api/auth";
 import { ProtectedRoute } from "./components/ProtectedRoute";
-import { RegisterChoiceModal } from "./components/RegisterChoiceModal";
 import { LaunchNoticeModal } from "./components/LaunchNoticeModal";
 import { Seo } from "./components/Seo";
 import { SiteFooter } from "./components/SiteFooter";
@@ -50,7 +49,7 @@ import {
   SignedOutPage,
 } from "./components/pages";
 import { useAppStore } from "./store/useAppStore";
-import type { AppNotification, AuthUser, CropLot, RegisteredAccount, RegistrationRole, Role, View } from "./types";
+import type { AppNotification, AuthUser, CropLot, RegisteredAccount, Role, View } from "./types";
 import { matchesSearch } from "./utils/search";
 
 const REVIEWED_NOTIFICATIONS_STORAGE_KEY = "amarKrishokReviewedNotifications";
@@ -193,11 +192,10 @@ export default function App() {
   const [notificationLots, setNotificationLots] = useState<BackendCropLot[]>([]);
   const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
   const [notificationError, setNotificationError] = useState("");
-    const [marketplaceError, setMarketplaceError] = useState("");
-    const [marketplaceLots, setMarketplaceLots] = useState<CropLot[]>([]);
-    const [marketplaceLoading, setMarketplaceLoading] = useState(false);
-    const [launchNoticeOpen, setLaunchNoticeOpen] = useState(false);
-  const [registerChoiceOpen, setRegisterChoiceOpen] = useState(false);
+  const [marketplaceError, setMarketplaceError] = useState("");
+  const [marketplaceLots, setMarketplaceLots] = useState<CropLot[]>([]);
+  const [marketplaceLoading, setMarketplaceLoading] = useState(false);
+  const [launchNoticeOpen, setLaunchNoticeOpen] = useState(false);
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const [reviewedNotificationIds, setReviewedNotificationIds] = useState<string[]>([]);
   const [selectedNotification, setSelectedNotification] = useState<AppNotification | null>(null);
@@ -225,7 +223,6 @@ export default function App() {
   const closeAllHeaderMenus = () => {
     closeHeaderMenus();
     setNotificationPanelOpen(false);
-    setRegisterChoiceOpen(false);
   };
 
   useEffect(() => {
@@ -427,14 +424,8 @@ export default function App() {
   };
 
   const openHeaderRegisterChoice = () => {
-    closeHeaderMenus();
-    setNotificationPanelOpen(false);
-    setRegisterChoiceOpen(true);
-  };
-
-  const chooseRegistration = (role: RegistrationRole) => {
-    setRegisterChoiceOpen(false);
-    navigate(role === "farmer" ? "/register/farmer" : "/register/buyer");
+    closeAllHeaderMenus();
+    navigate("/register/farmer");
   };
 
   const openNotification = (notification: AppNotification) => {
@@ -725,12 +716,11 @@ export default function App() {
           </nav>
         )}
       </header>
-        <RateTicker />
-        {registerChoiceOpen && <RegisterChoiceModal onChoose={chooseRegistration} onClose={() => setRegisterChoiceOpen(false)} />}
-        {launchNoticeOpen && <LaunchNoticeModal onClose={() => setLaunchNoticeOpen(false)} />}
-        {selectedNotification && (
-          <NotificationDetailDialog notification={selectedNotification} onClose={() => setSelectedNotification(null)} />
-        )}
+      <RateTicker />
+      {launchNoticeOpen && <LaunchNoticeModal onClose={() => setLaunchNoticeOpen(false)} />}
+      {selectedNotification && (
+        <NotificationDetailDialog notification={selectedNotification} onClose={() => setSelectedNotification(null)} />
+      )}
 
       <Routes location={location}>
         <Route path="/" element={<HomePage setView={selectView} />} />
@@ -817,7 +807,7 @@ export default function App() {
           }
         />
         <Route path="/login" element={<LoginPage onLogin={handleLogin} user={user} />} />
-        <Route path="/register" element={<Navigate to="/register/buyer" replace />} />
+        <Route path="/register" element={<Navigate to="/register/farmer" replace />} />
         <Route path="/register/buyer" element={<RegisterPage role="buyer" onRegister={handleRegister} />} />
         <Route path="/register/farmer" element={<RegisterPage role="farmer" onRegister={handleRegister} />} />
         <Route path="/signed-out" element={<SignedOutPage />} />

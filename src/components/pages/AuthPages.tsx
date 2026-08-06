@@ -1,6 +1,18 @@
 import React, { useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { CheckCircle2, Clock3, ClipboardCheck, Eye, EyeOff, LockKeyhole } from "lucide-react";
+import {
+  CheckCircle2,
+  Clock3,
+  Eye,
+  EyeOff,
+  Info,
+  LockKeyhole,
+  PhoneCall,
+  ShieldCheck,
+  ShoppingBasket,
+  Sprout,
+  WifiOff,
+} from "lucide-react";
 import {
   ApiRequestError,
   AuthRequestError,
@@ -8,20 +20,32 @@ import {
   requestAccountPasswordReset,
   registerAccountWithApi,
 } from "../../api/auth";
-import { RegisterChoiceModal } from "../RegisterChoiceModal";
-import { getUpazillasForDistrict, roleHomePath, roleOptions, serviceDistricts } from "../../data";
-import { useTranslate, useValueText } from "../../i18n";
+import { getUpazillasForDistrict, roleHomePath, serviceDistricts } from "../../data";
+import { useTranslate } from "../../i18n";
 import type { AuthUser, RegisteredAccount, RegistrationRole, Role } from "../../types";
 import { roleCanOpenPath } from "./pageHelpers";
 
 const usernamePattern = /^[a-zA-Z0-9._-]{3,32}$/;
-const loginAccountOrder: Role[] = ["admin", "farmer", "buyer"];
+const loginAccountOrder: Role[] = ["buyer", "farmer", "admin"];
 
 function loginRoleFromQuery(role: string | null): Role | "" {
   return role === "admin" || role === "farmer" || role === "buyer" ? role : "";
 }
 
+function localBangladeshPhone(value: string) {
+  const digits = value.replace(/\D/g, "");
+  if (digits.startsWith("880")) return digits.slice(3, 13);
+  if (digits.startsWith("0")) return digits.slice(1, 11);
+  return digits.slice(0, 10);
+}
+
+function apiBangladeshPhone(value: string) {
+  const local = localBangladeshPhone(value);
+  return local ? `0${local}` : "";
+}
+
 function PasswordField({
+  autoComplete = "current-password",
   hint,
   label = "Password",
   onChange,
@@ -29,6 +53,7 @@ function PasswordField({
   required,
   value,
 }: {
+  autoComplete?: "current-password" | "new-password";
   hint?: string;
   label?: string;
   onChange: (value: string) => void;
@@ -42,47 +67,103 @@ function PasswordField({
   const toggleLabel = visible ? "Hide password" : "Show password";
 
   return (
-    <label className="input-field">
+    <label className="auth-field auth-password-field">
       <span>
         {t(label)}
-        {required && <strong className="required-mark"> *</strong>}
+        {required ? <strong className="required-mark"> *</strong> : null}
       </span>
       <div className="password-control">
-        <input value={value} onChange={(event) => onChange(event.target.value)} type={visible ? "text" : "password"} placeholder={placeholder ?? t("Password")} />
-        <button className="password-toggle" type="button" aria-label={t(toggleLabel)} aria-pressed={visible} title={t(toggleLabel)} onClick={() => setVisible((current) => !current)}>
+        <input
+          autoComplete={autoComplete}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          type={visible ? "text" : "password"}
+          placeholder={placeholder ?? t("Password")}
+        />
+        <button
+          className="password-toggle"
+          type="button"
+          aria-label={t(toggleLabel)}
+          aria-pressed={visible}
+          title={t(toggleLabel)}
+          onClick={() => setVisible((current) => !current)}
+        >
           <ToggleIcon size={18} />
         </button>
       </div>
-      {hint && <small>{hint}</small>}
+      {hint ? <small>{hint}</small> : null}
     </label>
   );
 }
 
-/**
- * Why the visitor was sent to the login page. The gated destination is remembered in `next`, so the
- * banner explains the redirect instead of leaving it looking like a dead end.
- */
+function PhoneField({
+  label = "Mobile number",
+  onChange,
+  value,
+}: {
+  label?: string;
+  onChange: (value: string) => void;
+  value: string;
+}) {
+  const t = useTranslate();
+  return (
+    <label className="auth-field auth-phone-field">
+      <span>{t(label)}</span>
+      <div className="auth-phone-control">
+        <span>+880</span>
+        <input
+          aria-label={t(label)}
+          autoComplete="tel"
+          inputMode="tel"
+          maxLength={10}
+          placeholder="1XXXXXXXXX"
+          value={value}
+          onChange={(event) => onChange(localBangladeshPhone(event.target.value))}
+        />
+      </div>
+    </label>
+  );
+}
+
+function AuthRoleSegments({
+  accountType,
+  onChange,
+  roles = loginAccountOrder,
+}: {
+  accountType: Role;
+  onChange: (role: Role) => void;
+  roles?: Role[];
+}) {
+  const t = useTranslate();
+  const labels: Record<Role, string> = { admin: "Staff", buyer: "Buyer", farmer: "Farmer" };
+
+  return (
+    <div className="auth-role-group">
+      <span>{t("I am a")}</span>
+      <div className="auth-role-segments">
+        {roles.map((role) => (
+          <button
+            aria-pressed={accountType === role}
+            className={`${accountType === role ? "on" : ""}${role === "admin" ? " staff" : ""}`}
+            key={role}
+            type="button"
+            onClick={() => onChange(role)}
+          >
+            {t(labels[role])}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** Explain gated redirects so the login page never reads like a dead end. */
 function gateReasonFor(next: string) {
-  if (next.startsWith("/farmer")) {
-    return "Log in to reach your farmer desk, listings and payouts.";
-  }
-
-  if (next.startsWith("/checkout")) {
-    return "Log in to pay into escrow. Nothing is charged until you confirm.";
-  }
-
-  if (next.startsWith("/orders")) {
-    return "Log in to see your orders and escrow balances.";
-  }
-
-  if (next.startsWith("/buyer")) {
-    return "Log in to reach your buyer workspace.";
-  }
-
-  if (next.startsWith("/admin")) {
-    return "Staff sign-in. Every action you take is written to the audit log.";
-  }
-
+  if (next.startsWith("/farmer")) return "Log in to reach your farmer desk, listings and payouts.";
+  if (next.startsWith("/checkout")) return "Log in to pay into escrow. Nothing is charged until you confirm.";
+  if (next.startsWith("/orders")) return "Log in to see your orders and escrow balances.";
+  if (next.startsWith("/buyer")) return "Log in to reach your buyer workspace.";
+  if (next.startsWith("/admin")) return "Staff sign-in. Every action you take is written to the audit log.";
   return "";
 }
 
@@ -99,33 +180,30 @@ export function LoginPage({
   const params = new URLSearchParams(location.search);
   const queryNext = params.get("next") ?? "";
   const safeNext = queryNext.startsWith("/") && !queryNext.startsWith("//") ? queryNext : "";
-  const [accountType, setAccountType] = useState<Role | "">(loginRoleFromQuery(params.get("role")) || user?.role || "");
-  const [identifier, setIdentifier] = useState(user?.role === "admin" ? user.username : user?.phone ?? "");
+  const initialRole = loginRoleFromQuery(params.get("role")) || user?.role || "buyer";
+  const [accountType, setAccountType] = useState<Role>(initialRole);
+  const [identifier, setIdentifier] = useState(
+    initialRole === "admin" ? user?.username ?? "" : localBangladeshPhone(user?.phone ?? ""),
+  );
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "reset">("login");
-  const [resetRole, setResetRole] = useState<RegistrationRole>(accountType === "farmer" || accountType === "buyer" ? accountType : "buyer");
+  const [resetRole, setResetRole] = useState<RegistrationRole>(
+    accountType === "farmer" || accountType === "buyer" ? accountType : "buyer",
+  );
   const [resetPhone, setResetPhone] = useState("");
   const [resetPassword, setResetPassword] = useState("");
   const [resetPasswordConfirm, setResetPasswordConfirm] = useState("");
   const [resetError, setResetError] = useState("");
   const [isResetSubmitting, setIsResetSubmitting] = useState(false);
-  const [isRegisterChoiceOpen, setIsRegisterChoiceOpen] = useState(false);
-  const credentialLabel = accountType === "admin" ? "Username" : "Mobile";
-  const credentialPlaceholder = accountType === "admin" ? "Account username" : "Your mobile number";
   const gateReason = gateReasonFor(safeNext);
-
-  const chooseRegistration = (role: RegistrationRole) => {
-    setIsRegisterChoiceOpen(false);
-    navigate(role === "farmer" ? "/register/farmer" : "/register/buyer");
-  };
 
   const openPasswordReset = () => {
     setAuthMode("reset");
     setResetRole(accountType === "farmer" || accountType === "buyer" ? accountType : "buyer");
-    setResetPhone(accountType !== "admin" ? identifier : "");
+    setResetPhone(accountType === "admin" ? "" : localBangladeshPhone(identifier));
     setResetPassword("");
     setResetPasswordConfirm("");
     setError("");
@@ -135,37 +213,34 @@ export function LoginPage({
 
   const submitPasswordReset = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const cleanPhone = resetPhone.trim();
+    const cleanPhone = apiBangladeshPhone(resetPhone);
 
-    if (cleanPhone.replace(/\D/g, "").length < 10) {
+    if (resetPhone.length !== 10) {
       setResetError(t("Please enter a valid mobile number."));
+      return;
+    }
+    if (resetPassword.length < 4) {
+      setResetError(t("Password must be at least 4 characters."));
+      return;
+    }
+    if (resetPassword !== resetPasswordConfirm) {
+      setResetError(t("Passwords do not match."));
       return;
     }
 
     setIsResetSubmitting(true);
     setResetError("");
-
     try {
-      if (resetPassword.length < 4) {
-        setResetError(t("Password must be at least 4 characters."));
-        return;
-      }
-
-      if (resetPassword !== resetPasswordConfirm) {
-        setResetError(t("Passwords do not match."));
-        return;
-      }
-
       await requestAccountPasswordReset({ password: resetPassword, phone: cleanPhone, role: resetRole });
       setAuthMode("login");
       setAccountType(resetRole);
-      setIdentifier(cleanPhone);
+      setIdentifier(resetPhone);
       setPassword("");
       setNotice(t("Password reset request sent. Admin will review it before the password changes."));
-      setResetPassword("");
-      setResetPasswordConfirm("");
     } catch (apiError) {
-      setResetError(t(apiError instanceof AuthRequestError ? apiError.message : "Password reset service is unavailable. Please try again."));
+      setResetError(
+        t(apiError instanceof AuthRequestError ? apiError.message : "Password reset service is unavailable. Please try again."),
+      );
     } finally {
       setIsResetSubmitting(false);
     }
@@ -173,23 +248,16 @@ export function LoginPage({
 
   const submitLogin = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const cleanIdentifier = accountType === "admin" ? identifier.trim().toLowerCase() : identifier.trim();
-
-    if (!accountType) {
-      setError(t("Please select account type."));
-      return;
-    }
+    const cleanIdentifier = accountType === "admin" ? identifier.trim().toLowerCase() : apiBangladeshPhone(identifier);
 
     if (accountType === "admin" && !usernamePattern.test(cleanIdentifier)) {
       setError(t("Please enter a valid username."));
       return;
     }
-
-    if (accountType !== "admin" && cleanIdentifier.replace(/\D/g, "").length < 10) {
+    if (accountType !== "admin" && identifier.length !== 10) {
       setError(t("Please enter a valid mobile number."));
       return;
     }
-
     if (password.length < 4) {
       setError(t("Password must be at least 4 characters."));
       return;
@@ -198,7 +266,6 @@ export function LoginPage({
     setIsSubmitting(true);
     setError("");
     setNotice("");
-
     try {
       const nextUser = await loginWithApi({ accountType, identifier: cleanIdentifier, password });
       const nextPath = safeNext && roleCanOpenPath(nextUser.role, safeNext) ? safeNext : roleHomePath[nextUser.role];
@@ -212,73 +279,35 @@ export function LoginPage({
 
   if (authMode === "reset") {
     return (
-      <section className="page-wrap auth-layout">
-        <form className="panel auth-panel login-panel password-reset-panel" onSubmit={submitPasswordReset}>
-          <h1>{t("Reset password")}</h1>
-          <p className="login-intro">{t("Enter your mobile number and new password. Admin will approve the change before it becomes active.")}</p>
+      <section className="auth-login-page auth-reset-page">
+        <div className="auth-login-copy">
+          <h1>{t("Reset your password")}</h1>
+          <span className="auth-bn-subtitle">পাসওয়ার্ড রিসেট করুন</span>
+          <p>{t("Enter your mobile number and new password. Admin will approve the change before it becomes active.")}</p>
+          <div className="auth-benefit-list">
+            <span><ShieldCheck aria-hidden="true" size={17} />{t("Your account stays protected during review")}</span>
+            <span><PhoneCall aria-hidden="true" size={17} />{t("We notify you when the change is approved")}</span>
+          </div>
+        </div>
 
-          <label className="input-field">
-            <span>
-              {t("Account type")}
-              <strong className="required-mark"> *</strong>
-            </span>
-            <select
-              className="login-select"
-              value={resetRole}
-              onChange={(event) => {
-                setResetRole(event.target.value as RegistrationRole);
-                setResetPassword("");
-                setResetPasswordConfirm("");
-                setResetError("");
-              }}
-            >
-              {roleOptions
-                .filter((option) => option.role === "farmer" || option.role === "buyer")
-                .map((option) => (
-                  <option key={option.role} value={option.role}>
-                    {t(option.label)}
-                  </option>
-                ))}
-            </select>
-          </label>
-
-          <label className="input-field">
-            <span>
-              {t("Mobile")}
-              <strong className="required-mark"> *</strong>
-            </span>
-            <input
-              autoComplete="tel"
-              inputMode="tel"
-              value={resetPhone}
-              onChange={(event) => {
-                setResetPhone(event.target.value);
-                setResetPassword("");
-                setResetPasswordConfirm("");
-                setResetError("");
-              }}
-              placeholder={t("Your mobile number")}
-            />
-          </label>
-
-          <PasswordField label="New password" value={resetPassword} onChange={setResetPassword} placeholder={t("New password")} required />
-          <PasswordField label="Confirm new password" value={resetPasswordConfirm} onChange={setResetPasswordConfirm} placeholder={t("Confirm new password")} required />
-
-          {resetError && <p className="auth-error">{resetError}</p>}
-
-          <button className="primary-button auth-submit-button" type="submit" disabled={isResetSubmitting}>
-            <LockKeyhole size={17} />
+        <form className="auth-login-card" onSubmit={submitPasswordReset}>
+          <AuthRoleSegments
+            accountType={resetRole}
+            roles={["buyer", "farmer"]}
+            onChange={(role) => {
+              setResetRole(role as RegistrationRole);
+              setResetError("");
+            }}
+          />
+          <PhoneField value={resetPhone} onChange={(value) => { setResetPhone(value); setResetError(""); }} />
+          <PasswordField autoComplete="new-password" label="New password" value={resetPassword} onChange={setResetPassword} placeholder={t("New password")} required />
+          <PasswordField autoComplete="new-password" label="Confirm new password" value={resetPasswordConfirm} onChange={setResetPasswordConfirm} placeholder={t("Confirm new password")} required />
+          {resetError ? <p className="auth-error">{resetError}</p> : null}
+          <button className="auth-primary-action" type="submit" disabled={isResetSubmitting}>
             {t(isResetSubmitting ? "Submitting" : "Send reset request")}
           </button>
-
-          <p className="auth-link-line">
-            <button
-              type="button"
-              onClick={() => {
-                setAuthMode("login");
-                setResetError("");
-              }}
-            >
+          <p className="auth-card-link-line">
+            <button type="button" onClick={() => { setAuthMode("login"); setResetError(""); }}>
               {t("Back to login")}
             </button>
           </p>
@@ -288,86 +317,60 @@ export function LoginPage({
   }
 
   return (
-    <section className="page-wrap auth-layout">
-      <form className="panel auth-panel login-panel" onSubmit={submitLogin}>
-        <h1>{t("Login to AmarKrishok")}</h1>
-        <p className="login-intro">{t("To use AmarKrishok, please log in with your account details.")}</p>
+    <section className="auth-login-page">
+      <div className="auth-login-copy">
+        <h1>{t("Log in with your phone number")}</h1>
+        <span className="auth-bn-subtitle">মোবাইল নম্বর দিয়ে লগইন করুন</span>
+        <p>{t("Use your mobile number and password. The same number receives your rate alerts and payout confirmations.")}</p>
+        <div className="auth-benefit-list">
+          <span><ShieldCheck aria-hidden="true" size={17} />{t("Escrow-protected orders")}</span>
+          <span><WifiOff aria-hidden="true" size={17} />{t("Works on a slow connection")}</span>
+          <span><PhoneCall aria-hidden="true" size={17} />{t("Trouble signing in? Missed call to 16xxx")}</span>
+        </div>
+      </div>
 
-        {/* Say why the user landed here. Being redirected without an explanation reads like a bug. */}
-        {gateReason ? (
-          <p className="login-gate-reason" role="status">
-            <LockKeyhole aria-hidden="true" size={16} />
-            {t(gateReason)}
-          </p>
-        ) : null}
+      <form className="auth-login-card" onSubmit={submitLogin}>
+        {gateReason ? <p className="auth-intent-note" role="status">{t(gateReason)}</p> : null}
+        <AuthRoleSegments
+          accountType={accountType}
+          onChange={(role) => {
+            setAccountType(role);
+            setIdentifier("");
+            setError("");
+            setNotice("");
+          }}
+        />
 
-        <label className="input-field">
-          <span>
-            {t("Account type")}
-            <strong className="required-mark"> *</strong>
-          </span>
-          <select
-            className="login-select"
-            value={accountType}
-            onChange={(event) => {
-              const nextRole = event.target.value as Role | "";
-              setAccountType(nextRole);
-              setIdentifier("");
-              setError("");
-              setNotice("");
-            }}
-          >
-            <option value="">{t("Select account type")}</option>
-            {loginAccountOrder.map((role) => {
-              const option = roleOptions.find((item) => item.role === role);
-              return option ? (
-                <option key={option.role} value={option.role}>
-                  {t(option.label)}
-                </option>
-              ) : null;
-            })}
-          </select>
-        </label>
+        {accountType === "admin" ? (
+          <label className="auth-field auth-staff-field">
+            <span>{t("Staff ID")}</span>
+            <input
+              autoComplete="username"
+              value={identifier}
+              onChange={(event) => setIdentifier(event.target.value)}
+              placeholder="AK-OPS-014"
+            />
+            <small>{t("Staff credentials are checked by the server. Every action is written to the audit log.")}</small>
+          </label>
+        ) : (
+          <PhoneField value={identifier} onChange={(value) => { setIdentifier(value); setError(""); }} />
+        )}
 
-        <label className="input-field">
-          <span>
-            {t(credentialLabel)}
-            <strong className="required-mark"> *</strong>
-          </span>
-          <input
-            autoComplete={accountType === "admin" ? "username" : "tel"}
-            inputMode={accountType === "admin" ? undefined : "tel"}
-            value={identifier}
-            onChange={(event) => setIdentifier(event.target.value)}
-            placeholder={t(credentialPlaceholder)}
-          />
-        </label>
         <PasswordField value={password} onChange={setPassword} placeholder={t("Your password")} required />
+        {error ? <p className="auth-error">{error}</p> : null}
+        {notice ? <p className="auth-info">{notice}</p> : null}
 
-        {error && <p className="auth-error">{error}</p>}
-        {notice && <p className="auth-info">{notice}</p>}
-
-        <button className="primary-button auth-submit-button" type="submit" disabled={isSubmitting}>
-          <LockKeyhole size={17} />
+        <button className="auth-primary-action" type="submit" disabled={isSubmitting}>
+          <LockKeyhole aria-hidden="true" size={17} />
           {t(isSubmitting ? "Signing in" : "Login")}
         </button>
-
-        <p className="auth-link-line">
-          {t("Forgot password?")}{" "}
-          <button type="button" onClick={openPasswordReset}>
-            {t("Reset")}
-          </button>
+        <p className="auth-card-link-line">
+          {t("Forgot password?")} <button type="button" onClick={openPasswordReset}>{t("Reset")}</button>
         </p>
-
-        <p className="auth-create-line">
-          {t("Don't have an account?")}{" "}
-          <button type="button" onClick={() => setIsRegisterChoiceOpen(true)}>
-            {t("Create account")}
-          </button>
+        <p className="auth-card-link-line">
+          {t("New here?")} <button type="button" onClick={() => navigate("/register/farmer")}>{t("Create an account")}</button>
         </p>
-
       </form>
-      {isRegisterChoiceOpen && <RegisterChoiceModal onChoose={chooseRegistration} onClose={() => setIsRegisterChoiceOpen(false)} />}
     </section>
   );
 }
@@ -381,13 +384,12 @@ export function RegisterPage({
 }) {
   const navigate = useNavigate();
   const t = useTranslate();
-  const v = useValueText();
-  const roleOption = roleOptions.find((option) => option.role === role) ?? roleOptions[1];
-  const RoleIcon = roleOption.icon;
+  const [step, setStep] = useState(1);
   const [submittedAccount, setSubmittedAccount] = useState<RegisteredAccount | null>(null);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordConfirm, setPasswordConfirm] = useState("");
   const [organization, setOrganization] = useState("");
   const [district, setDistrict] = useState("");
   const [upazilla, setUpazilla] = useState("");
@@ -396,69 +398,80 @@ export function RegisterPage({
   const [focus, setFocus] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const title = role === "buyer" ? "Create buyer account" : "Create seller account";
   const availableUpazillas = getUpazillasForDistrict(district);
 
-  const submitRegistration = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const cleanName = name.trim();
-    const cleanPhone = phone.trim();
-    const cleanPassword = password.trim();
-    const cleanOrganization = organization.trim();
-    const cleanDistrict = district.trim();
-    const cleanUpazilla = upazilla.trim();
-    const cleanAddress = address.trim();
-    const cleanIdentity = identity.trim();
-    const cleanFocus = focus.trim();
+  const cleanDetails = () => ({
+    address: address.trim(),
+    district: district.trim(),
+    focus: focus.trim(),
+    identity: identity.trim(),
+    name: name.trim(),
+    organization: organization.trim(),
+    phone: apiBangladeshPhone(phone),
+    upazilla: upazilla.trim(),
+  });
 
-    if (!cleanName || !cleanPhone || !cleanPassword || !cleanOrganization || !cleanDistrict || !cleanUpazilla || !cleanAddress || !cleanIdentity || !cleanFocus) {
+  const validateDetails = () => {
+    const details = cleanDetails();
+    if (Object.values(details).some((value) => !value)) {
       setError(t("Please fill in all registration fields."));
-      return;
+      return false;
     }
-
-    if (cleanPhone.replace(/\D/g, "").length < 10) {
+    if (phone.length !== 10) {
       setError(t("Please enter a valid mobile number."));
+      return false;
+    }
+    return true;
+  };
+
+  const moveToStep = (nextStep: number) => {
+    setStep(nextStep);
+    setError("");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const continueFromDetails = () => {
+    if (validateDetails()) moveToStep(3);
+  };
+
+  const submitRegistration = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!validateDetails()) {
+      setStep(2);
+      window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
-
-    if (cleanPassword.length < 4) {
+    if (password.length < 4) {
       setError(t("Password must be at least 4 characters."));
+      return;
+    }
+    if (password !== passwordConfirm) {
+      setError(t("Passwords do not match."));
       return;
     }
 
     setIsSubmitting(true);
     setError("");
-
-    registerAccountWithApi({
-      address: cleanAddress,
-      district: cleanDistrict,
-      upazilla: cleanUpazilla,
-      focus: cleanFocus,
-      identity: cleanIdentity,
-      name: cleanName,
-      organization: cleanOrganization,
-      password: cleanPassword,
-      phone: cleanPhone,
-      role,
-    })
-      .then((nextAccount) => {
-        onRegister(nextAccount);
-        setSubmittedAccount(nextAccount);
-      })
-      .catch((apiError) => {
-        setError(t(apiError instanceof ApiRequestError ? apiError.message : "Backend service is unavailable. Please try again."));
-      })
-      .finally(() => setIsSubmitting(false));
+    try {
+      const nextAccount = await registerAccountWithApi({
+        ...cleanDetails(),
+        password: password.trim(),
+        role,
+      });
+      onRegister(nextAccount);
+      setSubmittedAccount(nextAccount);
+    } catch (apiError) {
+      setError(t(apiError instanceof ApiRequestError ? apiError.message : "Backend service is unavailable. Please try again."));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (submittedAccount) {
     return (
-      <section className="page-wrap auth-layout">
-        <div className="panel auth-panel">
-          <div className="auth-icon">
-            <CheckCircle2 size={28} />
-          </div>
-          <span>{t("Registration submitted")}</span>
+      <section className="auth-submitted-page">
+        <div className="auth-submitted-card">
+          <span className="auth-submitted-icon"><CheckCircle2 size={28} /></span>
           <h1>{t("Registration submitted")}</h1>
           <div className="auth-notice pending">
             <Clock3 size={20} />
@@ -468,14 +481,12 @@ export function RegisterPage({
             </div>
           </div>
           <div className="registration-summary">
-            <span>{t(roleOption.label)}</span>
+            <span>{t(role === "farmer" ? "Farmer" : "Buyer")}</span>
             <strong>{submittedAccount.name}</strong>
             <small>{submittedAccount.phone}</small>
           </div>
           <div className="auth-actions">
-            <NavLink className="secondary-button" to="/">
-              {t("Home")}
-            </NavLink>
+            <NavLink className="secondary-button" to="/">{t("Home")}</NavLink>
             <NavLink className="primary-button" to={`/login?next=${encodeURIComponent(roleHomePath[role])}`}>
               {t("Back to login")}
             </NavLink>
@@ -485,84 +496,139 @@ export function RegisterPage({
     );
   }
 
+  const roleCards = [
+    {
+      icon: Sprout,
+      id: "farmer" as const,
+      label: "I sell crops",
+      sub: "Post harvests, see the district rate before pricing, get paid to bKash.",
+    },
+    {
+      icon: ShoppingBasket,
+      id: "buyer" as const,
+      label: "I buy crops",
+      sub: "Source lots directly from verified farms with escrow protection.",
+    },
+  ];
+
   return (
-    <section className="page-wrap auth-layout">
-      <form className="panel auth-panel register-panel" onSubmit={submitRegistration}>
-        <div className="auth-icon">
-          <RoleIcon size={28} />
-        </div>
-        <span>{t("New registration")}</span>
-        <h1>{t(title)}</h1>
+    <section className="auth-register-page">
+      <div className="auth-register-heading">
+        <h1>{t("Create your account")}</h1>
+        <span>{t("Step")} {step} / 3</span>
+      </div>
+      <div className="auth-register-progress" aria-label={`${t("Step")} ${step} / 3`}>
+        {[1, 2, 3].map((item) => <span className={item <= step ? "on" : ""} key={item} />)}
+      </div>
 
-        <div className="registration-grid register-form-grid">
-          <label className="input-field">
-            <span>{t("Full name")}</span>
-            <input autoComplete="name" value={name} onChange={(event) => setName(event.target.value)} placeholder={t("Your full name")} />
-          </label>
-          <label className="input-field">
-            <span>{t("Mobile number")}</span>
-            <input autoComplete="tel" value={phone} onChange={(event) => setPhone(event.target.value)} inputMode="tel" placeholder={v("01700000000")} />
-          </label>
-          <PasswordField value={password} onChange={setPassword} />
-          <label className="input-field">
-            <span>{t("Business / farm name")}</span>
-            <input value={organization} onChange={(event) => setOrganization(event.target.value)} placeholder={t("Business or farm name")} />
-          </label>
-          <label className="input-field">
-            <span>{t("NID / trade license")}</span>
-            <input value={identity} onChange={(event) => setIdentity(event.target.value)} placeholder={t("NID or trade license number")} />
-          </label>
-          <label className="input-field">
-            <span>{t("Crop interest / supply focus")}</span>
-            <input value={focus} onChange={(event) => setFocus(event.target.value)} placeholder={t("Crops you buy or sell")} />
-          </label>
-          <label className="input-field">
-            <span>{t("District")}</span>
-            <select value={district} onChange={(event) => {
-              setDistrict(event.target.value);
-              setUpazilla("");
-            }}>
-              <option value="" disabled>
-                {t("Select service district")}
-              </option>
-              {serviceDistricts.map((serviceDistrict) => (
-                <option key={serviceDistrict} value={serviceDistrict}>
-                  {t(serviceDistrict)}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="input-field">
-            <span>{t("Upazilla")}</span>
-            <select value={upazilla} onChange={(event) => setUpazilla(event.target.value)} disabled={!district}>
-              <option value="" disabled>
-                {t(district ? "Select upazilla" : "Select district first")}
-              </option>
-              {availableUpazillas.map((serviceUpazilla) => (
-                <option key={serviceUpazilla} value={serviceUpazilla}>
-                  {t(serviceUpazilla)}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="input-field registration-wide-field">
-            <span>{t("Address")}</span>
-            <input value={address} onChange={(event) => setAddress(event.target.value)} placeholder={t("Your address")} />
-          </label>
-        </div>
+      <form className="auth-register-card" onSubmit={submitRegistration}>
+        {step === 1 ? (
+          <>
+            <h2>{t("How will you use AmarKrishok?")}</h2>
+            <div className="auth-register-roles">
+              {roleCards.map((item) => {
+                const Icon = item.icon;
+                const selected = role === item.id;
+                return (
+                  <button
+                    aria-pressed={selected}
+                    className={selected ? "on" : ""}
+                    key={item.id}
+                    type="button"
+                    onClick={() => navigate(`/register/${item.id}`)}
+                  >
+                    <span className="auth-register-role-icon"><Icon size={20} /></span>
+                    <span><strong>{t(item.label)}</strong><em>{t(item.sub)}</em></span>
+                  </button>
+                );
+              })}
+            </div>
+            <button className="auth-register-next" type="button" onClick={() => moveToStep(2)}>{t("Continue")}</button>
+          </>
+        ) : null}
 
-        {error && <p className="auth-error">{error}</p>}
+        {step === 2 ? (
+          <>
+            <h2>{t("Your details")}</h2>
+            <div className="auth-register-fields">
+              <label className="auth-field">
+                <span>{t("Full name")}</span>
+                <input autoComplete="name" value={name} onChange={(event) => { setName(event.target.value); setError(""); }} placeholder={t("Your full name")} />
+              </label>
+              <PhoneField value={phone} onChange={(value) => { setPhone(value); setError(""); }} />
+              <label className="auth-field">
+                <span>{t("District")}</span>
+                <select value={district} onChange={(event) => { setDistrict(event.target.value); setUpazilla(""); setError(""); }}>
+                  <option value="" disabled>{t("Select service district")}</option>
+                  {serviceDistricts.map((item) => <option key={item} value={item}>{t(item)}</option>)}
+                </select>
+              </label>
+              <label className="auth-field">
+                <span>{t("Upazilla")}</span>
+                <select value={upazilla} onChange={(event) => { setUpazilla(event.target.value); setError(""); }} disabled={!district}>
+                  <option value="" disabled>{t(district ? "Select upazilla" : "Select district first")}</option>
+                  {availableUpazillas.map((item) => <option key={item} value={item}>{t(item)}</option>)}
+                </select>
+              </label>
+              <label className="auth-field">
+                <span>{t("Business / farm name")}</span>
+                <input value={organization} onChange={(event) => { setOrganization(event.target.value); setError(""); }} placeholder={t("Business or farm name")} />
+              </label>
+              <label className="auth-field">
+                <span>{t("NID / trade license")}</span>
+                <input value={identity} onChange={(event) => { setIdentity(event.target.value); setError(""); }} placeholder={t("NID or trade license number")} />
+              </label>
+              <label className="auth-field">
+                <span>{t("Crop interest / supply focus")}</span>
+                <input value={focus} onChange={(event) => { setFocus(event.target.value); setError(""); }} placeholder={t("Crops you buy or sell")} />
+              </label>
+              <label className="auth-field auth-field-wide">
+                <span>{t("Address")}</span>
+                <input value={address} onChange={(event) => { setAddress(event.target.value); setError(""); }} placeholder={t("Your address")} />
+              </label>
+            </div>
+            <div className="auth-register-info">
+              <Info aria-hidden="true" size={17} />
+              <span>{t(role === "farmer"
+                ? "Farmer accounts are reviewed by staff before the verified badge appears on listings."
+                : "Business buyers are reviewed by staff before account access is approved.")}</span>
+            </div>
+            {error ? <p className="auth-error">{error}</p> : null}
+            <div className="auth-register-actions">
+              <button className="back" type="button" onClick={() => moveToStep(1)}>{t("Back")}</button>
+              <button className="next" type="button" onClick={continueFromDetails}>{t("Continue")}</button>
+            </div>
+          </>
+        ) : null}
 
-        <div className="auth-actions">
-          <button className="secondary-button" type="button" onClick={() => navigate("/")}>
-            {t("Home")}
-          </button>
-          <button className="primary-button" type="submit" disabled={isSubmitting}>
-            <ClipboardCheck size={17} />
-            {t(isSubmitting ? "Submitting" : "Register")}
-          </button>
-        </div>
+        {step === 3 ? (
+          <>
+            <div className="auth-register-step-heading">
+              <h2>{t("Secure your account")}</h2>
+              <p>{t("Create a password for server-verified sign-in. Staff permissions can only be granted by an existing administrator.")}</p>
+            </div>
+            <PasswordField autoComplete="new-password" value={password} onChange={(value) => { setPassword(value); setError(""); }} placeholder={t("Create password")} required />
+            <PasswordField autoComplete="new-password" label="Confirm password" value={passwordConfirm} onChange={(value) => { setPasswordConfirm(value); setError(""); }} placeholder={t("Confirm password")} required />
+            <div className="auth-review-box">
+              <ShieldCheck aria-hidden="true" size={18} />
+              <span>
+                <strong>{name}</strong>
+                {t(role === "farmer" ? "Farmer" : "Buyer")} · +880 {phone || "1XXXXXXXXX"} · {t(district)}
+              </span>
+            </div>
+            {error ? <p className="auth-error">{error}</p> : null}
+            <div className="auth-register-actions">
+              <button className="back" type="button" onClick={() => moveToStep(2)}>{t("Back")}</button>
+              <button className="finish" type="submit" disabled={isSubmitting}>{t(isSubmitting ? "Submitting" : "Create account")}</button>
+            </div>
+            <p className="auth-terms">{t("By creating an account you accept the marketplace terms and the escrow payment rules.")}</p>
+          </>
+        ) : null}
       </form>
+
+      <p className="auth-register-login-line">
+        {t("Already registered?")} <NavLink to="/login">{t("Log in instead")}</NavLink>
+      </p>
     </section>
   );
 }
