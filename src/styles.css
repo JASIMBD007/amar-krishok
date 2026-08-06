@@ -8997,3 +8997,330 @@ textarea:focus-visible {
   font-size: 14px;
   font-weight: 600;
 }
+
+/* =====================================================================
+   Step 6 — Lot detail: spec card, fair-price panel, farmer card.
+   ===================================================================== */
+.lot-page,
+.checkout-page,
+.orders-page,
+.order-detail-page {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 20px 24px 32px;
+  gap: 16px;
+}
+.back-link {
+  align-self: flex-start;
+  gap: 7px;
+  font-size: 14px;
+  font-weight: 500;
+}
+.lot-detail-layout {
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 380px);
+  gap: 24px;
+}
+.lot-photo-area {
+  height: 300px;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--fg-disabled);
+}
+.lot-spec-card,
+.fair-price-card,
+.farmer-card {
+  gap: 18px;
+  padding: 24px;
+  border-radius: 8px;
+}
+.lot-spec-head {
+  align-items: flex-start;
+  gap: 24px;
+}
+.lot-spec-head > div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.lot-spec-head h1 {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.lot-spec-head span {
+  font-size: 14px;
+  color: var(--fg-muted);
+}
+.lot-spec-head .verify-badge {
+  gap: 6px;
+  padding: 6px 11px;
+  font-size: 12px;
+  font-weight: 700;
+}
+/* A 1px-gap grid on the border colour, so the gaps read as hairlines. */
+.lot-spec-strip {
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  margin: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--border);
+}
+.lot-spec-strip > div {
+  gap: 4px;
+  padding: 14px;
+}
+.lot-spec-strip span {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+.lot-spec-strip strong {
+  font-size: 15px;
+  font-weight: 600;
+}
+.lot-spec-card p {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--fg-subtle);
+}
+
+.fair-price-card .panel-header {
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0;
+}
+.fair-price-card .panel-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+}
+.fair-price-card .delta-pill {
+  padding: 4px 9px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.fair-price-body {
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 300px);
+  align-items: center;
+  gap: 28px;
+}
+.fair-price-chart {
+  gap: 10px;
+}
+.rate-history {
+  height: 110px;
+  gap: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.rate-history span {
+  border-radius: 2px 2px 0 0;
+}
+.fair-price-chart > span {
+  font-size: 13px;
+  color: var(--fg-muted);
+}
+.fair-price-rows > div {
+  align-items: baseline;
+  padding: 12px 0 0;
+  border-top: 1px solid var(--surface-sunken);
+}
+.fair-price-rows dt {
+  font-size: 14px;
+  color: var(--fg-subtle);
+}
+.fair-price-rows dd {
+  font-family: var(--font-mono);
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.farmer-card {
+  align-items: center;
+  gap: 20px;
+}
+.farmer-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 999px;
+  font-size: 17px;
+  font-weight: 700;
+}
+.farmer-card > div:nth-child(2) {
+  gap: 5px;
+}
+.farmer-card strong {
+  font-size: 17px;
+  font-weight: 600;
+}
+.farmer-card span {
+  font-size: 14px;
+  color: var(--fg-muted);
+}
+
+/* =====================================================================
+   Step 7 — Order box and escrow explainer, value-for-value.
+   ===================================================================== */
+.lot-detail-rail,
+.order-detail-rail {
+  gap: 16px;
+}
+.order-box {
+  gap: 0;
+  padding: 24px;
+  border-radius: 8px;
+}
+.order-box-price strong {
+  font-family: var(--font-mono);
+  font-size: 30px;
+  font-weight: 600;
+}
+.order-box-price span {
+  font-size: 14px;
+  color: var(--fg-muted);
+}
+.order-box-quantity {
+  gap: 9px;
+  margin: 18px 0 0;
+}
+.qty-stepper {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.qty-stepper button {
+  width: 46px;
+  height: auto;
+  border: 0;
+  background: var(--surface);
+  color: var(--fg-subtle);
+}
+.qty-stepper button:last-child {
+  border-left: 1px solid var(--border);
+}
+.qty-stepper button:first-child {
+  border-right: 1px solid var(--border);
+}
+.qty-stepper > div {
+  padding: 12px;
+  border-inline: 0;
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 600;
+}
+.order-box-hint {
+  font-size: 12px;
+  color: var(--fg-muted);
+}
+.cost-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--surface-sunken);
+}
+.cost-breakdown > div {
+  align-items: baseline;
+  padding: 0;
+  border-top: 0;
+  font-size: 14px;
+}
+.cost-breakdown dt {
+  font-size: 14px;
+  color: var(--fg-subtle);
+}
+.cost-breakdown dd {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 400;
+}
+.cost-breakdown .cost-total {
+  padding-top: 11px;
+  border-top: 1px solid var(--border);
+}
+.cost-breakdown .cost-total dt {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--fg);
+}
+.cost-breakdown .cost-total dd {
+  font-size: 20px;
+  font-weight: 600;
+}
+.order-box-actions {
+  gap: 9px;
+  margin: 16px 0 12px;
+}
+/* Committing money is the dotzilla red action; the counter-offer stays green-outlined. */
+.order-box-actions .primary-button {
+  min-height: 0;
+  padding: 15px;
+  border-radius: 8px;
+  background: var(--brand);
+  font-size: 16px;
+  font-weight: 600;
+}
+.order-box-actions .primary-button:hover {
+  background: var(--brand-hover);
+}
+.order-box-actions .secondary-button {
+  min-height: 0;
+  padding: 14px;
+  border: 1px solid var(--ak-green);
+  border-radius: 8px;
+  box-shadow: none;
+  color: var(--ak-green);
+  background: var(--surface);
+  font-size: 15px;
+  font-weight: 600;
+}
+.order-box-actions .secondary-button:hover {
+  background: var(--ak-green-soft);
+}
+.soft-notice {
+  padding: 11px 12px;
+  border: 1px solid var(--ak-green-border);
+  border-radius: 6px;
+  background: var(--ak-green-soft);
+  font-size: 12px;
+  line-height: 1.5;
+  color: #25543e;
+}
+
+.escrow-explainer {
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--ak-green-border);
+  border-radius: 8px;
+}
+.escrow-explainer-head {
+  gap: 9px;
+  margin: 0;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--ak-green-border);
+  background: var(--ak-green-soft);
+}
+.escrow-explainer-head strong {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ak-green-deep);
+}
+.escrow-explainer ol {
+  gap: 12px;
+  padding: 16px;
+}
+.escrow-explainer li {
+  gap: 11px;
+  align-items: flex-start;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--fg-subtle);
+}
+.escrow-step-number {
+  width: 20px;
+  height: 20px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+}
