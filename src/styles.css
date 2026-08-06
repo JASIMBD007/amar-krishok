@@ -8232,3 +8232,117 @@ textarea:focus-visible {
   margin-inline: auto;
   width: 100%;
 }
+
+/* =====================================================================
+   Mobile: dense tables become card lists, per the mobile mockups.
+   A farmer on a cheap Android should never have to scroll a table
+   sideways to find out where their money is.
+   ===================================================================== */
+@media (max-width: 768px) {
+  .table-scroll {
+    overflow-x: visible;
+  }
+  .order-table,
+  .rate-table,
+  .admin-escrow-table,
+  .admin-listing-table,
+  .rate-publish-table {
+    min-width: 0;
+  }
+
+  /* The column headings carry no meaning once the rows stack. */
+  .order-table-head,
+  .rate-table-head,
+  .admin-escrow-head,
+  .admin-listing-head,
+  .rate-publish-head,
+  .listing-vs-market-head {
+    display: none;
+  }
+
+  .order-table-row,
+  .rate-table-row,
+  .admin-escrow-row,
+  .admin-listing-row,
+  .rate-publish-row,
+  .listing-vs-market-row {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    margin-bottom: 10px;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+  }
+  .order-table-row:last-child,
+  .rate-table-row:last-child,
+  .admin-escrow-row:last-child,
+  .admin-listing-row:last-child,
+  .rate-publish-row:last-child,
+  .listing-vs-market-row:last-child {
+    margin-bottom: 0;
+  }
+
+  /* First cell reads as the card title, the rest as supporting lines. */
+  .order-table-row > :first-child,
+  .admin-escrow-row > :first-child,
+  .admin-listing-row > :first-child,
+  .listing-vs-market-row > :first-child {
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  /* Actions go full width so they clear the 44px touch target. */
+  .order-table-row button,
+  .admin-escrow-row button,
+  .admin-listing-row button,
+  .rate-table-row .alert-toggle {
+    width: 100%;
+    min-height: 44px;
+    justify-content: center;
+  }
+  .admin-escrow-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* The rates row keeps its crop/rate/change on one line with the spark below. */
+  .rate-table-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 6px 12px;
+  }
+  .rate-table-row .rate-crop {
+    grid-column: 1;
+  }
+  .rate-table-row .mono-figure {
+    grid-column: 2;
+    text-align: right;
+  }
+  .rate-table-row .rate-per-kg {
+    display: none;
+  }
+  .rate-table-row .rate-change {
+    grid-column: 2;
+    text-align: right;
+  }
+  .rate-table-row .rate-sparkline {
+    grid-column: 1 / -1;
+  }
+  .rate-table-row > span:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .rate-publish-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px 12px;
+  }
+  .rate-publish-row .rate-input {
+    grid-column: 1 / -1;
+    min-height: 44px;
+  }
+}
