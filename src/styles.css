@@ -5044,12 +5044,12 @@ th {
    ===================================================================== */
 
 :root {
-  --ic-blue: #2f7ed8;
+  --ic-blue: #1c69d4;
   --ic-orange: #b45309;
   --ic-green: #146b45;
-  --ic-violet: #7c5cd0;
-  --ic-teal: #0e9c8a;
-  --ic-rose: #d9557b;
+  --ic-violet: #1c69d4;
+  --ic-teal: #146b45;
+  --ic-rose: #cc0001;
 }
 
 /* ---- Crop card meta: location / quantity / grade / harvest ---- */
@@ -5067,7 +5067,7 @@ th {
 .workflow-section .workflow-card:nth-of-type(3) svg { color: var(--ic-orange);
   background: linear-gradient(150deg, rgba(180, 83, 9,.16), rgba(180, 83, 9,.05)); }
 .workflow-section .workflow-card:nth-of-type(4) svg { color: var(--ic-violet);
-  background: linear-gradient(150deg, rgba(124,92,208,.16), rgba(124,92,208,.05)); }
+  background: linear-gradient(150deg, rgba(28, 105, 212,.16), rgba(28, 105, 212,.05)); }
 
 /* ---- Home trust list ---- */
 .trust-list div:nth-of-type(1) svg { color: var(--ic-green); }
@@ -5094,7 +5094,7 @@ th {
 .stats-grid .stat-card:nth-of-type(4n + 1) .stat-card-label svg { color: var(--ic-green);  background: rgba(20, 107, 69,.12); }
 .stats-grid .stat-card:nth-of-type(4n + 2) .stat-card-label svg { color: var(--ic-blue);   background: rgba(28, 105, 212,.12); }
 .stats-grid .stat-card:nth-of-type(4n + 3) .stat-card-label svg { color: var(--ic-orange); background: rgba(180, 83, 9,.12); }
-.stats-grid .stat-card:nth-of-type(4n + 4) .stat-card-label svg { color: var(--ic-violet); background: rgba(124,92,208,.13); }
+.stats-grid .stat-card:nth-of-type(4n + 4) .stat-card-label svg { color: var(--ic-violet); background: rgba(28, 105, 212,.13); }
 
 /* ---- Sidebar trust summary badge ---- */
 .trust-summary svg { color: var(--ic-green); }
