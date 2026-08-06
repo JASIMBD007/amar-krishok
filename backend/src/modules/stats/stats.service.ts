@@ -27,12 +27,14 @@ export class StatsService {
     const since = new Date();
     since.setDate(since.getDate() - RATE_WINDOW_DAYS);
 
-    const [verifiedFarmers, liveListings, districtsWithRates, releasedPayments] = await Promise.all([
+    const [verifiedFarmers, liveListings, cropsWithRates, releasedPayments] = await Promise.all([
       this.prisma.user.count({ where: { role: Role.FARMER, status: AccountStatus.ACTIVE } }),
       this.prisma.cropLot.count({ where: { status: LotStatus.ACTIVE } }),
+      // We publish one national benchmark rather than per-market feeds, so the honest figure is
+      // how many crops carry a live rate — not a market count we cannot stand behind.
       this.prisma.marketPrice.findMany({
-        distinct: ["districtId"],
-        select: { districtId: true },
+        distinct: ["cropId"],
+        select: { cropId: true },
         where: { priceDate: { gte: since } },
       }),
       this.prisma.payment.findMany({
@@ -48,7 +50,7 @@ export class StatsService {
 
     return {
       liveListings,
-      marketsTracked: districtsWithRates.length,
+      cropsTracked: cropsWithRates.length,
       /** Null until a payment has actually been released — the UI hides the figure rather than inventing one. */
       medianReleaseMinutes: median(releaseMinutes),
       verifiedFarmers,

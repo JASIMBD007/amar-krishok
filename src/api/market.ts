@@ -66,7 +66,7 @@ export function publishRates(
 
 export type BackendPlatformStats = {
   liveListings: number;
-  marketsTracked: number;
+  cropsTracked: number;
   /** Null until a payment has actually been released; the UI hides the figure rather than inventing one. */
   medianReleaseMinutes: number | null;
   verifiedFarmers: number;

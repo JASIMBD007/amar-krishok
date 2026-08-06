@@ -5,13 +5,13 @@ import { CreateMarketPriceDto } from "./dto/create-market-price.dto";
 import { PublishRatesDto } from "./dto/publish-rates.dto";
 
 /** 1 mon = 40 kg. Rates are quoted per mon; the table stores per kg. */
-const MON_IN_KG = 40;
+export const MON_IN_KG = 40;
 /** How many days of history the sparkline and the lot page's rate chart read. */
 const HISTORY_DAYS = 30;
 const HISTORY_POINTS = 12;
 
 /** The national benchmark rate lives under this district name so it can be looked up as a fallback. */
-const BENCHMARK_DISTRICT = "All districts";
+export const BENCHMARK_DISTRICT = "All districts";
 
 function startOfUtcDay(value: Date) {
   const date = new Date(value);

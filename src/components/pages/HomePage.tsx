@@ -104,8 +104,8 @@ export function HomePage({ setView }: { setView: (view: View) => void }) {
             ) : null}
             {stats ? (
               <div>
-                <strong className="mono-figure">{v(stats.marketsTracked)}</strong>
-                <span>{t("markets tracked daily")}</span>
+                <strong className="mono-figure">{v(stats.cropsTracked)}</strong>
+                <span>{t("crops tracked daily")}</span>
               </div>
             ) : null}
             {stats?.medianReleaseMinutes != null ? (

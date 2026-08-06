@@ -1123,7 +1123,7 @@ const bn: Record<string, string> = {
   "I sell crops": "আমি ফসল বিক্রি করি",
   "I buy crops": "আমি ফসল কিনি",
   "verified farmers": "যাচাই করা কৃষক",
-  "markets tracked daily": "প্রতিদিন যত বাজার দেখা হয়",
+  "crops tracked daily": "প্রতিদিন যত ফসল দেখা হয়",
   "median payout time": "গড় পরিশোধের সময়",
   "See all": "সব দেখুন",
   "How it works": "কীভাবে কাজ করে",
