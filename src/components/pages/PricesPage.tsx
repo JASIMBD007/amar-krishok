@@ -1,6 +1,6 @@
 import { Bell, BellRing, PhoneCall } from "lucide-react";
 import { useLanguage, useTranslate, useValueText } from "../../i18n";
-import { cropNamesBn, perMonToPerKg } from "../../market/marketData";
+import { cropNamesBn } from "../../market/marketData";
 import { useRateChanges } from "../../market/useMarket";
 import { useMarketStore } from "../../store/useMarketStore";
 import { RateSparkline } from "../market/MarketBits";
@@ -52,7 +52,6 @@ export function PricesPage() {
             <div className="rate-table-head">
               <span>{t("Crop")}</span>
               <span>৳ / {t("mon")}</span>
-              <span>৳ / {t("kg")}</span>
               <span>{t("Change")}</span>
               <span>{t("Last 12 days")}</span>
               <span>{t("Alert")}</span>
@@ -70,7 +69,6 @@ export function PricesPage() {
                     <span>{cropNamesBn[crop] ?? ""}</span>
                   </div>
                   <span className="mono-figure">{v(rates[crop].toLocaleString("en-IN"))}</span>
-                  <span className="mono-figure rate-per-kg">{v(perMonToPerKg(rates[crop]).toFixed(2))}</span>
                   <span className={`rate-change ${direction}`}>{v(changeLabel)}</span>
                   <RateSparkline crop={crop} label={`${t(crop)} ${t("Last 12 days")}`} />
                   <span>

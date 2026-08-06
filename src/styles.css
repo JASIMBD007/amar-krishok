@@ -9324,3 +9324,372 @@ textarea:focus-visible {
   font-size: 12px;
   font-weight: 700;
 }
+
+/* =====================================================================
+   Step 8 — Checkout, value-for-value.
+   ===================================================================== */
+.checkout-page {
+  max-width: 900px;
+  padding: 24px 24px 40px;
+  gap: 18px;
+}
+.checkout-page h1 {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.checkout-layout {
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 320px);
+  gap: 20px;
+}
+.checkout-main {
+  gap: 16px;
+}
+.checkout-card {
+  gap: 14px;
+  padding: 20px;
+  border-radius: 8px;
+}
+.checkout-card .filter-eyebrow {
+  font-size: 12px;
+  letter-spacing: 0.05em;
+}
+.checkout-row {
+  gap: 14px;
+  padding: 14px 0 0;
+  border-bottom: 0;
+  border-top: 1px solid var(--surface-sunken);
+}
+.checkout-row:first-of-type {
+  padding-top: 0;
+  border-top: 0;
+}
+.checkout-row-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+}
+.checkout-row > div {
+  gap: 2px;
+  display: flex;
+  flex-direction: column;
+}
+.checkout-row strong {
+  font-size: 15px;
+  font-weight: 600;
+}
+.checkout-row span {
+  font-size: 13px;
+  color: var(--fg-muted);
+}
+.checkout-row .link-button {
+  font-size: 13px;
+  font-weight: 500;
+}
+.pay-method-list {
+  gap: 8px;
+  margin-top: 0;
+}
+.pay-method {
+  gap: 12px;
+  padding: 13px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+}
+/* Selected keeps the same box size: a 2px border against a near-white green tint. */
+.pay-method.on {
+  padding: 12px 13px;
+  border: 2px solid var(--ak-green);
+  background: #f7fbf9;
+}
+.pay-radio {
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--border-strong);
+}
+.pay-method.on .pay-radio {
+  border: 5px solid var(--ak-green);
+  box-shadow: none;
+}
+.pay-method strong {
+  font-size: 15px;
+  font-weight: 600;
+}
+.pay-method em {
+  font-size: 12px;
+  color: var(--fg-muted);
+}
+.checkout-summary {
+  gap: 14px;
+  padding: 20px;
+  border-radius: 8px;
+}
+.checkout-summary-head strong {
+  font-size: 15px;
+  font-weight: 600;
+}
+.checkout-summary-head span {
+  font-size: 13px;
+  color: var(--fg-muted);
+}
+.checkout-summary .primary-button {
+  min-height: 0;
+  padding: 15px;
+  border-radius: 8px;
+  background: var(--brand);
+  font-size: 15px;
+  font-weight: 600;
+}
+.checkout-summary .primary-button:hover {
+  background: var(--brand-hover);
+}
+
+/* =====================================================================
+   Steps 9-10 — Orders table and the escrow timeline, value-for-value.
+   ===================================================================== */
+.orders-page h1,
+.order-detail-head h1 {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.table-card {
+  padding: 0;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.order-table-head {
+  gap: 0 16px;
+  padding: 11px 18px;
+  border-bottom: 1px solid var(--border);
+  /* The demo tints the header row with the page background. */
+  background: var(--bg);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+}
+.order-table-row {
+  gap: 0 16px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--surface-sunken);
+  font-size: 14px;
+}
+.order-table-row > :first-child {
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+/* Value and action columns are right-aligned in the demo. */
+.order-table-head > :nth-child(3),
+.order-table-row > :nth-child(3),
+.order-table-head > :last-child,
+.order-table-row > :last-child {
+  text-align: right;
+}
+
+.order-detail-total {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 600;
+}
+.order-detail-head > div > span {
+  font-size: 14px;
+  color: var(--fg-muted);
+}
+.order-detail-layout {
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 300px);
+  gap: 20px;
+}
+.order-detail-layout > .panel {
+  gap: 18px;
+  padding: 22px;
+}
+.escrow-timeline {
+  gap: 0;
+  margin-top: 14px;
+}
+.escrow-timeline li {
+  gap: 14px;
+  padding-bottom: 18px;
+}
+.timeline-node {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+}
+.escrow-timeline li.done .timeline-node {
+  background: var(--ak-green);
+}
+.escrow-timeline li.current .timeline-node {
+  border: 3px solid var(--interactive);
+}
+.escrow-timeline li.todo .timeline-node {
+  border: 2px solid var(--border);
+}
+.timeline-line {
+  top: 22px;
+  left: 10px;
+  width: 2px;
+  min-height: 20px;
+  background: var(--border);
+}
+.escrow-timeline strong {
+  font-size: 14px;
+  font-weight: 600;
+}
+.escrow-timeline li > div:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.escrow-timeline span:not(.timeline-node):not(.timeline-line) {
+  font-size: 13px;
+  color: var(--fg-muted);
+}
+
+/* =====================================================================
+   Steps 11-12 — Rates page and farmer desk, value-for-value.
+   ===================================================================== */
+.rates-page {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px 24px 40px;
+  gap: 16px;
+}
+.rates-head {
+  align-items: flex-end;
+  gap: 20px;
+}
+.rates-head > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.rates-head h1,
+.rates-head .section-title h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.rates-head > span {
+  font-size: 13px;
+  color: var(--fg-muted);
+}
+.rates-head .hero-subtitle-bn {
+  font-size: 15px;
+  color: var(--fg-muted);
+}
+.rate-table {
+  min-width: 820px;
+}
+.rate-table-head,
+.rate-table-row {
+  grid-template-columns: 1.2fr 130px 120px 1fr 150px;
+  gap: 0 16px;
+  padding: 11px 18px;
+}
+.rate-table-head {
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+}
+.rate-table-row {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--surface-sunken);
+}
+.rate-table-head > :nth-child(2),
+.rate-table-row > .mono-figure,
+.rate-table-head > :nth-child(3),
+.rate-table-row > .rate-change {
+  text-align: right;
+}
+.rate-crop strong {
+  font-size: 14px;
+  font-weight: 600;
+}
+.rate-crop span {
+  font-family: "Noto Sans Bengali", Inter, sans-serif;
+  font-size: 12px;
+  color: var(--fg-muted);
+}
+.rate-table-row .mono-figure {
+  font-size: 15px;
+  font-weight: 600;
+}
+.rate-change {
+  font-size: 13px;
+  font-weight: 600;
+}
+.alert-toggle {
+  min-height: 0;
+  gap: 6px;
+  padding: 7px 11px;
+  border: 1px solid var(--border-strong);
+  font-size: 12px;
+  font-weight: 600;
+}
+.ivr-card {
+  gap: 12px;
+  padding: 16px 18px;
+  border-radius: 8px;
+}
+.ivr-card p {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--fg-subtle);
+}
+
+/* Farmer desk */
+.farmer-escrow-grid {
+  gap: 16px;
+}
+.listing-vs-market-head,
+.listing-vs-market-row {
+  grid-template-columns: minmax(0, 1fr) 130px 130px 120px;
+  gap: 0 14px;
+  padding: 13px 0;
+}
+.listing-vs-market-head {
+  font-size: 11px;
+  letter-spacing: 0.05em;
+}
+.listing-vs-market-row {
+  border-bottom: 1px solid var(--surface-sunken);
+}
+.listing-vs-market-row strong {
+  font-size: 14px;
+  font-weight: 600;
+}
+.listing-vs-market-row > div > span {
+  font-size: 12px;
+  color: var(--fg-muted);
+}
+.listing-vs-market-status {
+  font-size: 13px;
+  font-weight: 600;
+}
+.offer-item {
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+}
+.offer-item-head strong {
+  font-size: 14px;
+  font-weight: 600;
+}
+.offer-item-head span:not(.farmer-avatar) {
+  font-size: 12px;
+  color: var(--fg-muted);
+}
+.offer-item-price strong {
+  font-family: var(--font-mono);
+  font-size: 17px;
+  font-weight: 600;
+}
+.offers-count {
+  font-size: 20px;
+  font-weight: 700;
+}
