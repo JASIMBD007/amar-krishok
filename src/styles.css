@@ -9799,3 +9799,19 @@ textarea:focus-visible {
 .console-header {
   align-items: baseline;
 }
+
+/* =====================================================================
+   Header: full-bleed bar, content on the 1280px grid.
+
+   The demo nests a 1280px container inside a full-width white bar. Ours
+   put the cap on the bar itself, so past 1280px the white stopped and the
+   page grey showed either side. Padding does the centring instead, which
+   keeps the background edge-to-edge and lands the content on exactly the
+   same line as the hero (1280 - 48 = 1232px of content).
+   ===================================================================== */
+.site-header {
+  max-width: none;
+  margin: 0;
+  padding-block: 8px;
+  padding-inline: max(24px, calc((100% - 1280px) / 2 + 24px));
+}
