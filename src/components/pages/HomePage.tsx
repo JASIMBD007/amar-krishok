@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
-import { BadgeCheck, Camera, Handshake, Leaf, ShieldCheck, ShoppingBasket, Sprout, Truck } from "lucide-react";
+import { BadgeCheck, Camera, Handshake, ShieldCheck, ShoppingBasket, Sprout, Truck } from "lucide-react";
 import { fetchPlatformStats, type BackendPlatformStats } from "../../api/market";
 import { lots } from "../../data";
 import { useLanguage, useTranslate, useValueText } from "../../i18n";
@@ -129,7 +129,7 @@ export function HomePage({ setView }: { setView: (view: View) => void }) {
             {cheapestLots.map((lot) => (
               <NavLink className="cheapest-lot" key={lot.id} to={`/lot/${lot.id}`}>
                 <span className="cheapest-lot-tile" aria-hidden="true">
-                  <Leaf size={19} />
+                  <img src={lot.image} alt="" loading="lazy" />
                 </span>
                 <span className="cheapest-lot-copy">
                   <strong>
