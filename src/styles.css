@@ -85,7 +85,7 @@ button {
 .brand small {
   margin-top: 4px;
   color: #6b7280;
-  font-size: 0.76rem;
+  font-size: 12px;
 }
 
 .main-nav,
@@ -113,8 +113,8 @@ button {
   border-radius: 6px;
   color: #6b7280;
   background: transparent;
-  font-size: 0.78rem;
-  font-weight: 850;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .language-switch button.active {
@@ -141,7 +141,7 @@ button {
   background: transparent;
   text-decoration: none;
   white-space: nowrap;
-  font-weight: 760;
+  font-weight: 600;
 }
 
 .main-nav a.active,
@@ -179,8 +179,8 @@ button {
 .login-menu > span {
   padding: 4px 6px 2px;
   color: #6b7280;
-  font-size: 0.78rem;
-  font-weight: 850;
+  font-size: 12px;
+  font-weight: 600;
   text-transform: uppercase;
 }
 
@@ -221,7 +221,7 @@ button {
 .role-option small {
   margin-top: 3px;
   color: #6c7e75;
-  font-size: 0.78rem;
+  font-size: 12px;
 }
 
 .signed-in-note {
@@ -235,8 +235,8 @@ button {
 
 .signed-in-note span {
   color: #6b7280;
-  font-size: 0.78rem;
-  font-weight: 850;
+  font-size: 12px;
+  font-weight: 600;
   text-transform: uppercase;
 }
 
@@ -271,7 +271,7 @@ button {
   color: #374151;
   background: #ffffff;
   box-shadow: inset 0 0 0 1px #e2e5eb;
-  font-weight: 800;
+  font-weight: 700;
   text-decoration: none;
 }
 
@@ -285,7 +285,7 @@ button {
   color: #ffffff;
   background: #146b45;
   box-shadow: none;
-  font-weight: 850;
+  font-weight: 600;
 }
 
 .full {
@@ -341,7 +341,7 @@ button {
   min-height: 5.35rem;
   margin: 0;
   color: #465e54;
-  font-size: 1.05rem;
+  font-size: 17px;
   line-height: 1.7;
 }
 
@@ -351,8 +351,8 @@ button {
   align-items: center;
   gap: 8px;
   color: #146b45;
-  font-size: 0.82rem;
-  font-weight: 850;
+  font-size: 13px;
+  font-weight: 600;
   text-transform: uppercase;
 }
 
@@ -402,7 +402,7 @@ button {
 .price-row span,
 .stat-card span {
   color: #708277;
-  font-size: 0.82rem;
+  font-size: 13px;
 }
 
 .console-header strong,
@@ -429,7 +429,7 @@ button {
   border-radius: 8px;
   background: #f1f7ef;
   color: #51675a;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .marketplace-feedback.warning {
@@ -464,7 +464,7 @@ button {
 
 .crop-title-row h2 {
   margin: 0;
-  font-size: 1.05rem;
+  font-size: 17px;
 }
 
 .crop-title-row p {
@@ -474,7 +474,7 @@ button {
 .crop-title-row span {
   flex: 0 0 auto;
   color: #146b45;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .crop-meta {
@@ -500,8 +500,8 @@ button {
   align-items: center;
   gap: 6px;
   color: #6b7280;
-  font-size: 0.82rem;
-  font-weight: 850;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .crop-post-date svg {
@@ -513,7 +513,7 @@ button {
   min-height: 40px;
   color: #146b45;
   background: #eef7ee;
-  font-weight: 850;
+  font-weight: 600;
 }
 
 .crop-card-actions {
@@ -537,7 +537,7 @@ button {
   border-radius: 10px;
   color: #17382b;
   background: #fff;
-  font-weight: 850;
+  font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
 }
@@ -579,7 +579,7 @@ button {
 .workflow-section,
 .page-wrap {
   margin: 0 auto;
-  padding-inline: clamp(14px, 4vw, 56px);
+  padding-inline: clamp(16px, 3vw, 24px);
 }
 
 .metrics-band {
@@ -663,7 +663,7 @@ button {
   max-width: 620px;
   margin: 0;
   color: #6b7280;
-  font-size: 1rem;
+  font-size: 16px;
   line-height: 1.7;
 }
 
@@ -681,7 +681,7 @@ button {
   border-radius: 8px;
   color: #25473a;
   background: #f1f3f6;
-  font-weight: 760;
+  font-weight: 600;
 }
 
 .trust-list svg {
@@ -704,14 +704,14 @@ button {
   align-items: center;
   gap: 10px;
   color: #146b45;
-  font-size: 0.82rem;
-  font-weight: 850;
+  font-size: 13px;
+  font-weight: 600;
   text-transform: uppercase;
 }
 
 .buyer-card h3 {
   margin: 32px 0 12px;
-  font-size: 1.7rem;
+  font-size: 28px;
   line-height: 1.12;
 }
 
@@ -721,8 +721,8 @@ button {
 }
 
 .page-wrap {
-  max-width: 1480px;
-  padding-top: 34px;
+  max-width: 1280px;
+  padding-top: 28px;
   padding-bottom: 56px;
 }
 
@@ -826,8 +826,8 @@ button {
 .farmer-form-heading span,
 .farmer-lots-panel .panel-header span {
   color: #146b45;
-  font-size: 0.8rem;
-  font-weight: 900;
+  font-size: 13px;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
@@ -898,14 +898,14 @@ button {
 .seller-overview span,
 .buyer-overview span {
   color: #697d72;
-  font-size: 0.86rem;
-  font-weight: 800;
+  font-size: 14px;
+  font-weight: 700;
 }
 
 .seller-overview strong,
 .buyer-overview strong {
   color: #111827;
-  font-size: 1.75rem;
+  font-size: 28px;
   line-height: 1;
 }
 
@@ -943,8 +943,8 @@ button {
   border-radius: 999px;
   color: #146b45;
   background: #edf7ee;
-  font-size: 0.84rem;
-  font-weight: 850;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .buyer-profile-strip {
@@ -969,8 +969,8 @@ button {
 
 .buyer-profile-strip span {
   color: #6b7280;
-  font-size: 0.82rem;
-  font-weight: 850;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .buyer-profile-strip strong {
@@ -1036,15 +1036,15 @@ button {
 
 .profile-summary-grid article span {
   color: #6b7280;
-  font-size: 0.76rem;
-  font-weight: 850;
+  font-size: 12px;
+  font-weight: 600;
   text-transform: uppercase;
 }
 
 .profile-summary-grid article strong {
   overflow: hidden;
   color: #111827;
-  font-size: 1rem;
+  font-size: 16px;
   text-overflow: ellipsis;
 }
 
@@ -1059,8 +1059,8 @@ button {
   padding: 0;
   color: #146b45;
   font: inherit;
-  font-size: 0.8rem;
-  font-weight: 850;
+  font-size: 13px;
+  font-weight: 600;
   text-decoration: none;
   cursor: pointer;
 }
@@ -1080,7 +1080,7 @@ button {
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
   color: #40584c;
-  font-weight: 850;
+  font-weight: 600;
 }
 
 .profile-readiness-row svg {
@@ -1118,7 +1118,7 @@ button {
   color: #62766b;
   background: #f1f3f6;
   font-style: normal;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .seller-lot-item,
@@ -1171,7 +1171,7 @@ button {
 .buyer-order-item span {
   margin-top: 4px;
   color: #6b7c73;
-  font-size: 0.84rem;
+  font-size: 13px;
 }
 
 .lot-status-pill {
@@ -1181,7 +1181,7 @@ button {
   color: #146b45;
   background: #e7f2ec;
   font-style: normal;
-  font-weight: 850;
+  font-weight: 600;
   text-transform: capitalize;
 }
 
@@ -1218,7 +1218,7 @@ button {
 .compact-action {
   min-height: 38px;
   padding: 9px 12px;
-  font-size: 0.9rem;
+  font-size: 14px;
 }
 
 .danger-button {
@@ -1279,13 +1279,13 @@ button {
   gap: 6px;
   margin-top: 5px;
   color: #6b7c73;
-  font-size: 0.84rem;
+  font-size: 13px;
 }
 
 .buyer-supply-item em {
   color: #146b45;
   font-style: normal;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .admin-data-line {
@@ -1304,8 +1304,8 @@ button {
   border-radius: 999px;
   color: #146b45;
   background: #e7f2ec;
-  font-size: 0.76rem;
-  font-weight: 850;
+  font-size: 12px;
+  font-weight: 600;
   line-height: 1;
   white-space: nowrap;
 }
@@ -1394,7 +1394,7 @@ button {
 .account-table td > span,
 .account-record-cell small {
   color: #6b7280;
-  font-size: 0.84rem;
+  font-size: 13px;
 }
 
 .account-record-cell {
@@ -1405,7 +1405,7 @@ button {
 
 .account-record-cell span {
   color: #111827;
-  font-weight: 850;
+  font-weight: 600;
 }
 
 .password-reset-review-panel > p {
@@ -1415,13 +1415,13 @@ button {
 
 .reviewed-by-text {
   color: #6b7280;
-  font-size: 0.84rem;
-  font-weight: 800;
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .account-mobile-cell {
   color: #111827;
-  font-weight: 850;
+  font-weight: 600;
   white-space: nowrap;
 }
 
@@ -1454,7 +1454,7 @@ button {
   padding: 10px 0;
   color: #6b7280;
   font-style: normal;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .admin-modal-backdrop {
@@ -1494,15 +1494,15 @@ button {
 
 .admin-modal-header span {
   color: #6b7280;
-  font-size: 0.78rem;
-  font-weight: 850;
+  font-size: 12px;
+  font-weight: 600;
   text-transform: uppercase;
 }
 
 .admin-modal-header h2 {
   margin: 3px 0 0;
   color: #111827;
-  font-size: 1.35rem;
+  font-size: 22px;
 }
 
 .confirm-modal {
@@ -1551,7 +1551,7 @@ button {
 .document-preview-actions p {
   margin: 0;
   color: #6b7280;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .lot-details-summary {
@@ -1563,7 +1563,7 @@ button {
   border-radius: 8px;
   color: #6b7280;
   background: #f1f3f6;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .lot-details-summary svg {
@@ -1604,15 +1604,15 @@ button {
 
 .lot-detail-card header span {
   color: #6b7280;
-  font-size: 0.76rem;
-  font-weight: 850;
+  font-size: 12px;
+  font-weight: 600;
   text-transform: uppercase;
 }
 
 .lot-detail-card h3 {
   margin: 0;
   color: #111827;
-  font-size: 1.16rem;
+  font-size: 19px;
 }
 
 .lot-detail-card em {
@@ -1622,7 +1622,7 @@ button {
   color: #146b45;
   background: #e2f2e5;
   font-style: normal;
-  font-weight: 900;
+  font-weight: 700;
   text-transform: capitalize;
 }
 
@@ -1667,8 +1667,8 @@ button {
 
 .lot-detail-meta small {
   color: #6b7280;
-  font-size: 0.72rem;
-  font-weight: 850;
+  font-size: 12px;
+  font-weight: 600;
   text-transform: uppercase;
 }
 
@@ -1698,7 +1698,7 @@ button {
   gap: 8px;
   padding: 14px;
   color: #6b7280;
-  font-weight: 850;
+  font-weight: 600;
   text-align: center;
 }
 
@@ -1718,7 +1718,7 @@ button {
 .lot-detail-link {
   width: fit-content;
   color: #146b45;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .confirm-modal-body {
@@ -1761,7 +1761,7 @@ button {
   color: #111827;
   background: #ffffff;
   box-shadow: none;
-  font-weight: 850;
+  font-weight: 600;
 }
 
 .admin-snackbar.success {
@@ -1825,8 +1825,8 @@ button {
 
 .auth-panel > span {
   color: #146b45;
-  font-size: 0.82rem;
-  font-weight: 850;
+  font-size: 13px;
+  font-weight: 600;
   text-transform: uppercase;
 }
 
@@ -1856,18 +1856,18 @@ button {
 
 .login-intro {
   max-width: 560px;
-  font-size: 0.98rem;
+  font-size: 16px;
   line-height: 1.45;
 }
 
 .login-panel .input-field {
-  font-size: 0.94rem;
+  font-size: 15px;
 }
 
 .login-panel .input-field input:not([type="file"]),
 .login-panel .input-field select {
   min-height: 44px;
-  font-size: 0.95rem;
+  font-size: 15px;
 }
 
 .login-panel .password-control {
@@ -1880,13 +1880,13 @@ button {
 
 .auth-panel .input-field small {
   color: #697d73;
-  font-size: 0.82rem;
-  font-weight: 650;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .required-mark {
   color: #b95439;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .auth-error {
@@ -1894,7 +1894,7 @@ button {
   border-radius: 8px;
   color: #8a321d !important;
   background: #fee2e2;
-  font-weight: 760;
+  font-weight: 600;
 }
 
 .auth-info {
@@ -1902,7 +1902,7 @@ button {
   border-radius: 8px;
   color: #146b45 !important;
   background: #e7f2ec;
-  font-weight: 760;
+  font-weight: 600;
 }
 
 .auth-notice {
@@ -1941,18 +1941,18 @@ button {
   width: 100%;
   min-height: 50px;
   margin-top: 8px;
-  font-size: 1rem;
+  font-size: 16px;
 }
 
 .login-panel .auth-submit-button {
   min-height: 48px;
-  font-size: 0.98rem;
+  font-size: 16px;
 }
 
 .auth-link-line,
 .auth-create-line {
   color: #4f6258;
-  font-weight: 720;
+  font-weight: 600;
 }
 
 .auth-link-line {
@@ -1969,7 +1969,7 @@ button {
   background: transparent;
   cursor: pointer;
   font: inherit;
-  font-weight: 820;
+  font-weight: 600;
   text-decoration: none;
 }
 
@@ -2039,14 +2039,14 @@ button {
 }
 
 .auth-choice-card strong {
-  font-size: 1.08rem;
-  font-weight: 900;
+  font-size: 17px;
+  font-weight: 700;
 }
 
 .auth-choice-card em {
   color: #6b7280;
   font-style: normal;
-  font-weight: 680;
+  font-weight: 600;
   line-height: 1.45;
 }
 
@@ -2061,19 +2061,19 @@ button {
 
 .password-reset-account span {
   color: #146b45;
-  font-size: 0.78rem;
-  font-weight: 880;
+  font-size: 12px;
+  font-weight: 600;
   text-transform: uppercase;
 }
 
 .password-reset-account strong {
   color: #111827;
-  font-size: 1.1rem;
+  font-size: 18px;
 }
 
 .password-reset-account p {
   color: #5a6f64;
-  font-weight: 720;
+  font-weight: 600;
 }
 
 .registration-summary {
@@ -2087,8 +2087,8 @@ button {
 .registration-summary span,
 .registration-summary small {
   color: #64766d;
-  font-size: 0.82rem;
-  font-weight: 760;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .registration-summary strong {
@@ -2124,14 +2124,14 @@ button {
 
 .auth-section-heading strong {
   color: #111827;
-  font-size: 1rem;
+  font-size: 16px;
 }
 
 .auth-section-heading span {
   margin-top: 2px;
   color: #60746a;
-  font-size: 0.86rem;
-  font-weight: 680;
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .registration-grid {
@@ -2151,7 +2151,7 @@ button {
 .input-field,
 .full-field {
   color: #34493e;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .input-field input:not([type="file"]),
@@ -2202,7 +2202,7 @@ button {
   color: #111827;
   background: #ffffff;
   cursor: pointer;
-  font-weight: 800;
+  font-weight: 700;
   white-space: nowrap;
 }
 
@@ -2226,9 +2226,9 @@ button {
   gap: 7px;
   margin-top: 2px;
   color: #60766b;
-  font-size: 0.8rem;
+  font-size: 13px;
   font-style: normal;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .upload-field svg,
@@ -2316,14 +2316,14 @@ button {
 .chat-admin-empty > span,
 .chat-conversation-header span {
   color: #6b7280;
-  font-size: 0.76rem;
-  font-weight: 850;
+  font-size: 12px;
+  font-weight: 600;
   text-transform: uppercase;
 }
 
 .chat-widget-header h3 {
   margin: 4px 0 0;
-  font-size: 1.28rem;
+  font-size: 20px;
 }
 
 .chat-widget-header svg,
@@ -2349,7 +2349,7 @@ button {
   align-items: center;
   gap: 9px;
   color: #6b7280;
-  font-size: 0.9rem;
+  font-size: 14px;
   line-height: 1.45;
 }
 
@@ -2375,7 +2375,7 @@ button {
 .chat-message strong {
   display: block;
   margin-bottom: 4px;
-  font-size: 0.74rem;
+  font-size: 12px;
   text-transform: uppercase;
 }
 
@@ -2442,14 +2442,14 @@ button {
 
 .floating-chat-header span {
   color: #6b7280;
-  font-size: 0.72rem;
-  font-weight: 850;
+  font-size: 12px;
+  font-weight: 600;
   text-transform: uppercase;
 }
 
 .floating-chat-header h2 {
   margin: 3px 0 0;
-  font-size: 1.15rem;
+  font-size: 18px;
   line-height: 1.15;
 }
 
@@ -2498,7 +2498,7 @@ button {
   border-radius: 8px;
   color: #8b2d20;
   background: #fff0ec;
-  font-weight: 720;
+  font-weight: 600;
 }
 
 .floating-chat-button {
@@ -2513,7 +2513,7 @@ button {
   color: #ffffff;
   background: #146b45;
   box-shadow: none;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .floating-chat-badge,
@@ -2524,8 +2524,8 @@ button {
   place-items: center;
   padding: 0 6px;
   border-radius: 999px;
-  font-size: 0.72rem;
-  font-weight: 900;
+  font-size: 12px;
+  font-weight: 700;
   line-height: 1;
 }
 
@@ -2555,7 +2555,7 @@ button {
   border-radius: 8px;
   color: #33493f;
   background: #f1f3f6;
-  font-weight: 760;
+  font-weight: 600;
 }
 
 .price-table {
@@ -2586,7 +2586,7 @@ button {
   color: #146b45;
   background: #e7f2ec;
   font-style: normal;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .dashboard-shell {
@@ -2620,7 +2620,7 @@ button {
   color: #6b7280;
   background: transparent;
   text-align: left;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .sidebar button.active,
@@ -2699,7 +2699,7 @@ td {
 
 th {
   color: #718178;
-  font-size: 0.78rem;
+  font-size: 12px;
   text-transform: uppercase;
 }
 
@@ -2740,7 +2740,7 @@ th {
   display: block;
   margin-top: 5px;
   color: #66766e;
-  font-size: 0.78rem;
+  font-size: 12px;
 }
 
 .side-nav {
@@ -2760,7 +2760,7 @@ th {
   border-radius: 8px;
   color: #52665b;
   background: transparent;
-  font-weight: 760;
+  font-weight: 600;
 }
 
 .side-nav-label {
@@ -2812,7 +2812,7 @@ th {
 
 .trust-summary span {
   color: rgba(255, 255, 255, 0.72);
-  font-size: 0.88rem;
+  font-size: 14px;
   line-height: 1.55;
 }
 
@@ -2844,8 +2844,8 @@ th {
 .supply-item span,
 .route-item span {
   color: #6b7280;
-  font-size: 0.78rem;
-  font-weight: 820;
+  font-size: 12px;
+  font-weight: 600;
   letter-spacing: 0;
   text-transform: uppercase;
 }
@@ -2886,8 +2886,8 @@ th {
   border-radius: 999px;
   color: #ffffff;
   background: #b45309;
-  font-size: 0.68rem;
-  font-weight: 900;
+  font-size: 11px;
+  font-weight: 700;
   line-height: 1;
 }
 
@@ -2929,8 +2929,8 @@ th {
 .notification-panel-header span {
   display: block;
   color: #6b7280;
-  font-size: 0.72rem;
-  font-weight: 850;
+  font-size: 12px;
+  font-weight: 600;
   text-transform: uppercase;
 }
 
@@ -2938,7 +2938,7 @@ th {
   display: block;
   margin-top: 2px;
   color: #111827;
-  font-size: 1.08rem;
+  font-size: 17px;
 }
 
 .notification-list {
@@ -2954,7 +2954,7 @@ th {
   color: #6b7280;
   background: #f1f3f6;
   font-style: normal;
-  font-weight: 800;
+  font-weight: 700;
   text-align: center;
 }
 
@@ -3022,13 +3022,13 @@ th {
 
 .notification-item-copy strong {
   color: #111827;
-  font-size: 0.92rem;
+  font-size: 15px;
 }
 
 .notification-item-copy small {
   display: -webkit-box;
   color: #6b7280;
-  font-size: 0.8rem;
+  font-size: 13px;
   line-height: 1.35;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -3036,9 +3036,9 @@ th {
 
 .notification-item-copy em {
   color: #146b45;
-  font-size: 0.72rem;
+  font-size: 12px;
   font-style: normal;
-  font-weight: 850;
+  font-weight: 600;
   text-transform: uppercase;
 }
 
@@ -3199,15 +3199,15 @@ th {
 .farmer-rail-header span {
   display: block;
   color: #6b7280;
-  font-size: 0.76rem;
-  font-weight: 850;
+  font-size: 12px;
+  font-weight: 600;
   text-transform: uppercase;
 }
 
 .farmer-rail-header h3 {
   margin: 3px 0 0;
   color: #111827;
-  font-size: 1.25rem;
+  font-size: 20px;
   line-height: 1.12;
 }
 
@@ -3238,7 +3238,7 @@ th {
   border-radius: 8px;
   color: #3d5449;
   background: #f1f3f6;
-  font-weight: 780;
+  font-weight: 600;
 }
 
 .farmer-mini-list svg,
@@ -3271,7 +3271,7 @@ th {
 
 .farmer-latest-lot span {
   color: #68796f;
-  font-size: 0.88rem;
+  font-size: 14px;
 }
 
 .farmer-latest-lot em {
@@ -3282,7 +3282,7 @@ th {
   color: #146b45;
   background: #e7f2ec;
   font-style: normal;
-  font-weight: 850;
+  font-weight: 600;
 }
 
 #farmer-profile .profile-panel {
@@ -3347,8 +3347,8 @@ th {
 .buyer-orders-panel .panel-header span,
 .matched-supply-panel .panel-header span {
   color: #146b45;
-  font-size: 0.8rem;
-  font-weight: 900;
+  font-size: 13px;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
@@ -3380,15 +3380,15 @@ th {
 .buyer-rail-header span {
   display: block;
   color: #6b7280;
-  font-size: 0.76rem;
-  font-weight: 850;
+  font-size: 12px;
+  font-weight: 600;
   text-transform: uppercase;
 }
 
 .buyer-rail-header h3 {
   margin: 3px 0 0;
   color: #111827;
-  font-size: 1.25rem;
+  font-size: 20px;
   line-height: 1.12;
 }
 
@@ -3413,7 +3413,7 @@ th {
   border-radius: 8px;
   color: #3d5449;
   background: #f1f3f6;
-  font-weight: 780;
+  font-weight: 600;
 }
 
 .buyer-mini-list svg {
@@ -3445,7 +3445,7 @@ th {
 
 .buyer-latest-order span {
   color: #68796f;
-  font-size: 0.88rem;
+  font-size: 14px;
 }
 
 .buyer-latest-order em {
@@ -3470,7 +3470,7 @@ th {
   padding: 0 9px;
   border-radius: 999px;
   font-style: normal;
-  font-weight: 850;
+  font-weight: 600;
 }
 
 .status.matching {
@@ -3518,15 +3518,15 @@ th {
 .release-amount span {
   display: block;
   color: rgba(255, 255, 255, 0.72);
-  font-size: 0.86rem;
-  font-weight: 780;
+  font-size: 14px;
+  font-weight: 600;
   text-transform: uppercase;
 }
 
 .release-amount strong {
   display: block;
   margin-top: 8px;
-  font-size: 2.2rem;
+  font-size: 38px;
   line-height: 1;
 }
 
@@ -3559,15 +3559,15 @@ th {
   border-radius: 8px;
   color: #65776f;
   background: #f1f3f6;
-  font-size: 0.78rem;
-  font-weight: 760;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .verification-stats strong {
   display: block;
   margin-bottom: 4px;
   color: #111827;
-  font-size: 1.3rem;
+  font-size: 20px;
 }
 
 .verification-list {
@@ -3581,7 +3581,7 @@ th {
   color: #65776f;
   background: #f1f3f6;
   font-style: normal;
-  font-weight: 760;
+  font-weight: 600;
 }
 
 .verification-item {
@@ -3603,7 +3603,7 @@ th {
 .verification-item small,
 .verification-item p {
   color: #6b7280;
-  font-size: 0.84rem;
+  font-size: 13px;
 }
 
 .verification-item p {
@@ -3632,8 +3632,8 @@ th {
   min-height: 34px;
   padding: 0 11px;
   border-radius: 999px;
-  font-size: 0.78rem;
-  font-weight: 850;
+  font-size: 12px;
+  font-weight: 600;
   text-transform: capitalize;
 }
 
@@ -3661,7 +3661,7 @@ th {
   border-radius: 8px;
   color: #33493f;
   background: #f1f3f6;
-  font-weight: 720;
+  font-weight: 600;
 }
 
 .message-list svg {
@@ -3716,9 +3716,9 @@ th {
 .chat-thread-list em {
   color: inherit;
   opacity: 0.72;
-  font-size: 0.72rem;
+  font-size: 12px;
   font-style: normal;
-  font-weight: 850;
+  font-weight: 600;
   text-transform: uppercase;
 }
 
@@ -3765,7 +3765,7 @@ th {
   color: #146b45;
   background: #e7f2ec;
   font-style: normal;
-  font-weight: 850;
+  font-weight: 600;
 }
 
 .chat-admin-empty {
@@ -3813,7 +3813,7 @@ th {
 .supply-item h3,
 .route-item h3 {
   margin: 0 0 4px;
-  font-size: 1rem;
+  font-size: 16px;
 }
 
 .supply-item p {
@@ -3822,7 +3822,7 @@ th {
   gap: 5px;
   margin: 7px 0 0;
   color: #607269;
-  font-size: 0.86rem;
+  font-size: 14px;
 }
 
 .supply-item strong,
@@ -3870,8 +3870,8 @@ th {
 .price-snapshot small {
   display: block;
   color: #66776f;
-  font-size: 0.72rem;
-  font-weight: 820;
+  font-size: 12px;
+  font-weight: 600;
   text-transform: uppercase;
 }
 
@@ -3919,15 +3919,15 @@ th {
 
 .price-signal-meta strong {
   margin-bottom: 4px;
-  font-size: 1.05rem;
+  font-size: 17px;
 }
 
 .price-signal-meta span,
 .price-signal-value span,
 .price-scale {
   color: #6b7280;
-  font-size: 0.72rem;
-  font-weight: 820;
+  font-size: 12px;
+  font-weight: 600;
   text-transform: uppercase;
 }
 
@@ -3963,7 +3963,7 @@ th {
 }
 
 .price-signal-value strong {
-  font-size: 1.1rem;
+  font-size: 18px;
 }
 
 .price-signal-value em {
@@ -3974,9 +3974,9 @@ th {
   border-radius: 999px;
   color: #815115;
   background: #fef3e2;
-  font-size: 0.72rem;
+  font-size: 12px;
   font-style: normal;
-  font-weight: 850;
+  font-weight: 600;
 }
 
 .dashboard-grid .price-row {
@@ -4037,8 +4037,8 @@ th {
   gap: 14px;
   margin-top: 18px;
   color: #5d7067;
-  font-size: 0.86rem;
-  font-weight: 760;
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .legend span {
@@ -4080,7 +4080,7 @@ th {
   justify-self: end;
   color: #146b45;
   font-style: normal;
-  font-weight: 850;
+  font-weight: 600;
 }
 
 @media (max-width: 1160px) {
@@ -4306,7 +4306,7 @@ th {
   }
 
   .hero-copy h1 {
-    font-size: 2.25rem;
+    font-size: 38px;
   }
 
   .farmer-dashboard-hero {
@@ -4433,7 +4433,7 @@ th {
   }
 
   .brand strong {
-    font-size: 0.9rem;
+    font-size: 14px;
     white-space: nowrap;
   }
 
@@ -4489,7 +4489,7 @@ th {
   .language-switch button {
     min-width: 39px;
     padding: 0 4px;
-    font-size: 0.72rem;
+    font-size: 12px;
   }
 
   .login-shell {
@@ -4501,7 +4501,7 @@ th {
     min-width: 86px;
     min-height: 38px;
     padding: 0 8px;
-    font-size: 0.88rem;
+    font-size: 14px;
   }
 
   .header-actions .secondary-button svg {
@@ -4566,7 +4566,7 @@ th {
   }
 
   .farmer-dashboard-hero h1 {
-    font-size: 1.8rem;
+    font-size: 28px;
   }
 
   .farmer-quick-actions {
@@ -4660,8 +4660,8 @@ th {
 
 .notification-detail-type span {
   color: var(--muted);
-  font-size: 0.86rem;
-  font-weight: 800;
+  font-size: 14px;
+  font-weight: 700;
   margin-left: auto;
 }
 
@@ -4682,14 +4682,14 @@ th {
 
 .notification-detail-line strong {
   color: var(--muted);
-  font-size: 0.78rem;
-  font-weight: 850;
+  font-size: 12px;
+  font-weight: 600;
   text-transform: uppercase;
 }
 
 .notification-detail-line span {
   color: var(--ink);
-  font-weight: 800;
+  font-weight: 700;
   white-space: pre-wrap;
   word-break: break-word;
 }
@@ -4698,7 +4698,7 @@ th {
   background: #f5f7fa;
   border-radius: 8px;
   color: var(--ink);
-  font-weight: 800;
+  font-weight: 700;
   margin: 0;
   padding: 12px;
   white-space: pre-wrap;
@@ -4771,7 +4771,7 @@ th {
   margin-bottom: 12px;
   color: #146b45;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -5139,7 +5139,7 @@ th {
   background: var(--ak-green);
   box-shadow: none;
 }
-.admin-brand strong { font-size: .98rem; letter-spacing: -.01em; }
+.admin-brand strong { font-size: 16px; letter-spacing: -.01em; }
 .admin-brand small { color: var(--muted, #6b7280); }
 
 /* Nav items: soft active state + left accent, coloured icons kept */
@@ -5149,7 +5149,7 @@ th {
   min-height: 44px;
   border-radius: 11px;
   color: #47584f;
-  font-weight: 750;
+  font-weight: 600;
   transition: background-color .16s var(--ak-ease), color .16s var(--ak-ease), transform .16s var(--ak-ease);
 }
 .sidebar button:hover,
@@ -5164,7 +5164,7 @@ th {
   color: var(--ak-green-deep);
   background: #e6f3ea;
   box-shadow: none;
-  font-weight: 860;
+  font-weight: 600;
 }
 .sidebar button.active::before,
 .side-nav button.active::before {
@@ -5203,10 +5203,10 @@ th {
   transform: translateY(-3px);
   box-shadow: none;
 }
-.stat-card-label span { color: #6b7280; font-weight: 820; }
+.stat-card-label span { color: #6b7280; font-weight: 600; }
 .stat-card strong {
   margin-top: 16px;
-  font-weight: 900;
+  font-weight: 700;
   letter-spacing: -.02em;
   font-size: clamp(1.7rem, 2.7vw, 2.2rem);
 }
@@ -5230,7 +5230,7 @@ th {
   border-radius: 11px;
   border: 1px solid var(--ak-line-strong);
   background: #fff;
-  font-weight: 700;
+  font-weight: 600;
   transition: border-color .15s ease, box-shadow .15s ease;
 }
 .full-field textarea { min-height: 96px; padding-top: 12px; line-height: 1.55; }
@@ -5252,7 +5252,7 @@ th {
   border-radius: 9px;
   background: #e7f2ec;
   color: var(--ak-green-deep);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 /* ---- Seller lot rows ---- */
@@ -5268,8 +5268,8 @@ th {
 /* ---- Status pills (lots) ---- */
 .lot-status-pill {
   border-radius: 999px;
-  font-weight: 850;
-  font-size: .74rem;
+  font-weight: 600;
+  font-size: 12px;
   letter-spacing: .02em;
 }
 .lot-status-pill.active { color:#0f7a4a; background:#e7f2ec; }
@@ -5281,7 +5281,7 @@ th {
 /* ---- Tables: row hover + rounded pills ---- */
 tbody tr { transition: background-color .14s ease; }
 tbody tr:hover td { background: #f6f8f5; }
-.status-pill.small { font-weight: 850; }
+.status-pill.small { font-weight: 600; }
 
 /* ---- Right-rail panels ---- */
 .farmer-rail-panel { border-radius: var(--ak-r-md); }
@@ -5325,7 +5325,7 @@ tbody tr:hover td { background: #f6f8f5; }
 .price-row:hover { background: #f1f3f6; }
 .price-row > div:nth-child(4) strong { color: var(--ak-green-deep); }
 .price-row em { /* trend pill */
-  font-weight: 850;
+  font-weight: 600;
   letter-spacing: .01em;
 }
 
@@ -5385,7 +5385,7 @@ tbody tr:hover td { background: #f6f8f5; }
 .marketplace-page-status {
   min-width: 64px;
   text-align: center;
-  font-weight: 850;
+  font-weight: 600;
   color: var(--ak-ink);
 }
 
@@ -5414,7 +5414,7 @@ tbody tr:hover td { background: #f6f8f5; }
 .crop-post-date {
   gap: 7px;
   color: #708277;
-  font-size: 0.82rem;
+  font-size: 13px;
   font-weight: 400;
 }
 .crop-post-date svg { color: #146b45; }
@@ -5446,7 +5446,7 @@ tbody tr:hover td { background: #f6f8f5; }
   padding: 12px;
 }
 .market-grid .crop-title-row h2 {
-  font-size: 1rem;
+  font-size: 16px;
 }
 .market-grid .crop-meta {
   gap: 5px;
@@ -5487,7 +5487,7 @@ tbody tr:hover td { background: #f6f8f5; }
   color: #fff;
   background: var(--ak-green);
   box-shadow: none;
-  font-weight: 800;
+  font-weight: 700;
   animation: snackbar-in 0.28s var(--ak-ease);
 }
 .snackbar svg {
@@ -5566,8 +5566,8 @@ tbody tr:hover td { background: #f6f8f5; }
   gap: 3px;
   padding: 3px 9px;
   border-radius: 999px;
-  font-size: 0.76rem;
-  font-weight: 850;
+  font-size: 12px;
+  font-weight: 600;
   letter-spacing: 0;
 }
 .kpi-delta svg { width: 13px; height: 13px; }
@@ -5577,15 +5577,15 @@ tbody tr:hover td { background: #f6f8f5; }
 .kpi-label {
   margin-top: 14px;
   color: #6b7280;
-  font-size: 0.82rem;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 600;
   text-transform: none;
   letter-spacing: 0;
 }
 .kpi-value {
   margin-top: 2px;
   font-size: clamp(1.65rem, 2.6vw, 2.05rem);
-  font-weight: 900;
+  font-weight: 700;
   letter-spacing: -0.02em;
 }
 .kpi-spark {
@@ -5610,7 +5610,7 @@ tbody tr:hover td { background: #f6f8f5; }
 .kpi-detail {
   margin: 8px 0 0;
   color: #8a998f;
-  font-size: 0.78rem;
+  font-size: 12px;
 }
 
 @media (max-width: 640px) {
@@ -5642,14 +5642,14 @@ tbody tr:hover td { background: #f6f8f5; }
   background: #e7f2ec;
 }
 .empty-state strong {
-  font-size: 1.05rem;
+  font-size: 17px;
   color: var(--ak-ink);
 }
 .empty-state p {
   margin: 0;
   max-width: 320px;
   color: #6b7280;
-  font-size: 0.9rem;
+  font-size: 14px;
   line-height: 1.5;
 }
 .empty-state-action {
@@ -5662,7 +5662,7 @@ tbody tr:hover td { background: #f6f8f5; }
   gap: 10px;
   padding: 16px 4px;
   color: #6b7280;
-  font-weight: 700;
+  font-weight: 600;
 }
 .list-loading-spinner {
   width: 18px;
@@ -5724,8 +5724,8 @@ tbody tr:hover td { background: #f6f8f5; }
   align-items: center;
   gap: 7px;
   color: #7e9c8c;
-  font-size: 0.69rem;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   white-space: nowrap;
@@ -5754,7 +5754,7 @@ tbody tr:hover td { background: #f6f8f5; }
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  font-size: 0.79rem;
+  font-size: 13px;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -5765,7 +5765,7 @@ tbody tr:hover td { background: #f6f8f5; }
 }
 .rate-ticker-item em {
   font-family: var(--mk-mono);
-  font-size: 0.73rem;
+  font-size: 12px;
   font-style: normal;
   font-variant-numeric: tabular-nums;
 }
@@ -5775,8 +5775,8 @@ tbody tr:hover td { background: #f6f8f5; }
 .rate-ticker-link {
   flex: none;
   color: #b7d7c6;
-  font-size: 0.71rem;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 600;
   text-decoration: none;
   white-space: nowrap;
 }
@@ -5794,14 +5794,14 @@ tbody tr:hover td { background: #f6f8f5; }
   gap: 5px;
   padding: 3px 9px;
   border-radius: 999px;
-  font-size: 0.7rem;
-  font-weight: 800;
+  font-size: 11px;
+  font-weight: 700;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
 .delta-pill em {
   font-style: normal;
-  font-weight: 700;
+  font-weight: 600;
   opacity: 0.75;
 }
 .delta-pill.good,
@@ -5898,15 +5898,15 @@ tbody tr:hover td { background: #f6f8f5; }
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-weight: 800;
+  font-weight: 700;
 }
 .link-button {
   border: 0;
   background: none;
   padding: 0;
   color: var(--mk-info);
-  font-size: 0.83rem;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 600;
   text-decoration: none;
 }
 .link-button:hover {
@@ -5924,8 +5924,8 @@ tbody tr:hover td { background: #f6f8f5; }
 }
 .filter-eyebrow {
   color: #6b7280;
-  font-size: 0.69rem;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -5936,7 +5936,7 @@ tbody tr:hover td { background: #f6f8f5; }
   gap: 8px;
 }
 .filter-label-row strong {
-  font-size: 0.85rem;
+  font-size: 14px;
 }
 .filter-check-list {
   display: flex;
@@ -5953,7 +5953,7 @@ tbody tr:hover td { background: #f6f8f5; }
   border-radius: 6px;
   background: none;
   color: #374151;
-  font-size: 0.88rem;
+  font-size: 14px;
   font-weight: 600;
   text-align: left;
 }
@@ -5962,12 +5962,12 @@ tbody tr:hover td { background: #f6f8f5; }
 }
 .filter-check.on {
   color: var(--ak-green-deep);
-  font-weight: 800;
+  font-weight: 700;
 }
 .filter-check em {
   margin-left: auto;
   color: #9aa3af;
-  font-size: 0.76rem;
+  font-size: 12px;
   font-style: normal;
   font-variant-numeric: tabular-nums;
 }
@@ -6009,8 +6009,8 @@ tbody tr:hover td { background: #f6f8f5; }
   border-radius: 999px;
   background: #ffffff;
   color: #374151;
-  font-size: 0.82rem;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 600;
   transition: background 120ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 .filter-pill:hover {
@@ -6030,8 +6030,8 @@ tbody tr:hover td { background: #f6f8f5; }
   border: 0;
   background: none;
   color: #374151;
-  font-size: 0.88rem;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 600;
   text-align: left;
 }
 .switch-track {
@@ -6091,20 +6091,20 @@ tbody tr:hover td { background: #f6f8f5; }
 }
 .market-result-head strong {
   display: block;
-  font-size: 1.2rem;
+  font-size: 19px;
 }
 .market-result-head span {
   color: #6b7280;
-  font-size: 0.85rem;
+  font-size: 14px;
 }
 .market-result-rate {
   color: #6b7280;
-  font-size: 0.85rem;
+  font-size: 14px;
 }
 .market-result-rate strong {
   display: inline;
   color: var(--ak-ink);
-  font-size: 0.9rem;
+  font-size: 14px;
 }
 
 .lot-grid {
@@ -6150,13 +6150,13 @@ tbody tr:hover td { background: #f6f8f5; }
 }
 .lot-card-body h2 {
   margin: 0;
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 600;
 }
 .lot-card-body p {
   margin: 3px 0 0;
   color: #6b7280;
-  font-size: 0.81rem;
+  font-size: 13px;
 }
 .lot-card-price {
   display: flex;
@@ -6165,11 +6165,11 @@ tbody tr:hover td { background: #f6f8f5; }
   gap: 6px;
 }
 .lot-card-price strong {
-  font-size: 1.25rem;
+  font-size: 20px;
 }
 .lot-card-price > span {
   color: #6b7280;
-  font-size: 0.79rem;
+  font-size: 13px;
 }
 .lot-card-price .delta-pill {
   margin-left: auto;
@@ -6181,7 +6181,7 @@ tbody tr:hover td { background: #f6f8f5; }
   padding-bottom: 10px;
   border-bottom: 1px solid var(--ak-line);
   color: #6b7280;
-  font-size: 0.78rem;
+  font-size: 12px;
 }
 .lot-card-meta span {
   display: inline-flex;
@@ -6208,12 +6208,12 @@ tbody tr:hover td { background: #f6f8f5; }
 }
 .market-empty strong {
   color: var(--ak-ink);
-  font-size: 1.05rem;
+  font-size: 17px;
 }
 .market-empty p {
   margin: 0;
   color: #6b7280;
-  font-size: 0.9rem;
+  font-size: 14px;
 }
 
 /* ---- Lot detail: fair price, order box, escrow explainer ---- */
@@ -6222,8 +6222,8 @@ tbody tr:hover td { background: #f6f8f5; }
   align-items: center;
   gap: 7px;
   color: var(--mk-info);
-  font-size: 0.86rem;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 600;
   text-decoration: none;
 }
 .back-link:hover {
@@ -6286,13 +6286,13 @@ tbody tr:hover td { background: #f6f8f5; }
 }
 .lot-spec-head h1 {
   margin: 0;
-  font-size: 1.6rem;
+  font-size: 26px;
   letter-spacing: -0.02em;
   text-wrap: balance;
 }
 .lot-spec-head span {
   color: #6b7280;
-  font-size: 0.84rem;
+  font-size: 13px;
 }
 .lot-spec-strip {
   display: grid;
@@ -6312,18 +6312,18 @@ tbody tr:hover td { background: #f6f8f5; }
 }
 .lot-spec-strip span {
   color: #6b7280;
-  font-size: 0.7rem;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 .lot-spec-strip strong {
-  font-size: 0.95rem;
+  font-size: 15px;
 }
 .lot-spec-card p {
   margin: 0;
   color: #374151;
-  font-size: 0.94rem;
+  font-size: 15px;
   line-height: 1.6;
   text-wrap: pretty;
 }
@@ -6340,7 +6340,7 @@ tbody tr:hover td { background: #f6f8f5; }
 }
 .fair-price-chart > span {
   color: #6b7280;
-  font-size: 0.75rem;
+  font-size: 12px;
 }
 .fair-price-rows {
   display: flex;
@@ -6360,13 +6360,13 @@ tbody tr:hover td { background: #f6f8f5; }
 .fair-price-rows dt,
 .cost-breakdown dt {
   color: #6b7280;
-  font-size: 0.86rem;
+  font-size: 14px;
 }
 .fair-price-rows dd,
 .cost-breakdown dd {
   margin: 0;
-  font-size: 0.95rem;
-  font-weight: 700;
+  font-size: 15px;
+  font-weight: 600;
 }
 .cost-breakdown {
   margin: 0;
@@ -6374,8 +6374,8 @@ tbody tr:hover td { background: #f6f8f5; }
 .cost-breakdown .cost-total dt,
 .cost-breakdown .cost-total dd {
   color: var(--ak-ink);
-  font-size: 1.02rem;
-  font-weight: 800;
+  font-size: 16px;
+  font-weight: 700;
 }
 .farmer-card {
   display: flex;
@@ -6392,7 +6392,7 @@ tbody tr:hover td { background: #f6f8f5; }
   border-radius: 8px;
   color: var(--ak-green-deep);
   background: #e7f2ec;
-  font-weight: 800;
+  font-weight: 700;
 }
 .farmer-card > div:nth-child(2) {
   flex: 1 1 200px;
@@ -6400,11 +6400,11 @@ tbody tr:hover td { background: #f6f8f5; }
 }
 .farmer-card strong {
   display: block;
-  font-size: 1.02rem;
+  font-size: 16px;
 }
 .farmer-card span {
   color: #6b7280;
-  font-size: 0.82rem;
+  font-size: 13px;
 }
 .farmer-card-stats {
   display: flex;
@@ -6417,11 +6417,11 @@ tbody tr:hover td { background: #f6f8f5; }
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  font-size: 1.05rem;
+  font-size: 17px;
 }
 .farmer-card-stats span {
   display: block;
-  font-size: 0.72rem;
+  font-size: 12px;
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
@@ -6440,11 +6440,11 @@ tbody tr:hover td { background: #f6f8f5; }
   gap: 7px;
 }
 .order-box-price strong {
-  font-size: 1.85rem;
+  font-size: 30px;
 }
 .order-box-price span {
   color: #6b7280;
-  font-size: 0.85rem;
+  font-size: 14px;
 }
 .order-box-quantity {
   display: flex;
@@ -6475,13 +6475,13 @@ tbody tr:hover td { background: #f6f8f5; }
   display: grid;
   place-items: center;
   border-inline: 1px solid var(--ak-line-strong);
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 600;
 }
 .order-box-hint {
   display: block;
   color: #6b7280;
-  font-size: 0.78rem;
+  font-size: 12px;
   line-height: 1.5;
 }
 .order-box-actions {
@@ -6497,7 +6497,7 @@ tbody tr:hover td { background: #f6f8f5; }
   border-radius: 6px;
   background: #e7f2ec;
   color: var(--ak-green-deep);
-  font-size: 0.83rem;
+  font-size: 13px;
   line-height: 1.5;
 }
 .soft-notice.warn {
@@ -6522,7 +6522,7 @@ tbody tr:hover td { background: #f6f8f5; }
   border: 0;
   background: none;
   font-family: var(--mk-mono);
-  font-size: 1.05rem;
+  font-size: 17px;
   font-variant-numeric: tabular-nums;
 }
 .offer-input input:focus {
@@ -6530,12 +6530,12 @@ tbody tr:hover td { background: #f6f8f5; }
 }
 .offer-input span {
   color: #6b7280;
-  font-size: 0.85rem;
+  font-size: 14px;
 }
 .offer-panel p {
   margin: 10px 0 12px;
   color: #6b7280;
-  font-size: 0.82rem;
+  font-size: 13px;
   line-height: 1.55;
 }
 .escrow-explainer-head {
@@ -6560,7 +6560,7 @@ tbody tr:hover td { background: #f6f8f5; }
   display: flex;
   gap: 10px;
   color: #374151;
-  font-size: 0.86rem;
+  font-size: 14px;
   line-height: 1.5;
 }
 .escrow-step-number {
@@ -6572,8 +6572,8 @@ tbody tr:hover td { background: #f6f8f5; }
   border-radius: 50%;
   color: var(--ak-green-deep);
   background: #e7f2ec;
-  font-size: 0.73rem;
-  font-weight: 800;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 /* ---- Checkout ---- */
@@ -6582,7 +6582,7 @@ tbody tr:hover td { background: #f6f8f5; }
 }
 .checkout-page h1 {
   margin: 0;
-  font-size: 1.85rem;
+  font-size: 30px;
   letter-spacing: -0.02em;
 }
 .checkout-layout {
@@ -6614,11 +6614,11 @@ tbody tr:hover td { background: #f6f8f5; }
 }
 .checkout-row strong {
   display: block;
-  font-size: 0.95rem;
+  font-size: 15px;
 }
 .checkout-row span {
   color: #6b7280;
-  font-size: 0.81rem;
+  font-size: 13px;
 }
 .checkout-row-icon {
   display: grid;
@@ -6670,11 +6670,11 @@ tbody tr:hover td { background: #f6f8f5; }
 }
 .pay-method strong {
   display: block;
-  font-size: 0.94rem;
+  font-size: 15px;
 }
 .pay-method em {
   color: #6b7280;
-  font-size: 0.79rem;
+  font-size: 13px;
   font-style: normal;
 }
 .checkout-summary {
@@ -6686,11 +6686,11 @@ tbody tr:hover td { background: #f6f8f5; }
 }
 .checkout-summary-head strong {
   display: block;
-  font-size: 0.97rem;
+  font-size: 16px;
 }
 .checkout-summary-head span {
   color: #6b7280;
-  font-size: 0.81rem;
+  font-size: 13px;
 }
 
 /* ---- Orders list + tracking ---- */
@@ -6711,14 +6711,14 @@ tbody tr:hover td { background: #f6f8f5; }
 .order-table-head {
   border-bottom: 1px solid var(--ak-line);
   color: #6b7280;
-  font-size: 0.71rem;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 .order-table-row {
   border-bottom: 1px solid var(--ak-line);
-  font-size: 0.88rem;
+  font-size: 14px;
 }
 .order-table-row:last-child {
   border-bottom: 0;
@@ -6732,16 +6732,16 @@ tbody tr:hover td { background: #f6f8f5; }
 }
 .order-detail-head h1 {
   margin: 0;
-  font-size: 1.75rem;
+  font-size: 28px;
   letter-spacing: -0.02em;
 }
 .order-detail-head > div > span {
   color: #6b7280;
-  font-size: 0.86rem;
+  font-size: 14px;
 }
 .order-detail-total {
-  font-size: 1.5rem;
-  font-weight: 800;
+  font-size: 24px;
+  font-weight: 700;
 }
 .order-detail-layout {
   display: grid;
@@ -6798,14 +6798,14 @@ tbody tr:hover td { background: #f6f8f5; }
 }
 .escrow-timeline strong {
   display: block;
-  font-size: 0.95rem;
+  font-size: 15px;
 }
 .escrow-timeline li.todo strong {
   color: #9aa3af;
 }
 .escrow-timeline span:not(.timeline-node):not(.timeline-line) {
   color: #6b7280;
-  font-size: 0.81rem;
+  font-size: 13px;
 }
 .advance-button {
   margin-top: 6px;
@@ -6818,15 +6818,15 @@ tbody tr:hover td { background: #f6f8f5; }
 }
 .escrow-card-body span {
   color: #6b7280;
-  font-size: 0.81rem;
+  font-size: 13px;
 }
 .escrow-card-body strong {
-  font-size: 1.2rem;
+  font-size: 19px;
 }
 .escrow-card-body p {
   margin: 8px 0 0;
   color: #374151;
-  font-size: 0.83rem;
+  font-size: 13px;
   line-height: 1.55;
 }
 .driver-row {
@@ -6840,11 +6840,11 @@ tbody tr:hover td { background: #f6f8f5; }
 }
 .driver-row strong {
   display: block;
-  font-size: 0.92rem;
+  font-size: 15px;
 }
 .driver-row span {
   color: #6b7280;
-  font-size: 0.79rem;
+  font-size: 13px;
 }
 .order-placed-page {
   display: flex;
@@ -6865,7 +6865,7 @@ tbody tr:hover td { background: #f6f8f5; }
 }
 .order-placed-page h1 {
   margin: 0;
-  font-size: 1.75rem;
+  font-size: 28px;
   letter-spacing: -0.02em;
 }
 .order-placed-page p {
@@ -6912,7 +6912,7 @@ tbody tr:hover td { background: #f6f8f5; }
 }
 .rates-head > span {
   color: #6b7280;
-  font-size: 0.83rem;
+  font-size: 13px;
 }
 .rate-table {
   min-width: 820px;
@@ -6928,8 +6928,8 @@ tbody tr:hover td { background: #f6f8f5; }
 }
 .rate-table-head {
   color: #6b7280;
-  font-size: 0.71rem;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
@@ -6938,15 +6938,15 @@ tbody tr:hover td { background: #f6f8f5; }
 }
 .rate-crop strong {
   display: block;
-  font-size: 0.95rem;
+  font-size: 15px;
 }
 .rate-crop span {
   color: #6b7280;
-  font-size: 0.8rem;
+  font-size: 13px;
 }
 .rate-table-row .mono-figure {
-  font-size: 0.98rem;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 600;
 }
 .rate-per-kg {
   color: #6b7280;
@@ -6954,8 +6954,8 @@ tbody tr:hover td { background: #f6f8f5; }
 }
 .rate-change {
   font-family: var(--mk-mono);
-  font-size: 0.88rem;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 .rate-change.up { color: var(--mk-good); }
@@ -6971,8 +6971,8 @@ tbody tr:hover td { background: #f6f8f5; }
   border-radius: 999px;
   background: #ffffff;
   color: #374151;
-  font-size: 0.79rem;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 600;
   transition: background 120ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 .alert-toggle:hover {
@@ -6992,7 +6992,7 @@ tbody tr:hover td { background: #f6f8f5; }
 .ivr-card p {
   margin: 0;
   color: #374151;
-  font-size: 0.9rem;
+  font-size: 14px;
   line-height: 1.55;
 }
 
@@ -7019,7 +7019,7 @@ tbody tr:hover td { background: #f6f8f5; }
 .market-check p {
   margin: 0;
   color: #374151;
-  font-size: 0.86rem;
+  font-size: 14px;
   line-height: 1.55;
 }
 .market-check-bar {
@@ -7044,11 +7044,11 @@ tbody tr:hover td { background: #f6f8f5; }
   justify-content: space-between;
   gap: 8px;
   color: #6b7280;
-  font-size: 0.75rem;
+  font-size: 12px;
 }
 .market-check-foot {
   color: #6b7280;
-  font-size: 0.78rem;
+  font-size: 12px;
 }
 .market-check-foot strong,
 .market-check-scale strong {
@@ -7070,8 +7070,8 @@ tbody tr:hover td { background: #f6f8f5; }
 }
 .listing-vs-market-head {
   color: #6b7280;
-  font-size: 0.69rem;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
@@ -7080,20 +7080,20 @@ tbody tr:hover td { background: #f6f8f5; }
 }
 .listing-vs-market-row strong {
   display: block;
-  font-size: 0.92rem;
+  font-size: 15px;
 }
 .listing-vs-market-row > div > span {
   color: #6b7280;
-  font-size: 0.79rem;
+  font-size: 13px;
 }
 .listing-vs-market-status {
-  font-size: 0.83rem;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .offers-count {
-  font-size: 1.35rem;
-  font-weight: 800;
+  font-size: 22px;
+  font-weight: 700;
 }
 .offer-list {
   display: flex;
@@ -7116,16 +7116,16 @@ tbody tr:hover td { background: #f6f8f5; }
 }
 .offer-item-head strong {
   display: block;
-  font-size: 0.93rem;
+  font-size: 15px;
 }
 .offer-item-head span:not(.farmer-avatar) {
   color: #6b7280;
-  font-size: 0.78rem;
+  font-size: 12px;
 }
 .farmer-avatar.small {
   width: 38px;
   height: 38px;
-  font-size: 0.82rem;
+  font-size: 13px;
 }
 .offer-item-price {
   display: flex;
@@ -7134,11 +7134,11 @@ tbody tr:hover td { background: #f6f8f5; }
   gap: 6px;
 }
 .offer-item-price strong {
-  font-size: 1.15rem;
+  font-size: 18px;
 }
 .offer-item-price > span {
   color: #6b7280;
-  font-size: 0.78rem;
+  font-size: 12px;
 }
 .offer-item-price .delta-pill {
   margin-left: auto;
@@ -7151,7 +7151,7 @@ tbody tr:hover td { background: #f6f8f5; }
 .panel-note {
   margin: 0;
   color: #6b7280;
-  font-size: 0.87rem;
+  font-size: 14px;
   line-height: 1.55;
 }
 .offers-link {
@@ -7190,8 +7190,8 @@ tbody tr:hover td { background: #f6f8f5; }
   border-radius: 999px;
   background: #ffffff;
   color: #374151;
-  font-size: 0.85rem;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 600;
   transition: background 120ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 .market-tab:hover {
@@ -7212,7 +7212,7 @@ tbody tr:hover td { background: #f6f8f5; }
   align-items: flex-start;
   gap: 9px;
   color: #374151;
-  font-size: 0.88rem;
+  font-size: 14px;
   line-height: 1.5;
 }
 .rate-integrity {
@@ -7227,7 +7227,7 @@ tbody tr:hover td { background: #f6f8f5; }
   gap: 10px;
   padding: 10px 0;
   border-bottom: 1px solid var(--ak-line);
-  font-size: 0.87rem;
+  font-size: 14px;
 }
 .rate-integrity > div:last-child {
   border-bottom: 0;
@@ -7259,8 +7259,8 @@ tbody tr:hover td { background: #f6f8f5; }
 .admin-listing-head,
 .rate-publish-head {
   color: #6b7280;
-  font-size: 0.7rem;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
@@ -7272,12 +7272,12 @@ tbody tr:hover td { background: #f6f8f5; }
 .admin-escrow-row strong,
 .admin-listing-row strong {
   display: block;
-  font-size: 0.89rem;
+  font-size: 14px;
 }
 .admin-escrow-row em,
 .admin-listing-row em {
   color: #6b7280;
-  font-size: 0.79rem;
+  font-size: 13px;
   font-style: normal;
 }
 .admin-escrow-actions {
@@ -7291,7 +7291,7 @@ tbody tr:hover td { background: #f6f8f5; }
 .verify-card-actions .secondary-button {
   min-height: 34px;
   padding: 0 12px;
-  font-size: 0.82rem;
+  font-size: 13px;
 }
 .secondary-button.danger-outline {
   color: var(--mk-danger);
@@ -7316,18 +7316,18 @@ tbody tr:hover td { background: #f6f8f5; }
 }
 .verify-card-head strong {
   display: block;
-  font-size: 0.98rem;
+  font-size: 16px;
 }
 .verify-card-head span:not(.farmer-avatar) {
   color: #6b7280;
-  font-size: 0.8rem;
+  font-size: 13px;
 }
 .verify-papers {
   padding: 9px 12px;
   border-radius: 6px;
   background: #f1f3f6;
   color: #374151;
-  font-size: 0.83rem;
+  font-size: 13px;
 }
 .verify-card-actions {
   display: grid;
@@ -7346,7 +7346,7 @@ tbody tr:hover td { background: #f6f8f5; }
   flex: 1 1 320px;
   margin: 0;
   color: #374151;
-  font-size: 0.87rem;
+  font-size: 14px;
   line-height: 1.55;
 }
 .rate-publish-actions {
@@ -7380,8 +7380,8 @@ tbody tr:hover td { background: #f6f8f5; }
   border-radius: 999px;
   color: var(--mk-warn);
   background: var(--mk-warn-soft);
-  font-size: 0.75rem;
-  font-weight: 700;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .admin-listing-table { min-width: 880px; }
@@ -7433,13 +7433,13 @@ tbody tr:hover td { background: #f6f8f5; }
 }
 .cheapest-lot-copy strong {
   display: block;
-  font-size: 0.94rem;
+  font-size: 15px;
 }
 .cheapest-lot-copy small {
   display: block;
   margin-top: 2px;
   color: #6b7280;
-  font-size: 0.78rem;
+  font-size: 12px;
 }
 .cheapest-lot-price {
   display: flex;
@@ -7449,7 +7449,7 @@ tbody tr:hover td { background: #f6f8f5; }
   gap: 5px;
 }
 .cheapest-lot-price strong {
-  font-size: 1.05rem;
+  font-size: 17px;
 }
 .console-escrow-note {
   display: flex;
@@ -7461,7 +7461,7 @@ tbody tr:hover td { background: #f6f8f5; }
   border-radius: 6px;
   background: #e7f2ec;
   color: var(--ak-green-deep);
-  font-size: 0.83rem;
+  font-size: 13px;
   line-height: 1.5;
 }
 
@@ -7503,7 +7503,7 @@ tbody tr:hover td { background: #f6f8f5; }
 .site-footer-brand p {
   max-width: 340px;
   margin: 12px 0 0;
-  font-size: 0.87rem;
+  font-size: 14px;
   line-height: 1.6;
 }
 .site-footer-mark {
@@ -7523,7 +7523,7 @@ tbody tr:hover td { background: #f6f8f5; }
   background: var(--ak-green);
 }
 .site-footer-mark strong {
-  font-size: 1.02rem;
+  font-size: 16px;
 }
 .site-footer-columns {
   display: grid;
@@ -7537,15 +7537,15 @@ tbody tr:hover td { background: #f6f8f5; }
 }
 .site-footer-heading {
   color: #7e9c8c;
-  font-size: 0.7rem;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 .site-footer-columns a,
 .site-footer-columns nav > span:not(.site-footer-heading) {
   color: #c0ccc6;
-  font-size: 0.87rem;
+  font-size: 14px;
   text-decoration: none;
 }
 .site-footer-columns a:hover {
@@ -7569,7 +7569,7 @@ tbody tr:hover td { background: #f6f8f5; }
   border-radius: 8px;
   background: var(--mk-info-soft);
   color: #14509f;
-  font-size: 0.87rem;
+  font-size: 14px;
   line-height: 1.5;
 }
 
@@ -7591,15 +7591,15 @@ tbody tr:hover td { background: #f6f8f5; }
 .wizard-step-title {
   display: block;
   margin-bottom: 14px;
-  font-size: 1.08rem;
-  font-weight: 800;
+  font-size: 17px;
+  font-weight: 700;
   letter-spacing: -0.01em;
 }
 .wizard-hint {
   display: block;
   margin: -4px 0 12px;
   color: #6b7280;
-  font-size: 0.82rem;
+  font-size: 13px;
 }
 .wizard-summary {
   display: flex;
@@ -7612,11 +7612,11 @@ tbody tr:hover td { background: #f6f8f5; }
   background: #e7f2ec;
 }
 .wizard-summary strong {
-  font-size: 1.02rem;
+  font-size: 16px;
 }
 .wizard-summary > span:not(.filter-eyebrow) {
   color: #374151;
-  font-size: 0.87rem;
+  font-size: 14px;
 }
 .wizard-actions {
   display: flex;
@@ -7788,15 +7788,15 @@ textarea:focus-visible {
   border-radius: 999px;
   color: var(--ak-green-deep);
   background: var(--ak-green-soft);
-  font-size: 0.74rem;
-  font-weight: 700;
+  font-size: 12px;
+  font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 .hero-copy h1 {
   margin: 14px 0 0;
   font-size: clamp(2rem, 4.6vw, 3.125rem);
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.08;
   letter-spacing: -0.03em;
   text-wrap: balance;
@@ -7805,7 +7805,7 @@ textarea:focus-visible {
   max-width: 520px;
   margin: 14px 0 0;
   color: var(--fg-subtle);
-  font-size: 1.125rem;
+  font-size: 18px;
   line-height: 1.55;
 }
 .hero-actions {
@@ -7822,12 +7822,12 @@ textarea:focus-visible {
 }
 .hero-stats strong {
   display: block;
-  font-size: 1.5rem;
+  font-size: 24px;
   font-weight: 600;
 }
 .hero-stats span {
   color: var(--fg-muted);
-  font-size: 0.81rem;
+  font-size: 13px;
 }
 
 .how-it-works {
@@ -7862,12 +7862,12 @@ textarea:focus-visible {
   background: var(--ak-green-soft);
 }
 .how-card strong {
-  font-size: 1.06rem;
+  font-size: 17px;
 }
 .how-card p {
   margin: 0;
   color: var(--fg-subtle);
-  font-size: 0.875rem;
+  font-size: 14px;
   line-height: 1.55;
 }
 
@@ -7913,13 +7913,13 @@ textarea:focus-visible {
 }
 .crop-pick strong {
   display: block;
-  font-size: 0.94rem;
+  font-size: 15px;
 }
 .crop-pick small {
   display: block;
   margin-top: 2px;
   color: var(--fg-muted);
-  font-size: 0.76rem;
+  font-size: 12px;
 }
 .wizard-grade-row {
   display: flex;
@@ -7943,8 +7943,8 @@ textarea:focus-visible {
   border: 0;
   background: none;
   text-align: center;
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 600;
 }
 .wizard-field .qty-stepper input:focus {
   outline: none;
@@ -7963,7 +7963,7 @@ textarea:focus-visible {
   min-height: 46px;
   border: 0;
   background: none;
-  font-size: 1.05rem;
+  font-size: 17px;
 }
 .price-input input:focus {
   outline: none;
@@ -7983,7 +7983,7 @@ textarea:focus-visible {
 .header-auth .primary-button {
   min-height: 38px;
   padding: 0 14px;
-  font-size: 0.86rem;
+  font-size: 14px;
 }
 .account-chip {
   display: inline-flex;
@@ -8010,18 +8010,18 @@ textarea:focus-visible {
   border-radius: 50%;
   color: #ffffff;
   background: var(--ak-green);
-  font-size: 0.74rem;
-  font-weight: 800;
+  font-size: 12px;
+  font-weight: 700;
 }
 .account-chip-copy strong {
   display: block;
-  font-size: 0.83rem;
+  font-size: 13px;
   line-height: 1.2;
 }
 .account-chip-copy small {
   display: block;
   color: var(--fg-muted);
-  font-size: 0.71rem;
+  font-size: 11px;
 }
 .main-nav a {
   display: inline-flex;
@@ -8038,14 +8038,14 @@ textarea:focus-visible {
   color: var(--fg-subtle);
   background: var(--surface-sunken);
   font-family: var(--font-mono);
-  font-size: 0.68rem;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 /* Staff-only destinations are called out in dotzilla red. */
 .main-nav a.nav-staff {
   color: var(--brand);
-  font-weight: 700;
+  font-weight: 600;
 }
 .main-nav a.nav-staff .nav-count {
   color: var(--brand);
