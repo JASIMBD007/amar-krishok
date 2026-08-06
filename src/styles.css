@@ -8346,3 +8346,377 @@ textarea:focus-visible {
     min-height: 44px;
   }
 }
+
+/* =====================================================================
+   Step 1 — Hero, matched value-for-value to the demo's inline styles.
+   ===================================================================== */
+:root {
+  /* The demo's hero body colour, a step lighter than --fg-subtle. */
+  --fg-body: #4b5563;
+}
+
+.hero-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  align-items: center;
+  gap: 48px;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 56px 24px;
+}
+.hero-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.hero-eyebrow {
+  align-self: flex-start;
+  gap: 7px;
+  padding: 6px 11px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+.hero-copy h1 {
+  margin: 0;
+  font-size: 50px;
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+}
+.hero-subtitle-bn {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--fg-body);
+}
+.hero-copy p {
+  max-width: 520px;
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.55;
+  color: var(--fg-body);
+}
+.hero-actions {
+  gap: 12px;
+  margin-top: 0;
+}
+.hero-actions .primary-button,
+.hero-actions .secondary-button {
+  min-height: 0;
+  gap: 9px;
+  padding: 16px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+}
+.hero-actions .secondary-button {
+  border: 1px solid var(--border-strong);
+  box-shadow: none;
+  color: var(--fg);
+  background: var(--surface);
+}
+.hero-stats {
+  gap: 34px;
+  margin-top: 0;
+  padding-top: 6px;
+}
+.hero-stats > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.hero-stats strong {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 600;
+}
+.hero-stats span {
+  font-size: 13px;
+  color: var(--fg-muted);
+}
+/* The right-hand card is a 12px feature card, not an 8px surface card. */
+.market-console {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  backdrop-filter: none;
+}
+
+@media (max-width: 900px) {
+  .hero-copy h1 {
+    font-size: 38px;
+  }
+  .hero-section {
+    padding: 32px 16px;
+    gap: 32px;
+  }
+}
+
+/* =====================================================================
+   Step 2 — Cheapest-lots card and how-it-works, matched value-for-value.
+   ===================================================================== */
+.console-header {
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0;
+  gap: 12px;
+}
+.console-header strong {
+  font-size: 16px;
+  font-weight: 600;
+}
+.console-header .link-button {
+  font-size: 13px;
+  font-weight: 600;
+}
+.cheapest-lots {
+  gap: 10px;
+}
+.cheapest-lot {
+  gap: 14px;
+  width: 100%;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.cheapest-lot-tile {
+  width: 46px;
+  height: 46px;
+  border-radius: 6px;
+  color: var(--fg-muted);
+  background: var(--surface-sunken);
+}
+.cheapest-lot-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.cheapest-lot-copy strong {
+  font-size: 14px;
+  font-weight: 600;
+}
+.cheapest-lot-copy small {
+  margin-top: 0;
+  font-size: 12px;
+  color: var(--fg-muted);
+}
+.cheapest-lot-price {
+  gap: 3px;
+}
+.cheapest-lot-price strong {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 600;
+}
+.cheapest-lot-price .delta-pill {
+  padding: 2px 7px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.console-escrow-note {
+  gap: 11px;
+  margin: 0;
+  padding: 14px 0 0;
+  border: 0;
+  border-top: 1px solid var(--surface-sunken);
+  border-radius: 0;
+  background: none;
+  color: var(--fg-subtle);
+  font-size: 13px;
+  line-height: 1.45;
+}
+.console-escrow-note svg {
+  color: var(--ak-green-deep);
+  flex: none;
+}
+
+/* The band is bordered top and bottom, and the stack inside is 28px apart. */
+.how-it-works {
+  gap: 28px;
+  padding: 48px clamp(16px, 3vw, 24px);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.how-it-works .section-title {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 620px;
+}
+.how-it-works .section-title span {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+.how-it-works .section-title h2 {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.how-it-works-grid {
+  gap: 18px;
+}
+.how-card {
+  gap: 11px;
+  padding: 22px;
+  border-radius: 8px;
+}
+.how-card-tile {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  color: var(--ak-green-deep);
+  background: var(--ak-green-soft);
+}
+.how-card strong {
+  font-size: 17px;
+  font-weight: 600;
+}
+.how-card p {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--fg-body);
+}
+
+/* =====================================================================
+   Step 3 — Rate ticker and footer, matched value-for-value.
+   ===================================================================== */
+.rate-ticker {
+  padding: 11px 0;
+  color: #ffffff;
+  background: var(--mk-ticker);
+}
+.rate-ticker-inner {
+  gap: 24px;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px;
+  overflow: visible;
+}
+.rate-ticker-eyebrow {
+  gap: 7px;
+  /* The demo's eyebrow is the same soft green as the live dot, not a muted grey. */
+  color: #9fe0bc;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+.live-dot {
+  width: 6px;
+  height: 6px;
+}
+.rate-ticker-track {
+  flex: none;
+  flex-wrap: wrap;
+  gap: 26px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.rate-ticker-item {
+  gap: 7px;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 400;
+}
+.rate-ticker-item strong {
+  font-weight: 400;
+}
+.rate-ticker-item em {
+  font-size: inherit;
+}
+/* A flexible spacer pushes the unit caption right, as the demo's empty div does. */
+.rate-ticker-inner::before {
+  content: "";
+  order: 2;
+  flex: 1;
+}
+.rate-ticker-link {
+  order: 3;
+  color: var(--fg-disabled);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.site-footer {
+  margin-top: 0;
+  padding: 36px 0;
+  color: #ffffff;
+  background: var(--mk-ticker);
+}
+.site-footer-inner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 40px;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+.site-footer-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 340px;
+}
+.site-footer-mark {
+  gap: 9px;
+}
+.site-footer-mark span {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: var(--ak-green);
+  font-family: "Noto Sans Bengali", Inter, sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+}
+.site-footer-mark strong {
+  font-size: 16px;
+  font-weight: 700;
+}
+.site-footer-brand p {
+  max-width: none;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--fg-disabled);
+}
+.site-footer-columns {
+  display: flex;
+  gap: 48px;
+  font-size: 13px;
+}
+.site-footer-columns nav {
+  gap: 8px;
+}
+.site-footer-heading {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: #7e9c8c;
+}
+.site-footer-columns a,
+.site-footer-columns nav > span:not(.site-footer-heading) {
+  font-size: 13px;
+  color: #c0ccc6;
+}
+
+@media (max-width: 760px) {
+  .site-footer-inner {
+    flex-direction: column;
+    gap: 28px;
+  }
+  .site-footer-columns {
+    flex-wrap: wrap;
+    gap: 28px;
+  }
+}
