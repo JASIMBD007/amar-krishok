@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { BadgeCheck, BarChart3, Check, EyeOff, Info, Inbox, ShieldCheck, X } from "lucide-react";
+import { BadgeCheck, BarChart3, Check, EyeOff, Info, Inbox, ShieldCheck } from "lucide-react";
 import {
   ApiRequestError,
   fetchMyCropLots,
@@ -110,7 +110,6 @@ export function MarketSection({
   const publishDraftRates = useMarketStore((state) => state.publishDraftRates);
   const staffNotice = useMarketStore((state) => state.staffNotice);
   const setStaffNotice = useMarketStore((state) => state.setStaffNotice);
-  const clearStaffNotice = useMarketStore((state) => state.clearStaffNotice);
 
   const accessToken = user?.accessToken;
 
@@ -146,7 +145,9 @@ export function MarketSection({
   const liveLots = marketLots.filter((lot) => lot.visible);
   const suspendedCount = marketLots.filter((lot) => lot.suspended).length;
   const heldOrders = orders.filter((order) => escrowState(order) === "held");
-  const gmv = orders
+  const today = new Date().toDateString();
+  const todaysOrders = orders.filter((order) => new Date(order.createdAt).toDateString() === today);
+  const gmv = todaysOrders
     .filter((order) => escrowState(order) !== "refunded")
     .reduce((total, order) => total + escrowAmount(order), 0);
   const escrowValue = heldOrders.reduce((total, order) => total + escrowAmount(order), 0);
@@ -254,13 +255,9 @@ export function MarketSection({
       </div>
 
       {staffNotice ? (
-        <div className="soft-notice dismissable" role="status">
-          <span>
-            <Check aria-hidden="true" size={15} /> {t(staffNotice)}
-          </span>
-          <button className="icon-button" aria-label={t("Dismiss")} type="button" onClick={clearStaffNotice}>
-            <X size={16} />
-          </button>
+        <div className="soft-notice admin-market-notice" role="status">
+          <Check aria-hidden="true" size={17} />
+          <span>{t(staffNotice)}</span>
         </div>
       ) : null}
 
@@ -268,12 +265,12 @@ export function MarketSection({
 
       {tab === "overview" ? (
         <>
-          <div className="stats-grid kpi-grid">
+          <div className="stats-grid admin-market-kpis">
             <article className="stat-card">
-              <span>{t("GMV · escrow orders")}</span>
+              <span>{t("GMV · today")}</span>
               <strong className="mono-figure">{v(taka(gmv))}</strong>
               <p>
-                {v(orders.length)} {t("orders placed on the platform")}
+                {v(todaysOrders.length)} {t("orders placed today")}
               </p>
             </article>
             <article className="stat-card">
@@ -299,14 +296,9 @@ export function MarketSection({
             </article>
           </div>
 
-          <div className="dashboard-grid">
-            <section className="panel">
-              <div className="panel-header">
-                <div>
-                  <span>{t("Staff actions")}</span>
-                  <h2>{t("What staff can change here")}</h2>
-                </div>
-              </div>
+          <div className="admin-overview-grid">
+            <section className="panel admin-overview-card">
+              <h2>{t("What staff can change here")}</h2>
               <div className="staff-action-list">
                 <span>
                   <BadgeCheck aria-hidden="true" size={17} />
@@ -327,18 +319,18 @@ export function MarketSection({
               </div>
             </section>
 
-            <section className="panel">
-              <div className="panel-header">
-                <div>
-                  <span>{t("Pricing")}</span>
-                  <h2>{t("Rate integrity")}</h2>
-                </div>
-              </div>
+            <section className="panel admin-overview-card">
+              <h2>{t("Rate integrity")}</h2>
               <div className="rate-integrity">
                 {(() => {
                   const withRate = liveLots.filter((lot) => rates[lot.crop]);
                   const fair = withRate.filter((lot) => lot.delta >= -4 && lot.delta <= 6).length;
-                  const above = withRate.filter((lot) => lot.delta > 6).length;
+                  const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+                  const above = withRate.filter((lot) => {
+                    if (lot.delta <= 6 || !lot.postedAt) return false;
+                    const postedAt = new Date(lot.postedAt).getTime();
+                    return Number.isFinite(postedAt) && postedAt <= sevenDaysAgo;
+                  }).length;
                   const below = withRate.filter((lot) => lot.delta < -4).length;
                   const share = (count: number) => (withRate.length ? Math.round((count / withRate.length) * 100) : 0);
 
@@ -351,7 +343,7 @@ export function MarketSection({
                       </div>
                       <div>
                         <span className="integrity-dot warn" aria-hidden="true" />
-                        <span>{t("Above the fair range")}</span>
+                        <span>{t("Above range, unsold > 7 days")}</span>
                         <strong className="mono-figure">{v(`${share(above)} %`)}</strong>
                       </div>
                       <div>
@@ -380,7 +372,7 @@ export function MarketSection({
         ) : orders.length === 0 ? (
           <EmptyState
             icon={Inbox}
-            title={t("No escrow orders yet")}
+            title={t("No orders in this session yet")}
             hint={t("Place an order as a buyer and it appears here with escrow controls.")}
           />
         ) : (
@@ -430,7 +422,7 @@ export function MarketSection({
                           {canAct ? (
                             <>
                               <button
-                                className="primary-button"
+                                className="admin-table-action release"
                                 disabled={busyId === order.id}
                                 type="button"
                                 onClick={() => decideEscrow(order, "release")}
@@ -438,7 +430,7 @@ export function MarketSection({
                                 {t("Release")}
                               </button>
                               <button
-                                className="secondary-button"
+                                className="admin-table-action refund"
                                 disabled={busyId === order.id}
                                 type="button"
                                 onClick={() => decideEscrow(order, "refund")}
@@ -448,7 +440,11 @@ export function MarketSection({
                             </>
                           ) : null}
                           <button
-                            className={disputed ? "secondary-button danger-outline" : "secondary-button"}
+                            className={
+                              disputed
+                                ? "admin-table-action close-dispute"
+                                : "admin-table-action dispute"
+                            }
                             disabled={busyId === order.id}
                             type="button"
                             onClick={() => toggleDispute(order)}
@@ -491,10 +487,10 @@ export function MarketSection({
                   </div>
                   <span className="verify-papers">{t(entry.papers)}</span>
                   <div className="verify-card-actions">
-                    <button className="secondary-button" type="button" onClick={() => decideFarmer(entry, "rejected")}>
+                    <button className="admin-verify-action reject" type="button" onClick={() => decideFarmer(entry, "rejected")}>
                       {t("Reject")}
                     </button>
-                    <button className="primary-button" type="button" onClick={() => decideFarmer(entry, "active")}>
+                    <button className="admin-verify-action approve" type="button" onClick={() => decideFarmer(entry, "active")}>
                       {t("Approve")}
                     </button>
                   </div>
@@ -507,18 +503,16 @@ export function MarketSection({
       {tab === "rates" ? (
         <>
           <div className="panel rate-publish-bar">
-            <span className="checkout-row-icon" aria-hidden="true">
-              <Info size={18} />
-            </span>
+            <Info className="rate-publish-info" aria-hidden="true" size={18} />
             <p>
               {t("Rates entered here are the benchmark the whole platform compares against — listings, offers, alerts and the farmer's pricing advice.")}
             </p>
             {rateDirty ? (
               <div className="rate-publish-actions">
-                <button className="secondary-button" type="button" onClick={discardDraftRates}>
+                <button className="admin-rate-action discard" type="button" onClick={discardDraftRates}>
                   {t("Discard")}
                 </button>
-                <button className="primary-button" type="button" onClick={publish}>
+                <button className="admin-rate-action publish" type="button" onClick={publish}>
                   {t("Publish today's rates")}
                 </button>
               </div>
@@ -619,7 +613,7 @@ export function MarketSection({
                       <span>{t(lot.rejected ? "Rejected" : lot.suspended ? "Suspended" : "Live")}</span>
                       <span>
                         <button
-                          className="secondary-button"
+                          className={`admin-listing-action ${lot.suspended ? "restore" : "suspend"}`}
                           disabled={busyId === lot.id}
                           type="button"
                           onClick={() => toggleSuspended(lot)}
