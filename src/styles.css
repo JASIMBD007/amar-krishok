@@ -5693,9 +5693,8 @@ tbody tr:hover td { background: #f6f8f5; }
   --mk-info-soft: #dbeafe;
   --mk-ticker: #0e1a14;
   --mk-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-  /* Measured by the rate ticker on mount; the fallbacks keep sticky offsets sane before hydration. */
-  --mk-header-height: 71px;
-  --mk-chrome-height: 110px;
+  /* Measured on mount; the fallback keeps sticky offsets sane before hydration. */
+  --mk-header-height: 66px;
 }
 
 .rate-ticker {
@@ -9814,4 +9813,20 @@ textarea:focus-visible {
   margin: 0;
   padding-block: 8px;
   padding-inline: max(24px, calc((100% - 1280px) / 2 + 24px));
+}
+
+/* =====================================================================
+   The ticker scrolls with the page. Only the header is sticky in the
+   demo; pinning the ticker as well left it covering the hero headline.
+   ===================================================================== */
+.rate-ticker {
+  position: static;
+}
+/* With the ticker unpinned, the sticky rails clear the header alone —
+   the demo's 94px against its 66px bar. */
+.filter-rail,
+.lot-detail-rail,
+.order-detail-rail,
+.checkout-summary {
+  top: calc(var(--mk-header-height, 66px) + 28px);
 }

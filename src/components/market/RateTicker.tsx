@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import { useLanguage, useTranslate, useValueText } from "../../i18n";
 import { cropNamesBn } from "../../market/marketData";
@@ -25,7 +25,6 @@ export function RateTicker() {
   const language = useLanguage();
   const t = useTranslate();
   const v = useValueText();
-  const tickerRef = useRef<HTMLDivElement>(null);
   const rates = useMarketStore((state) => state.rates);
   const ratesPublishedAt = useMarketStore((state) => state.ratesPublishedAt);
   const changes = useRateChanges();
@@ -34,25 +33,21 @@ export function RateTicker() {
   // The ticker is on every route, so it is the natural place to pull today's published rates.
   useLoadRates();
 
-  // The header wraps on narrow viewports and the ticker itself grows with Bangla text, so the
-  // sticky offsets every rail uses are measured rather than guessed.
+  // Only the header is sticky, and it wraps to a second line on narrow viewports, so the offset
+  // the rails stick to is measured rather than guessed.
   useEffect(() => {
     const header = document.querySelector<HTMLElement>(".site-header");
-    const ticker = tickerRef.current;
-    if (!header || !ticker) {
+    if (!header) {
       return;
     }
 
     const publish = () => {
-      const headerHeight = header.offsetHeight;
-      document.documentElement.style.setProperty("--mk-header-height", `${headerHeight}px`);
-      document.documentElement.style.setProperty("--mk-chrome-height", `${headerHeight + ticker.offsetHeight}px`);
+      document.documentElement.style.setProperty("--mk-header-height", `${header.offsetHeight}px`);
     };
 
     publish();
     const observer = new ResizeObserver(publish);
     observer.observe(header);
-    observer.observe(ticker);
     return () => observer.disconnect();
   }, []);
 
@@ -63,7 +58,7 @@ export function RateTicker() {
   }
 
   return (
-    <div className="rate-ticker" ref={tickerRef}>
+    <div className="rate-ticker">
       <div className="rate-ticker-inner">
         <span className="rate-ticker-eyebrow">
           <span className="live-dot" aria-hidden="true" />
