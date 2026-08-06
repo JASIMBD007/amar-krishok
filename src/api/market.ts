@@ -64,6 +64,19 @@ export function publishRates(
   });
 }
 
+export type BackendPlatformStats = {
+  liveListings: number;
+  marketsTracked: number;
+  /** Null until a payment has actually been released; the UI hides the figure rather than inventing one. */
+  medianReleaseMinutes: number | null;
+  verifiedFarmers: number;
+};
+
+/** Public: the landing page reads this before anyone signs in. */
+export function fetchPlatformStats() {
+  return apiRequest<BackendPlatformStats>("/api/stats/platform");
+}
+
 export type BackendFarmerEscrow = {
   grossValue: number;
   held: number;

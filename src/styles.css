@@ -7778,3 +7778,281 @@ textarea:focus-visible {
     min-height: 44px;
   }
 }
+
+/* ---- Landing: hero and how-it-works, per the demo ---- */
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  color: var(--ak-green-deep);
+  background: var(--ak-green-soft);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.hero-copy h1 {
+  margin: 14px 0 0;
+  font-size: clamp(2rem, 4.6vw, 3.125rem);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+.hero-copy p {
+  max-width: 520px;
+  margin: 14px 0 0;
+  color: var(--fg-subtle);
+  font-size: 1.125rem;
+  line-height: 1.55;
+}
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 22px;
+}
+.hero-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+  margin-top: 26px;
+}
+.hero-stats strong {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+.hero-stats span {
+  color: var(--fg-muted);
+  font-size: 0.81rem;
+}
+
+.how-it-works {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 clamp(14px, 4vw, 48px) 40px;
+}
+.how-it-works-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(238px, 1fr));
+  gap: 16px;
+}
+.how-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.how-card-tile {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border-radius: 8px;
+  color: var(--ak-green-deep);
+  background: var(--ak-green-soft);
+}
+.how-card strong {
+  font-size: 1.06rem;
+}
+.how-card p {
+  margin: 0;
+  color: var(--fg-subtle);
+  font-size: 0.875rem;
+  line-height: 1.55;
+}
+
+/* ---- Post a crop wizard: demo controls ---- */
+.crop-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.crop-pick {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--surface);
+  text-align: left;
+  transition: background-color 120ms var(--ak-ease), border-color 120ms var(--ak-ease);
+}
+.crop-pick:hover {
+  background: var(--bg);
+}
+.crop-pick.on {
+  border: 2px solid var(--ak-green);
+  padding: 11px;
+  background: var(--ak-green-soft);
+}
+.crop-pick-tile {
+  display: grid;
+  flex: none;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 6px;
+  color: var(--ak-green-deep);
+  background: var(--surface-sunken);
+}
+.crop-pick.on .crop-pick-tile {
+  color: #ffffff;
+  background: var(--ak-green);
+}
+.crop-pick strong {
+  display: block;
+  font-size: 0.94rem;
+}
+.crop-pick small {
+  display: block;
+  margin-top: 2px;
+  color: var(--fg-muted);
+  font-size: 0.76rem;
+}
+.wizard-grade-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.wizard-price-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.wizard-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.wizard-field .qty-stepper input {
+  min-width: 0;
+  border: 0;
+  background: none;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 700;
+}
+.wizard-field .qty-stepper input:focus {
+  outline: none;
+}
+.price-input {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  background: var(--surface);
+}
+.price-input input {
+  min-height: 46px;
+  border: 0;
+  background: none;
+  font-size: 1.05rem;
+}
+.price-input input:focus {
+  outline: none;
+}
+.price-input:focus-within {
+  outline: 3px solid var(--interactive-soft);
+  border-color: var(--interactive);
+}
+
+/* ---- Header: demo structure ---- */
+.header-auth {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.header-auth .secondary-button,
+.header-auth .primary-button {
+  min-height: 38px;
+  padding: 0 14px;
+  font-size: 0.86rem;
+}
+.account-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 42px;
+  padding: 0 10px 0 6px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: inherit;
+  text-align: left;
+  transition: background-color 120ms var(--ak-ease);
+}
+.account-chip:hover {
+  background: var(--bg);
+}
+.account-chip-initials {
+  display: grid;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 50%;
+  color: #ffffff;
+  background: var(--ak-green);
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+.account-chip-copy strong {
+  display: block;
+  font-size: 0.83rem;
+  line-height: 1.2;
+}
+.account-chip-copy small {
+  display: block;
+  color: var(--fg-muted);
+  font-size: 0.71rem;
+}
+.main-nav a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.nav-count {
+  display: inline-grid;
+  min-width: 19px;
+  height: 19px;
+  place-items: center;
+  padding: 0 5px;
+  border-radius: 999px;
+  color: var(--fg-subtle);
+  background: var(--surface-sunken);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+/* Staff-only destinations are called out in dotzilla red. */
+.main-nav a.nav-staff {
+  color: var(--brand);
+  font-weight: 700;
+}
+.main-nav a.nav-staff .nav-count {
+  color: var(--brand);
+  background: var(--danger-soft, #fee2e2);
+}
+@media (max-width: 900px) {
+  .header-auth .secondary-button {
+    display: none;
+  }
+}

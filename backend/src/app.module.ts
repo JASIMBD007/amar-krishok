@@ -14,6 +14,7 @@ import { NotificationsModule } from "./modules/notifications/notifications.modul
 import { OffersModule } from "./modules/offers/offers.module";
 import { OrdersModule } from "./modules/orders/orders.module";
 import { PrismaModule } from "./modules/prisma/prisma.module";
+import { StatsModule } from "./modules/stats/stats.module";
 import { UploadsModule } from "./modules/uploads/uploads.module";
 
 @Module({
@@ -31,6 +32,7 @@ import { UploadsModule } from "./modules/uploads/uploads.module";
     OrdersModule,
     NotificationsModule,
     MarketPricesModule,
+    StatsModule,
     ChatModule,
     UploadsModule,
   ],

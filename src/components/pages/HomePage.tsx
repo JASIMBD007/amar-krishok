@@ -1,37 +1,117 @@
+import { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
-import { Clock3, ClipboardCheck, HeartHandshake, Leaf, ShieldCheck, ShoppingBag, Sprout, Truck, WalletCards } from "lucide-react";
+import { BadgeCheck, Camera, Handshake, Leaf, ShieldCheck, ShoppingBasket, Sprout, Truck } from "lucide-react";
+import { fetchPlatformStats, type BackendPlatformStats } from "../../api/market";
 import { lots } from "../../data";
-import { useTranslate, useValueText } from "../../i18n";
+import { useLanguage, useTranslate, useValueText } from "../../i18n";
 import { cheapestVsMarket } from "../../market/deriveLots";
+import { cropNamesBn } from "../../market/marketData";
 import { useMarketLots } from "../../market/useMarket";
 import type { View } from "../../types";
 import { DeltaPill } from "../market/MarketBits";
 
+const STEPS = [
+  {
+    body: "Photos, quantity, grade. The district rate is shown while the price is set.",
+    icon: Camera,
+    title: "1 · Post the crop",
+  },
+  {
+    body: "Buyers order or send an offer. Both sides see what similar lots closed at.",
+    icon: Handshake,
+    title: "2 · Agree the price",
+  },
+  {
+    body: "A partner truck is assigned, weighed at pickup, tracked to the buyer's gate.",
+    icon: Truck,
+    title: "3 · We move it",
+  },
+  {
+    body: "Paid to bKash or bank within hours of confirmed delivery.",
+    icon: ShieldCheck,
+    title: "4 · Money released",
+  },
+];
+
+/** "1 h 48" rather than "108 minutes" — the shape the demo's stat block uses. */
+function formatDuration(minutes: number) {
+  const whole = Math.round(minutes);
+  if (whole < 60) {
+    return `${whole} min`;
+  }
+
+  return `${Math.floor(whole / 60)} h ${String(whole % 60).padStart(2, "0")}`;
+}
+
 export function HomePage({ setView }: { setView: (view: View) => void }) {
+  const language = useLanguage();
   const t = useTranslate();
   const v = useValueText();
   const marketLots = useMarketLots(lots);
   const cheapestLots = cheapestVsMarket(marketLots, 3);
+  const [stats, setStats] = useState<BackendPlatformStats | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    fetchPlatformStats()
+      .then((result) => {
+        if (active) {
+          setStats(result);
+        }
+      })
+      .catch(() => {
+        // The hero drops to two stat blocks rather than showing invented numbers.
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const cropLabel = (crop: string) => (language === "bn" ? cropNamesBn[crop] ?? t(crop) : t(crop));
 
   return (
     <>
       <section className="hero-section">
         <div className="hero-copy">
-          <div className="status-pill">
-            <ShieldCheck size={16} />
-            {t("Verified farmer-to-buyer marketplace")}
-          </div>
-          <h1>{t("Farmers post crops. Buyers order directly. We will manage the chain.")}</h1>
+          <span className="hero-eyebrow">
+            <BadgeCheck aria-hidden="true" size={13} />
+            {t("Verified farmers · protected payments")}
+          </span>
+          <h1>{t("Sell your harvest at today's real price.")}</h1>
           <p>
-            {t("A direct supply-chain platform for Bangladesh where farmers post harvests, buyers order transparently, logistics partners deliver, and payments stay protected.")}
+            {t("Farmers post the crop, buyers order directly, and we hold the money until delivery is confirmed. Every price sits next to today's district rate.")}
           </p>
           <div className="hero-actions">
-            <button className="primary-button" type="button" onClick={() => setView("market")}>
-              {t("Browse crops")}
+            <button className="primary-button" type="button" onClick={() => setView("farmer")}>
+              <Sprout aria-hidden="true" size={19} />
+              {t("I sell crops")}
             </button>
-            <button className="secondary-button large" type="button" onClick={() => setView("farmer")}>
-              {t("Post a crop")}
+            <button className="secondary-button large" type="button" onClick={() => setView("market")}>
+              <ShoppingBasket aria-hidden="true" size={19} />
+              {t("I buy crops")}
             </button>
+          </div>
+
+          <div className="hero-stats">
+            {stats ? (
+              <div>
+                <strong className="mono-figure">{v(stats.verifiedFarmers.toLocaleString("en-IN"))}</strong>
+                <span>{t("verified farmers")}</span>
+              </div>
+            ) : null}
+            {stats ? (
+              <div>
+                <strong className="mono-figure">{v(stats.marketsTracked)}</strong>
+                <span>{t("markets tracked daily")}</span>
+              </div>
+            ) : null}
+            {stats?.medianReleaseMinutes != null ? (
+              <div>
+                <strong className="mono-figure">{v(formatDuration(stats.medianReleaseMinutes))}</strong>
+                <span>{t("median payout time")}</span>
+              </div>
+            ) : null}
           </div>
         </div>
 
@@ -54,7 +134,7 @@ export function HomePage({ setView }: { setView: (view: View) => void }) {
                 </span>
                 <span className="cheapest-lot-copy">
                   <strong>
-                    {t(lot.crop)} · {t("Grade")} {v(lot.grade)}
+                    {cropLabel(lot.crop)} · {t("Grade")} {v(lot.grade)}
                   </strong>
                   <small>
                     {t(lot.farmer)} · {t(lot.district)} · {v(lot.quantityMon)} {t("mon")}
@@ -74,80 +154,25 @@ export function HomePage({ setView }: { setView: (view: View) => void }) {
         </div>
       </section>
 
-      <section className="metrics-band" aria-label={t("Platform metrics")}>
-        <div>
-          <strong>{v("27.4 tons")}</strong>
-          <span>{t("active verified supply")}</span>
+      <section className="how-it-works">
+        <div className="section-title">
+          <span>{t("How it works")}</span>
+          <h2>{t("Four steps, no negotiation in the dark")}</h2>
         </div>
-        <div>
-          <strong>{v("18")}</strong>
-          <span>{t("orders confirmed today")}</span>
+        <div className="how-it-works-grid">
+          {STEPS.map((step) => {
+            const Icon = step.icon;
+            return (
+              <article className="how-card" key={step.title}>
+                <span className="how-card-tile" aria-hidden="true">
+                  <Icon size={20} />
+                </span>
+                <strong>{t(step.title)}</strong>
+                <p>{t(step.body)}</p>
+              </article>
+            );
+          })}
         </div>
-        <div>
-          <strong>{v("16.8%")}</strong>
-          <span>{t("average farmer price lift")}</span>
-        </div>
-        <div>
-          <strong>{v("৳82K")}</strong>
-          <span>{t("escrow pending release")}</span>
-        </div>
-      </section>
-
-      <section className="workflow-section">
-        {[
-          { icon: Sprout, title: "Farmer posts crop", text: "Crop, district, quantity, grade, harvest date, and asking price." },
-          { icon: ShoppingBag, title: "Buyer orders", text: "Retailers and restaurants reserve lots or request bulk supply." },
-          { icon: Truck, title: "Logistics runs", text: "Pickup, delivery, and proof stay visible to all parties." },
-          { icon: WalletCards, title: "Admin releases payout", text: "Escrow protects buyers and pays farmers after confirmation." },
-        ].map((step) => {
-          const Icon = step.icon;
-          return (
-            <article className="workflow-card" key={step.title}>
-              <Icon size={24} />
-              <h3>{t(step.title)}</h3>
-              <p>{t(step.text)}</p>
-            </article>
-          );
-        })}
-      </section>
-
-      <section className="trust-section" id="trust">
-        <div className="trust-panel">
-          <div className="section-title trust-title">
-            <span>{t("Trust layer")}</span>
-            <h1>{t("Quality, payment, and delivery stay visible.")}</h1>
-            <p>
-              {t("AmarKrishok reduces middleman abuse by keeping lot grading, escrow status, buyer history, and delivery proof in one shared record.")}
-            </p>
-          </div>
-
-          <div className="trust-list">
-            <div>
-              <ClipboardCheck size={20} />
-              <span>{t("Digital quality checklist before pickup")}</span>
-            </div>
-            <div>
-              <Clock3 size={20} />
-              <span>{t("Delivery milestones with buyer confirmation")}</span>
-            </div>
-            <div>
-              <HeartHandshake size={20} />
-              <span>{t("Farmer co-op groups for bulk orders")}</span>
-            </div>
-          </div>
-        </div>
-
-        <aside className="buyer-card" aria-label={t("Buyer request")}>
-          <div className="buyer-card-header">
-            <ShoppingBag size={22} />
-            <span>{t("Buyer request")}</span>
-          </div>
-          <h3>{t("Need 2 tons tomato for Dhaka retail chain")}</h3>
-          <p>{t("Preferred delivery: next morning. Escrow ready after lot approval.")}</p>
-          <button className="primary-button full" type="button" onClick={() => setView("buyer")}>
-            {t("Match farmers")}
-          </button>
-        </aside>
       </section>
     </>
   );

@@ -10,6 +10,8 @@ import {
   ListChecks,
   PackageCheck,
   Pencil,
+  Leaf,
+  Minus,
   Plus,
   Power,
   Save,
@@ -32,7 +34,8 @@ import {
   type CreateCropLotPayload,
 } from "../../api/auth";
 import { fetchFarmerEscrow } from "../../api/market";
-import { MON_IN_KG, kgToMon, perKgToPerMon, taka } from "../../market/marketData";
+import { MON_IN_KG, cropNamesBn, kgToMon, perKgToPerMon, taka } from "../../market/marketData";
+import { useMarketStore } from "../../store/useMarketStore";
 import { AccountProfilePanel } from "../account/AccountProfilePanel";
 import { MarketCheckPanel } from "../market/MarketCheckPanel";
 import {
@@ -153,6 +156,8 @@ export function PostCropPage({
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [snackbar, setSnackbar] = useState("");
+  const rates = useMarketStore((state) => state.rates);
+  const rateCrops = useMemo(() => Object.keys(rates).slice(0, 6), [rates]);
   const [step, setStep] = useState(1);
   const [escrowSummary, setEscrowSummary] = useState<FarmerEscrowSummary>({
     grossValue: 0,
@@ -538,23 +543,53 @@ export function PostCropPage({
               {step === 1 ? (
                 <>
                   <span className="wizard-step-title">{t("What are you selling?")}</span>
+                  {/* Picking from cards that carry today's rate means the price is anchored before
+                      the farmer ever types a number. Free text stays available for anything else. */}
+                  <div className="crop-picker" role="radiogroup" aria-label={t("What are you selling?")}>
+                    {rateCrops.map((crop) => (
+                      <button
+                        aria-checked={form.crop === crop}
+                        className={form.crop === crop ? "crop-pick on" : "crop-pick"}
+                        key={crop}
+                        role="radio"
+                        type="button"
+                        onClick={() => updateField("crop", crop)}
+                      >
+                        <span className="crop-pick-tile" aria-hidden="true">
+                          <Leaf size={19} />
+                        </span>
+                        <span>
+                          <strong>{t(crop)}</strong>
+                          <small>
+                            {cropNamesBn[crop] ?? ""} · {t("rate")} {v(taka(rates[crop]))}
+                          </small>
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="wizard-grade-row">
+                    <span className="filter-eyebrow">{t("Grade")}</span>
+                    <div className="filter-pill-group" role="radiogroup" aria-label={t("Grade")}>
+                      {["A", "B", "C"].map((grade) => (
+                        <button
+                          aria-checked={form.grade === grade}
+                          className={form.grade === grade ? "filter-pill on" : "filter-pill"}
+                          key={grade}
+                          role="radio"
+                          type="button"
+                          onClick={() => updateField("grade", grade)}
+                        >
+                          {t("Grade")} {v(grade)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
                   <FormGrid>
                     <label className="input-field">
                       <span>{t("Crop name")}</span>
                       <input value={form.crop} onChange={(event) => updateField("crop", event.target.value)} placeholder={t("Tomato")} />
-                    </label>
-                    <label className="input-field">
-                      <span>{t("Grade")}</span>
-                      <select value={form.grade} onChange={(event) => updateField("grade", event.target.value)}>
-                        <option value="" disabled>
-                          {t("Select grade")}
-                        </option>
-                        {["A", "B", "C"].map((grade) => (
-                          <option key={grade} value={grade}>
-                            {t(grade)}
-                          </option>
-                        ))}
-                      </select>
                     </label>
                     <label className="input-field">
                       <span>{t("District")}</span>
@@ -589,21 +624,61 @@ export function PostCropPage({
               {step === 2 ? (
                 <>
                   <span className="wizard-step-title">{t("How much, and at what price?")}</span>
-                  <FormGrid>
-                    <label className="input-field">
-                      <span>{t("Quantity (kg)")}</span>
-                      <input value={form.quantityKg} min="1" onChange={(event) => updateField("quantityKg", event.target.value)} placeholder="1200" type="number" />
-                    </label>
-                    <label className="input-field">
-                      <span>{t("Price per kg")}</span>
-                      <input value={form.pricePerKg} min="1" onChange={(event) => updateField("pricePerKg", event.target.value)} placeholder="34" type="number" />
-                    </label>
-                  </FormGrid>
-                  {form.quantityKg ? (
-                    <span className="wizard-hint">
-                      {v(Math.round(kgToMon(Number(form.quantityKg) || 0)))} {t("mon")} ({v(MON_IN_KG)} {t("kg")} = 1 {t("mon")})
-                    </span>
-                  ) : null}
+                  <div className="wizard-price-row">
+                    <div className="wizard-field">
+                      <span className="filter-eyebrow">{t("Quantity (kg)")}</span>
+                      <div className="qty-stepper">
+                        <button
+                          aria-label={t("Reduce quantity")}
+                          type="button"
+                          onClick={() => updateField("quantityKg", String(Math.max(0, (Number(form.quantityKg) || 0) - 40)))}
+                        >
+                          <Minus aria-hidden="true" size={16} />
+                        </button>
+                        <input
+                          aria-label={t("Quantity (kg)")}
+                          className="mono-figure"
+                          min="1"
+                          onChange={(event) => updateField("quantityKg", event.target.value)}
+                          placeholder="1200"
+                          type="number"
+                          value={form.quantityKg}
+                        />
+                        <button
+                          aria-label={t("Increase quantity")}
+                          type="button"
+                          onClick={() => updateField("quantityKg", String((Number(form.quantityKg) || 0) + 40))}
+                        >
+                          <Plus aria-hidden="true" size={16} />
+                        </button>
+                      </div>
+                      <span className="wizard-hint">
+                        {v(Math.round(kgToMon(Number(form.quantityKg) || 0)))} {t("mon")} ({v(MON_IN_KG)} {t("kg")} = 1{" "}
+                        {t("mon")})
+                      </span>
+                    </div>
+
+                    <div className="wizard-field">
+                      <span className="filter-eyebrow">{t("Your asking price / kg")}</span>
+                      <label className="price-input">
+                        <span aria-hidden="true">৳</span>
+                        <input
+                          aria-label={t("Your asking price / kg")}
+                          className="mono-figure"
+                          min="1"
+                          onChange={(event) => updateField("pricePerKg", event.target.value)}
+                          placeholder="34"
+                          type="number"
+                          value={form.pricePerKg}
+                        />
+                      </label>
+                      <span className="wizard-hint">
+                        {rates[form.crop.trim()]
+                          ? `${t("District rate today")} ${v(taka(rates[form.crop.trim()]))} / ${t("mon")}`
+                          : t("No published district rate for this crop yet.")}
+                      </span>
+                    </div>
+                  </div>
                   <MarketCheckPanel crop={form.crop} district={form.district} pricePerKg={Number(form.pricePerKg) || 0} />
                 </>
               ) : null}

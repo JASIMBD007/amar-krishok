@@ -5,6 +5,7 @@ import {
   LogOut,
   LockKeyhole,
   Menu,
+  Shield,
   Sprout,
   UserRound,
   X,
@@ -32,7 +33,7 @@ import { NotificationDetailDialog } from "./components/notifications/Notificatio
 import { makeRoleNotifications, mergeNotifications, toAppNotification } from "./components/notifications/roleNotifications";
 import { roleCanOpenPath } from "./components/pages/pageHelpers";
 import { LanguageContext, translate } from "./i18n";
-import { lots, roleHomePath, roleOptions, routeByView, serviceDistricts, views } from "./data";
+import { lots, roleOptions, routeByView, serviceDistricts } from "./data";
 import {
   AdminPage,
   CheckoutPage,
@@ -530,20 +531,33 @@ export default function App() {
   ).length;
 
   const roleLabel = user ? roleOptions.find((item) => item.role === user.role)?.label : null;
+  const accountInitials = user
+    ? user.name
+        .replace(/^(Md\.|Mst\.|Mrs\.|Mr\.)\s*/i, "")
+        .split(/\s+/)
+        .filter(Boolean)
+        .map((word) => word[0])
+        .slice(0, 2)
+        .join("")
+        .toUpperCase()
+    : "";
 
   // The former "Admin" tab becomes a role-aware "Dashboard" link that sends each
   // signed-in user to their own workspace (farmer/buyer/admin), or to login otherwise.
-  const navItems = views
-    .map((item) =>
-      item.id === "admin" ? { ...item, label: "Dashboard", path: user ? roleHomePath[user.role] : "/login" } : item,
-    )
-    // Escrow is the promise the product is built on, so orders sit in the main nav rather than
-    // hidden inside a workspace. Signing in is prompted on arrival when there is no session.
-    .flatMap((item) =>
-      item.id === "prices"
-        ? [item, { id: "orders" as const, label: "My orders", path: user ? "/orders" : "/login" }]
-        : [item],
-    );
+  // The demo's nav: the logo goes home, so the bar itself carries only the five destinations.
+  // Admin console appears only for staff. The buyer workspace stays reachable from the account chip.
+  const navItems: Array<{ id: string; label: string; path: string; count?: number; staff?: boolean }> = [
+    { id: "market", label: "Marketplace", path: "/marketplace" },
+    { id: "prices", label: "Market rates", path: "/prices" },
+    { id: "farmer", label: "Farmer desk", path: user ? "/farmer" : "/login?next=%2Ffarmer" },
+    {
+      count: notificationOrders.length,
+      id: "orders",
+      label: "My orders",
+      path: user ? "/orders" : "/login?next=%2Forders",
+    },
+    ...(user?.role === "admin" ? [{ id: "admin", label: "Admin console", path: "/admin", staff: true }] : []),
+  ];
 
   return (
     <LanguageContext.Provider value={language}>
@@ -574,8 +588,15 @@ export default function App() {
 
         <nav className="main-nav" aria-label={t("Main navigation")}>
           {navItems.map((item) => (
-            <NavLink end={item.path === "/"} key={item.id} to={item.path} onClick={closeAllHeaderMenus}>
+            <NavLink
+              className={item.staff ? "nav-staff" : undefined}
+              key={item.id}
+              to={item.path}
+              onClick={closeAllHeaderMenus}
+            >
+              {item.staff ? <Shield aria-hidden="true" size={15} /> : null}
               {t(item.label)}
+              {item.count ? <span className="nav-count">{t(String(item.count))}</span> : null}
             </NavLink>
           ))}
         </nav>
@@ -601,19 +622,45 @@ export default function App() {
             open={notificationPanelOpen}
             reviewedIds={reviewedNotificationIds}
           />
+          {/* Signed out, the demo shows the two calls to action directly rather than a menu. */}
+          {!user ? (
+            <span className="header-auth">
+              <NavLink className="secondary-button" to="/login" onClick={closeAllHeaderMenus}>
+                {t("Log in")}
+              </NavLink>
+              <button className="primary-button danger-button" type="button" onClick={openHeaderRegisterChoice}>
+                {t("Sign up free")}
+              </button>
+            </span>
+          ) : null}
           <div className="login-shell">
             <button
-              className="secondary-button"
+              className={user ? "account-chip" : "secondary-button"}
               type="button"
               aria-expanded={loginOpen}
               aria-haspopup="menu"
+              hidden={!user}
               onClick={() => {
                 setNotificationPanelOpen(false);
                 toggleLoginOpen();
               }}
             >
-              <LockKeyhole size={17} />
-              {roleLabel ? t(roleLabel) : t("Login")}
+              {user ? (
+                <>
+                  <span className="account-chip-initials" aria-hidden="true">
+                    {accountInitials}
+                  </span>
+                  <span className="account-chip-copy">
+                    <strong>{user.name}</strong>
+                    <small>{roleLabel ? t(roleLabel) : ""}</small>
+                  </span>
+                </>
+              ) : (
+                <>
+                  <LockKeyhole size={17} />
+                  {t("Login")}
+                </>
+              )}
               <ChevronDown size={15} />
             </button>
             {loginOpen && (
@@ -675,8 +722,14 @@ export default function App() {
         {menuOpen && (
           <nav className="mobile-menu-panel" aria-label={t("Mobile navigation")}>
             {navItems.map((item) => (
-              <NavLink end={item.path === "/"} key={item.id} to={item.path} onClick={closeAllHeaderMenus}>
+              <NavLink
+                className={item.staff ? "nav-staff" : undefined}
+                key={item.id}
+                to={item.path}
+                onClick={closeAllHeaderMenus}
+              >
                 {t(item.label)}
+                {item.count ? <span className="nav-count">{t(String(item.count))}</span> : null}
               </NavLink>
             ))}
           </nav>

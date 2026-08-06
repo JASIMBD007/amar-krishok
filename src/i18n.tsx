@@ -1114,6 +1114,40 @@ const bn: Record<string, string> = {
   "No rates published yet": "এখনো কোনো দর প্রকাশ হয়নি",
   "Publish a rate for each crop you track and the whole platform starts comparing against it.":
     "আপনি যেসব ফসল দেখেন তার প্রতিটির দর প্রকাশ করুন, পুরো প্ল্যাটফর্ম সেটির সঙ্গে তুলনা শুরু করবে।",
+
+  // Landing hero and the wizard's demo controls.
+  "Verified farmers · protected payments": "যাচাই করা কৃষক · সুরক্ষিত পেমেন্ট",
+  "Sell your harvest at today's real price.": "আজকের সঠিক দামে ফসল বিক্রি করুন।",
+  "Farmers post the crop, buyers order directly, and we hold the money until delivery is confirmed. Every price sits next to today's district rate.":
+    "কৃষক ফসল পোস্ট করেন, ক্রেতা সরাসরি অর্ডার করেন, আর ডেলিভারি নিশ্চিত না হওয়া পর্যন্ত টাকা আমাদের কাছে জমা থাকে। প্রতিটি দামের পাশে আজকের জেলার দর থাকে।",
+  "I sell crops": "আমি ফসল বিক্রি করি",
+  "I buy crops": "আমি ফসল কিনি",
+  "verified farmers": "যাচাই করা কৃষক",
+  "markets tracked daily": "প্রতিদিন যত বাজার দেখা হয়",
+  "median payout time": "গড় পরিশোধের সময়",
+  "See all": "সব দেখুন",
+  "How it works": "কীভাবে কাজ করে",
+  "Four steps, no negotiation in the dark": "চারটি ধাপ, অন্ধকারে কোনো দরকষাকষি নয়",
+  "1 · Post the crop": "১ · ফসল পোস্ট করুন",
+  "2 · Agree the price": "২ · দামে রাজি হন",
+  "3 · We move it": "৩ · আমরা পৌঁছে দিই",
+  "4 · Money released": "৪ · টাকা ছাড় হয়",
+  "Photos, quantity, grade. The district rate is shown while the price is set.":
+    "ছবি, পরিমাণ, গ্রেড। দাম ঠিক করার সময়ই জেলার দর দেখানো হয়।",
+  "Buyers order or send an offer. Both sides see what similar lots closed at.":
+    "ক্রেতারা অর্ডার করেন বা প্রস্তাব পাঠান। দুই পক্ষই দেখতে পান একই রকম লট কত দামে বিক্রি হয়েছে।",
+  "A partner truck is assigned, weighed at pickup, tracked to the buyer's gate.":
+    "সঙ্গী ট্রাক নির্ধারিত হয়, পিকআপে ওজন হয়, ক্রেতার দরজা পর্যন্ত ট্র্যাক করা হয়।",
+  "Paid to bKash or bank within hours of confirmed delivery.":
+    "ডেলিভারি নিশ্চিত হওয়ার কয়েক ঘণ্টার মধ্যেই বিকাশ বা ব্যাংকে পরিশোধ।",
+  rate: "দর",
+  "Your asking price / kg": "আপনার চাওয়া দাম / কেজি",
+  "District rate today": "আজকের জেলার দর",
+  "No published district rate for this crop yet.": "এই ফসলের জন্য এখনো জেলার দর প্রকাশ হয়নি।",
+  "Sign up free": "ফ্রি অ্যাকাউন্ট খুলুন",
+  "Log in": "লগইন",
+  "Farmer desk": "কৃষক ডেস্ক",
+  "Admin console": "অ্যাডমিন কনসোল",
 };
 
 export const LanguageContext = React.createContext<Language>("en");
