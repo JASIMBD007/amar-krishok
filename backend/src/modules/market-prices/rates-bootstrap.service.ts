@@ -24,6 +24,20 @@ const OPENING_RATES: Record<string, number> = {
   Tomato: 980,
 };
 
+/** Yesterday's move per crop, so the change column reads honestly from the first day. */
+const OPENING_MOVES: Record<string, number> = {
+  "Boro rice": 2.1,
+  Cucumber: -2.1,
+  Eggplant: 0,
+  "Green Chilli": 6.2,
+  Jute: 0.9,
+  Mango: 3.5,
+  Onion: 4.8,
+  Potato: -1.4,
+  Rice: 0.9,
+  Tomato: 2.4,
+};
+
 @Injectable()
 export class RatesBootstrapService implements OnApplicationBootstrap {
   private readonly logger = new Logger(RatesBootstrapService.name);
@@ -42,6 +56,10 @@ export class RatesBootstrapService implements OnApplicationBootstrap {
 
     const priceDate = new Date();
     priceDate.setUTCHours(0, 0, 0, 0);
+    // Seed yesterday too, so the change column has something real to measure against instead of
+    // reading 0.0 % on every crop until the second day of publishing.
+    const previousDate = new Date(priceDate);
+    previousDate.setUTCDate(previousDate.getUTCDate() - 1);
 
     const district = await this.prisma.district.upsert({
       create: { name: BENCHMARK_DISTRICT },
@@ -56,22 +74,29 @@ export class RatesBootstrapService implements OnApplicationBootstrap {
         where: { name: cropName },
       });
       const wholesale = new Prisma.Decimal(ratePerMon).dividedBy(MON_IN_KG);
+      const yesterdayMove = OPENING_MOVES[cropName] ?? 0;
+      const previousWholesale = wholesale.dividedBy(1 + yesterdayMove / 100);
 
-      await this.prisma.marketPrice.upsert({
-        create: {
-          cropId: crop.id,
-          districtId: district.id,
-          farmerAsk: wholesale.times(0.86),
-          priceDate,
-          retail: wholesale.times(1.16),
-          source: "Opening benchmark",
-          wholesale,
-        },
-        update: {},
-        where: {
-          cropId_districtId_priceDate: { cropId: crop.id, districtId: district.id, priceDate },
-        },
-      });
+      for (const [date, value] of [
+        [previousDate, previousWholesale],
+        [priceDate, wholesale],
+      ] as const) {
+        await this.prisma.marketPrice.upsert({
+          create: {
+            cropId: crop.id,
+            districtId: district.id,
+            farmerAsk: value.times(0.86),
+            priceDate: date,
+            retail: value.times(1.16),
+            source: "Opening benchmark",
+            wholesale: value,
+          },
+          update: {},
+          where: {
+            cropId_districtId_priceDate: { cropId: crop.id, districtId: district.id, priceDate: date },
+          },
+        });
+      }
     }
 
     this.logger.log(`Seeded ${Object.keys(OPENING_RATES).length} opening district rates.`);

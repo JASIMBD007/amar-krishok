@@ -590,9 +590,11 @@ export default function App() {
               to={item.path}
               onClick={closeAllHeaderMenus}
             >
-              {item.staff ? <Shield aria-hidden="true" size={15} /> : null}
-              {t(item.label)}
-              {item.count === undefined ? null : <span className="nav-count">{t(String(item.count))}</span>}
+              <span className="nav-label">
+                {item.staff ? <Shield aria-hidden="true" size={15} /> : null}
+                {t(item.label)}
+                {item.count === undefined ? null : <span className="nav-count">{t(String(item.count))}</span>}
+              </span>
             </NavLink>
           ))}
         </nav>
@@ -630,35 +632,27 @@ export default function App() {
             </span>
           ) : null}
           <div className="login-shell">
-            <button
-              className={user ? "account-chip" : "secondary-button"}
-              type="button"
-              aria-expanded={loginOpen}
-              aria-haspopup="menu"
-              hidden={!user}
-              onClick={() => {
-                setNotificationPanelOpen(false);
-                toggleLoginOpen();
-              }}
-            >
-              {user ? (
-                <>
-                  <span className="account-chip-initials" aria-hidden="true">
-                    {accountInitials}
-                  </span>
-                  <span className="account-chip-copy">
-                    <strong>{user.name}</strong>
-                    <small>{roleLabel ? t(roleLabel) : ""}</small>
-                  </span>
-                </>
-              ) : (
-                <>
-                  <LockKeyhole size={17} />
-                  {t("Login")}
-                </>
-              )}
-              <ChevronDown size={15} />
-            </button>
+            {user ? (
+              <button
+                className="account-chip"
+                type="button"
+                aria-expanded={loginOpen}
+                aria-haspopup="menu"
+                onClick={() => {
+                  setNotificationPanelOpen(false);
+                  toggleLoginOpen();
+                }}
+              >
+                <span className="account-chip-initials" aria-hidden="true">
+                  {accountInitials}
+                </span>
+                <span className="account-chip-copy">
+                  <strong>{user.name}</strong>
+                  <small>{roleLabel ? t(roleLabel) : ""}</small>
+                </span>
+                <ChevronDown size={15} />
+              </button>
+            ) : null}
             {loginOpen && (
               <div className="login-menu" role="menu">
                 {user ? (

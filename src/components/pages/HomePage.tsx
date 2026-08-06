@@ -157,6 +157,7 @@ export function HomePage({ setView }: { setView: (view: View) => void }) {
       </section>
 
       <section className="how-it-works">
+        <div className="how-it-works-inner">
         <div className="section-title">
           <span>{t("How it works")}</span>
           <h2>{t("Four steps, no negotiation in the dark")}</h2>
@@ -174,6 +175,7 @@ export function HomePage({ setView }: { setView: (view: View) => void }) {
               </article>
             );
           })}
+        </div>
         </div>
       </section>
     </>

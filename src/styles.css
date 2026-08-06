@@ -9693,3 +9693,74 @@ textarea:focus-visible {
   font-size: 20px;
   font-weight: 700;
 }
+
+/* =====================================================================
+   Fixes from the live screenshots.
+   ===================================================================== */
+
+/* The red sign-up button was invisible: .danger-button paints red text, and
+   swapping the fill to solid red left red on red. */
+.header-auth .primary-button,
+.primary-button.danger-button {
+  color: #ffffff;
+  background: var(--brand);
+  border-color: var(--brand);
+}
+.header-auth .primary-button:hover,
+.primary-button.danger-button:hover {
+  color: #ffffff;
+  background: var(--brand-hover);
+}
+
+/* The hero kept the old photo wash and a 680px floor, so it dwarfed the demo's band. */
+.hero-section {
+  min-height: 0;
+  background: none;
+}
+.hero-copy {
+  display: flex;
+  align-content: stretch;
+}
+
+/* Nav label and count share a row; the current-route bar sits under both. */
+.main-nav a .nav-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+/* Ten crops overflow the strip, so the track scrolls and the unit caption stays put. */
+.rate-ticker-track {
+  flex: 1;
+  flex-wrap: nowrap;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.rate-ticker-track::-webkit-scrollbar {
+  display: none;
+}
+.rate-ticker-inner::before {
+  content: none;
+}
+.rate-ticker-link {
+  flex: none;
+}
+
+/* The band is full-bleed; its content still sits on the 1280px grid, left-aligned. */
+.how-it-works > * {
+  max-width: none;
+  margin-inline: 0;
+}
+.how-it-works-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  max-width: 1280px;
+  margin-inline: auto;
+  width: 100%;
+}
+.how-it-works .section-title {
+  margin-inline: 0;
+}
