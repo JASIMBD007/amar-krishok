@@ -85,7 +85,15 @@ export function MarketplacePage({
 
   const totalPages = Math.max(1, Math.ceil(results.length / MARKETPLACE_PAGE_SIZE));
   const resultVolume = results.reduce((total, lot) => total + lot.quantityMon, 0);
-  const districtRate = filters.crop === "All crops" ? null : rates[filters.crop] ?? null;
+  // With a crop selected this is that crop's rate; across all crops the demo still shows a
+  // benchmark, so fall back to the mean of everything published today.
+  const publishedRateValues = Object.values(rates);
+  const averageRate =
+    filters.crop === "All crops"
+      ? publishedRateValues.length
+        ? Math.round(publishedRateValues.reduce((total, rate) => total + rate, 0) / publishedRateValues.length)
+        : null
+      : rates[filters.crop] ?? null;
 
   useEffect(() => {
     setPage(0);
@@ -244,7 +252,7 @@ export function MarketplacePage({
         </div>
 
         <div className="market-result-head">
-          <div>
+          <div className="market-result-title">
             <strong>
               {filters.crop === "All crops" ? t("All crops") : cropLabel(filters.crop)}
               {district === "All districts" ? "" : ` · ${t(district)}`}
@@ -253,9 +261,9 @@ export function MarketplacePage({
               {v(results.length)} {t("listings")} · {v(resultVolume.toLocaleString("en-IN"))} {t("mon available")}
             </span>
           </div>
-          {districtRate ? (
+          {averageRate ? (
             <span className="market-result-rate">
-              {t("District average")} <strong className="mono-figure">{v(taka(districtRate))}</strong> / {t("mon")}
+              {t("District average")} <strong className="mono-figure">{v(taka(averageRate))}</strong> / {t("mon")}
             </span>
           ) : null}
         </div>
@@ -296,6 +304,7 @@ export function MarketplacePage({
                     <span>
                       <Truck aria-hidden="true" size={13} /> {t(lot.logisticsLabel)}
                     </span>
+                    <span className="lot-card-vs">{t("vs. market")}</span>
                   </div>
                   <div className="lot-card-actions">
                     <button className="primary-button full" type="button" onClick={() => navigate(`/lot/${lot.id}`)}>

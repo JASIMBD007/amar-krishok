@@ -9830,3 +9830,48 @@ textarea:focus-visible {
 .checkout-summary {
   top: calc(var(--mk-header-height, 66px) + 28px);
 }
+
+/* =====================================================================
+   Marketplace cards: the photo was escaping its 130px box and covering
+   the crop title underneath it.
+   ===================================================================== */
+.lot-card-photo {
+  overflow: hidden;
+}
+/* Pinning the image to the box means it can never push into the card body,
+   whatever the source image's intrinsic size. */
+.lot-card-photo img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.lot-card-photo .verify-badge {
+  z-index: 1;
+}
+
+/* The demo closes the meta row with a right-aligned caption. */
+.lot-card-vs {
+  margin-left: auto;
+  color: var(--fg-muted);
+  white-space: nowrap;
+}
+
+/* Title, count and the district average share one line. */
+.market-result-head {
+  align-items: center;
+  gap: 14px;
+}
+.market-result-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+}
+.market-result-title strong {
+  display: inline;
+}
+.market-result-rate {
+  margin-left: auto;
+}
