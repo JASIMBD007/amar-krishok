@@ -8092,3 +8092,143 @@ textarea:focus-visible {
   color: var(--fg-muted);
   font-size: 13px;
 }
+
+/* =====================================================================
+   Header, matched to the demo's own inline styles.
+   66px min-height, 1280px container, 24px gutters, flat white.
+   ===================================================================== */
+.site-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 8px 24px;
+  min-height: 66px;
+  /* The demo's 4px brand rule sits above the sticky bar, so it scrolls away. */
+  border-top: 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.app-shell::before {
+  content: "";
+  display: block;
+  height: 4px;
+  background: var(--ak-green);
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  padding: 0;
+  text-decoration: none;
+}
+.brand-mark {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 7px;
+  color: #ffffff;
+  background: var(--ak-green);
+  font-family: "Noto Sans Bengali", Inter, sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+}
+.brand strong {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--fg);
+}
+
+.main-nav {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.main-nav a {
+  position: relative;
+  flex-direction: column;
+  gap: 5px;
+  padding: 9px 12px;
+  color: var(--fg-subtle);
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  text-decoration: none;
+}
+/* The demo marks the current route with a 2px bar under the label. */
+.main-nav a.active::after,
+.main-nav a[aria-current="page"]::after {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--ak-green);
+}
+.main-nav a.nav-staff[aria-current="page"]::after {
+  background: var(--brand);
+}
+
+.language-toggle {
+  padding: 8px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--fg-subtle);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.bn-glyph {
+  font-family: "Noto Sans Bengali", Inter, sans-serif;
+}
+.text-link {
+  padding: 8px 4px;
+  border: 0;
+  background: none;
+  color: var(--interactive);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.text-link:hover {
+  text-decoration: underline;
+}
+.header-auth .primary-button {
+  min-height: 0;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+/* Push the account controls to the right the way the demo's spacer div does. */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+/* The hero band sits on the page background; the section below it is white. */
+.hero-section {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 40px 24px 48px;
+}
+/* Full-bleed white band with the content still centred on the 1280px grid. */
+.how-it-works {
+  max-width: none;
+  padding: 40px clamp(16px, 3vw, 24px) 48px;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+}
+.how-it-works > * {
+  max-width: 1280px;
+  margin-inline: auto;
+  width: 100%;
+}

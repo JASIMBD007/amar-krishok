@@ -6,7 +6,6 @@ import {
   LockKeyhole,
   Menu,
   Shield,
-  Sprout,
   UserRound,
   X,
 } from "lucide-react";
@@ -577,13 +576,10 @@ export default function App() {
           {menuOpen ? <X size={21} /> : <Menu size={21} />}
         </button>
         <NavLink className="brand" to="/" onClick={closeAllHeaderMenus} aria-label={t("AmarKrishok home")} end>
-          <span className="brand-mark">
-            <Sprout size={22} strokeWidth={2.6} />
+          <span className="brand-mark" aria-hidden="true">
+            অ
           </span>
-          <span>
-            <strong>AmarKrishok</strong>
-            <small>{t("Direct from Farmer, Fair for All")}</small>
-          </span>
+          <strong>AmarKrishok</strong>
         </NavLink>
 
         <nav className="main-nav" aria-label={t("Main navigation")}>
@@ -596,20 +592,20 @@ export default function App() {
             >
               {item.staff ? <Shield aria-hidden="true" size={15} /> : null}
               {t(item.label)}
-              {item.count ? <span className="nav-count">{t(String(item.count))}</span> : null}
+              {item.count === undefined ? null : <span className="nav-count">{t(String(item.count))}</span>}
             </NavLink>
           ))}
         </nav>
 
         <div className="header-actions">
-          <div className="language-switch" aria-label={t("Language switch")}>
-            <button className={language === "en" ? "active" : ""} type="button" onClick={() => setLanguage("en")}>
-              EN
-            </button>
-            <button className={language === "bn" ? "active" : ""} type="button" onClick={() => setLanguage("bn")}>
-              বাংলা
-            </button>
-          </div>
+          <button
+            className="language-toggle"
+            type="button"
+            aria-label={t("Language switch")}
+            onClick={() => setLanguage(language === "en" ? "bn" : "en")}
+          >
+            EN · <span className="bn-glyph">বাংলা</span>
+          </button>
           <NotificationCenter
             emptyLabel={user ? "No notifications right now" : "Sign in to see notifications"}
             notifications={user ? activeNotifications : []}
@@ -625,7 +621,7 @@ export default function App() {
           {/* Signed out, the demo shows the two calls to action directly rather than a menu. */}
           {!user ? (
             <span className="header-auth">
-              <NavLink className="secondary-button" to="/login" onClick={closeAllHeaderMenus}>
+              <NavLink className="text-link" to="/login" onClick={closeAllHeaderMenus}>
                 {t("Log in")}
               </NavLink>
               <button className="primary-button danger-button" type="button" onClick={openHeaderRegisterChoice}>
@@ -729,7 +725,7 @@ export default function App() {
                 onClick={closeAllHeaderMenus}
               >
                 {t(item.label)}
-                {item.count ? <span className="nav-count">{t(String(item.count))}</span> : null}
+                {item.count === undefined ? null : <span className="nav-count">{t(String(item.count))}</span>}
               </NavLink>
             ))}
           </nav>
