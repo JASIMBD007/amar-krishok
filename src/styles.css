@@ -9764,3 +9764,38 @@ textarea:focus-visible {
 .how-it-works .section-title {
   margin-inline: 0;
 }
+
+/* =====================================================================
+   Second screenshot pass: the hero was reserving vertical space the demo
+   does not, and the how-it-works band sat 24px off the hero's grid.
+   ===================================================================== */
+
+/* The old hero reserved up to 300px for the headline and 5.35rem for the
+   paragraph, which is the whole empty band between them. */
+.hero-copy h1 {
+  min-height: 0;
+  margin: 0;
+}
+.hero-copy p {
+  min-height: 0;
+  max-width: 520px;
+}
+.hero-copy {
+  justify-content: flex-start;
+  margin-top: 0;
+}
+
+/* Match the hero exactly: the white band is full width, and the 1280px
+   container with its 24px gutters lives inside it, so both content columns
+   start on the same line. */
+.how-it-works {
+  padding: 0;
+}
+.how-it-works-inner {
+  padding: 48px 24px;
+}
+
+/* The card header is the title and the link, nothing above them. */
+.console-header {
+  align-items: baseline;
+}

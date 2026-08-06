@@ -119,10 +119,7 @@ export function HomePage({ setView }: { setView: (view: View) => void }) {
 
         <div className="market-console">
           <div className="console-header">
-            <div>
-              <span>{t("Today's supply")}</span>
-              <strong>{t("Cheapest lots right now")}</strong>
-            </div>
+            <strong>{t("Cheapest lots right now")}</strong>
             <NavLink className="link-button" to="/marketplace">
               {t("See all")}
             </NavLink>
