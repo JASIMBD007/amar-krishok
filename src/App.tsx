@@ -552,7 +552,7 @@ export default function App() {
   return (
     <LanguageContext.Provider value={language}>
     <Seo language={language} pathname={location.pathname} />
-    <main className="app-shell" lang={language === "bn" ? "bn" : "en"}>
+    <div className="app-shell" lang={language === "bn" ? "bn" : "en"}>
       <header className="site-header">
         <button
           className="icon-button mobile-only"
@@ -722,7 +722,8 @@ export default function App() {
         <NotificationDetailDialog notification={selectedNotification} onClose={() => setSelectedNotification(null)} />
       )}
 
-      <Routes location={location}>
+      <main className="app-content">
+        <Routes location={location}>
         <Route path="/" element={<HomePage lots={marketplaceLots} setView={selectView} />} />
         <Route
           path="/marketplace"
@@ -813,7 +814,8 @@ export default function App() {
         <Route path="/signed-out" element={<SignedOutPage />} />
         <Route path="/market" element={<Navigate to="/marketplace" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+        </Routes>
+      </main>
       <SiteFooter />
       <FloatingSupportChat chatThreads={chatThreads} user={user} onSendMessage={sendParticipantChatMessage} />
       {logoutConfirmOpen && (
@@ -861,7 +863,7 @@ export default function App() {
           </section>
         </div>
       )}
-    </main>
+    </div>
     </LanguageContext.Provider>
   );
 }

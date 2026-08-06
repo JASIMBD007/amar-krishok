@@ -7564,9 +7564,13 @@ tbody tr:hover td { background: #f6f8f5; }
   min-height: 100vh;
   min-height: 100dvh;
 }
+.app-content {
+  flex: 1 0 auto;
+  min-width: 0;
+}
 .app-shell > .site-footer {
   flex: 0 0 auto;
-  margin-top: auto;
+  margin-top: 0;
 }
 
 /* ---- Login gating banner ---- */
