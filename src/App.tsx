@@ -723,7 +723,7 @@ export default function App() {
       )}
 
       <Routes location={location}>
-        <Route path="/" element={<HomePage setView={selectView} />} />
+        <Route path="/" element={<HomePage lots={marketplaceLots} setView={selectView} />} />
         <Route
           path="/marketplace"
           element={

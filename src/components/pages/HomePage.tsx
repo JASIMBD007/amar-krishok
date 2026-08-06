@@ -2,12 +2,11 @@ import { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { BadgeCheck, Camera, Handshake, ShieldCheck, ShoppingBasket, Sprout, Truck } from "lucide-react";
 import { fetchPlatformStats, type BackendPlatformStats } from "../../api/market";
-import { lots } from "../../data";
 import { useLanguage, useTranslate, useValueText } from "../../i18n";
 import { cheapestVsMarket } from "../../market/deriveLots";
 import { cropNamesBn } from "../../market/marketData";
 import { useMarketLots } from "../../market/useMarket";
-import type { View } from "../../types";
+import type { CropLot, View } from "../../types";
 import { DeltaPill } from "../market/MarketBits";
 
 const STEPS = [
@@ -43,10 +42,12 @@ function formatDuration(minutes: number) {
   return `${Math.floor(whole / 60)} h ${String(whole % 60).padStart(2, "0")}`;
 }
 
-export function HomePage({ setView }: { setView: (view: View) => void }) {
+export function HomePage({ lots, setView }: { lots: CropLot[]; setView: (view: View) => void }) {
   const language = useLanguage();
   const t = useTranslate();
   const v = useValueText();
+  // This is the same live collection used by the marketplace and detail routes, so every
+  // homepage link is guaranteed to resolve to a currently listed lot.
   const marketLots = useMarketLots(lots);
   const cheapestLots = cheapestVsMarket(marketLots, 3);
   const [stats, setStats] = useState<BackendPlatformStats | null>(null);
