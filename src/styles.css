@@ -11189,3 +11189,72 @@ textarea:focus-visible {
     grid-column: auto;
   }
 }
+
+/* =====================================================================
+   Rate ticker — continuous news crawl when all published crops do not fit.
+   The eyebrow and unit stay fixed while complete crop entries cycle through
+   the available middle window. This final block intentionally wins over the
+   older scrollable-track overrides above.
+   ===================================================================== */
+.rate-ticker-track {
+  position: relative;
+  display: block;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+.rate-ticker-marquee {
+  display: flex;
+  width: max-content;
+}
+.rate-ticker-group {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 26px;
+}
+.rate-ticker-marquee:not(.is-scrolling) .rate-ticker-group[aria-hidden="true"] {
+  display: none;
+}
+.rate-ticker-marquee.is-scrolling {
+  animation: mk-ticker-crawl 40s linear infinite;
+  will-change: transform;
+}
+.rate-ticker-marquee.is-scrolling .rate-ticker-group {
+  padding-right: 26px;
+}
+.rate-ticker-track:hover .rate-ticker-marquee,
+.rate-ticker-track:focus-within .rate-ticker-marquee {
+  animation-play-state: paused;
+}
+.rate-ticker .live-dot {
+  animation: mk-live-blink 1.2s ease-in-out infinite;
+  box-shadow: 0 0 0 0 rgba(159, 224, 188, 0.45);
+}
+@keyframes mk-ticker-crawl {
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+@keyframes mk-live-blink {
+  50% {
+    opacity: 0.25;
+    box-shadow: 0 0 0 4px rgba(159, 224, 188, 0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rate-ticker-track {
+    overflow-x: auto;
+  }
+  .rate-ticker-marquee.is-scrolling,
+  .rate-ticker .live-dot {
+    animation: none;
+    transform: none;
+  }
+  .rate-ticker-marquee.is-scrolling .rate-ticker-group {
+    padding-right: 0;
+  }
+  .rate-ticker-marquee .rate-ticker-group[aria-hidden="true"] {
+    display: none;
+  }
+}

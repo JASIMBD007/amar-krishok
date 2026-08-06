@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { useLanguage, useTranslate, useValueText } from "../../i18n";
 import { cropNamesBn } from "../../market/marketData";
@@ -29,6 +29,12 @@ export function RateTicker() {
   const ratesPublishedAt = useMarketStore((state) => state.ratesPublishedAt);
   const changes = useRateChanges();
   const crops = Object.keys(rates);
+  const tickerTrackRef = useRef<HTMLDivElement>(null);
+  const tickerGroupRef = useRef<HTMLDivElement>(null);
+  const [marqueeActive, setMarqueeActive] = useState(false);
+  const tickerSignature = crops
+    .map((crop) => `${crop}:${rates[crop]}:${changes[crop] ?? 0}`)
+    .join("|");
 
   // The ticker is on every route, so it is the natural place to pull today's published rates.
   useLoadRates();
@@ -51,11 +57,46 @@ export function RateTicker() {
     return () => observer.disconnect();
   }, []);
 
+  // Keep short rate lists still. When the full list is wider than its window, duplicate it and
+  // move both copies as one continuous TV-news-style crawl with no clipped crop names.
+  useLayoutEffect(() => {
+    const track = tickerTrackRef.current;
+    const group = tickerGroupRef.current;
+    if (!track || !group) {
+      setMarqueeActive(false);
+      return;
+    }
+
+    const measure = () => setMarqueeActive(group.scrollWidth > track.clientWidth + 1);
+    measure();
+
+    const observer = new ResizeObserver(measure);
+    observer.observe(track);
+    observer.observe(group);
+    return () => observer.disconnect();
+  }, [language, tickerSignature]);
+
   // Until staff have published a rate there is nothing honest to show, so the strip stays away
   // rather than sitting there empty.
   if (crops.length === 0) {
     return null;
   }
+
+  const renderItems = (keyPrefix: string) =>
+    crops.map((crop) => {
+      const change = changes[crop] ?? 0;
+      const direction = change > 0 ? "up" : change < 0 ? "down" : "flat";
+      const changeLabel =
+        change === 0 ? "0.0 %" : `${change > 0 ? "▲" : "▼"} ${Math.abs(change).toFixed(1)} %`;
+
+      return (
+        <span className="rate-ticker-item" key={`${keyPrefix}-${crop}`}>
+          {language === "bn" ? cropNamesBn[crop] ?? t(crop) : crop}
+          <strong>{v(rates[crop].toLocaleString("en-IN"))}</strong>
+          <em className={direction}>{v(changeLabel)}</em>
+        </span>
+      );
+    });
 
   return (
     <div className="rate-ticker">
@@ -64,21 +105,15 @@ export function RateTicker() {
           <span className="live-dot" aria-hidden="true" />
           {t("Today")} · {v(publishedTime(ratesPublishedAt, language))}
         </span>
-        <div className="rate-ticker-track">
-          {crops.map((crop) => {
-            const change = changes[crop] ?? 0;
-            const direction = change > 0 ? "up" : change < 0 ? "down" : "flat";
-            const changeLabel =
-              change === 0 ? "0.0 %" : `${change > 0 ? "▲" : "▼"} ${Math.abs(change).toFixed(1)} %`;
-
-            return (
-              <span className="rate-ticker-item" key={crop}>
-                {language === "bn" ? cropNamesBn[crop] ?? t(crop) : crop}
-                <strong>{v(rates[crop].toLocaleString("en-IN"))}</strong>
-                <em className={direction}>{v(changeLabel)}</em>
-              </span>
-            );
-          })}
+        <div className="rate-ticker-track" ref={tickerTrackRef}>
+          <div className={marqueeActive ? "rate-ticker-marquee is-scrolling" : "rate-ticker-marquee"}>
+            <div className="rate-ticker-group" ref={tickerGroupRef}>
+              {renderItems("primary")}
+            </div>
+            <div aria-hidden="true" className="rate-ticker-group">
+              {renderItems("duplicate")}
+            </div>
+          </div>
         </div>
         <NavLink className="rate-ticker-link" to="/prices">
           {t("৳ per mon (40 kg)")}
