@@ -8720,3 +8720,280 @@ textarea:focus-visible {
     gap: 28px;
   }
 }
+
+/* =====================================================================
+   Step 4 — Marketplace filter rail and results header, value-for-value.
+   ===================================================================== */
+.market-layout {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px;
+  grid-template-columns: minmax(220px, 264px) minmax(0, 1fr);
+  gap: 24px;
+}
+.filter-rail {
+  border-radius: 8px;
+}
+.filter-rail-head {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.filter-rail-head > span {
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.filter-rail-head .link-button {
+  font-size: 13px;
+  font-weight: 500;
+}
+.filter-section {
+  gap: 9px;
+  padding: 16px;
+  /* The demo divides sections with the sunken tone, not the card border. */
+  border-bottom: 1px solid var(--surface-sunken);
+}
+.filter-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+.filter-check-list {
+  gap: 9px;
+}
+.filter-check {
+  gap: 9px;
+  min-height: 0;
+  padding: 0;
+  width: 100%;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--fg-subtle);
+}
+.filter-check:hover {
+  background: none;
+}
+.filter-check.on {
+  font-weight: 400;
+  color: var(--fg-subtle);
+}
+/* The selected checkbox is the interactive blue, not the brand green. */
+.filter-box {
+  width: 17px;
+  height: 17px;
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+}
+.filter-check.on .filter-box {
+  border-color: var(--interactive);
+  background: var(--interactive);
+}
+.filter-check em {
+  color: var(--fg-disabled);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.filter-section select {
+  min-height: 0;
+  padding: 9px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  font-size: 14px;
+  color: var(--fg-subtle);
+}
+.filter-label-row strong {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+}
+.filter-range {
+  accent-color: var(--ak-green);
+}
+.filter-pill-group {
+  gap: 7px;
+}
+/* Grade pills are blue-selected in the demo, matching the checkboxes. */
+.filter-pill {
+  min-height: 0;
+  padding: 6px 12px;
+  border: 1px solid var(--border-strong);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--fg-subtle);
+}
+.filter-pill.on {
+  border-color: var(--interactive);
+  color: var(--interactive);
+  background: var(--interactive-soft);
+  font-weight: 600;
+}
+.filter-switch {
+  gap: 10px;
+  min-height: 0;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--fg-subtle);
+}
+.switch-track {
+  width: 38px;
+  height: 22px;
+  padding: 2px;
+  background: var(--border);
+}
+.switch-knob {
+  width: 18px;
+  height: 18px;
+}
+.switch-track.on .switch-knob {
+  transform: translateX(16px);
+}
+
+.market-results {
+  gap: 16px;
+}
+.market-search-card {
+  gap: 12px;
+  padding: 14px;
+  border-radius: 8px;
+}
+.market-search-card .search-field {
+  gap: 9px;
+  padding: 0 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  background: var(--bg);
+}
+.market-search-card .search-field input {
+  padding: 11px 0;
+  border: 0;
+  background: none;
+  font-size: 14px;
+  color: var(--fg);
+}
+.market-search-card .secondary-button {
+  gap: 7px;
+  min-height: 0;
+  padding: 10px 13px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  box-shadow: none;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--fg-subtle);
+}
+.market-result-head strong {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.market-result-head span,
+.market-result-rate {
+  font-size: 14px;
+  color: var(--fg-muted);
+}
+.market-result-rate strong {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--fg);
+}
+
+/* =====================================================================
+   Step 5 — Lot cards, value-for-value.
+   ===================================================================== */
+.lot-grid {
+  grid-template-columns: repeat(auto-fill, minmax(238px, 1fr));
+  gap: 16px;
+}
+.lot-card {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.lot-card-photo {
+  height: 130px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-sunken);
+  color: var(--fg-disabled);
+}
+/* The badge sits on white in the demo, not on a tinted fill. */
+.lot-card-photo .verify-badge {
+  top: 10px;
+  left: 10px;
+  gap: 5px;
+  padding: 4px 9px;
+  background: var(--surface);
+  font-size: 11px;
+  font-weight: 700;
+  box-shadow: none;
+}
+.lot-card-photo .verify-badge.verified {
+  color: var(--ak-green-deep);
+}
+.lot-card-photo .verify-badge.pending {
+  color: var(--fg-subtle);
+}
+.lot-card-body {
+  gap: 11px;
+  padding: 16px;
+}
+.lot-card-body > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.lot-card-body h2 {
+  font-size: 16px;
+  font-weight: 600;
+}
+.lot-card-body p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--fg-muted);
+}
+.lot-card-price {
+  align-items: flex-end;
+  gap: 8px;
+}
+.lot-card-price strong {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.lot-card-price > span {
+  padding-bottom: 3px;
+  font-size: 12px;
+  color: var(--fg-muted);
+  white-space: nowrap;
+}
+.lot-card-price .delta-pill {
+  padding: 3px 8px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.lot-card-meta {
+  gap: 14px;
+  padding-top: 11px;
+  padding-bottom: 0;
+  border-top: 1px solid var(--surface-sunken);
+  border-bottom: 0;
+  font-size: 12px;
+  color: var(--fg-subtle);
+}
+.lot-card-meta span {
+  gap: 5px;
+  white-space: nowrap;
+}
+.lot-card-meta svg {
+  color: var(--fg-muted);
+}
+.lot-card-actions {
+  margin-top: auto;
+}
+.lot-card-actions .primary-button {
+  min-height: 0;
+  padding: 11px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+}
