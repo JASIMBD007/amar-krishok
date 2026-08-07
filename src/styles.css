@@ -11258,3 +11258,22 @@ textarea:focus-visible {
     display: none;
   }
 }
+
+/* Marketplace trust status belongs with the lot title, leaving crop photography unobstructed. */
+.lot-card-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.lot-card-heading h2 {
+  flex: 1;
+  min-width: 0;
+}
+.lot-card-heading .verify-badge {
+  position: static;
+  flex: none;
+  gap: 4px;
+  padding: 3px 7px;
+  font-size: 10px;
+}

@@ -281,13 +281,15 @@ export function MarketplacePage({
                   ) : (
                     <Leaf aria-hidden="true" size={30} />
                   )}
-                  <VerificationBadge verified={lot.verified} />
                 </div>
                 <div className="lot-card-body">
                   <div>
-                    <h2>
-                      {cropLabel(lot.crop)} · {t("Grade")} {v(lot.grade)}
-                    </h2>
+                    <div className="lot-card-heading">
+                      <h2>
+                        {cropLabel(lot.crop)} · {t("Grade")} {v(lot.grade)}
+                      </h2>
+                      <VerificationBadge verified={lot.verified} />
+                    </div>
                     <p>
                       {t(lot.farmer)} · {t(lot.district)} · {v(lot.quantityMon)} {t("mon")}
                     </p>
