@@ -10,7 +10,6 @@ function currentTime(value: Date, language: "en" | "bn") {
     hour: "2-digit",
     hourCycle: "h23",
     minute: "2-digit",
-    timeZone: "Asia/Dhaka",
   }).format(value);
 }
 
@@ -36,7 +35,7 @@ export function RateTicker() {
   // The ticker is on every route, so it is the natural place to pull today's published rates.
   useLoadRates();
 
-  // This is a live Bangladesh market clock, not the timestamp of the latest rate publication.
+  // Use the visitor's device timezone, not the timestamp of the latest rate publication.
   useEffect(() => {
     const updateClock = () => setNow(new Date());
     updateClock();
