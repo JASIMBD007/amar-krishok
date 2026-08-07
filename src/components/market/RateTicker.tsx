@@ -5,16 +5,13 @@ import { cropNamesBn } from "../../market/marketData";
 import { useLoadRates, useRateChanges } from "../../market/useMarket";
 import { useMarketStore } from "../../store/useMarketStore";
 
-function publishedTime(value: string, language: "en" | "bn") {
-  const published = new Date(value);
-  if (Number.isNaN(published.getTime())) {
-    return "";
-  }
-
+function currentTime(value: Date, language: "en" | "bn") {
   return new Intl.DateTimeFormat(language === "bn" ? "bn-BD" : "en-GB", {
     hour: "2-digit",
+    hourCycle: "h23",
     minute: "2-digit",
-  }).format(published);
+    timeZone: "Asia/Dhaka",
+  }).format(value);
 }
 
 /**
@@ -26,18 +23,26 @@ export function RateTicker() {
   const t = useTranslate();
   const v = useValueText();
   const rates = useMarketStore((state) => state.rates);
-  const ratesPublishedAt = useMarketStore((state) => state.ratesPublishedAt);
   const changes = useRateChanges();
   const crops = Object.keys(rates);
   const tickerTrackRef = useRef<HTMLDivElement>(null);
   const tickerGroupRef = useRef<HTMLDivElement>(null);
   const [marqueeActive, setMarqueeActive] = useState(false);
+  const [now, setNow] = useState(() => new Date());
   const tickerSignature = crops
     .map((crop) => `${crop}:${rates[crop]}:${changes[crop] ?? 0}`)
     .join("|");
 
   // The ticker is on every route, so it is the natural place to pull today's published rates.
   useLoadRates();
+
+  // This is a live Bangladesh market clock, not the timestamp of the latest rate publication.
+  useEffect(() => {
+    const updateClock = () => setNow(new Date());
+    updateClock();
+    const interval = window.setInterval(updateClock, 30_000);
+    return () => window.clearInterval(interval);
+  }, []);
 
   // Only the header is sticky, and it wraps to a second line on narrow viewports, so the offset
   // the rails stick to is measured rather than guessed.
@@ -103,7 +108,7 @@ export function RateTicker() {
       <div className="rate-ticker-inner">
         <span className="rate-ticker-eyebrow">
           <span className="live-dot" aria-hidden="true" />
-          {t("Today")} · {v(publishedTime(ratesPublishedAt, language))}
+          {t("Today")} · <time dateTime={now.toISOString()}>{v(currentTime(now, language))}</time>
         </span>
         <div className="rate-ticker-track" ref={tickerTrackRef}>
           <div className={marqueeActive ? "rate-ticker-marquee is-scrolling" : "rate-ticker-marquee"}>
