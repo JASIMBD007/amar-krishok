@@ -11277,3 +11277,15 @@ textarea:focus-visible {
   padding: 3px 7px;
   font-size: 10px;
 }
+
+/* Show each uploaded crop photo in full instead of cropping it into the old 130px strip. */
+.lot-card-photo {
+  height: auto;
+  aspect-ratio: 3 / 2;
+  background: var(--surface-sunken);
+}
+.lot-card-photo img {
+  object-fit: contain;
+  object-position: center;
+  background: var(--surface-sunken);
+}
