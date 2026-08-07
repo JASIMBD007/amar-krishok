@@ -5,18 +5,21 @@ import { useRateChanges } from "../../market/useMarket";
 import { useMarketStore } from "../../store/useMarketStore";
 import { RateSparkline } from "../market/MarketBits";
 import { SectionTitle } from "../shared";
+import type { Language } from "../../types";
+import { environment } from "../../config/environment";
 
-function publishedStamp(value: string, language: "en" | "bn") {
+function publishedStamp(value: string, language: Language) {
   const published = new Date(value);
   if (Number.isNaN(published.getTime())) {
     return "";
   }
 
-  return new Intl.DateTimeFormat(language === "bn" ? "bn-BD" : "en-GB", {
+  return new Intl.DateTimeFormat(language === "bn-BD" ? "bn-BD" : "en-GB", {
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
     month: "short",
+    timeZone: environment.timeZone,
   }).format(published);
 }
 
@@ -39,7 +42,7 @@ export function PricesPage() {
       <div className="rates-head">
         <div>
           <SectionTitle eyebrow="Market rates" title="Today's district rate for every crop we track." t={t} />
-          {language === "bn" ? <span className="hero-subtitle-bn">আজকের বাজারদর · ৪২টি পাইকারি বাজার</span> : null}
+          {language === "bn-BD" ? <span className="hero-subtitle-bn">আজকের বাজারদর · ৪২টি পাইকারি বাজার</span> : null}
         </div>
         <span>
           {t("Collected from 42 wholesale markets · updated")} {v(publishedStamp(ratesPublishedAt, language))}

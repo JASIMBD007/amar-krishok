@@ -1,5 +1,6 @@
 import { Injectable, Logger, OnApplicationBootstrap } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
+import { cropCreateData, districtCreateData } from "../../common/catalogue-data";
 import { PrismaService } from "../prisma/prisma.service";
 import { BENCHMARK_DISTRICT, MON_IN_KG } from "./market-prices.service";
 
@@ -62,14 +63,14 @@ export class RatesBootstrapService implements OnApplicationBootstrap {
     previousDate.setUTCDate(previousDate.getUTCDate() - 1);
 
     const district = await this.prisma.district.upsert({
-      create: { name: BENCHMARK_DISTRICT },
+      create: districtCreateData(BENCHMARK_DISTRICT),
       update: {},
       where: { name: BENCHMARK_DISTRICT },
     });
 
     for (const [cropName, ratePerMon] of Object.entries(OPENING_RATES)) {
       const crop = await this.prisma.crop.upsert({
-        create: { name: cropName },
+        create: cropCreateData(cropName),
         update: { active: true },
         where: { name: cropName },
       });

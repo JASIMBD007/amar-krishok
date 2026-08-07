@@ -126,10 +126,6 @@ export function OrderPage({
     () => backendOrders.filter((order) => !["COMPLETED", "CANCELLED"].includes(order.status)),
     [backendOrders],
   );
-  const totalOrderValue = useMemo(
-    () => backendOrders.reduce((total, order) => total + numericValue(order.totalValue), 0),
-    [backendOrders],
-  );
   const activeOrderValue = useMemo(
     () => activeOrders.reduce((total, order) => total + numericValue(order.totalValue), 0),
     [activeOrders],

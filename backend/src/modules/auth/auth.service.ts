@@ -1,6 +1,7 @@
 import { ConflictException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { AccountStatus, PasswordResetStatus, Role, User } from "@prisma/client";
+import { AccountStatus, LegacyUser as User, PasswordResetStatus, Role } from "@prisma/client";
+import { districtCreateData } from "../../common/catalogue-data";
 import { compare, hash } from "bcryptjs";
 import { sign } from "jsonwebtoken";
 import { NotificationsService } from "../notifications/notifications.service";
@@ -47,12 +48,12 @@ export class AuthService {
     const user =
       role === Role.ADMIN
         ? username
-          ? await this.prisma.user.findUnique({
+          ? await this.prisma.legacyUser.findUnique({
               where: { username },
             })
           : null
         : phone
-          ? await this.prisma.user.findUnique({
+          ? await this.prisma.legacyUser.findUnique({
               where: { phone_role: { phone, role } },
             })
           : null;
@@ -85,7 +86,7 @@ export class AuthService {
     // Hash before the lookup (and unconditionally) so the response time doesn't reveal whether the account exists.
     const [passwordHash, user] = await Promise.all([
       hash(dto.password, 10),
-      this.prisma.user.findUnique({
+      this.prisma.legacyUser.findUnique({
         where: { phone_role: { phone: cleanPhone, role: dto.role } },
       }),
     ]);
@@ -134,8 +135,8 @@ export class AuthService {
     const cleanPhone = dto.phone.trim();
     const username = registrationUsername(role, cleanPhone, dto.username);
     const [existingUsername, existingUser] = await Promise.all([
-      this.prisma.user.findUnique({ where: { username } }),
-      this.prisma.user.findUnique({
+      this.prisma.legacyUser.findUnique({ where: { username } }),
+      this.prisma.legacyUser.findUnique({
         where: { phone_role: { phone: cleanPhone, role } },
       }),
     ]);
@@ -149,17 +150,17 @@ export class AuthService {
     }
 
     if (existingUser) {
-      await this.prisma.user.delete({ where: { id: existingUser.id } });
+      await this.prisma.legacyUser.delete({ where: { id: existingUser.id } });
     }
 
     const district = await this.prisma.district.upsert({
-      create: { name: dto.district },
+      create: districtCreateData(dto.district),
       update: { active: true },
       where: { name: dto.district },
     });
     const passwordHash = await hash(dto.password, 10);
 
-    const user = await this.prisma.user.create({
+    const user = await this.prisma.legacyUser.create({
       data: {
         address: dto.address,
         districtId: district.id,

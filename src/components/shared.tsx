@@ -1,13 +1,14 @@
 import React from "react";
 import type { LucideIcon } from "lucide-react";
 import { BadgeCheck, Banknote, CalendarClock, CalendarDays, MapPin, PackageCheck, PenLine } from "lucide-react";
+import { environment } from "../config/environment";
 import { useLanguage } from "../i18n";
-import type { CropLot } from "../types";
+import type { CropLot, Language } from "../types";
 
 export type Translator = (text: string) => string;
 export type ValueFormatter = (text: string | number) => string;
 
-function formatPostedDate(value: string | undefined, language: "en" | "bn") {
+function formatPostedDate(value: string | undefined, language: Language) {
   if (!value) {
     return "";
   }
@@ -17,9 +18,10 @@ function formatPostedDate(value: string | undefined, language: "en" | "bn") {
     return "";
   }
 
-  return new Intl.DateTimeFormat(language === "bn" ? "bn-BD" : "en", {
+  return new Intl.DateTimeFormat(language, {
     day: "numeric",
     month: "short",
+    timeZone: environment.timeZone,
   }).format(date);
 }
 

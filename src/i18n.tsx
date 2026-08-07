@@ -1,4 +1,5 @@
 import React from "react";
+import { DEFAULT_LOCALE } from "./i18n/config";
 import type { Language } from "./types";
 
 const bn: Record<string, string> = {
@@ -1212,7 +1213,7 @@ const bn: Record<string, string> = {
   "Admin console": "অ্যাডমিন কনসোল",
 };
 
-export const LanguageContext = React.createContext<Language>("en");
+export const LanguageContext = React.createContext<Language>(DEFAULT_LOCALE);
 const banglaDigits = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
 
 function localizeBanglaValue(text: string) {
@@ -1228,7 +1229,7 @@ function localizeBanglaValue(text: string) {
 }
 
 export function translate(language: Language, text: string) {
-  return language === "bn" ? bn[text] ?? localizeBanglaValue(text) : text;
+  return language === "bn-BD" ? bn[text] ?? localizeBanglaValue(text) : text;
 }
 
 export function useTranslate() {
@@ -1242,5 +1243,5 @@ export function useLanguage() {
 
 export function useValueText() {
   const language = React.useContext(LanguageContext);
-  return (text: string | number) => (language === "bn" ? localizeBanglaValue(String(text)) : String(text));
+  return (text: string | number) => (language === "bn-BD" ? localizeBanglaValue(String(text)) : String(text));
 }

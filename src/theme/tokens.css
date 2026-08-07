@@ -1,0 +1,74 @@
+:root {
+  color-scheme: light;
+
+  --font-sans: Inter, "Noto Sans Bengali", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-bengali: "Noto Sans Bengali", Inter, sans-serif;
+
+  --color-brand: #146b45;
+  --color-brand-hover: #0f5636;
+  --color-brand-soft: #e7f2ec;
+  --color-brand-deep: #0f5636;
+  --color-console: #0e1a14;
+  --color-console-raised: #182a21;
+  --color-console-active: #1d3329;
+  --color-console-mint: #9fe0bc;
+  --color-danger: #cc0001;
+  --color-danger-hover: #a80001;
+  --color-danger-soft: #fee2e2;
+  --color-danger-border: #f3c7c7;
+  --color-interactive: #1c69d4;
+  --color-interactive-hover: #14509f;
+  --color-interactive-soft: #dbeafe;
+  --color-background: #f5f7fa;
+  --color-surface: #ffffff;
+  --color-sunken: #f1f3f6;
+  --color-border: #e2e5eb;
+  --color-border-strong: #c5cad3;
+  --color-hairline: #f1f3f6;
+  --color-text: #111827;
+  --color-text-strong: #374151;
+  --color-text-body: #4b5563;
+  --color-text-muted: #6b7280;
+  --color-text-disabled: #9aa3af;
+  --color-good: #15803d;
+  --color-good-soft: #dcfce7;
+  --color-warn: #b45309;
+  --color-warn-soft: #fef3e2;
+  --color-warn-deep: #8a4b08;
+  --overlay-flat: rgba(17, 24, 39, 0.4);
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  --radius-input: 4px;
+  --radius-control: 6px;
+  --radius-card: 8px;
+  --radius-modal: 12px;
+  --radius-pill: 999px;
+
+  --text-11: 11px;
+  --text-12: 12px;
+  --text-13: 13px;
+  --text-14: 14px;
+  --text-15: 15px;
+  --text-16: 16px;
+  --text-17: 17px;
+  --text-18: 18px;
+  --text-24: 24px;
+  --text-26: 26px;
+  --text-28: 28px;
+  --text-32: 32px;
+  --text-50: 50px;
+
+  --duration-hover: 120ms;
+  --duration-state: 200ms;
+  --duration-drawer: 320ms;
+  --ease-standard: cubic-bezier(0.16, 1, 0.3, 1);
+}

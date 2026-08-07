@@ -184,7 +184,7 @@ export default function App() {
     updateRegistrationStatus,
     user,
   } = useAppStore();
-  const t = (text: string) => translate(language, text);
+  const t = useCallback((text: string) => translate(language, text), [language]);
   const [backendNotifications, setBackendNotifications] = useState<AppNotification[] | null>(null);
   const [notificationOrders, setNotificationOrders] = useState<BackendOrder[]>([]);
   const [notificationLots, setNotificationLots] = useState<BackendCropLot[]>([]);
@@ -241,7 +241,7 @@ export default function App() {
     if (!account || account.status !== "active") {
       setUser(null);
     }
-  }, [registrations, user]);
+  }, [registrations, setUser, user]);
 
   const refreshMarketplaceLots = useCallback(() => {
     let isActive = true;
@@ -333,7 +333,7 @@ export default function App() {
       const districtMatch = district === "All districts" || lot.district === district;
       return textMatch && districtMatch;
     });
-  }, [query, district, language, marketplaceLots]);
+  }, [district, marketplaceLots, query, t]);
 
   useEffect(() => {
     if (!user?.accessToken) {
@@ -381,7 +381,7 @@ export default function App() {
     } else {
       setNotificationLots([]);
     }
-  }, [handleProtectedRequestError, user?.accessToken, user?.role]);
+  }, [handleProtectedRequestError, user]);
 
   const fallbackNotifications = useMemo(
     () =>
@@ -558,7 +558,7 @@ export default function App() {
   return (
     <LanguageContext.Provider value={language}>
     <Seo language={language} pathname={location.pathname} />
-    <div className="app-shell" lang={language === "bn" ? "bn" : "en"}>
+    <div className="app-shell" lang={language}>
       <header className="site-header">
         <button
           className="icon-button mobile-only"
@@ -601,7 +601,7 @@ export default function App() {
             className="language-toggle"
             type="button"
             aria-label={t("Language switch")}
-            onClick={() => setLanguage(language === "en" ? "bn" : "en")}
+            onClick={() => setLanguage(language === "en" ? "bn-BD" : "en")}
           >
             EN · <span className="bn-glyph">বাংলা</span>
           </button>

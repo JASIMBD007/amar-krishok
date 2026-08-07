@@ -40,7 +40,7 @@ export class OptionalAuthGuard implements CanActivate {
         return true;
       }
 
-      const user = await this.prisma.user.findUnique({ where: { id: payload.sub } });
+      const user = await this.prisma.legacyUser.findUnique({ where: { id: payload.sub } });
       if (!user || user.role !== payload.role) {
         return true;
       }

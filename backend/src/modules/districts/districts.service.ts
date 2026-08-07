@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { districtCreateData } from "../../common/catalogue-data";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateDistrictDto } from "./dto/create-district.dto";
 
@@ -15,7 +16,7 @@ export class DistrictsService {
 
   create(dto: CreateDistrictDto) {
     return this.prisma.district.upsert({
-      create: { active: dto.active ?? true, name: dto.name },
+      create: { ...districtCreateData(dto.name), active: dto.active ?? true },
       update: { active: dto.active ?? true },
       where: { name: dto.name },
     });

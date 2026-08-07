@@ -55,7 +55,7 @@ export function LotDetailPage({ lots, user }: { lots: CropLot[]; user: AuthUser 
     setQuantity(Math.max(MIN_ORDER_MON, Math.min(lot.quantityMon, QTY_STEP_MON * 12)));
     setOfferPrice(Math.round(lot.pricePerMon * 0.96));
     setOfferOpen(false);
-  }, [lot?.id, lot?.pricePerMon, lot?.quantityMon]);
+  }, [lot]);
 
   // A buyer's own offer on this lot, so the page can report whether the farmer has answered.
   useEffect(() => {
@@ -101,7 +101,7 @@ export function LotDetailPage({ lots, user }: { lots: CropLot[]; user: AuthUser 
     );
   }
 
-  const cropLabel = language === "bn" ? cropNamesBn[lot.crop] ?? t(lot.crop) : t(lot.crop);
+  const cropLabel = language === "bn-BD" ? cropNamesBn[lot.crop] ?? t(lot.crop) : t(lot.crop);
   const clampedQuantity = Math.max(MIN_ORDER_MON, Math.min(quantity, Math.max(MIN_ORDER_MON, lot.quantityMon)));
   const costs = orderCosts(clampedQuantity, lot.pricePerMon);
   const closedNear = Math.round(lot.rate * 1.004);

@@ -26,14 +26,14 @@ export class AdminBootstrapService implements OnApplicationBootstrap {
     }
 
     const passwordHash = await hash(password, 10);
-    const existingAdmin = await this.prisma.user.findFirst({
+    const existingAdmin = await this.prisma.legacyUser.findFirst({
       where: {
         OR: [{ username }, { phone, role: Role.ADMIN }],
       },
     });
 
     if (existingAdmin) {
-      await this.prisma.user.update({
+      await this.prisma.legacyUser.update({
         data: {
           name,
           passwordHash,
@@ -44,7 +44,7 @@ export class AdminBootstrapService implements OnApplicationBootstrap {
         where: { id: existingAdmin.id },
       });
     } else {
-      await this.prisma.user.create({
+      await this.prisma.legacyUser.create({
         data: {
           name,
           passwordHash,

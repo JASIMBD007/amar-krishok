@@ -70,9 +70,116 @@ enum OfferStatus {
   OPEN
   ACCEPTED
   DECLINED
+  EXPIRED
 }
 
-model User {
+enum PlatformRole {
+  FARMER
+  BUYER
+  STAFF
+}
+
+enum PlatformUserStatus {
+  ACTIVE
+  PENDING
+  RESTRICTED
+}
+
+enum StaffRoleType {
+  SUPER_ADMIN
+  SUPPORT_AGENT
+}
+
+enum KycStatus {
+  NONE
+  IN_REVIEW
+  VERIFIED
+  REJECTED
+}
+
+enum KycDocumentKind {
+  NID_FRONT
+  NID_BACK
+  LAND
+  BANK_PROOF
+}
+
+enum PayoutMethod {
+  BKASH
+  NAGAD
+  BANK
+}
+
+enum RateFeedState {
+  LIVE
+  LATE
+  MISSING
+}
+
+enum ListingGrade {
+  A
+  B
+  C
+}
+
+enum ListingStatus {
+  DRAFT
+  LIVE
+  PAUSED
+  SUSPENDED
+  SOLD
+}
+
+enum OrderStage {
+  PLACED
+  ACCEPTED
+  PICKED_UP
+  DELIVERED
+  PAID
+  REFUNDED
+}
+
+enum EscrowState {
+  HELD
+  RELEASED
+  REFUNDED
+  PARTIAL
+  FROZEN
+}
+
+enum DisputeState {
+  OPEN
+  AWAITING_INFO
+  RESOLVED_RELEASE
+  RESOLVED_REFUND
+  RESOLVED_PARTIAL
+}
+
+enum PayoutState {
+  QUEUED
+  SENT
+  FAILED
+}
+
+enum ThreadKind {
+  DIRECT
+  SUPPORT
+}
+
+enum NotificationChannel {
+  APP
+  SMS
+}
+
+enum NotificationCategory {
+  ORDER
+  PAYOUT
+  RATE
+  SYSTEM
+}
+
+/// Compatibility model for the currently deployed application. P0's v2 domain starts at `User` below.
+model LegacyUser {
   id                   String                 @id @default(cuid())
   username             String                 @unique
   name                 String
@@ -93,11 +200,11 @@ model User {
   buyerProfile         BuyerProfile?
   farmerProfile        FarmerProfile?
   cropLots             CropLot[]              @relation("FarmerLots")
-  orders               Order[]                @relation("BuyerOrders")
+  orders               LegacyOrder[]          @relation("BuyerOrders")
   lotOffers            LotOffer[]             @relation("BuyerOffers")
-  payouts              Payout[]               @relation("FarmerPayouts")
-  notifications        Notification[]
-  auditLogs            AuditLog[]
+  payouts              LegacyPayout[]         @relation("FarmerPayouts")
+  notifications        LegacyNotification[]
+  auditLogs            LegacyAuditLog[]
   uploadedFiles        UploadedFile[]
   chatMessages         ChatMessage[]
   passwordResets       PasswordResetRequest[] @relation("PasswordResetRequests")
@@ -105,51 +212,157 @@ model User {
 
   @@unique([phone, role])
   @@index([role, status])
+  @@map("User")
 }
 
 model BuyerProfile {
-  id          String   @id @default(cuid())
-  userId      String   @unique
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id          String     @id @default(cuid())
+  userId      String     @unique
+  user        LegacyUser @relation(fields: [userId], references: [id], onDelete: Cascade)
   buyerType   String?
   monthlyNeed String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 }
 
 model FarmerProfile {
-  id          String   @id @default(cuid())
-  userId      String   @unique
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id          String     @id @default(cuid())
+  userId      String     @unique
+  user        LegacyUser @relation(fields: [userId], references: [id], onDelete: Cascade)
   farmSize    String?
   walletPhone String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model User {
+  id                String             @id @default(cuid())
+  phone             String             @unique
+  name              String
+  role              PlatformRole
+  districtId        String
+  upazila           String
+  email             String?
+  bio               String?
+  avatarUrl         String?
+  status            PlatformUserStatus @default(PENDING)
+  locale            String             @default("bn-BD")
+  pinHash           String
+  twoFactorEnabled  Boolean            @default(false)
+  createdAt         DateTime           @default(now())
+  district          District           @relation(fields: [districtId], references: [id])
+  staffRole         StaffRole?
+  devices           Device[]
+  kycProfile        KycProfile?        @relation("UserKycProfile")
+  kycReviews        KycProfile[]       @relation("KycReviewer")
+  kycDocuments      KycDocument[]
+  payoutAccount     PayoutAccount?
+  listings          Listing[]          @relation("ListingFarmer")
+  suspendedListings Listing[]          @relation("ListingSuspender")
+  offers            Offer[]            @relation("OfferBuyer")
+  buyerOrders       Order[]            @relation("PlatformBuyerOrders")
+  farmerOrders      Order[]            @relation("PlatformFarmerOrders")
+  releasedEscrows   Escrow[]           @relation("EscrowReleaser")
+  payouts           Payout[]           @relation("PlatformFarmerPayouts")
+  openedDisputes    Dispute[]          @relation("DisputeOpener")
+  resolvedDisputes  Dispute[]          @relation("DisputeResolver")
+  assignedThreads   Thread[]           @relation("AssignedStaff")
+  threadMemberships ThreadMember[]
+  messages          Message[]
+  notifications     Notification[]
+  notificationPref  NotificationPref?
+  publishedRates    MarketRate[]       @relation("RatePublisher")
+  auditLogs         AuditLog[]         @relation("AuditActor")
+
+  @@index([role, status])
+  @@map("PlatformUser")
+}
+
+model StaffRole {
+  userId String        @id
+  role   StaffRoleType
+  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Device {
+  id         String    @id @default(cuid())
+  userId     String
+  label      String
+  lastSeenAt DateTime
+  revokedAt  DateTime?
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt])
+}
+
+model KycProfile {
+  userId          String    @id
+  nid             String
+  khatian         String
+  status          KycStatus @default(NONE)
+  reviewedById    String?
+  reviewedAt      DateTime?
+  rejectionReason String?
+  user            User      @relation("UserKycProfile", fields: [userId], references: [id], onDelete: Cascade)
+  reviewedBy      User?     @relation("KycReviewer", fields: [reviewedById], references: [id])
+}
+
+model KycDocument {
+  id         String          @id @default(cuid())
+  userId     String
+  kind       KycDocumentKind
+  objectKey  String
+  status     String
+  uploadedAt DateTime        @default(now())
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, kind])
+}
+
+model PayoutAccount {
+  userId      String       @id
+  method      PayoutMethod
+  accountNo   String
+  verifiedAt  DateTime?
+  lockedUntil DateTime?
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model District {
   id            String         @id @default(cuid())
   name          String         @unique
+  nameEn        String
+  nameBn        String
   active        Boolean        @default(true)
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
+  legacyUsers   LegacyUser[]
   users         User[]
   cropLots      CropLot[]
-  orders        Order[]
+  listings      Listing[]
+  legacyOrders  LegacyOrder[]
   marketPrices  MarketPrice[]
+  marketRates   MarketRate[]
+  rateFeeds     RateFeed[]
   logisticsFrom LogisticsJob[] @relation("OriginDistrict")
   logisticsTo   LogisticsJob[] @relation("DestinationDistrict")
 }
 
 model Crop {
   id           String        @id @default(cuid())
+  key          String        @unique
   name         String        @unique
+  nameEn       String
+  nameBn       String
+  unit         String        @default("mon")
   active       Boolean       @default(true)
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   cropLots     CropLot[]
+  listings     Listing[]
   orderItems   OrderItem[]
   marketPrices MarketPrice[]
+  marketRates  MarketRate[]
 }
 
 model CropLot {
@@ -167,7 +380,7 @@ model CropLot {
   imageUrl      String?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
-  farmer        User           @relation("FarmerLots", fields: [farmerId], references: [id])
+  farmer        LegacyUser     @relation("FarmerLots", fields: [farmerId], references: [id])
   crop          Crop           @relation(fields: [cropId], references: [id])
   district      District       @relation(fields: [districtId], references: [id])
   orderItems    OrderItem[]
@@ -191,13 +404,249 @@ model LotOffer {
   updatedAt   DateTime    @updatedAt
   respondedAt DateTime?
   cropLot     CropLot     @relation(fields: [cropLotId], references: [id], onDelete: Cascade)
-  buyer       User        @relation("BuyerOffers", fields: [buyerId], references: [id], onDelete: Cascade)
+  buyer       LegacyUser  @relation("BuyerOffers", fields: [buyerId], references: [id], onDelete: Cascade)
 
   @@index([cropLotId, status])
   @@index([buyerId, status])
 }
 
+model MarketRate {
+  id            String   @id @default(cuid())
+  cropId        String
+  districtId    String
+  date          DateTime @db.Date
+  price         Int
+  prevPrice     Int
+  source        String
+  publishedById String
+  publishedAt   DateTime
+  crop          Crop     @relation(fields: [cropId], references: [id])
+  district      District @relation(fields: [districtId], references: [id])
+  publishedBy   User     @relation("RatePublisher", fields: [publishedById], references: [id])
+
+  @@unique([cropId, districtId, date])
+  @@index([cropId, districtId, date])
+}
+
+model RateFeed {
+  id            String        @id @default(cuid())
+  districtId    String
+  source        String
+  lastSuccessAt DateTime?
+  state         RateFeedState
+  district      District      @relation(fields: [districtId], references: [id])
+
+  @@index([districtId, state])
+}
+
+model Listing {
+  id            String         @id @default(cuid())
+  farmerId      String
+  cropId        String
+  districtId    String
+  grade         ListingGrade
+  quantity      Int
+  price         Int
+  pickupWindow  String
+  note          String?
+  status        ListingStatus  @default(DRAFT)
+  suspendedById String?
+  suspendReason String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  farmer        User           @relation("ListingFarmer", fields: [farmerId], references: [id])
+  crop          Crop           @relation(fields: [cropId], references: [id])
+  district      District       @relation(fields: [districtId], references: [id])
+  suspendedBy   User?          @relation("ListingSuspender", fields: [suspendedById], references: [id])
+  photos        ListingPhoto[]
+  offers        Offer[]
+  orders        Order[]
+
+  @@index([status, cropId, districtId, price])
+  @@index([farmerId, status])
+}
+
+model ListingPhoto {
+  id        String  @id @default(cuid())
+  listingId String
+  objectKey String
+  position  Int
+  caption   String?
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@unique([listingId, position])
+}
+
+model Offer {
+  id        String      @id @default(cuid())
+  listingId String
+  buyerId   String
+  price     Int
+  quantity  Int
+  status    OfferStatus @default(OPEN)
+  listing   Listing     @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  buyer     User        @relation("OfferBuyer", fields: [buyerId], references: [id], onDelete: Cascade)
+
+  @@index([listingId, status])
+  @@index([buyerId, status])
+}
+
 model Order {
+  id            String     @id(map: "PlatformOrder_pkey") @default(cuid())
+  code          String     @unique
+  listingId     String
+  buyerId       String
+  farmerId      String
+  quantity      Int
+  unitPrice     Int
+  total         Int
+  feeAmount     Int
+  stage         OrderStage @default(PLACED)
+  paymentMethod String
+  createdAt     DateTime   @default(now())
+  listing       Listing    @relation(fields: [listingId], references: [id])
+  buyer         User       @relation("PlatformBuyerOrders", fields: [buyerId], references: [id])
+  farmer        User       @relation("PlatformFarmerOrders", fields: [farmerId], references: [id])
+  escrow        Escrow?
+  disputes      Dispute[]
+  threads       Thread[]
+
+  @@index([buyerId, createdAt])
+  @@index([farmerId, createdAt])
+  @@map("PlatformOrder")
+}
+
+model Escrow {
+  orderId      String      @id
+  amount       Int
+  state        EscrowState @default(HELD)
+  heldAt       DateTime
+  releasedAt   DateTime?
+  releasedById String?
+  note         String?
+  order        Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  releasedBy   User?       @relation("EscrowReleaser", fields: [releasedById], references: [id])
+}
+
+model Payout {
+  id        String       @id @default(cuid())
+  farmerId  String
+  amount    Int
+  method    PayoutMethod
+  accountNo String
+  state     PayoutState  @default(QUEUED)
+  batchId   String
+  reference String?
+  sentAt    DateTime?
+  farmer    User         @relation("PlatformFarmerPayouts", fields: [farmerId], references: [id])
+
+  @@index([farmerId, state])
+  @@map("PlatformPayout")
+}
+
+model Dispute {
+  id             String       @id @default(cuid())
+  code           String       @unique
+  orderId        String
+  openedById     String
+  subject        String
+  state          DisputeState
+  slaDueAt       DateTime
+  resolvedById   String?
+  resolutionNote String?
+  refundAmount   Int?
+  order          Order        @relation(fields: [orderId], references: [id])
+  openedBy       User         @relation("DisputeOpener", fields: [openedById], references: [id])
+  resolvedBy     User?        @relation("DisputeResolver", fields: [resolvedById], references: [id])
+
+  @@index([state, slaDueAt])
+}
+
+model Thread {
+  id              String         @id @default(cuid())
+  subject         String
+  orderId         String?
+  kind            ThreadKind
+  escalatedAt     DateTime?
+  assignedStaffId String?
+  order           Order?         @relation(fields: [orderId], references: [id])
+  assignedStaff   User?          @relation("AssignedStaff", fields: [assignedStaffId], references: [id])
+  members         ThreadMember[]
+  messages        Message[]
+
+  @@index([kind, assignedStaffId])
+}
+
+model ThreadMember {
+  threadId   String
+  userId     String
+  lastReadAt DateTime
+  thread     Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([threadId, userId])
+  @@index([userId, lastReadAt])
+}
+
+model Message {
+  id            String   @id @default(cuid())
+  threadId      String
+  authorId      String?
+  body          String
+  createdAt     DateTime @default(now())
+  attachmentKey String?
+  thread        Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  author        User?    @relation(fields: [authorId], references: [id])
+
+  @@index([threadId, createdAt])
+}
+
+model Notification {
+  id        String               @id(map: "PlatformNotification_pkey") @default(cuid())
+  userId    String
+  channel   NotificationChannel
+  category  NotificationCategory
+  title     String
+  body      String
+  icon      String
+  tone      String
+  entityRef String
+  readAt    DateTime?
+  sentAt    DateTime
+  createdAt DateTime             @default(now())
+  user      User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+  @@map("PlatformNotification")
+}
+
+model NotificationPref {
+  userId       String  @id
+  smsOrders    Boolean @default(true)
+  smsRates     Boolean @default(true)
+  appAll       Boolean @default(true)
+  weeklyDigest Boolean @default(false)
+  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id         String   @id(map: "PlatformAuditLog_pkey") @default(cuid())
+  actorId    String
+  action     String
+  entityType String
+  entityId   String
+  before     Json?
+  after      Json?
+  ip         String
+  createdAt  DateTime @default(now())
+  actor      User     @relation("AuditActor", fields: [actorId], references: [id])
+
+  @@index([entityType, entityId])
+  @@map("PlatformAuditLog")
+}
+
+/// Compatibility order for the currently deployed multi-item API.
+model LegacyOrder {
   id              String         @id @default(cuid())
   buyerId         String
   districtId      String
@@ -211,7 +660,7 @@ model Order {
   disputeOpenedAt DateTime?
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
-  buyer           User           @relation("BuyerOrders", fields: [buyerId], references: [id])
+  buyer           LegacyUser     @relation("BuyerOrders", fields: [buyerId], references: [id])
   district        District       @relation(fields: [districtId], references: [id])
   items           OrderItem[]
   logisticsJobs   LogisticsJob[]
@@ -219,18 +668,19 @@ model Order {
 
   @@index([buyerId, status])
   @@index([districtId, status])
+  @@map("Order")
 }
 
 model OrderItem {
-  id                String   @id @default(cuid())
+  id                String      @id @default(cuid())
   orderId           String
   cropId            String
   cropLotId         String?
-  quantityKg        Decimal  @db.Decimal(12, 2)
-  offeredPricePerKg Decimal  @db.Decimal(12, 2)
-  order             Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  crop              Crop     @relation(fields: [cropId], references: [id])
-  cropLot           CropLot? @relation(fields: [cropLotId], references: [id])
+  quantityKg        Decimal     @db.Decimal(12, 2)
+  offeredPricePerKg Decimal     @db.Decimal(12, 2)
+  order             LegacyOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  crop              Crop        @relation(fields: [cropId], references: [id])
+  cropLot           CropLot?    @relation(fields: [cropLotId], references: [id])
 }
 
 model MarketPrice {
@@ -264,7 +714,7 @@ model LogisticsJob {
   proofUrl              String?
   createdAt             DateTime        @default(now())
   updatedAt             DateTime        @updatedAt
-  order                 Order?          @relation(fields: [orderId], references: [id])
+  order                 LegacyOrder?    @relation(fields: [orderId], references: [id])
   cropLot               CropLot?        @relation(fields: [cropLotId], references: [id])
   originDistrict        District?       @relation("OriginDistrict", fields: [originDistrictId], references: [id])
   destinationDistrict   District?       @relation("DestinationDistrict", fields: [destinationDistrictId], references: [id])
@@ -282,26 +732,26 @@ model QualityCheck {
 }
 
 model Payment {
-  id           String        @id @default(cuid())
+  id           String         @id @default(cuid())
   orderId      String
   /// The full amount held in escrow: crop value + transport + platform fee.
-  amount       Decimal       @db.Decimal(12, 2)
-  transportFee Decimal       @default(0) @db.Decimal(12, 2)
-  platformFee  Decimal       @default(0) @db.Decimal(12, 2)
+  amount       Decimal        @db.Decimal(12, 2)
+  transportFee Decimal        @default(0) @db.Decimal(12, 2)
+  platformFee  Decimal        @default(0) @db.Decimal(12, 2)
   method       String?
-  status       PaymentStatus @default(PENDING)
+  status       PaymentStatus  @default(PENDING)
   escrowRef    String?
   releasedAt   DateTime?
   refundedAt   DateTime?
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  order        Order         @relation(fields: [orderId], references: [id])
-  payouts      Payout[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  order        LegacyOrder    @relation(fields: [orderId], references: [id])
+  payouts      LegacyPayout[]
 
   @@index([orderId, status])
 }
 
-model Payout {
+model LegacyPayout {
   id         String        @id @default(cuid())
   paymentId  String
   farmerId   String
@@ -312,7 +762,9 @@ model Payout {
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
   payment    Payment       @relation(fields: [paymentId], references: [id])
-  farmer     User          @relation("FarmerPayouts", fields: [farmerId], references: [id])
+  farmer     LegacyUser    @relation("FarmerPayouts", fields: [farmerId], references: [id])
+
+  @@map("Payout")
 }
 
 model ChatThread {
@@ -332,27 +784,29 @@ model ChatThread {
 }
 
 model ChatMessage {
-  id         String     @id @default(cuid())
+  id         String      @id @default(cuid())
   threadId   String
   senderId   String?
   senderRole Role
   senderName String
   text       String
-  createdAt  DateTime   @default(now())
-  thread     ChatThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  sender     User?      @relation(fields: [senderId], references: [id])
+  createdAt  DateTime    @default(now())
+  thread     ChatThread  @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  sender     LegacyUser? @relation(fields: [senderId], references: [id])
 
   @@index([threadId, createdAt])
 }
 
-model Notification {
-  id        String    @id @default(cuid())
+model LegacyNotification {
+  id        String     @id @default(cuid())
   userId    String
   title     String
   body      String
   readAt    DateTime?
-  createdAt DateTime  @default(now())
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime   @default(now())
+  user      LegacyUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("Notification")
 }
 
 model PasswordResetRequest {
@@ -365,15 +819,15 @@ model PasswordResetRequest {
   requestedAt  DateTime            @default(now())
   reviewedAt   DateTime?
   reviewedById String?
-  user         User                @relation("PasswordResetRequests", fields: [userId], references: [id], onDelete: Cascade)
-  reviewedBy   User?               @relation("PasswordResetReviews", fields: [reviewedById], references: [id])
+  user         LegacyUser          @relation("PasswordResetRequests", fields: [userId], references: [id], onDelete: Cascade)
+  reviewedBy   LegacyUser?         @relation("PasswordResetReviews", fields: [reviewedById], references: [id])
 
   @@index([status, requestedAt])
   @@index([userId, status])
 }
 
 model UploadedFile {
-  id        String   @id @default(cuid())
+  id        String      @id @default(cuid())
   ownerId   String?
   url       String
   key       String
@@ -381,16 +835,18 @@ model UploadedFile {
   mimeType  String
   size      Int
   content   Bytes?
-  createdAt DateTime @default(now())
-  owner     User?    @relation(fields: [ownerId], references: [id])
+  createdAt DateTime    @default(now())
+  owner     LegacyUser? @relation(fields: [ownerId], references: [id])
 }
 
-model AuditLog {
-  id        String   @id @default(cuid())
+model LegacyAuditLog {
+  id        String      @id @default(cuid())
   actorId   String?
   action    String
   target    String
   metadata  Json?
-  createdAt DateTime @default(now())
-  actor     User?    @relation(fields: [actorId], references: [id])
+  createdAt DateTime    @default(now())
+  actor     LegacyUser? @relation(fields: [actorId], references: [id])
+
+  @@map("AuditLog")
 }

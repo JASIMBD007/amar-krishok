@@ -1,8 +1,8 @@
 import type { AccountStatus, AuthUser, RegisteredAccount, RegistrationRole, Role } from "../types";
+import { environment } from "../config/environment";
 
-const PRODUCTION_API_BASE_URL = "https://amar-krishok-api.onrender.com";
-const IS_LOCAL_FRONTEND = ["localhost", "127.0.0.1"].includes(window.location.hostname);
-const API_BASE_URL = IS_LOCAL_FRONTEND ? "http://localhost:4000" : PRODUCTION_API_BASE_URL;
+const PRODUCTION_API_BASE_URL = environment.productionApiBaseUrl;
+const API_BASE_URL = environment.apiBaseUrl;
 
 type ApiRole = "ADMIN" | "BUYER" | "FARMER";
 type ApiAccountStatus = "PENDING" | "ACTIVE" | "REJECTED";
@@ -586,7 +586,7 @@ export async function fetchPublicCropLots(filters: { crop?: string; district?: s
   try {
     return await apiRequest<BackendCropLot[]>(path);
   } catch (error) {
-    if (IS_LOCAL_FRONTEND) {
+    if (environment.isLocalFrontend) {
       return publicProductionApiRequest<BackendCropLot[]>(path);
     }
 

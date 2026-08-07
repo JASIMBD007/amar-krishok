@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
+import { districtCreateData } from "../../common/catalogue-data";
 import { AuthenticatedUser } from "../auth/types/authenticated-user";
 import { PrismaService } from "../prisma/prisma.service";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
@@ -20,21 +21,21 @@ const profileSelect = {
   upazilla: true,
   updatedAt: true,
   username: true,
-} satisfies Prisma.UserSelect;
+} satisfies Prisma.LegacyUserSelect;
 
 @Injectable()
 export class AccountService {
   constructor(private readonly prisma: PrismaService) {}
 
   me(user: AuthenticatedUser) {
-    return this.prisma.user.findUniqueOrThrow({
+    return this.prisma.legacyUser.findUniqueOrThrow({
       select: profileSelect,
       where: { id: user.id },
     });
   }
 
   async updateMe(user: AuthenticatedUser, dto: UpdateProfileDto) {
-    const data: Prisma.UserUpdateInput = {
+    const data: Prisma.LegacyUserUpdateInput = {
       address: dto.address?.trim(),
       focus: dto.focus?.trim(),
       identity: dto.identity?.trim(),
@@ -46,13 +47,13 @@ export class AccountService {
     if (dto.district?.trim()) {
       data.district = {
         connectOrCreate: {
-          create: { name: dto.district.trim() },
+          create: districtCreateData(dto.district),
           where: { name: dto.district.trim() },
         },
       };
     }
 
-    return this.prisma.user.update({
+    return this.prisma.legacyUser.update({
       data,
       select: profileSelect,
       where: { id: user.id },

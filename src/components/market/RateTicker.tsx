@@ -4,12 +4,15 @@ import { useLanguage, useTranslate, useValueText } from "../../i18n";
 import { cropNamesBn } from "../../market/marketData";
 import { useLoadRates, useRateChanges } from "../../market/useMarket";
 import { useMarketStore } from "../../store/useMarketStore";
+import { environment } from "../../config/environment";
+import type { Language } from "../../types";
 
-function currentTime(value: Date, language: "en" | "bn") {
-  return new Intl.DateTimeFormat(language === "bn" ? "bn-BD" : "en-GB", {
+function currentTime(value: Date, language: Language) {
+  return new Intl.DateTimeFormat(language === "bn-BD" ? "bn-BD" : "en-GB", {
     hour: "2-digit",
     hourCycle: "h23",
     minute: "2-digit",
+    timeZone: environment.timeZone,
   }).format(value);
 }
 
@@ -95,7 +98,7 @@ export function RateTicker() {
 
       return (
         <span className="rate-ticker-item" key={`${keyPrefix}-${crop}`}>
-          {language === "bn" ? cropNamesBn[crop] ?? t(crop) : crop}
+          {language === "bn-BD" ? cropNamesBn[crop] ?? t(crop) : crop}
           <strong>{v(rates[crop].toLocaleString("en-IN"))}</strong>
           <em className={direction}>{v(changeLabel)}</em>
         </span>

@@ -244,7 +244,7 @@ export function OrderTrackingPage({ user }: { user: AuthUser | null }) {
   const refunded = escrowState(order) === "refunded";
   const farmerName = order.items.find((item) => item.cropLot)?.cropLot?.farmer?.name ?? "";
   const cropLabel = order.items
-    .map((item) => (language === "bn" ? cropNamesBn[item.crop.name] ?? t(item.crop.name) : t(item.crop.name)))
+    .map((item) => (language === "bn-BD" ? cropNamesBn[item.crop.name] ?? t(item.crop.name) : t(item.crop.name)))
     .join(", ");
   const advanceLabel = stage === 3 ? "Confirm delivery" : stage === 4 ? "Release payment" : "Advance to next stage";
 

@@ -1,5 +1,6 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { LotStatus, Prisma, Role } from "@prisma/client";
+import { cropCreateData, districtCreateData } from "../../common/catalogue-data";
 import { AuthenticatedUser } from "../auth/types/authenticated-user";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
@@ -155,12 +156,12 @@ export class LotsService {
 
     const [crop, district] = await Promise.all([
       this.prisma.crop.upsert({
-        create: { name: dto.crop },
+        create: cropCreateData(dto.crop),
         update: { active: true },
         where: { name: dto.crop },
       }),
       this.prisma.district.upsert({
-        create: { name: dto.district },
+        create: districtCreateData(dto.district),
         update: { active: true },
         where: { name: dto.district },
       }),
@@ -206,7 +207,7 @@ export class LotsService {
       }
 
       const crop = await this.prisma.crop.upsert({
-        create: { name: cropName },
+        create: cropCreateData(cropName),
         update: { active: true },
         where: { name: cropName },
       });
@@ -220,7 +221,7 @@ export class LotsService {
       }
 
       const district = await this.prisma.district.upsert({
-        create: { name: districtName },
+        create: districtCreateData(districtName),
         update: { active: true },
         where: { name: districtName },
       });

@@ -121,7 +121,7 @@ export function MarketplacePage({
           (lot.farmerPhone && lot.farmerPhone === currentUser.phone)),
     );
 
-  const cropLabel = (crop: string) => (language === "bn" ? cropNamesBn[crop] ?? t(crop) : t(crop));
+  const cropLabel = (crop: string) => (language === "bn-BD" ? cropNamesBn[crop] ?? t(crop) : t(crop));
 
   return (
     <section className="page-wrap market-layout">

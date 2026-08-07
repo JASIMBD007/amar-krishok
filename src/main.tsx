@@ -13,6 +13,7 @@ import "@fontsource/jetbrains-mono/600.css";
 import "@fontsource/noto-sans-bengali/400.css";
 import "@fontsource/noto-sans-bengali/600.css";
 import App from "./App";
+import "./theme/tokens.css";
 import "./styles.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(

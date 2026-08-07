@@ -176,7 +176,7 @@ export function MarketSection({
   }, [marketLots, registrations]);
 
   const rateDirty = Object.keys(rates).some((crop) => draftRates[crop] !== rates[crop]);
-  const cropLabel = (crop: string) => (language === "bn" ? cropNamesBn[crop] ?? t(crop) : t(crop));
+  const cropLabel = (crop: string) => (language === "bn-BD" ? cropNamesBn[crop] ?? t(crop) : t(crop));
 
   const decideEscrow = (order: BackendOrder, action: "release" | "refund") => {
     if (!accessToken) return;

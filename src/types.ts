@@ -10,7 +10,7 @@ export type AdminSection =
   | "payouts"
   | "chat"
   | "settings";
-export type Language = "en" | "bn";
+export type Language = "bn-BD" | "en";
 export type Role = "admin" | "buyer" | "farmer";
 export type RegistrationRole = "buyer" | "farmer";
 export type AccountStatus = "pending" | "active" | "rejected";

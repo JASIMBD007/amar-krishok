@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
+import { cropCreateData, districtCreateData } from "../../common/catalogue-data";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateMarketPriceDto } from "./dto/create-market-price.dto";
 import { PublishRatesDto } from "./dto/publish-rates.dto";
@@ -79,7 +80,7 @@ export class MarketPricesService {
     const priceDate = startOfUtcDay(new Date());
 
     const district = await this.prisma.district.upsert({
-      create: { name: districtName },
+      create: districtCreateData(districtName),
       update: { active: true },
       where: { name: districtName },
     });
@@ -87,7 +88,7 @@ export class MarketPricesService {
     const crops = await Promise.all(
       dto.rates.map((rate) =>
         this.prisma.crop.upsert({
-          create: { name: rate.crop.trim() },
+          create: cropCreateData(rate.crop),
           update: { active: true },
           where: { name: rate.crop.trim() },
         }),
@@ -123,7 +124,7 @@ export class MarketPricesService {
         });
       }
 
-      await tx.auditLog.create({
+      await tx.legacyAuditLog.create({
         data: {
           action: "rates.publish",
           actorId,
@@ -153,12 +154,12 @@ export class MarketPricesService {
   async create(dto: CreateMarketPriceDto) {
     const [crop, district] = await Promise.all([
       this.prisma.crop.upsert({
-        create: { name: dto.crop },
+        create: cropCreateData(dto.crop),
         update: { active: true },
         where: { name: dto.crop },
       }),
       this.prisma.district.upsert({
-        create: { name: dto.district },
+        create: districtCreateData(dto.district),
         update: { active: true },
         where: { name: dto.district },
       }),

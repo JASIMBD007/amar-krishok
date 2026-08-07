@@ -62,7 +62,7 @@ export function CheckoutPage({ lots, user }: { lots: CropLot[]; user: AuthUser |
     );
   }
 
-  const cropLabel = language === "bn" ? cropNamesBn[lot.crop] ?? t(lot.crop) : t(lot.crop);
+  const cropLabel = language === "bn-BD" ? cropNamesBn[lot.crop] ?? t(lot.crop) : t(lot.crop);
   const costs = orderCosts(quantity, lot.pricePerMon);
 
   const pay = () => {

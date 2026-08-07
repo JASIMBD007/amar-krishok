@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import { DEFAULT_LOCALE, normalizeLocale } from "../i18n/config";
 import { defaultChatThreads } from "../data";
 import type {
   AccountStatus,
@@ -167,7 +168,7 @@ export const useAppStore = create<AppStore>()(
     (set) => ({
       chatThreads: readStoredChatThreads(),
       district: "All districts",
-      language: "en",
+      language: DEFAULT_LOCALE,
       loginOpen: false,
       menuOpen: false,
       query: "",
@@ -251,6 +252,10 @@ export const useAppStore = create<AppStore>()(
     }),
     {
       name: STORE_STORAGE_KEY,
+      merge: (persistedState, currentState) => {
+        const stored = persistedState as Partial<AppStore> & { language?: unknown };
+        return { ...currentState, ...stored, language: normalizeLocale(stored.language) };
+      },
       partialize: (state) => ({
         chatThreads: state.chatThreads,
         language: state.language,

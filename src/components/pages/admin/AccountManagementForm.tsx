@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { ExternalLink, Eye, EyeOff, Plus, Save, X } from "lucide-react";
 import { ApiRequestError, fetchUploadObjectUrl, isOwnUploadUrl, type AdminAccountPayload } from "../../../api/auth";
 import { getUpazillasForDistrict, serviceDistricts } from "../../../data";
@@ -99,14 +99,11 @@ export function AccountManagementForm({
     };
   }, [documentPreview]);
 
-  const closeDocumentPreview = () => {
+  const closeDocumentPreview = useCallback(() => {
     setDocumentPreviewOpen(false);
     setDocumentPreviewError("");
-    if (documentPreview) {
-      URL.revokeObjectURL(documentPreview.url);
-      setDocumentPreview(null);
-    }
-  };
+    setDocumentPreview(null);
+  }, []);
 
   const openDocumentPreview = async () => {
     setDocumentPreviewOpen(true);
@@ -152,7 +149,7 @@ export function AccountManagementForm({
     });
     setDocumentPreviewOpen(false);
     setIsPasswordVisible(false);
-  }, [editingAccount]);
+  }, [closeDocumentPreview, editingAccount]);
 
   const updateField = (field: keyof AccountFormState, value: string) => {
     setForm((current) => ({ ...current, [field]: value, ...(field === "district" ? { upazilla: "" } : {}) }));

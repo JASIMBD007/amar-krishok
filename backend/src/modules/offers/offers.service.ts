@@ -138,7 +138,7 @@ export class OffersService {
       title: action === "accept" ? "Offer accepted" : "Offer declined",
     });
 
-    await this.prisma.auditLog.create({
+    await this.prisma.legacyAuditLog.create({
       data: {
         action: action === "accept" ? "offer.accept" : "offer.decline",
         actorId: user.id,

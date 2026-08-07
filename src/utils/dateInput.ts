@@ -1,4 +1,5 @@
 import type { Language } from "../types";
+import { environment } from "../config/environment";
 
 export function normalizeDateInput(value: string) {
   return value
@@ -23,5 +24,5 @@ export function formatLocalizedDate(
     return fallback;
   }
 
-  return new Intl.DateTimeFormat(language === "bn" ? "bn-BD" : "en", options).format(date);
+  return new Intl.DateTimeFormat(language, { ...options, timeZone: environment.timeZone }).format(date);
 }

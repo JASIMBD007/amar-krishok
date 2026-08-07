@@ -1,5 +1,6 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { AccountStatus, PasswordResetStatus, Prisma, Role } from "@prisma/client";
+import { districtCreateData } from "../../common/catalogue-data";
 import { hash } from "bcryptjs";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
@@ -54,7 +55,7 @@ const accountSelect = {
   upazilla: true,
   updatedAt: true,
   username: true,
-} satisfies Prisma.UserSelect;
+} satisfies Prisma.LegacyUserSelect;
 
 const passwordResetSelect = {
   id: true,
@@ -116,7 +117,7 @@ export class AdminService {
   ) {}
 
   pendingVerifications() {
-    return this.prisma.user.findMany({
+    return this.prisma.legacyUser.findMany({
       orderBy: { createdAt: "desc" },
       select: accountSelect,
       where: {
@@ -150,7 +151,7 @@ export class AdminService {
     const role = accountRole(filters.role);
     const status = accountStatus(filters.status);
 
-    return this.prisma.user.findMany({
+    return this.prisma.legacyUser.findMany({
       orderBy: { createdAt: "desc" },
       select: accountSelect,
       where: {
@@ -168,8 +169,8 @@ export class AdminService {
 
     const username = normalizeUsername(dto.username);
     const [existingUsername, existingUser] = await Promise.all([
-      this.prisma.user.findUnique({ where: { username } }),
-      this.prisma.user.findUnique({
+      this.prisma.legacyUser.findUnique({ where: { username } }),
+      this.prisma.legacyUser.findUnique({
         where: { phone_role: { phone: dto.phone, role } },
       }),
     ]);
@@ -181,14 +182,14 @@ export class AdminService {
     }
 
     const district = await this.prisma.district.upsert({
-      create: { name: dto.district },
+      create: districtCreateData(dto.district),
       update: { active: true },
       where: { name: dto.district },
     });
     const status = accountStatus(dto.status) ?? AccountStatus.ACTIVE;
     const passwordHash = await hash(dto.password, 10);
 
-    return this.prisma.user.create({
+    return this.prisma.legacyUser.create({
       data: {
         address: dto.address,
         buyerProfile: role === Role.BUYER ? { create: {} } : undefined,
@@ -211,13 +212,13 @@ export class AdminService {
   }
 
   async updateAccount(id: string, dto: AdminUpdateAccountDto) {
-    const user = await this.prisma.user.findUnique({ where: { id } });
+    const user = await this.prisma.legacyUser.findUnique({ where: { id } });
     if (!user || (user.role !== Role.BUYER && user.role !== Role.FARMER)) {
       throw new NotFoundException("Account not found.");
     }
 
     if (dto.phone && dto.phone !== user.phone) {
-      const existingUser = await this.prisma.user.findUnique({
+      const existingUser = await this.prisma.legacyUser.findUnique({
         where: { phone_role: { phone: dto.phone, role: user.role } },
       });
       if (existingUser) {
@@ -226,14 +227,14 @@ export class AdminService {
     }
 
     if (dto.username && normalizeUsername(dto.username) !== user.username) {
-      const existingUsername = await this.prisma.user.findUnique({ where: { username: normalizeUsername(dto.username) } });
+      const existingUsername = await this.prisma.legacyUser.findUnique({ where: { username: normalizeUsername(dto.username) } });
       if (existingUsername) {
         throw new ConflictException("This username is already taken.");
       }
     }
 
     const status = accountStatus(dto.status);
-    const data: Prisma.UserUpdateInput = {
+    const data: Prisma.LegacyUserUpdateInput = {
       address: dto.address?.trim(),
       focus: dto.focus?.trim(),
       identity: dto.identity?.trim(),
@@ -253,13 +254,13 @@ export class AdminService {
     if (dto.district?.trim()) {
       data.district = {
         connectOrCreate: {
-          create: { name: dto.district.trim() },
+          create: districtCreateData(dto.district),
           where: { name: dto.district.trim() },
         },
       };
     }
 
-    const updatedAccount = await this.prisma.user.update({
+    const updatedAccount = await this.prisma.legacyUser.update({
       data,
       select: accountSelect,
       where: { id },
@@ -273,7 +274,7 @@ export class AdminService {
   }
 
   async deleteAccount(id: string) {
-    const user = await this.prisma.user.findUnique({
+    const user = await this.prisma.legacyUser.findUnique({
       include: { _count: { select: { cropLots: true, orders: true, payouts: true } } },
       where: { id },
     });
@@ -288,8 +289,8 @@ export class AdminService {
     await this.prisma.$transaction([
       this.prisma.chatMessage.updateMany({ data: { senderId: null }, where: { senderId: id } }),
       this.prisma.uploadedFile.updateMany({ data: { ownerId: null }, where: { ownerId: id } }),
-      this.prisma.auditLog.updateMany({ data: { actorId: null }, where: { actorId: id } }),
-      this.prisma.user.delete({ where: { id } }),
+      this.prisma.legacyAuditLog.updateMany({ data: { actorId: null }, where: { actorId: id } }),
+      this.prisma.legacyUser.delete({ where: { id } }),
     ]);
     return { id };
   }
@@ -306,7 +307,7 @@ export class AdminService {
 
     const reviewedAt = new Date();
     const updatedRequest = await this.prisma.$transaction(async (tx) => {
-      await tx.user.update({
+      await tx.legacyUser.update({
         data: { passwordHash: request.passwordHash },
         where: { id: request.userId },
       });
@@ -363,12 +364,12 @@ export class AdminService {
   }
 
   async updateVerification(id: string, action: "approve" | "reject") {
-    const user = await this.prisma.user.findUnique({ where: { id } });
+    const user = await this.prisma.legacyUser.findUnique({ where: { id } });
     if (!user) {
       throw new NotFoundException("Registration not found.");
     }
 
-    const updatedUser = await this.prisma.user.update({
+    const updatedUser = await this.prisma.legacyUser.update({
       data: {
         reviewedAt: new Date(),
         status: action === "approve" ? AccountStatus.ACTIVE : AccountStatus.REJECTED,
@@ -391,9 +392,9 @@ export class AdminService {
 
   async dashboard() {
     const [pendingVerifications, activeLots, openOrders, waitingChats] = await Promise.all([
-      this.prisma.user.count({ where: { role: { in: [Role.BUYER, Role.FARMER] }, status: AccountStatus.PENDING } }),
+      this.prisma.legacyUser.count({ where: { role: { in: [Role.BUYER, Role.FARMER] }, status: AccountStatus.PENDING } }),
       this.prisma.cropLot.count({ where: { status: "ACTIVE" } }),
-      this.prisma.order.count({ where: { status: { notIn: ["COMPLETED", "CANCELLED"] } } }),
+      this.prisma.legacyOrder.count({ where: { status: { notIn: ["COMPLETED", "CANCELLED"] } } }),
       this.prisma.chatThread.count({ where: { status: "WAITING" } }),
     ]);
 

@@ -28,7 +28,7 @@ export class StatsService {
     since.setDate(since.getDate() - RATE_WINDOW_DAYS);
 
     const [verifiedFarmers, liveListings, cropsWithRates, releasedPayments] = await Promise.all([
-      this.prisma.user.count({ where: { role: Role.FARMER, status: AccountStatus.ACTIVE } }),
+      this.prisma.legacyUser.count({ where: { role: Role.FARMER, status: AccountStatus.ACTIVE } }),
       this.prisma.cropLot.count({ where: { status: LotStatus.ACTIVE } }),
       // We publish one national benchmark rather than per-market feeds, so the honest figure is
       // how many crops carry a live rate — not a market count we cannot stand behind.

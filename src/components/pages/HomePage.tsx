@@ -69,7 +69,7 @@ export function HomePage({ lots, setView }: { lots: CropLot[]; setView: (view: V
     };
   }, []);
 
-  const cropLabel = (crop: string) => (language === "bn" ? cropNamesBn[crop] ?? t(crop) : t(crop));
+  const cropLabel = (crop: string) => (language === "bn-BD" ? cropNamesBn[crop] ?? t(crop) : t(crop));
 
   return (
     <>
@@ -81,7 +81,7 @@ export function HomePage({ lots, setView }: { lots: CropLot[]; setView: (view: V
           </span>
           <h1>{t("Sell your harvest at today's real price.")}</h1>
           {/* The demo carries the Bangla line under the headline as a second voice, not a swap. */}
-          {language === "bn" ? <span className="hero-subtitle-bn">আজকের সঠিক দামে ফসল বিক্রি করুন।</span> : null}
+          {language === "bn-BD" ? <span className="hero-subtitle-bn">আজকের সঠিক দামে ফসল বিক্রি করুন।</span> : null}
           <p>
             {t("Farmers post the crop, buyers order directly, and we hold the money until delivery is confirmed. Every price sits next to today's district rate.")}
           </p>

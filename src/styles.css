@@ -1,9 +1,7 @@
 :root {
-  color: #111827;
-  background: #f5f7fa;
-  font-family:
-    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
+  color: var(--color-text);
+  background: var(--color-background);
+  font-family: var(--font-sans);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -4821,18 +4819,18 @@ th {
 
 :root {
   /* AmarKrishok brand green — the client's own agricultural identity, kept deliberately. */
-  --ak-green: #146b45;
-  --ak-green-deep: #0f5636;
-  --ak-green-bright: #146b45;
-  --ak-green-soft: #e7f2ec;
+  --ak-green: var(--color-brand);
+  --ak-green-deep: var(--color-brand-deep);
+  --ak-green-bright: var(--color-brand);
+  --ak-green-soft: var(--color-brand-soft);
   --ak-green-border: #c7e2d4;
-  --ak-ink: #111827;
-  --ak-harvest: #b45309;
+  --ak-ink: var(--color-text);
+  --ak-harvest: var(--color-warn);
 
   /* Surfaces and lines */
-  --ak-surface: #ffffff;
-  --ak-line: #e2e5eb;
-  --ak-line-strong: #c5cad3;
+  --ak-surface: var(--color-surface);
+  --ak-line: var(--color-border);
+  --ak-line-strong: var(--color-border-strong);
 
   /* Radii: 6px inputs and inner tiles, 8px buttons and cards, 12px feature cards, 999px pills. */
   --ak-r-sm: 8px;
@@ -4845,7 +4843,7 @@ th {
   --ak-shadow-lg: none;
   --ak-shadow-brand: none;
 
-  --ak-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --ak-ease: var(--ease-standard);
 }
 
 /* ---- Header: crisper glass ---- */
@@ -5044,12 +5042,12 @@ th {
    ===================================================================== */
 
 :root {
-  --ic-blue: #1c69d4;
-  --ic-orange: #b45309;
-  --ic-green: #146b45;
-  --ic-violet: #1c69d4;
-  --ic-teal: #146b45;
-  --ic-rose: #cc0001;
+  --ic-blue: var(--color-interactive);
+  --ic-orange: var(--color-warn);
+  --ic-green: var(--color-brand);
+  --ic-violet: var(--color-interactive);
+  --ic-teal: var(--color-brand);
+  --ic-rose: var(--color-danger);
 }
 
 /* ---- Crop card meta: location / quantity / grade / harvest ---- */
@@ -5683,16 +5681,16 @@ tbody tr:hover td { background: #f6f8f5; }
    Market layer — rate ticker, fair-price pills, escrow states
    ------------------------------------------------------------------ */
 :root {
-  --mk-good: #15803d;
-  --mk-good-soft: #dcfce7;
-  --mk-warn: #b45309;
-  --mk-warn-soft: #fef3e2;
-  --mk-danger: #b3261e;
-  --mk-danger-soft: #fdeceb;
-  --mk-info: #1c69d4;
-  --mk-info-soft: #dbeafe;
-  --mk-ticker: #0e1a14;
-  --mk-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --mk-good: var(--color-good);
+  --mk-good-soft: var(--color-good-soft);
+  --mk-warn: var(--color-warn);
+  --mk-warn-soft: var(--color-warn-soft);
+  --mk-danger: var(--color-danger);
+  --mk-danger-soft: var(--color-danger-soft);
+  --mk-info: var(--color-interactive);
+  --mk-info-soft: var(--color-interactive-soft);
+  --mk-ticker: var(--color-console);
+  --mk-mono: var(--font-mono);
   /* Measured on mount; the fallback keeps sticky offsets sane before hydration. */
   --mk-header-height: 66px;
 }
@@ -7653,24 +7651,20 @@ tbody tr:hover td { background: #f6f8f5; }
    balance; paragraphs get text-wrap: pretty.
    ===================================================================== */
 :root {
-  --font-sans: Inter, "Noto Sans Bengali", ui-sans-serif, system-ui, -apple-system,
-    "Segoe UI", sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-
   /* dotzilla tokens the handoff maps one-to-one */
-  --bg: #f5f7fa;
-  --surface: #ffffff;
-  --surface-sunken: #f1f3f6;
-  --border: #e2e5eb;
-  --border-strong: #c5cad3;
-  --fg: #111827;
-  --fg-subtle: #374151;
-  --fg-muted: #6b7280;
-  --fg-disabled: #9aa3af;
-  --brand: #cc0001;
-  --brand-hover: #a80001;
-  --interactive: #1c69d4;
-  --interactive-soft: #dbeafe;
+  --bg: var(--color-background);
+  --surface: var(--color-surface);
+  --surface-sunken: var(--color-sunken);
+  --border: var(--color-border);
+  --border-strong: var(--color-border-strong);
+  --fg: var(--color-text);
+  --fg-subtle: var(--color-text-strong);
+  --fg-muted: var(--color-text-muted);
+  --fg-disabled: var(--color-text-disabled);
+  --brand: var(--color-danger);
+  --brand-hover: var(--color-danger-hover);
+  --interactive: var(--color-interactive);
+  --interactive-soft: var(--color-interactive-soft);
 }
 
 :root,
@@ -8367,7 +8361,7 @@ textarea:focus-visible {
    ===================================================================== */
 :root {
   /* The demo's hero body colour, a step lighter than --fg-subtle. */
-  --fg-body: #4b5563;
+  --fg-body: var(--color-text-body);
 }
 
 .hero-section {

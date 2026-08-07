@@ -51,7 +51,7 @@ export class JwtAuthGuard implements CanActivate {
       throw new UnauthorizedException("Invalid access token payload.");
     }
 
-    const user = await this.prisma.user.findUnique({ where: { id: payload.sub } });
+    const user = await this.prisma.legacyUser.findUnique({ where: { id: payload.sub } });
     if (!user || user.role !== payload.role) {
       throw new UnauthorizedException("Invalid access token user.");
     }

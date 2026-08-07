@@ -190,7 +190,7 @@ export function FarmerListingsVsMarket({ lots }: { lots: FarmerLotSummary[] }) {
             <div className="listing-vs-market-row" key={row.id}>
               <div>
                 <strong>
-                  {language === "bn" ? cropNamesBn[row.crop] ?? t(row.crop) : t(row.crop)} · {t("Grade")} {v(row.grade)}
+                  {language === "bn-BD" ? cropNamesBn[row.crop] ?? t(row.crop) : t(row.crop)} · {t("Grade")} {v(row.grade)}
                 </strong>
                 <span>
                   {v(row.quantityMon)} {t("mon")} · {t(row.district)}
@@ -300,7 +300,7 @@ export function FarmerOffersPanel({ user }: { user: AuthUser | null }) {
             const rate = rates[offer.cropLot.crop.name] ?? pricePerMon;
             const delta = Math.round((pricePerMon / rate - 1) * 100);
             const cropName =
-              language === "bn"
+              language === "bn-BD"
                 ? cropNamesBn[offer.cropLot.crop.name] ?? t(offer.cropLot.crop.name)
                 : t(offer.cropLot.crop.name);
 

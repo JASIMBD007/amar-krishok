@@ -1,5 +1,6 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { OrderStatus, PaymentStatus, Prisma, Role } from "@prisma/client";
+import { cropCreateData, districtCreateData } from "../../common/catalogue-data";
 import { AuthenticatedUser } from "../auth/types/authenticated-user";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
@@ -29,7 +30,7 @@ const orderInclude = {
   district: true,
   items: { include: { crop: true, cropLot: { include: { farmer: { select: { id: true, name: true } } } } } },
   payments: { orderBy: { createdAt: "desc" } },
-} satisfies Prisma.OrderInclude;
+} satisfies Prisma.LegacyOrderInclude;
 
 @Injectable()
 export class OrdersService {
@@ -39,7 +40,7 @@ export class OrdersService {
   ) {}
 
   findAll(filters: { buyerId?: string }, user: AuthenticatedUser) {
-    return this.prisma.order.findMany({
+    return this.prisma.legacyOrder.findMany({
       include: orderInclude,
       orderBy: { createdAt: "desc" },
       where: {
@@ -56,17 +57,17 @@ export class OrdersService {
     const farmerId = user.id;
 
     const [payouts, heldOrders, allOrders] = await Promise.all([
-      this.prisma.payout.findMany({
+      this.prisma.legacyPayout.findMany({
         where: { farmerId, status: PaymentStatus.RELEASED },
       }),
-      this.prisma.order.findMany({
+      this.prisma.legacyOrder.findMany({
         include: { payments: true },
         where: {
           items: { some: { cropLot: { farmerId } } },
           payments: { some: { status: PaymentStatus.HELD } },
         },
       }),
-      this.prisma.order.findMany({
+      this.prisma.legacyOrder.findMany({
         include: { payments: true },
         where: { items: { some: { cropLot: { farmerId } } } },
       }),
@@ -97,7 +98,7 @@ export class OrdersService {
    * bKash outside this system. The balance stays visible until staff confirm the transfer.
    */
   async requestPayout(user: AuthenticatedUser) {
-    const payouts = await this.prisma.payout.findMany({
+    const payouts = await this.prisma.legacyPayout.findMany({
       where: { farmerId: user.id, status: PaymentStatus.RELEASED, walletRef: null },
     });
 
@@ -110,12 +111,12 @@ export class OrdersService {
 
     await this.prisma.$transaction(async (tx) => {
       // Stamping the reference marks these payouts as claimed so a second tap cannot double-request.
-      await tx.payout.updateMany({
+      await tx.legacyPayout.updateMany({
         data: { walletRef: reference },
         where: { farmerId: user.id, status: PaymentStatus.RELEASED, walletRef: null },
       });
 
-      await tx.auditLog.create({
+      await tx.legacyAuditLog.create({
         data: {
           action: "payout.request",
           actorId: user.id,
@@ -144,14 +145,14 @@ export class OrdersService {
     }
 
     const district = await this.prisma.district.upsert({
-      create: { name: dto.district },
+      create: districtCreateData(dto.district),
       update: { active: true },
       where: { name: dto.district },
     });
     const itemInputs = await Promise.all(
       dto.items.map(async (item) => {
         const crop = await this.prisma.crop.upsert({
-          create: { name: item.crop },
+          create: cropCreateData(item.crop),
           update: { active: true },
           where: { name: item.crop },
         });
@@ -171,7 +172,7 @@ export class OrdersService {
     // crop value plus transport plus the platform fee.
     const totalValue = cropValue + transportFee + platformFee;
 
-    const order = await this.prisma.order.create({
+    const order = await this.prisma.legacyOrder.create({
       data: {
         buyerId,
         deliveryAddress: dto.deliveryAddress,
@@ -243,7 +244,7 @@ export class OrdersService {
 
       return {
         settlement: result,
-        updated: await tx.order.update({
+        updated: await tx.legacyOrder.update({
           data: { status: nextStatus },
           include: orderInclude,
           where: { id: order.id },
@@ -272,7 +273,7 @@ export class OrdersService {
     const { settlement, updated } = await this.prisma.$transaction(async (tx) => {
       const result = await this.settlePayment(tx, order, heldPayment, action);
 
-      await tx.auditLog.create({
+      await tx.legacyAuditLog.create({
         data: {
           action: action === "release" ? "escrow.release" : "escrow.refund",
           actorId: user.id,
@@ -283,7 +284,7 @@ export class OrdersService {
 
       return {
         settlement: result,
-        updated: await tx.order.update({
+        updated: await tx.legacyOrder.update({
           data: {
             status: action === "release" ? OrderStatus.COMPLETED : OrderStatus.CANCELLED,
           },
@@ -309,13 +310,13 @@ export class OrdersService {
   async decideDispute(id: string, action: "open" | "close", reason: string | undefined, user: AuthenticatedUser) {
     const order = await this.findVisibleOrder(id, user);
 
-    const updated = await this.prisma.order.update({
+    const updated = await this.prisma.legacyOrder.update({
       data: { disputeOpenedAt: action === "open" ? new Date() : null },
       include: orderInclude,
       where: { id: order.id },
     });
 
-    await this.prisma.auditLog.create({
+    await this.prisma.legacyAuditLog.create({
       data: {
         action: action === "open" ? "dispute.open" : "dispute.close",
         actorId: user.id,
@@ -341,7 +342,7 @@ export class OrdersService {
    */
   private async settlePayment(
     tx: Prisma.TransactionClient,
-    order: Prisma.OrderGetPayload<{ include: typeof orderInclude }>,
+    order: Prisma.LegacyOrderGetPayload<{ include: typeof orderInclude }>,
     payment: { amount: Prisma.Decimal; id: string; platformFee: Prisma.Decimal; transportFee: Prisma.Decimal },
     action: "release" | "refund",
   ) {
@@ -373,7 +374,7 @@ export class OrdersService {
     const perFarmer = farmerShare.dividedBy(farmerIds.length);
 
     for (const farmerId of farmerIds) {
-      await tx.payout.create({
+      await tx.legacyPayout.create({
         data: {
           amount: perFarmer,
           farmerId,
@@ -390,7 +391,7 @@ export class OrdersService {
   /** Told after the transaction commits, so a rollback never leaves a false payout notice behind. */
   private async notifyPayout(
     settlement: { farmerIds: string[]; perFarmer: Prisma.Decimal },
-    order: Prisma.OrderGetPayload<{ include: typeof orderInclude }>,
+    order: Prisma.LegacyOrderGetPayload<{ include: typeof orderInclude }>,
   ) {
     if (settlement.farmerIds.length === 0) {
       return;
@@ -403,7 +404,7 @@ export class OrdersService {
   }
 
   private async findVisibleOrder(id: string, user: AuthenticatedUser) {
-    const order = await this.prisma.order.findUnique({ include: orderInclude, where: { id } });
+    const order = await this.prisma.legacyOrder.findUnique({ include: orderInclude, where: { id } });
 
     if (!order) {
       throw new NotFoundException("Order not found.");

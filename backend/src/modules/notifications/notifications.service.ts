@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
-import { AccountStatus, Notification, Role } from "@prisma/client";
+import { AccountStatus, LegacyNotification as Notification, Role } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 
 type NotificationInput = {
@@ -94,7 +94,7 @@ export class NotificationsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async notifyAdmins(input: NotificationInput) {
-    const admins = await this.prisma.user.findMany({
+    const admins = await this.prisma.legacyUser.findMany({
       select: { id: true },
       where: { role: Role.ADMIN },
     });
@@ -107,7 +107,7 @@ export class NotificationsService {
       return null;
     }
 
-    return this.prisma.notification.create({
+    return this.prisma.legacyNotification.create({
       data: {
         body: input.body,
         title: input.title,
@@ -122,7 +122,7 @@ export class NotificationsService {
       return { count: 0 };
     }
 
-    return this.prisma.notification.createMany({
+    return this.prisma.legacyNotification.createMany({
       data: uniqueUserIds.map((userId) => ({
         body: input.body,
         title: input.title,
@@ -133,7 +133,7 @@ export class NotificationsService {
   }
 
   async listForUser(userId: string) {
-    const notifications = await this.prisma.notification.findMany({
+    const notifications = await this.prisma.legacyNotification.findMany({
       orderBy: { createdAt: "desc" },
       take: 40,
       where: { userId },
@@ -144,7 +144,7 @@ export class NotificationsService {
   }
 
   async markRead(userId: string, id: string) {
-    const result = await this.prisma.notification.updateMany({
+    const result = await this.prisma.legacyNotification.updateMany({
       data: { readAt: new Date() },
       where: { id, userId },
     });
@@ -153,12 +153,12 @@ export class NotificationsService {
       throw new NotFoundException("Notification not found.");
     }
 
-    const notification = await this.prisma.notification.findUniqueOrThrow({ where: { id } });
+    const notification = await this.prisma.legacyNotification.findUniqueOrThrow({ where: { id } });
     return toNotification(notification);
   }
 
   async markAllRead(userId: string) {
-    return this.prisma.notification.updateMany({
+    return this.prisma.legacyNotification.updateMany({
       data: { readAt: new Date() },
       where: { readAt: null, userId },
     });
@@ -169,7 +169,7 @@ export class NotificationsService {
       return { count: 0 };
     }
 
-    return this.prisma.notification.updateMany({
+    return this.prisma.legacyNotification.updateMany({
       data: { readAt: new Date() },
       where: {
         body: { contains: account.name },
@@ -186,7 +186,7 @@ export class NotificationsService {
       return { count: 0 };
     }
 
-    return this.prisma.notification.updateMany({
+    return this.prisma.legacyNotification.updateMany({
       data: { readAt: new Date() },
       where: {
         OR: filters.map((value) => ({ body: { contains: value } })),
@@ -203,7 +203,7 @@ export class NotificationsService {
       return { count: 0 };
     }
 
-    return this.prisma.notification.updateMany({
+    return this.prisma.legacyNotification.updateMany({
       data: { readAt: new Date() },
       where: {
         AND: filters.slice(0, 2).map((value) => ({ body: { contains: value } })),
@@ -233,7 +233,7 @@ export class NotificationsService {
       return notifications;
     }
 
-    const reviewedAccounts = await this.prisma.user.findMany({
+    const reviewedAccounts = await this.prisma.legacyUser.findMany({
       select: { name: true, role: true },
       where: {
         OR: accountSubjects.map((item) => ({
@@ -254,7 +254,7 @@ export class NotificationsService {
     }
 
     const reviewedAt = new Date();
-    await this.prisma.notification.updateMany({
+    await this.prisma.legacyNotification.updateMany({
       data: { readAt: reviewedAt },
       where: { id: { in: reviewedNotificationIds }, readAt: null },
     });

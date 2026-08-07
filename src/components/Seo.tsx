@@ -103,7 +103,7 @@ export function Seo({ language, pathname }: { language: Language; pathname: stri
     const seo = getSeo(pathname);
     const canonical = `${siteUrl}${seo.path}`;
 
-    document.documentElement.lang = language === "bn" ? "bn-BD" : "en-BD";
+    document.documentElement.lang = language;
     document.title = seo.title;
     setCanonical(canonical);
     setMeta("name", "application-name", siteName);
@@ -118,7 +118,7 @@ export function Seo({ language, pathname }: { language: Language; pathname: stri
     setMeta("property", "og:title", seo.title);
     setMeta("property", "og:description", seo.description);
     setMeta("property", "og:image", `${siteUrl}/og-image.jpg`);
-    setMeta("property", "og:locale", language === "bn" ? "bn_BD" : "en_BD");
+    setMeta("property", "og:locale", language === "bn-BD" ? "bn_BD" : "en_BD");
     setMeta("name", "twitter:card", "summary_large_image");
     setMeta("name", "twitter:title", seo.title);
     setMeta("name", "twitter:description", seo.description);
