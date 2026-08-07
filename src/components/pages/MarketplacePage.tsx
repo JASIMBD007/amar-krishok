@@ -11,7 +11,7 @@ import type { AuthUser, CropLot } from "../../types";
 import { ListLoading } from "../EmptyState";
 import { DeltaPill, VerificationBadge } from "../market/MarketBits";
 
-const MARKETPLACE_PAGE_SIZE = 12;
+const MARKETPLACE_PAGE_SIZE = 6;
 const PRICE_STEP = 20;
 
 function priceBounds(lots: MarketLot[]) {

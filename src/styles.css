@@ -11278,14 +11278,20 @@ textarea:focus-visible {
   font-size: 10px;
 }
 
-/* Keep crop photos complete while preserving the compact two-row marketplace layout. */
+/* Six lots per page lets each photo use its own ratio: full width, no crop or filler. */
 .lot-card-photo {
-  height: 130px;
+  height: auto;
+  min-height: 130px;
   aspect-ratio: auto;
+  display: block;
   background: var(--surface-sunken);
 }
 .lot-card-photo img.lot-card-photo-image {
-  object-fit: cover;
+  position: relative;
+  inset: auto;
+  display: block;
+  height: auto;
+  object-fit: contain;
   object-position: center;
   background: transparent;
 }
