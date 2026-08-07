@@ -11278,19 +11278,13 @@ textarea:focus-visible {
   font-size: 10px;
 }
 
-/* Six lots per page lets each photo use its own ratio: full width, no crop or filler. */
+/* All six lots use one consistent frame while contain keeps every upload uncropped. */
 .lot-card-photo {
   height: auto;
-  min-height: 130px;
-  aspect-ratio: auto;
-  display: block;
+  aspect-ratio: 3 / 2;
   background: var(--surface-sunken);
 }
 .lot-card-photo img.lot-card-photo-image {
-  position: relative;
-  inset: auto;
-  display: block;
-  height: auto;
   object-fit: contain;
   object-position: center;
   background: transparent;
