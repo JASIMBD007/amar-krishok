@@ -11277,3 +11277,96 @@ textarea:focus-visible {
   padding: 3px 7px;
   font-size: 10px;
 }
+
+/* Signed-in buyers and sellers use the prototype's inline identity and logout treatment. */
+.participant-account {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.participant-account::before {
+  width: 1px;
+  height: 34px;
+  margin-right: 2px;
+  background: var(--border);
+  content: "";
+}
+.participant-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+.participant-profile-initials {
+  display: grid;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--ak-green-deep);
+  background: var(--ak-green-soft);
+  font-size: 12px;
+  font-weight: 700;
+}
+.participant-profile-copy {
+  min-width: 0;
+}
+.participant-profile-copy strong {
+  display: block;
+  max-width: 150px;
+  overflow: hidden;
+  color: var(--fg);
+  font-size: 14px;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.participant-profile-copy small {
+  display: block;
+  margin-top: 2px;
+  color: var(--fg-muted);
+  font-size: 12px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.participant-profile:hover strong {
+  color: var(--ak-green-deep);
+}
+.participant-logout-button {
+  gap: 7px;
+  min-height: 38px;
+  padding: 0 13px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+@media (max-width: 1080px) {
+  .participant-profile-copy {
+    display: none;
+  }
+  .participant-account::before {
+    margin-right: 0;
+  }
+}
+@media (max-width: 560px) {
+  .participant-account {
+    gap: 5px;
+  }
+  .participant-account::before {
+    display: none;
+  }
+  .header-actions .participant-logout-button {
+    justify-content: center;
+    width: 38px;
+    min-width: 38px;
+    padding: 0;
+  }
+  .participant-logout-button span {
+    display: none;
+  }
+}

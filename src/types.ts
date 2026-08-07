@@ -23,6 +23,7 @@ export type NotificationType = "account" | "chat" | "logistics" | "order" | "pay
 export type AuthUser = {
   accountId?: string;
   accessToken?: string;
+  district?: string;
   name: string;
   phone: string;
   role: Role;

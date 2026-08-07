@@ -3,10 +3,8 @@ import { Navigate, NavLink, Route, Routes, useLocation, useNavigate } from "reac
 import {
   ChevronDown,
   LogOut,
-  LockKeyhole,
   Menu,
   Shield,
-  UserRound,
   X,
 } from "lucide-react";
 import {
@@ -497,7 +495,7 @@ export default function App() {
     addRegistration(account);
 
     if (user?.accountId === account.id) {
-      setUser({ ...user, name: account.name, phone: account.phone, username: account.username });
+      setUser({ ...user, district: account.district, name: account.name, phone: account.phone, username: account.username });
     }
   };
 
@@ -521,6 +519,14 @@ export default function App() {
   ).length;
 
   const roleLabel = user ? roleOptions.find((item) => item.role === user.role)?.label : null;
+  const currentRegistration = user
+    ? registrations.find(
+        (account) => account.id === user.accountId || (account.phone === user.phone && account.role === user.role),
+      )
+    : undefined;
+  const accountDistrict = user?.district || currentRegistration?.district || "";
+  const participantProfilePath = user?.role === "buyer" ? "/buyer#buyer-profile" : "/farmer#farmer-profile";
+  const participantRoleLabel = user?.role === "buyer" ? "Buyer" : "Seller";
   const accountInitials = user
     ? user.name
         .replace(/^(Md\.|Mst\.|Mrs\.|Mr\.)\s*/i, "")
@@ -622,8 +628,33 @@ export default function App() {
               </button>
             </span>
           ) : null}
-          <div className="login-shell">
-            {user ? (
+          {user && user.role !== "admin" ? (
+            <div className="participant-account">
+              <NavLink
+                aria-label={t("Open profile")}
+                className="participant-profile"
+                to={participantProfilePath}
+                onClick={closeAllHeaderMenus}
+              >
+                <span className="participant-profile-initials" aria-hidden="true">
+                  {accountInitials}
+                </span>
+                <span className="participant-profile-copy">
+                  <strong>{user.name}</strong>
+                  <small>
+                    {t(participantRoleLabel)}
+                    {accountDistrict ? ` · ${t(accountDistrict)}` : ""}
+                  </small>
+                </span>
+              </NavLink>
+              <button className="secondary-button participant-logout-button" type="button" onClick={requestLogout}>
+                <LogOut aria-hidden="true" size={17} />
+                <span>{t("Log out")}</span>
+              </button>
+            </div>
+          ) : null}
+          {user?.role === "admin" ? (
+            <div className="login-shell">
               <button
                 className="account-chip"
                 type="button"
@@ -643,20 +674,13 @@ export default function App() {
                 </span>
                 <ChevronDown size={15} />
               </button>
-            ) : null}
-            {loginOpen && (
-              <div className="login-menu" role="menu">
-                {user ? (
+              {loginOpen && (
+                <div className="login-menu" role="menu">
                   <div className="signed-in-note">
                     <span>{t("Signed in as")}</span>
                     <strong>{user.name}</strong>
                   </div>
-                ) : (
-                  <span>{t("Account access")}</span>
-                )}
-                {user ? (
-                  // Admins can switch into any workspace; farmers and buyers only see their own.
-                  (user.role === "admin" ? roleOptions : roleOptions.filter((option) => option.role === user.role)).map((option) => {
+                  {roleOptions.map((option) => {
                     const Icon = option.icon;
                     return (
                       <button className="role-option" key={option.role} type="button" role="menuitem" onClick={() => chooseRole(option.role, option.view)}>
@@ -667,26 +691,7 @@ export default function App() {
                         </span>
                       </button>
                     );
-                  })
-                ) : (
-                  <NavLink className="role-option" to="/login" onClick={closeAllHeaderMenus}>
-                    <LockKeyhole size={18} />
-                    <span>
-                      <strong>{t("Sign in")}</strong>
-                      <small>{t("Choose account type to sign in")}</small>
-                    </span>
-                  </NavLink>
-                )}
-                {!user && (
-                  <button className="role-option" type="button" role="menuitem" onClick={openHeaderRegisterChoice}>
-                    <UserRound size={18} />
-                    <span>
-                      <strong>{t("Register")}</strong>
-                      <small>{t("Choose buyer or seller account")}</small>
-                    </span>
-                  </button>
-                )}
-                {user && (
+                  })}
                   <button className="role-option danger" type="button" role="menuitem" onClick={requestLogout}>
                     <X size={18} />
                     <span>
@@ -694,10 +699,10 @@ export default function App() {
                       <small>{t("Switch account")}</small>
                     </span>
                   </button>
-                )}
-              </div>
-            )}
-          </div>
+                </div>
+              )}
+            </div>
+          ) : null}
         </div>
 
         {menuOpen && (

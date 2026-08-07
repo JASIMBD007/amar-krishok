@@ -698,6 +698,7 @@ const bn: Record<string, string> = {
   "Supply focus": "ফসলের ধরন",
   "Supply focus not added": "ফসলের ধরন দেওয়া হয়নি",
   Buyer: "ক্রেতা",
+  Seller: "বিক্রেতা",
   Crop: "ফসল",
   Value: "মূল্য",
   Status: "অবস্থা",
