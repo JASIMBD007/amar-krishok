@@ -277,19 +277,11 @@ export function MarketplacePage({
               <article className="lot-card" key={lot.id}>
                 <div className="lot-card-photo">
                   {lot.image ? (
-                    <>
-                      <img
-                        aria-hidden="true"
-                        alt=""
-                        className="lot-card-photo-backdrop"
-                        src={lot.image}
-                      />
-                      <img
-                        alt={`${cropLabel(lot.crop)} ${t("harvest")}`}
-                        className="lot-card-photo-image"
-                        src={lot.image}
-                      />
-                    </>
+                    <img
+                      alt={`${cropLabel(lot.crop)} ${t("harvest")}`}
+                      className="lot-card-photo-image"
+                      src={lot.image}
+                    />
                   ) : (
                     <Leaf aria-hidden="true" size={30} />
                   )}
