@@ -11,7 +11,7 @@ import type { AuthUser, CropLot } from "../../types";
 import { ListLoading } from "../EmptyState";
 import { DeltaPill, VerificationBadge } from "../market/MarketBits";
 
-const MARKETPLACE_PAGE_SIZE = 6;
+const MARKETPLACE_PAGE_SIZE = 12;
 const PRICE_STEP = 20;
 
 function priceBounds(lots: MarketLot[]) {
@@ -277,11 +277,7 @@ export function MarketplacePage({
               <article className="lot-card" key={lot.id}>
                 <div className="lot-card-photo">
                   {lot.image ? (
-                    <img
-                      alt={`${cropLabel(lot.crop)} ${t("harvest")}`}
-                      className="lot-card-photo-image"
-                      src={lot.image}
-                    />
+                    <img alt={`${cropLabel(lot.crop)} ${t("harvest")}`} src={lot.image} />
                   ) : (
                     <Leaf aria-hidden="true" size={30} />
                   )}

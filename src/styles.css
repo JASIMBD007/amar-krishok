@@ -11277,35 +11277,3 @@ textarea:focus-visible {
   padding: 3px 7px;
   font-size: 10px;
 }
-
-/* Compact equal-height thumbnails keep six lots and their pagination close together. */
-.lot-card-photo {
-  height: 110px;
-  aspect-ratio: auto;
-  background: var(--surface-sunken);
-}
-.lot-card-photo img.lot-card-photo-image {
-  object-fit: contain;
-  object-position: center;
-  background: transparent;
-}
-
-@media (min-width: 900px) {
-  .lot-card-body {
-    gap: 6px;
-    padding: 8px 12px;
-  }
-  .lot-card-meta {
-    padding-top: 6px;
-  }
-  .lot-card-actions .primary-button {
-    padding: 8px 10px;
-  }
-  .lot-grid {
-    gap: 10px;
-  }
-  .marketplace-pagination {
-    margin-top: 8px;
-    padding-bottom: 0;
-  }
-}
