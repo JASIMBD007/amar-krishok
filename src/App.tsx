@@ -525,18 +525,16 @@ export default function App() {
   // The former "Admin" tab becomes a role-aware "Dashboard" link that sends each
   // signed-in user to their own workspace (farmer/buyer/admin), or to login otherwise.
   // The demo's nav: the logo goes home, so the bar itself carries only the five destinations.
-  // Admin console appears only for staff. The buyer workspace stays reachable from the account chip.
+  // Staff enter the console through their account chip; the public nav stays focused on public destinations.
   const navItems: Array<{ id: string; label: string; path: string; count?: number; staff?: boolean }> = [
     { id: "market", label: "Marketplace", path: "/marketplace" },
     { id: "prices", label: "Market rates", path: "/prices" },
     { id: "farmer", label: "Farmer desk", path: user ? "/farmer" : "/login?next=%2Ffarmer" },
     {
-      count: notificationOrders.length,
       id: "orders",
       label: "My orders",
       path: user ? "/orders" : "/login?next=%2Forders",
     },
-    ...(user?.role === "admin" ? [{ id: "admin", label: "Admin console", path: "/admin", staff: true }] : []),
   ];
 
   return (
@@ -587,7 +585,7 @@ export default function App() {
             aria-label={t("Language switch")}
             onClick={() => setLanguage(language === "en" ? "bn-BD" : "en")}
           >
-            EN · <span className="bn-glyph">বাংলা</span>
+            {language === "en" ? "EN" : <span className="bn-glyph">বাংলা</span>}
           </button>
           {user?.role === "admin" ? (
             <NavLink
@@ -692,7 +690,7 @@ export default function App() {
                 aria-label={t("Language switch")}
                 onClick={() => setLanguage(language === "en" ? "bn-BD" : "en")}
               >
-                EN · <span className="bn-glyph">বাংলা</span>
+                {language === "en" ? "EN" : <span className="bn-glyph">বাংলা</span>}
               </button>
               {!user ? (
                 <>
