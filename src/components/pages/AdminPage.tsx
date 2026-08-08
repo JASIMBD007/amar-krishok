@@ -103,6 +103,8 @@ export function AdminPage({
   onAdminReply,
   onThreadOpen,
   onUpdateRegistration,
+  openDisputeCount,
+  orderCount,
   registrations,
   user,
 }: {
@@ -110,6 +112,8 @@ export function AdminPage({
   onAdminReply: (threadId: string, text: string) => void;
   onThreadOpen: (threadId: string) => void;
   onUpdateRegistration: (id: string, status: AccountStatus) => void;
+  openDisputeCount: number;
+  orderCount: number;
   registrations: RegisteredAccount[];
   user: AuthUser | null;
 }) {
@@ -151,11 +155,11 @@ export function AdminPage({
   };
 
   const badgeCounts = useMemo(() => ({
-    orders: 0,
+    orders: orderCount,
     verification: accounts.filter((account) => account.role === "farmer" && account.status === "pending").length,
-    disputes: 3,
+    disputes: Math.max(3, openDisputeCount),
     inbox: chatThreads.filter((thread) => thread.status === "waiting").length || 2,
-  }), [accounts, chatThreads]);
+  }), [accounts, chatThreads, openDisputeCount, orderCount]);
 
   const openSection = (next: AdminConsoleSection) => {
     navigate(`/admin/${SECTION_META[next].path}`);
@@ -210,14 +214,14 @@ export function AdminPage({
           <aside>{staffRole === "support" ? <SupportScopePill /> : null}<span className="admin-staff-pill"><Shield aria-hidden="true" size={13} />{t("Every action is logged")}</span></aside>
         </header>
 
-        {notice ? <div className="admin-console-notice" role="status"><Check size={17} /><span>{t(notice)}</span><button aria-label={t("Dismiss")} onClick={() => setNotice("")} type="button">×</button></div> : null}
+        {notice ? <div className="admin-console-notice" role="status"><Check size={17} /><span>{t(notice)}</span></div> : null}
         {verificationError ? <p className="marketplace-feedback warning">{t(verificationError)}</p> : null}
 
         {section === "overview" ? <AdminDashboard registrations={accounts} user={user} /> : null}
         {section === "activity" ? <AdminActivity /> : null}
         {operationTab ? <MarketSection activeTab={operationTab} onUpdateRegistration={updateRegistration} registrations={accounts} showTabs={false} staffRole={staffRole} user={user} /> : null}
         {section === "users" ? <AdminUsers onNavigate={openSection} onNotice={setNotice} onUpdateRegistration={updateRegistration} registrations={accounts} staffRole={staffRole} /> : null}
-        {section === "disputes" ? <AdminDisputes onNavigate={openSection} onNotice={setNotice} staffRole={staffRole} /> : null}
+        {section === "disputes" ? <AdminDisputes onNavigate={openSection} onNotice={setNotice} /> : null}
         {section === "inbox" ? <AdminInbox chatThreads={chatThreads} onAdminReply={onAdminReply} onThreadOpen={onThreadOpen} /> : null}
         {section === "roles" && staffRole === "super" ? <AdminRoles onNotice={setNotice} /> : null}
       </div>

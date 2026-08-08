@@ -219,8 +219,8 @@ export function AdminDashboard({ registrations, user }: { registrations: Registe
   }).length;
 
   const kpis = [
-    ["GMV · today", money(hasLiveData ? gmv : 4_824_000), `${hasLiveData ? todaysOrders.length : 0} orders placed today`],
-    ["Held in escrow", money(hasLiveData ? escrow : 19_400_000), `${hasLiveData ? heldOrders.length : 0} live orders`],
+    ["GMV · today", money(hasLiveData ? gmv : 4_824_000), `${hasLiveData ? todaysOrders.length : 0} orders placed in this session`],
+    ["Held in escrow", money(hasLiveData ? escrow : 19_400_000), "Median release 1 h 48 min"],
     ["Live listings", String(hasLiveData ? liveLots.length : 8), `${hasLiveData ? suspendedLots.length : 0} suspended by staff`],
     ["Needs a decision", String(hasLiveData ? pending : 2), `${hasLiveData ? disputes : 3} open disputes`],
     ["Payouts due today", money(486_300), "7 farmers · next batch 14:00"],
@@ -301,7 +301,7 @@ export function AdminDashboard({ registrations, user }: { registrations: Registe
 
         <article className="admin-dashboard-panel recent-activity">
           <strong>{t("Recent staff activity")}</strong>
-          {ACTIVITY.slice(0, 4).map((activity) => (
+          {ACTIVITY.map((activity) => (
             <div key={`${activity.when}-${activity.what}`}>
               <i style={{ background: activityColor(activity.tone) }} />
               <span><b>{t(activity.who)}</b> {t(activity.what)}</span><small>{activity.when}</small>
@@ -398,7 +398,7 @@ export function AdminUsers({
   return (
     <>
       <div className="admin-user-tools">
-        <label><Search aria-hidden="true" size={16} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t("Search name, phone or district")} /></label>
+        <label><Search aria-hidden="true" size={16} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t("Name, district or phone")} /></label>
         <div>{["All", "Farmer", "Buyer", "Pending", "Restricted"].map((item) => <button className={filter === item ? "on" : ""} key={item} onClick={() => setFilter(item)} type="button">{t(item)}</button>)}</div>
       </div>
 
@@ -439,27 +439,21 @@ export function AdminUsers({
 export function AdminDisputes({
   onNavigate,
   onNotice,
-  staffRole,
 }: {
   onNavigate: (section: AdminConsoleSection) => void;
   onNotice: (message: string) => void;
-  staffRole: AdminStaffRole;
 }) {
   const t = useTranslate();
-  const [resolved, setResolved] = useState<string[]>([]);
-  const resolve = (id: string, message: string) => { setResolved((current) => [...current, id]); onNotice(message); };
+  const resolve = (message: string) => onNotice(message);
   return (
     <div className="admin-dispute-list">
       {DISPUTES.map((dispute) => (
-        <article className={resolved.includes(dispute.id) ? "resolved" : ""} key={dispute.id}>
+        <article key={dispute.id}>
           <header><span><span><b>{dispute.id}</b><strong>{t(dispute.subject)}</strong><em className={dispute.urgent ? "urgent" : "calm"}>SLA {t(dispute.sla)}</em></span><small>{t("Order")} {dispute.order} · {t(dispute.buyer)} vs. {t(dispute.farmer)} · {t("opened")} {dispute.age} {t("ago")} · {t(dispute.state)}</small></span><span><strong>{money(dispute.amount)}</strong><small>{t("frozen in escrow")}</small></span></header>
           <footer>
-            {staffRole === "super" && !resolved.includes(dispute.id) ? <>
-              <button className="release" onClick={() => resolve(dispute.id, `${dispute.id} closed — escrow released to ${dispute.farmer}.`)} type="button">{t("Release to farmer")}</button>
-              <button onClick={() => resolve(dispute.id, `${dispute.id} settled with a partial refund. Both sides notified by SMS.`)} type="button">{t("Partial refund")}</button>
-              <button className="refund" onClick={() => resolve(dispute.id, `${dispute.id} closed — ${money(dispute.amount)} refunded to ${dispute.buyer}.`)} type="button">{t("Refund buyer")}</button>
-            </> : null}
-            {resolved.includes(dispute.id) ? <span className="admin-resolved"><Check size={14} />{t("Decision recorded")}</span> : null}
+            <button className="release" onClick={() => resolve(`${dispute.id} closed — escrow released to ${dispute.farmer}.`)} type="button">{t("Release to farmer")}</button>
+            <button onClick={() => resolve(`${dispute.id} settled with a partial refund. Both sides notified by SMS.`)} type="button">{t("Partial refund")}</button>
+            <button className="refund" onClick={() => resolve(`${dispute.id} closed — ${money(dispute.amount)} refunded to ${dispute.buyer}.`)} type="button">{t("Refund buyer")}</button>
             <button className="conversation" onClick={() => onNavigate("inbox")} type="button"><MessageSquare size={15} />{t("Open conversation")}</button>
           </footer>
         </article>

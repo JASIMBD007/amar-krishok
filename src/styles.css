@@ -11593,14 +11593,6 @@ textarea:focus-visible {
 .admin-console-notice > span {
   flex: 1;
 }
-.admin-console-notice > button {
-  padding: 0 3px;
-  border: 0;
-  color: #25543e;
-  background: transparent;
-  font-size: 20px;
-  line-height: 1;
-}
 
 /* Dashboard */
 .admin-dashboard {
@@ -12148,9 +12140,6 @@ textarea:focus-visible {
   border-radius: 8px;
   background: #ffffff;
 }
-.admin-dispute-list article.resolved {
-  opacity: 0.72;
-}
 .admin-dispute-list article > header {
   display: flex;
   align-items: flex-start;
@@ -12242,15 +12231,6 @@ textarea:focus-visible {
   color: #1c69d4;
   background: transparent;
 }
-.admin-resolved {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: #15803d;
-  font-size: 13px;
-  font-weight: 600;
-}
-
 /* Support inbox */
 .admin-inbox {
   display: grid;
@@ -12630,5 +12610,116 @@ textarea:focus-visible {
   }
   .admin-message-list span {
     max-width: 88%;
+  }
+}
+
+/* v2 admin header: separate staff messages, identity, and sign-out controls. */
+.admin-header-messages {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  margin-left: 4px;
+  padding: 8px;
+  border-left: 1px solid #e2e5eb;
+  border-radius: 0 6px 6px 0;
+  color: #374151;
+  background: transparent;
+  text-decoration: none;
+}
+.admin-header-messages:hover,
+.admin-header-messages[aria-current="page"] {
+  color: #1c69d4;
+  background: #f5f7fa;
+}
+.admin-header-messages > span {
+  position: absolute;
+  top: 2px;
+  right: 0;
+  display: grid;
+  min-width: 16px;
+  height: 16px;
+  place-items: center;
+  padding: 0 4px;
+  border: 2px solid #ffffff;
+  border-radius: 999px;
+  color: #ffffff;
+  background: #1c69d4;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+}
+.admin-header-account,
+.admin-header-profile {
+  display: inline-flex;
+  align-items: center;
+}
+.admin-header-account {
+  gap: 12px;
+}
+.admin-header-profile {
+  gap: 9px;
+  padding: 5px 8px;
+  border-radius: 8px;
+  color: inherit;
+  text-decoration: none;
+}
+.admin-header-profile:hover,
+.admin-header-profile[aria-current="page"] {
+  background: #f5f7fa;
+}
+.admin-header-profile .account-chip-initials {
+  width: 32px;
+  height: 32px;
+  color: #0f5636;
+  background: #e7f2ec;
+}
+.admin-header-profile .account-chip-copy strong {
+  color: #111827;
+  font-size: 13px;
+  font-weight: 600;
+}
+.admin-header-profile .account-chip-copy small {
+  color: #6b7280;
+  font-size: 11px;
+}
+.admin-header-logout {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 8px 12px;
+  border: 1px solid #c5cad3;
+  border-radius: 6px;
+  color: #374151;
+  background: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.admin-header-logout:hover {
+  color: #cc0001;
+  border-color: #f3c7c7;
+  background: #fff7f7;
+}
+@media (max-width: 1080px) {
+  .admin-header-profile .account-chip-copy {
+    display: none;
+  }
+}
+@media (max-width: 640px) {
+  .admin-header-account {
+    gap: 5px;
+  }
+  .admin-header-logout {
+    justify-content: center;
+    width: 38px;
+    padding: 0;
+  }
+  .admin-header-logout span {
+    display: none;
   }
 }

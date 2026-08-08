@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Navigate, NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import {
-  ChevronDown,
   LogOut,
   Menu,
+  MessageSquare,
   Shield,
   X,
 } from "lucide-react";
@@ -27,9 +27,8 @@ import { RateTicker } from "./components/market/RateTicker";
 import { NotificationCenter } from "./components/notifications/NotificationCenter";
 import { NotificationDetailDialog } from "./components/notifications/NotificationDetailDialog";
 import { makeRoleNotifications, mergeNotifications, toAppNotification } from "./components/notifications/roleNotifications";
-import { roleCanOpenPath } from "./components/pages/pageHelpers";
 import { LanguageContext, translate } from "./i18n";
-import { lots, roleOptions, routeByView, serviceDistricts } from "./data";
+import { lots, routeByView, serviceDistricts } from "./data";
 import {
   AdminPage,
   CheckoutPage,
@@ -47,7 +46,7 @@ import {
   SignedOutPage,
 } from "./components/pages";
 import { useAppStore } from "./store/useAppStore";
-import type { AppNotification, AuthUser, CropLot, RegisteredAccount, Role, View } from "./types";
+import type { AppNotification, AuthUser, CropLot, RegisteredAccount, View } from "./types";
 import { matchesSearch } from "./utils/search";
 
 const REVIEWED_NOTIFICATIONS_STORAGE_KEY = "amarKrishokReviewedNotifications";
@@ -167,7 +166,6 @@ export default function App() {
     closeHeaderMenus,
     district,
     language,
-    loginOpen,
     markChatThreadOpen,
     menuOpen,
     query,
@@ -179,7 +177,6 @@ export default function App() {
     setLanguage,
     setQuery,
     setUser,
-    toggleLoginOpen,
     toggleMenuOpen,
     updateRegistrationStatus,
     user,
@@ -409,18 +406,6 @@ export default function App() {
     navigate(`/farmer?editLot=${encodeURIComponent(lot.id)}`);
   };
 
-  const chooseRole = (role: Role, targetView: View) => {
-    const targetPath = routeByView[targetView];
-    if (user && roleCanOpenPath(user.role, targetPath)) {
-      navigate(targetPath);
-      closeAllHeaderMenus();
-      return;
-    }
-
-    navigate(`/login?next=${encodeURIComponent(targetPath)}`);
-    closeAllHeaderMenus();
-  };
-
   const openHeaderRegisterChoice = () => {
     closeAllHeaderMenus();
     navigate("/register/farmer");
@@ -518,7 +503,6 @@ export default function App() {
     (order.payments ?? []).some((payment) => payment.status === "HELD"),
   ).length;
 
-  const roleLabel = user ? roleOptions.find((item) => item.role === user.role)?.label : null;
   const currentRegistration = user
     ? registrations.find(
         (account) => account.id === user.accountId || (account.phone === user.phone && account.role === user.role),
@@ -605,6 +589,17 @@ export default function App() {
           >
             EN · <span className="bn-glyph">বাংলা</span>
           </button>
+          {user?.role === "admin" ? (
+            <NavLink
+              aria-label={t("Messages")}
+              className="admin-header-messages"
+              to="/admin/inbox"
+              onClick={closeAllHeaderMenus}
+            >
+              <MessageSquare aria-hidden="true" size={18} />
+              {chatThreads.length ? <span>{t(String(chatThreads.length))}</span> : null}
+            </NavLink>
+          ) : null}
           <NotificationCenter
             emptyLabel={user ? "No notifications right now" : "Sign in to see notifications"}
             notifications={user ? activeNotifications : []}
@@ -654,53 +649,25 @@ export default function App() {
             </div>
           ) : null}
           {user?.role === "admin" ? (
-            <div className="login-shell">
-              <button
-                className="account-chip"
-                type="button"
-                aria-expanded={loginOpen}
-                aria-haspopup="menu"
-                onClick={() => {
-                  setNotificationPanelOpen(false);
-                  toggleLoginOpen();
-                }}
+            <div className="admin-header-account">
+              <NavLink
+                aria-label={t("Open admin profile")}
+                className="admin-header-profile"
+                to="/admin/users"
+                onClick={closeAllHeaderMenus}
               >
                 <span className="account-chip-initials" aria-hidden="true">
                   {accountInitials}
                 </span>
                 <span className="account-chip-copy">
                   <strong>{user.name}</strong>
-                  <small>{roleLabel ? t(roleLabel) : ""}</small>
+                  <small>{t("Operations")} · {accountDistrict ? `${t(accountDistrict)} HQ` : t("Dhaka HQ")}</small>
                 </span>
-                <ChevronDown size={15} />
+              </NavLink>
+              <button className="secondary-button admin-header-logout" type="button" onClick={requestLogout}>
+                <LogOut aria-hidden="true" size={17} />
+                <span>{t("Log out")}</span>
               </button>
-              {loginOpen && (
-                <div className="login-menu" role="menu">
-                  <div className="signed-in-note">
-                    <span>{t("Signed in as")}</span>
-                    <strong>{user.name}</strong>
-                  </div>
-                  {roleOptions.map((option) => {
-                    const Icon = option.icon;
-                    return (
-                      <button className="role-option" key={option.role} type="button" role="menuitem" onClick={() => chooseRole(option.role, option.view)}>
-                        <Icon size={18} />
-                        <span>
-                          <strong>{t(option.label)}</strong>
-                          <small>{t(option.detail)}</small>
-                        </span>
-                      </button>
-                    );
-                  })}
-                  <button className="role-option danger" type="button" role="menuitem" onClick={requestLogout}>
-                    <X size={18} />
-                    <span>
-                      <strong>{t("Logout")}</strong>
-                      <small>{t("Switch account")}</small>
-                    </span>
-                  </button>
-                </div>
-              )}
             </div>
           ) : null}
         </div>
@@ -803,6 +770,8 @@ export default function App() {
             <ProtectedRoute allowedRoles={["admin"]} user={user} t={t}>
               <AdminPage
                 chatThreads={chatThreads}
+                orderCount={notificationOrders.length}
+                openDisputeCount={notificationOrders.filter((order) => Boolean(order.disputeOpenedAt)).length}
                 registrations={registrations}
                 onAdminReply={sendAdminChatReply}
                 onThreadOpen={markChatThreadOpen}
