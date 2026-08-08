@@ -674,17 +674,58 @@ export default function App() {
 
         {menuOpen && (
           <nav className="mobile-menu-panel" aria-label={t("Mobile navigation")}>
-            {navItems.map((item) => (
-              <NavLink
-                className={item.staff ? "nav-staff" : undefined}
-                key={item.id}
-                to={item.path}
-                onClick={closeAllHeaderMenus}
+            <div className="mobile-menu-links">
+              {navItems.map((item) => (
+                <NavLink
+                  className={item.staff ? "nav-staff" : undefined}
+                  key={item.id}
+                  to={item.path}
+                  onClick={closeAllHeaderMenus}
+                >
+                  {t(item.label)}
+                  {item.count === undefined ? null : <span className="nav-count">{t(String(item.count))}</span>}
+                </NavLink>
+              ))}
+            </div>
+            <div className="mobile-menu-actions">
+              <button
+                className="language-toggle"
+                type="button"
+                aria-label={t("Language switch")}
+                onClick={() => setLanguage(language === "en" ? "bn-BD" : "en")}
               >
-                {t(item.label)}
-                {item.count === undefined ? null : <span className="nav-count">{t(String(item.count))}</span>}
-              </NavLink>
-            ))}
+                EN · <span className="bn-glyph">বাংলা</span>
+              </button>
+              {!user ? (
+                <>
+                  <NavLink className="mobile-menu-action-link" to="/login" onClick={closeAllHeaderMenus}>{t("Log in")}</NavLink>
+                  <button className="mobile-menu-signup" type="button" onClick={openHeaderRegisterChoice}>{t("Sign up free")}</button>
+                </>
+              ) : null}
+              {user?.role === "admin" ? (
+                <>
+                  <NavLink className="mobile-menu-action-link" to="/admin/inbox" onClick={closeAllHeaderMenus}>
+                    <MessageSquare aria-hidden="true" size={17} />
+                    <span>{t("Messages")}</span>
+                    {chatThreads.length ? <em>{t(String(chatThreads.length))}</em> : null}
+                  </NavLink>
+                  <NavLink className="mobile-menu-action-link" to="/admin/users" onClick={closeAllHeaderMenus}>
+                    <span className="mobile-menu-avatar" aria-hidden="true">{accountInitials}</span>
+                    <span>{user.name}</span>
+                  </NavLink>
+                  <button className="mobile-menu-action-link" type="button" onClick={requestLogout}><LogOut aria-hidden="true" size={17} />{t("Log out")}</button>
+                </>
+              ) : null}
+              {user && user.role !== "admin" ? (
+                <>
+                  <NavLink className="mobile-menu-action-link" to={participantProfilePath} onClick={closeAllHeaderMenus}>
+                    <span className="mobile-menu-avatar" aria-hidden="true">{accountInitials}</span>
+                    <span>{t("Profile")}</span>
+                  </NavLink>
+                  <button className="mobile-menu-action-link" type="button" onClick={requestLogout}><LogOut aria-hidden="true" size={17} />{t("Log out")}</button>
+                </>
+              ) : null}
+            </div>
           </nav>
         )}
       </header>

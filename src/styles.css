@@ -12723,3 +12723,724 @@ textarea:focus-visible {
     display: none;
   }
 }
+
+/* =====================================================================
+   Responsive consolidation — current web product on phones and tablets.
+   This block intentionally comes last so older fixed desktop grids cannot
+   reintroduce horizontal overflow at smaller viewport widths.
+   ===================================================================== */
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+}
+
+@media (max-width: 1024px) {
+  body,
+  .app-shell,
+  .app-content {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  /* The full desktop navigation cannot share one tablet row with account tools. */
+  .site-header {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 16px;
+  }
+  .site-header > .icon-button.mobile-only {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    min-width: 40px;
+    min-height: 40px;
+    padding: 0;
+  }
+  .site-header > .main-nav {
+    display: none;
+  }
+  .site-header .brand {
+    min-width: 0;
+  }
+  .site-header .brand strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .site-header > .header-actions {
+    justify-self: end;
+    width: auto;
+    margin-left: 0;
+  }
+  .site-header > .header-actions > .language-toggle,
+  .site-header > .header-actions > .admin-header-messages,
+  .site-header > .header-actions > .admin-header-account,
+  .site-header > .header-actions > .participant-account,
+  .site-header > .header-actions > .header-auth {
+    display: none;
+  }
+  .site-header .notification-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    min-width: 40px;
+    min-height: 40px;
+    padding: 0;
+  }
+  .notification-panel {
+    position: fixed;
+    top: 70px;
+    right: 12px;
+    left: 12px;
+    width: auto;
+    max-height: calc(100dvh - 84px);
+    overflow-y: auto;
+  }
+  .notification-panel::before {
+    display: none;
+  }
+
+  .mobile-menu-panel {
+    display: flex;
+    grid-column: 1 / -1;
+    width: 100%;
+    min-width: 0;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
+    border: 1px solid #e2e5eb;
+    border-radius: 8px;
+    background: #ffffff;
+  }
+  .mobile-menu-links {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .mobile-menu-links > a {
+    justify-content: flex-start;
+    min-width: 0;
+    min-height: 42px;
+    padding: 0 11px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .mobile-menu-links .nav-count {
+    margin-left: auto;
+  }
+  .mobile-menu-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding-top: 12px;
+    border-top: 1px solid #f1f3f6;
+  }
+  .mobile-menu-actions .language-toggle,
+  .mobile-menu-action-link,
+  .mobile-menu-signup {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 40px;
+    padding: 0 12px;
+    border: 1px solid #c5cad3;
+    border-radius: 6px;
+    color: #374151;
+    background: #ffffff;
+    font-size: 13px;
+    font-style: normal;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  button.mobile-menu-action-link {
+    font: inherit;
+  }
+  .mobile-menu-action-link em {
+    display: grid;
+    min-width: 18px;
+    height: 18px;
+    margin-left: 2px;
+    place-items: center;
+    padding: 0 5px;
+    border-radius: 999px;
+    color: #ffffff;
+    background: #1c69d4;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    font-style: normal;
+  }
+  .mobile-menu-avatar {
+    display: grid;
+    width: 26px;
+    height: 26px;
+    place-items: center;
+    border-radius: 999px;
+    color: #0f5636;
+    background: #e7f2ec;
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .mobile-menu-signup {
+    border-color: #cc0001;
+    color: #ffffff;
+    background: #cc0001;
+  }
+
+  /* Public market, detail, checkout, orders, and rates layouts. */
+  .market-layout,
+  .lot-detail-layout,
+  .checkout-layout,
+  .order-detail-layout,
+  .fair-price-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .market-layout,
+  .page-wrap {
+    width: 100%;
+    max-width: 100%;
+  }
+  .market-layout {
+    padding: 20px;
+  }
+  .filter-rail,
+  .lot-detail-rail,
+  .order-detail-rail,
+  .checkout-summary {
+    position: static;
+  }
+  .filter-rail {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .filter-rail-head {
+    grid-column: 1 / -1;
+  }
+  .filter-section {
+    min-width: 0;
+  }
+  .market-results,
+  .market-search-card,
+  .market-result-head,
+  .lot-grid,
+  .lot-card,
+  .lot-card-body {
+    min-width: 0;
+  }
+  .lot-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .lot-card-body h2,
+  .lot-card-meta,
+  .lot-card-trust,
+  .market-result-title,
+  .market-result-rate {
+    overflow-wrap: anywhere;
+  }
+
+  /* Farmer and buyer workspaces retain every section through a scrollable rail. */
+  .restored-dashboard,
+  .dashboard-shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .restored-dashboard .sidebar {
+    position: static;
+    display: block;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    padding: 10px 16px;
+    overflow: hidden;
+    border-right: 0;
+    border-bottom: 1px solid #e2e5eb;
+  }
+  .restored-dashboard .admin-brand,
+  .restored-dashboard .trust-summary {
+    display: none;
+  }
+  .restored-dashboard .side-nav,
+  .farmer-side-nav,
+  .buyer-side-nav {
+    display: flex;
+    grid-template-columns: none;
+    gap: 7px;
+    width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+  .restored-dashboard .side-nav::-webkit-scrollbar {
+    display: none;
+  }
+  .restored-dashboard .side-nav button {
+    width: auto;
+    min-width: max-content;
+    flex: none;
+    padding: 0 13px;
+  }
+  .dashboard-workspace {
+    width: 100%;
+    padding: 20px;
+  }
+  .dashboard-topbar {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .topbar-actions {
+    flex-wrap: wrap;
+  }
+  .stats-grid,
+  .profile-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .farmer-dashboard-grid,
+  .buyer-dashboard-grid,
+  .farmer-right-rail,
+  .buyer-right-rail {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* The admin console uses the same compact horizontal navigation pattern. */
+  .admin-console-shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .admin-console-sidebar {
+    gap: 12px;
+    padding: 14px;
+  }
+  .admin-console-brand {
+    padding: 0;
+  }
+  .admin-role-switcher {
+    max-width: 360px;
+    padding: 0;
+  }
+  .admin-console-nav {
+    display: flex;
+    width: 100%;
+    flex-direction: row;
+    gap: 7px;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    padding-bottom: 3px;
+    scrollbar-width: none;
+  }
+  .admin-console-nav::-webkit-scrollbar {
+    display: none;
+  }
+  .admin-console-nav > div {
+    display: flex;
+    flex: none;
+    flex-direction: row;
+    gap: 7px;
+  }
+  .admin-console-nav > div > span {
+    display: none;
+  }
+  .admin-console-nav button {
+    width: auto;
+    min-width: max-content;
+    min-height: 42px;
+    flex: none;
+    white-space: nowrap;
+  }
+  .admin-console-user {
+    display: none;
+  }
+  .admin-console-content.admin-console-page {
+    padding: 20px;
+  }
+  .admin-console-heading {
+    align-items: flex-start;
+  }
+  .admin-console-heading > aside {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+  .admin-dashboard-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .admin-inbox {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .admin-thread-list {
+    max-height: 280px;
+  }
+  .admin-user-tools,
+  .admin-user-tools > div {
+    flex-wrap: wrap;
+  }
+
+  /* Dialogs and support surfaces must stay inside the visual viewport. */
+  .admin-modal-backdrop,
+  .notification-detail-backdrop,
+  .auth-choice-backdrop {
+    padding: 12px;
+  }
+  .admin-modal,
+  .lot-edit-modal,
+  .profile-edit-modal,
+  .notification-detail-modal,
+  .auth-choice-modal {
+    width: 100%;
+    max-width: 100%;
+    max-height: calc(100dvh - 24px);
+    overflow-y: auto;
+  }
+  .floating-chat-button {
+    right: 16px;
+    bottom: 16px;
+  }
+  .floating-chat-panel,
+  .chat-widget {
+    max-width: calc(100vw - 32px);
+  }
+}
+
+@media (max-width: 640px) {
+  .site-header {
+    padding: 8px 12px;
+  }
+  .site-header .brand-mark {
+    width: 30px;
+    height: 30px;
+  }
+  .site-header .brand strong {
+    font-size: 16px;
+  }
+  .mobile-menu-panel {
+    padding: 10px;
+  }
+  .mobile-menu-actions > * {
+    flex: 1 1 132px;
+  }
+
+  .hero-section,
+  .market-layout,
+  .lot-page,
+  .checkout-page,
+  .orders-page,
+  .order-detail-page,
+  .order-placed-page,
+  .rates-page {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+  .hero-section {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+    padding-top: 28px;
+    padding-bottom: 36px;
+  }
+  .hero-copy h1 {
+    font-size: clamp(34px, 10vw, 42px);
+    line-height: 1.04;
+  }
+  .hero-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .hero-actions > * {
+    width: 100%;
+  }
+  .hero-stats {
+    flex-wrap: wrap;
+  }
+  .market-console,
+  .cheapest-lots {
+    width: 100%;
+    min-width: 0;
+  }
+  .cheapest-lot {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .cheapest-lot-price {
+    width: 100%;
+    padding-left: 52px;
+    text-align: left;
+  }
+  .how-it-works {
+    padding: 32px 16px 40px;
+  }
+  .how-it-works-inner {
+    padding: 0;
+  }
+
+  .filter-rail {
+    display: block;
+  }
+  .filter-section:last-child {
+    border-bottom: 0;
+  }
+  .market-search-card {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .market-search-card .search-field,
+  .market-search-card .secondary-button {
+    width: 100%;
+    flex-basis: auto;
+  }
+  .market-result-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .lot-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .lot-card-photo {
+    height: auto;
+    min-height: 180px;
+    aspect-ratio: 16 / 9;
+  }
+  .pagination {
+    flex-wrap: wrap;
+  }
+
+  .lot-photo-area {
+    height: auto;
+    min-height: 210px;
+    aspect-ratio: 16 / 10;
+  }
+  .lot-spec-card,
+  .fair-price-card,
+  .farmer-card,
+  .order-box,
+  .offer-panel,
+  .escrow-explainer,
+  .checkout-card,
+  .checkout-summary,
+  .escrow-card,
+  .driver-row,
+  .table-card {
+    padding: 16px;
+  }
+  .lot-spec-head,
+  .order-detail-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .lot-spec-head h1,
+  .checkout-page h1,
+  .order-detail-head h1,
+  .orders-page h1 {
+    font-size: 25px;
+  }
+  .lot-spec-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .farmer-card-stats {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  .farmer-card-stats div {
+    text-align: left;
+  }
+  .checkout-row {
+    align-items: flex-start;
+  }
+  .checkout-row .link-button {
+    flex: none;
+  }
+  .order-placed-actions,
+  .wizard-actions,
+  .modal-action-row,
+  .auth-register-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .order-placed-actions > *,
+  .wizard-actions > *,
+  .modal-action-row > *,
+  .auth-register-actions > * {
+    width: 100%;
+  }
+  .order-table-row,
+  .rate-table-row,
+  .admin-escrow-row,
+  .admin-listing-row,
+  .rate-publish-row,
+  .listing-vs-market-row {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .rate-table-row > *,
+  .order-table-row > * {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .dashboard-workspace,
+  .admin-console-content.admin-console-page {
+    padding: 18px 14px 28px;
+  }
+  .dashboard-topbar {
+    margin-bottom: 18px;
+  }
+  .page-title {
+    min-width: 0;
+  }
+  .page-title h1 {
+    overflow-wrap: anywhere;
+    font-size: 28px;
+  }
+  .topbar-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+  .topbar-actions > button,
+  .topbar-actions > a {
+    justify-content: center;
+    width: 100%;
+  }
+  .stats-grid,
+  .profile-summary-grid,
+  .admin-dashboard-kpis,
+  .admin-dashboard-panels {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .stat-card {
+    min-height: 0;
+  }
+  .form-grid,
+  .auth-register-fields,
+  .crop-picker,
+  .wizard-grade-row,
+  .wizard-price-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .seller-lot-item,
+  .buyer-order-item,
+  .supply-item,
+  .route-item {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .seller-lot-actions,
+  .admin-escrow-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .seller-lot-actions > *,
+  .admin-escrow-actions > * {
+    width: 100%;
+  }
+
+  .admin-console-sidebar {
+    padding: 12px;
+  }
+  .admin-role-switcher {
+    max-width: none;
+  }
+  .admin-console-heading {
+    gap: 12px;
+  }
+  .admin-console-content .admin-console-heading h1 {
+    font-size: 24px;
+  }
+  .admin-dashboard-kpis article > strong {
+    overflow-wrap: anywhere;
+    font-size: 25px;
+  }
+  .admin-user-tools > label {
+    width: 100%;
+  }
+  .admin-user-table-row,
+  .admin-activity-row,
+  .admin-dispute-list article > header {
+    min-width: 0;
+  }
+  .admin-user-table-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+  .admin-user-table-head {
+    display: none;
+  }
+  .admin-dispute-list article {
+    padding: 16px;
+  }
+  .admin-dispute-list article > header > span:last-child {
+    align-items: flex-start;
+  }
+  .admin-dispute-list footer button,
+  .admin-dispute-list footer button.conversation {
+    width: 100%;
+    margin-left: 0;
+    justify-content: center;
+  }
+  .admin-conversation > form {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .admin-conversation > form button {
+    justify-content: center;
+  }
+  .admin-role-matrix {
+    overflow-x: auto;
+  }
+
+  .site-footer-inner {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+  .site-footer-columns {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    gap: 24px;
+  }
+  .floating-chat-button {
+    justify-content: center;
+    width: 52px;
+    min-width: 52px;
+    min-height: 52px;
+    padding: 0;
+  }
+  .floating-chat-button > span {
+    display: none;
+  }
+  .floating-chat-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    min-width: 20px;
+    min-height: 20px;
+    padding: 0 5px;
+  }
+}
+
+@media (max-width: 420px) {
+  .site-header {
+    gap: 8px;
+  }
+  .site-header .brand strong {
+    font-size: 15px;
+  }
+  .mobile-menu-links {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .mobile-menu-actions > * {
+    flex-basis: 100%;
+  }
+  .site-footer-columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .notification-panel-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .notification-panel-header .secondary-button {
+    justify-content: center;
+    width: 100%;
+  }
+}
