@@ -11405,7 +11405,7 @@ textarea:focus-visible {
   background: #cc0001;
 }
 .admin-console-brand > span,
-.admin-console-user > span {
+.admin-console-user-identity > span {
   display: flex;
   min-width: 0;
   flex-direction: column;
@@ -11514,12 +11514,19 @@ textarea:focus-visible {
 }
 .admin-console-user {
   display: flex;
-  align-items: center;
+  align-items: stretch;
+  flex-direction: column;
   gap: 10px;
   padding: 14px 8px 0;
   border-top: 1px solid #1d3329;
 }
-.admin-console-user > i {
+.admin-console-user-identity {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+}
+.admin-console-user-identity > i {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -11543,6 +11550,26 @@ textarea:focus-visible {
 .admin-console-user small {
   color: #9aa3af;
   font-size: 11px;
+}
+.admin-console-logout {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  min-height: 36px;
+  padding: 0 10px;
+  border: 1px solid #2a4035;
+  border-radius: 6px;
+  color: #c4ccc7;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 600;
+}
+.admin-console-logout:hover {
+  border-color: #cc0001;
+  color: #ffffff;
+  background: #cc0001;
 }
 .admin-console-content.admin-console-page {
   display: flex;
@@ -12686,40 +12713,8 @@ textarea:focus-visible {
   color: #6b7280;
   font-size: 11px;
 }
-.admin-header-logout {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  min-height: 38px;
-  padding: 8px 12px;
-  border: 1px solid #c5cad3;
-  border-radius: 6px;
-  color: #374151;
-  background: #ffffff;
-  font-size: 13px;
-  font-weight: 600;
-  white-space: nowrap;
-}
-.admin-header-logout:hover {
-  color: #cc0001;
-  border-color: #f3c7c7;
-  background: #fff7f7;
-}
 @media (max-width: 1080px) {
   .admin-header-profile .account-chip-copy {
-    display: none;
-  }
-}
-@media (max-width: 640px) {
-  .admin-header-account {
-    gap: 5px;
-  }
-  .admin-header-logout {
-    justify-content: center;
-    width: 38px;
-    padding: 0;
-  }
-  .admin-header-logout span {
     display: none;
   }
 }
@@ -12739,6 +12734,10 @@ canvas {
 @media (min-width: 1201px) {
   .site-header {
     flex-wrap: nowrap;
+  }
+  .site-header > .main-nav {
+    flex: none;
+    overflow-x: visible;
   }
 }
 

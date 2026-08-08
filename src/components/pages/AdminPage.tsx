@@ -7,6 +7,7 @@ import {
   Check,
   History,
   LayoutDashboard,
+  LogOut,
   MessageSquare,
   Package,
   Shield,
@@ -101,6 +102,7 @@ function getInitials(name: string) {
 export function AdminPage({
   chatThreads,
   onAdminReply,
+  onLogout,
   onThreadOpen,
   onUpdateRegistration,
   openDisputeCount,
@@ -110,6 +112,7 @@ export function AdminPage({
 }: {
   chatThreads: ChatThread[];
   onAdminReply: (threadId: string, text: string) => void;
+  onLogout: () => void;
   onThreadOpen: (threadId: string) => void;
   onUpdateRegistration: (id: string, status: AccountStatus) => void;
   openDisputeCount: number;
@@ -205,7 +208,16 @@ export function AdminPage({
             })}</div>;
           })}
         </nav>
-        <div className="admin-console-user"><i>{getInitials(user?.name ?? "Staff")}</i><span><strong>{user?.name ?? t("Staff")}</strong><small>{t(staffRole === "super" ? "Super admin" : "Support agent")}</small></span></div>
+        <div className="admin-console-user">
+          <div className="admin-console-user-identity">
+            <i>{getInitials(user?.name ?? "Staff")}</i>
+            <span><strong>{user?.name ?? t("Staff")}</strong><small>{t(staffRole === "super" ? "Super admin" : "Support agent")}</small></span>
+          </div>
+          <button className="admin-console-logout" type="button" onClick={onLogout}>
+            <LogOut aria-hidden="true" size={16} />
+            <span>{t("Log out")}</span>
+          </button>
+        </div>
       </aside>
 
       <div className="admin-console-content admin-console-page">

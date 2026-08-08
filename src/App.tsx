@@ -600,18 +600,20 @@ export default function App() {
               {chatThreads.length ? <span>{t(String(chatThreads.length))}</span> : null}
             </NavLink>
           ) : null}
-          <NotificationCenter
-            emptyLabel={user ? "No notifications right now" : "Sign in to see notifications"}
-            notifications={user ? activeNotifications : []}
-            onMarkAllReviewed={markAllNotificationsReviewed}
-            onOpenNotification={openNotification}
-            onToggle={() => {
-              closeHeaderMenus();
-              setNotificationPanelOpen((value) => !value);
-            }}
-            open={notificationPanelOpen}
-            reviewedIds={reviewedNotificationIds}
-          />
+          {user ? (
+            <NotificationCenter
+              emptyLabel="No notifications right now"
+              notifications={activeNotifications}
+              onMarkAllReviewed={markAllNotificationsReviewed}
+              onOpenNotification={openNotification}
+              onToggle={() => {
+                closeHeaderMenus();
+                setNotificationPanelOpen((value) => !value);
+              }}
+              open={notificationPanelOpen}
+              reviewedIds={reviewedNotificationIds}
+            />
+          ) : null}
           {/* Signed out, the demo shows the two calls to action directly rather than a menu. */}
           {!user ? (
             <span className="header-auth">
@@ -664,10 +666,6 @@ export default function App() {
                   <small>{t("Operations")} · {accountDistrict ? `${t(accountDistrict)} HQ` : t("Dhaka HQ")}</small>
                 </span>
               </NavLink>
-              <button className="secondary-button admin-header-logout" type="button" onClick={requestLogout}>
-                <LogOut aria-hidden="true" size={17} />
-                <span>{t("Log out")}</span>
-              </button>
             </div>
           ) : null}
         </div>
@@ -815,6 +813,7 @@ export default function App() {
                 openDisputeCount={notificationOrders.filter((order) => Boolean(order.disputeOpenedAt)).length}
                 registrations={registrations}
                 onAdminReply={sendAdminChatReply}
+                onLogout={requestLogout}
                 onThreadOpen={markChatThreadOpen}
                 onUpdateRegistration={updateRegistrationStatus}
                 user={user}
