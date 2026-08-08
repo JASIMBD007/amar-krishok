@@ -12640,45 +12640,7 @@ textarea:focus-visible {
   }
 }
 
-/* v2 admin header: separate staff messages, identity, and sign-out controls. */
-.admin-header-messages {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: 38px;
-  margin-left: 4px;
-  padding: 8px;
-  border-left: 1px solid #e2e5eb;
-  border-radius: 0 6px 6px 0;
-  color: #374151;
-  background: transparent;
-  text-decoration: none;
-}
-.admin-header-messages:hover,
-.admin-header-messages[aria-current="page"] {
-  color: #1c69d4;
-  background: #f5f7fa;
-}
-.admin-header-messages > span {
-  position: absolute;
-  top: 2px;
-  right: 0;
-  display: grid;
-  min-width: 16px;
-  height: 16px;
-  place-items: center;
-  padding: 0 4px;
-  border: 2px solid #ffffff;
-  border-radius: 999px;
-  color: #ffffff;
-  background: #1c69d4;
-  font-family: "JetBrains Mono", monospace;
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 1;
-}
+/* v2 admin header identity; support messages stay inside the console inbox. */
 .admin-header-account,
 .admin-header-profile {
   display: inline-flex;
@@ -12783,7 +12745,6 @@ canvas {
     margin-left: 0;
   }
   .site-header > .header-actions > .language-toggle,
-  .site-header > .header-actions > .admin-header-messages,
   .site-header > .header-actions > .admin-header-account,
   .site-header > .header-actions > .participant-account,
   .site-header > .header-actions > .header-auth {

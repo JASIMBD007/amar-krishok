@@ -3,7 +3,6 @@ import { Navigate, NavLink, Route, Routes, useLocation, useNavigate } from "reac
 import {
   LogOut,
   Menu,
-  MessageSquare,
   Shield,
   X,
 } from "lucide-react";
@@ -587,17 +586,6 @@ export default function App() {
           >
             {language === "en" ? "EN" : <span className="bn-glyph">বাংলা</span>}
           </button>
-          {user?.role === "admin" ? (
-            <NavLink
-              aria-label={t("Messages")}
-              className="admin-header-messages"
-              to="/admin/inbox"
-              onClick={closeAllHeaderMenus}
-            >
-              <MessageSquare aria-hidden="true" size={18} />
-              {chatThreads.length ? <span>{t(String(chatThreads.length))}</span> : null}
-            </NavLink>
-          ) : null}
           {user ? (
             <NotificationCenter
               emptyLabel="No notifications right now"
@@ -700,11 +688,6 @@ export default function App() {
               ) : null}
               {user?.role === "admin" ? (
                 <>
-                  <NavLink className="mobile-menu-action-link" to="/admin/inbox" onClick={closeAllHeaderMenus}>
-                    <MessageSquare aria-hidden="true" size={17} />
-                    <span>{t("Messages")}</span>
-                    {chatThreads.length ? <em>{t(String(chatThreads.length))}</em> : null}
-                  </NavLink>
                   <NavLink className="mobile-menu-action-link" to="/admin/users" onClick={closeAllHeaderMenus}>
                     <span className="mobile-menu-avatar" aria-hidden="true">{accountInitials}</span>
                     <span>{user.name}</span>
