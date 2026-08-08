@@ -12736,7 +12736,13 @@ canvas {
   max-width: 100%;
 }
 
-@media (max-width: 1024px) {
+@media (min-width: 1201px) {
+  .site-header {
+    flex-wrap: nowrap;
+  }
+}
+
+@media (max-width: 1200px) {
   body,
   .app-shell,
   .app-content {
@@ -12893,7 +12899,9 @@ canvas {
     color: #ffffff;
     background: #cc0001;
   }
+}
 
+@media (max-width: 1024px) {
   /* Public market, detail, checkout, orders, and rates layouts. */
   .market-layout,
   .lot-detail-layout,
