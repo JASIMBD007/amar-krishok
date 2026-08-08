@@ -71,6 +71,10 @@ const privateSeo: Record<string, SeoConfig> = {
 };
 
 function getSeo(pathname: string): SeoConfig {
+  if (pathname === "/admin" || pathname.startsWith("/admin/")) {
+    return privateSeo["/admin"];
+  }
+
   return publicSeo[pathname] ?? privateSeo[pathname] ?? publicSeo["/"];
 }
 

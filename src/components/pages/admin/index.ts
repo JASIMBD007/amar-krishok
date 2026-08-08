@@ -3,7 +3,7 @@ export { ChatSection } from "./ChatSection";
 export { DashboardSection } from "./DashboardSection";
 export { FarmersSection } from "./FarmersSection";
 export { LogisticsSection } from "./LogisticsSection";
-export { MarketSection } from "./MarketSection";
+export { MarketSection, type MarketTab } from "./MarketSection";
 export { OrdersSection } from "./OrdersSection";
 export { PayoutsSection } from "./PayoutsSection";
 export { SettingsSection } from "./SettingsSection";

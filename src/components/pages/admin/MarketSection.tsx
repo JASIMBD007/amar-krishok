@@ -18,7 +18,7 @@ import type { AccountStatus, AuthUser, CropLot, RegisteredAccount } from "../../
 import { EmptyState, ListLoading } from "../../EmptyState";
 import { DeltaPill, EscrowPill } from "../../market/MarketBits";
 
-type MarketTab = "overview" | "escrow" | "verification" | "rates" | "listings";
+export type MarketTab = "overview" | "escrow" | "verification" | "rates" | "listings";
 
 const TABS: Array<{ id: MarketTab; label: string }> = [
   { id: "overview", label: "Overview" },
@@ -83,20 +83,27 @@ function escrowAmount(order: BackendOrder) {
  * suspending a lot pulls it from the marketplace, and escrow decisions move real money.
  */
 export function MarketSection({
+  activeTab,
   onUpdateRegistration,
   registrations,
   searchTerm = "",
+  showTabs = true,
+  staffRole = "super",
   user,
 }: {
+  activeTab?: MarketTab;
   onUpdateRegistration: (id: string, status: AccountStatus) => void;
   registrations: RegisteredAccount[];
   searchTerm?: string;
+  showTabs?: boolean;
+  staffRole?: "super" | "support";
   user: AuthUser | null;
 }) {
   const language = useLanguage();
   const t = useTranslate();
   const v = useValueText();
   const [tab, setTab] = useState<MarketTab>("overview");
+  const currentTab = activeTab ?? tab;
   const [lots, setLots] = useState<CropLot[]>([]);
   const [orders, setOrders] = useState<BackendOrder[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -239,11 +246,11 @@ export function MarketSection({
 
   return (
     <section className="admin-market-section">
-      <div className="market-tabs" role="tablist" aria-label={t("Market controls")}>
+      {showTabs ? <div className="market-tabs" role="tablist" aria-label={t("Market controls")}>
         {TABS.map((item) => (
           <button
-            aria-selected={tab === item.id}
-            className={tab === item.id ? "market-tab on" : "market-tab"}
+            aria-selected={currentTab === item.id}
+            className={currentTab === item.id ? "market-tab on" : "market-tab"}
             key={item.id}
             role="tab"
             type="button"
@@ -252,7 +259,7 @@ export function MarketSection({
             {t(item.label)}
           </button>
         ))}
-      </div>
+      </div> : null}
 
       {staffNotice ? (
         <div className="soft-notice admin-market-notice" role="status">
@@ -263,7 +270,7 @@ export function MarketSection({
 
       {loadError ? <p className="marketplace-feedback warning">{t(loadError)}</p> : null}
 
-      {tab === "overview" ? (
+      {currentTab === "overview" ? (
         <>
           <div className="stats-grid admin-market-kpis">
             <article className="stat-card">
@@ -366,7 +373,7 @@ export function MarketSection({
         </>
       ) : null}
 
-      {tab === "escrow" ? (
+      {currentTab === "escrow" ? (
         isLoading ? (
           <ListLoading label={t("Loading market data...")} />
         ) : orders.length === 0 ? (
@@ -395,7 +402,7 @@ export function MarketSection({
                   )
                   .map((order) => {
                     const state = escrowState(order);
-                    const canAct = state === "held";
+                    const canAct = state === "held" && staffRole === "super";
                     const disputed = Boolean(order.disputeOpenedAt);
                     const farmerName = order.items.find((item) => item.cropLot)?.cropLot?.farmer?.name ?? "";
 
@@ -461,7 +468,7 @@ export function MarketSection({
         )
       ) : null}
 
-      {tab === "verification" ? (
+      {currentTab === "verification" ? (
         verificationQueue.length === 0 ? (
           <EmptyState
             icon={BadgeCheck}
@@ -500,7 +507,7 @@ export function MarketSection({
         )
       ) : null}
 
-      {tab === "rates" ? (
+      {currentTab === "rates" ? (
         <>
           <div className="panel rate-publish-bar">
             <Info className="rate-publish-info" aria-hidden="true" size={18} />
@@ -578,7 +585,7 @@ export function MarketSection({
         </>
       ) : null}
 
-      {tab === "listings" ? (
+      {currentTab === "listings" ? (
         isLoading ? (
           <ListLoading label={t("Loading listings...")} />
         ) : marketLots.length === 0 ? (

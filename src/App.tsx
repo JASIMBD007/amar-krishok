@@ -798,7 +798,7 @@ export default function App() {
         />
         <Route path="/prices" element={<PricesPage />} />
         <Route
-          path="/admin"
+          path="/admin/*"
           element={
             <ProtectedRoute allowedRoles={["admin"]} user={user} t={t}>
               <AdminPage
