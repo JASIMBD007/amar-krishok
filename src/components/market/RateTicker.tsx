@@ -4,15 +4,13 @@ import { useLanguage, useTranslate, useValueText } from "../../i18n";
 import { cropNamesBn } from "../../market/marketData";
 import { useLoadRates, useRateChanges } from "../../market/useMarket";
 import { useMarketStore } from "../../store/useMarketStore";
-import { environment } from "../../config/environment";
-import type { Language } from "../../types";
-
-function currentTime(value: Date, language: Language) {
-  return new Intl.DateTimeFormat(language === "bn-BD" ? "bn-BD" : "en-GB", {
-    hour: "2-digit",
-    hourCycle: "h23",
+function currentTime(value: Date) {
+  // With no explicit timeZone, Intl uses the visitor's browser timezone and applies local DST.
+  // en-US keeps the requested AM/PM marker stable even when the rest of the UI is Bengali.
+  return new Intl.DateTimeFormat("en-US", {
+    hour: "numeric",
+    hour12: true,
     minute: "2-digit",
-    timeZone: environment.timeZone,
   }).format(value);
 }
 
@@ -38,7 +36,7 @@ export function RateTicker() {
   // The ticker is on every route, so it is the natural place to pull today's published rates.
   useLoadRates();
 
-  // Use the visitor's device timezone, not the timestamp of the latest rate publication.
+  // Refresh the visitor-local clock without coupling it to the rate publication timestamp.
   useEffect(() => {
     const updateClock = () => setNow(new Date());
     updateClock();
@@ -110,7 +108,7 @@ export function RateTicker() {
       <div className="rate-ticker-inner">
         <span className="rate-ticker-eyebrow">
           <span className="live-dot" aria-hidden="true" />
-          {t("Today")} · <time dateTime={now.toISOString()}>{v(currentTime(now, language))}</time>
+          {t("Today")} · <time dateTime={now.toISOString()}>{v(currentTime(now))}</time>
         </span>
         <div className="rate-ticker-track" ref={tickerTrackRef}>
           <div className={marqueeActive ? "rate-ticker-marquee is-scrolling" : "rate-ticker-marquee"}>
