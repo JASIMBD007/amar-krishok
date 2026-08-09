@@ -12693,15 +12693,6 @@ canvas {
   max-width: 100%;
 }
 
-@media (min-width: 1320px) {
-  .market-layout {
-    max-width: 1536px;
-  }
-  .lot-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-}
-
 @media (min-width: 1201px) {
   .site-header {
     flex-wrap: nowrap;
