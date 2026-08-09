@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   CheckCircle2,
@@ -30,6 +30,13 @@ const loginAccountOrder: Role[] = ["buyer", "farmer", "admin"];
 
 function loginRoleFromQuery(role: string | null): Role | "" {
   return role === "admin" || role === "farmer" || role === "buyer" ? role : "";
+}
+
+function loginRoleFromIntent(next: string): Role | "" {
+  if (next.startsWith("/farmer")) return "farmer";
+  if (next.startsWith("/orders") || next.startsWith("/buyer") || next.startsWith("/checkout")) return "buyer";
+  if (next.startsWith("/admin")) return "admin";
+  return "";
 }
 
 function localBangladeshPhone(value: string) {
@@ -180,7 +187,7 @@ export function LoginPage({
   const params = new URLSearchParams(location.search);
   const queryNext = params.get("next") ?? "";
   const safeNext = queryNext.startsWith("/") && !queryNext.startsWith("//") ? queryNext : "";
-  const initialRole = loginRoleFromQuery(params.get("role")) || user?.role || "buyer";
+  const initialRole = loginRoleFromQuery(params.get("role")) || loginRoleFromIntent(safeNext) || user?.role || "buyer";
   const [accountType, setAccountType] = useState<Role>(initialRole);
   const [identifier, setIdentifier] = useState(
     initialRole === "admin" ? user?.username ?? "" : localBangladeshPhone(user?.phone ?? ""),
@@ -199,6 +206,10 @@ export function LoginPage({
   const [resetError, setResetError] = useState("");
   const [isResetSubmitting, setIsResetSubmitting] = useState(false);
   const gateReason = gateReasonFor(safeNext);
+
+  useEffect(() => {
+    setAccountType(initialRole);
+  }, [initialRole]);
 
   const openPasswordReset = () => {
     setAuthMode("reset");

@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Navigate, NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Link, Navigate, NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import {
   LogOut,
   Menu,
@@ -67,6 +67,41 @@ function readStoredReviewedNotificationIds(user: AuthUser | null) {
   } catch {
     return [];
   }
+}
+
+function HeaderNavLink({
+  children,
+  className,
+  currentPath,
+  currentSearch,
+  onClick,
+  to,
+}: {
+  children: ReactNode;
+  className?: string;
+  currentPath: string;
+  currentSearch: string;
+  onClick: () => void;
+  to: string;
+}) {
+  if (to.startsWith("/login?")) {
+    const intendedPath = new URLSearchParams(to.slice(to.indexOf("?") + 1)).get("next");
+    const currentIntent = new URLSearchParams(currentSearch).get("next");
+    const isCurrent = currentPath === "/login" && intendedPath === currentIntent;
+    const classes = [className, isCurrent ? "active" : ""].filter(Boolean).join(" ");
+
+    return (
+      <Link aria-current={isCurrent ? "page" : undefined} className={classes || undefined} to={to} onClick={onClick}>
+        {children}
+      </Link>
+    );
+  }
+
+  return (
+    <NavLink className={className} to={to} onClick={onClick}>
+      {children}
+    </NavLink>
+  );
 }
 
 function saveStoredReviewedNotificationIds(user: AuthUser | null, ids: string[]) {
@@ -564,8 +599,10 @@ export default function App() {
 
         <nav className="main-nav" aria-label={t("Main navigation")}>
           {navItems.map((item) => (
-            <NavLink
+            <HeaderNavLink
               className={item.staff ? "nav-staff" : undefined}
+              currentPath={location.pathname}
+              currentSearch={location.search}
               key={item.id}
               to={item.path}
               onClick={closeAllHeaderMenus}
@@ -575,7 +612,7 @@ export default function App() {
                 {t(item.label)}
                 {item.count === undefined ? null : <span className="nav-count">{t(String(item.count))}</span>}
               </span>
-            </NavLink>
+            </HeaderNavLink>
           ))}
         </nav>
 
@@ -662,15 +699,17 @@ export default function App() {
           <nav className="mobile-menu-panel" aria-label={t("Mobile navigation")}>
             <div className="mobile-menu-links">
               {navItems.map((item) => (
-                <NavLink
+                <HeaderNavLink
                   className={item.staff ? "nav-staff" : undefined}
+                  currentPath={location.pathname}
+                  currentSearch={location.search}
                   key={item.id}
                   to={item.path}
                   onClick={closeAllHeaderMenus}
                 >
                   {t(item.label)}
                   {item.count === undefined ? null : <span className="nav-count">{t(String(item.count))}</span>}
-                </NavLink>
+                </HeaderNavLink>
               ))}
             </div>
             <div className="mobile-menu-actions">
