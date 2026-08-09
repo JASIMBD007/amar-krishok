@@ -8155,7 +8155,6 @@ textarea:focus-visible {
    66px min-height, 1280px container, 24px gutters, flat white.
    ===================================================================== */
 .site-header {
-  --header-control-size: 28px;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -8185,8 +8184,8 @@ textarea:focus-visible {
 }
 .brand-mark {
   display: grid;
-  width: var(--header-control-size);
-  height: var(--header-control-size);
+  width: 28px;
+  height: 28px;
   place-items: center;
   border-radius: 7px;
   color: #ffffff;
@@ -8234,8 +8233,7 @@ textarea:focus-visible {
 
 .language-toggle {
   display: inline-flex;
-  height: var(--header-control-size);
-  min-height: var(--header-control-size);
+  min-height: 42px;
   align-items: center;
   justify-content: center;
   gap: 4px;
@@ -8250,14 +8248,9 @@ textarea:focus-visible {
   white-space: nowrap;
 }
 .header-actions .notification-button {
-  width: var(--header-control-size);
-  height: var(--header-control-size);
-  min-height: var(--header-control-size);
-  border-radius: 6px;
-}
-.header-actions .notification-button svg {
-  width: 16px;
-  height: 16px;
+  width: 42px;
+  height: 42px;
+  min-height: 42px;
 }
 .bn-glyph {
   font-family: "Noto Sans Bengali", Inter, sans-serif;
@@ -11423,14 +11416,13 @@ textarea:focus-visible {
 }
 .participant-account::before {
   width: 1px;
-  height: var(--header-control-size);
+  height: 34px;
   margin-right: 2px;
   background: var(--border);
   content: "";
 }
 .participant-profile {
   display: flex;
-  height: var(--header-control-size);
   align-items: center;
   gap: 10px;
   min-width: 0;
@@ -11440,8 +11432,8 @@ textarea:focus-visible {
 .participant-profile-initials {
   display: grid;
   flex: none;
-  width: var(--header-control-size);
-  height: var(--header-control-size);
+  width: 34px;
+  height: 34px;
   place-items: center;
   border-radius: 50%;
   color: var(--ak-green-deep);
@@ -11457,17 +11449,17 @@ textarea:focus-visible {
   max-width: 150px;
   overflow: hidden;
   color: var(--fg);
-  font-size: 13px;
-  line-height: 1.1;
+  font-size: 14px;
+  line-height: 1.2;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .participant-profile-copy small {
   display: block;
-  margin-top: 0;
+  margin-top: 2px;
   color: var(--fg-muted);
-  font-size: 11px;
-  line-height: 1.1;
+  font-size: 12px;
+  line-height: 1.2;
   white-space: nowrap;
 }
 .participant-profile:hover strong {
@@ -12794,8 +12786,7 @@ textarea:focus-visible {
 }
 .admin-header-profile {
   gap: 9px;
-  height: var(--header-control-size);
-  padding: 0 4px;
+  padding: 5px 8px;
   border-radius: 8px;
   color: inherit;
   text-decoration: none;
@@ -12805,8 +12796,8 @@ textarea:focus-visible {
   background: #f5f7fa;
 }
 .admin-header-profile .account-chip-initials {
-  width: var(--header-control-size);
-  height: var(--header-control-size);
+  width: 32px;
+  height: 32px;
   color: #0f5636;
   background: #e7f2ec;
 }
@@ -12814,12 +12805,10 @@ textarea:focus-visible {
   color: #111827;
   font-size: 13px;
   font-weight: 600;
-  line-height: 1.1;
 }
 .admin-header-profile .account-chip-copy small {
   color: #6b7280;
   font-size: 11px;
-  line-height: 1.1;
 }
 @media (max-width: 1080px) {
   .admin-header-profile .account-chip-copy {
