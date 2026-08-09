@@ -586,7 +586,7 @@ export default function App() {
             aria-label={t("Language switch")}
             onClick={() => setLanguage(language === "en" ? "bn-BD" : "en")}
           >
-            {language === "en" ? "EN" : <span className="bn-glyph">বাংলা</span>}
+            EN <span aria-hidden="true">·</span> <span className="bn-glyph">বাংলা</span>
           </button>
           {user ? (
             <NotificationCenter
@@ -680,7 +680,7 @@ export default function App() {
                 aria-label={t("Language switch")}
                 onClick={() => setLanguage(language === "en" ? "bn-BD" : "en")}
               >
-                {language === "en" ? "EN" : <span className="bn-glyph">বাংলা</span>}
+                EN <span aria-hidden="true">·</span> <span className="bn-glyph">বাংলা</span>
               </button>
               {!user ? (
                 <>

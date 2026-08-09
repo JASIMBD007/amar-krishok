@@ -8232,14 +8232,25 @@ textarea:focus-visible {
 }
 
 .language-toggle {
-  padding: 8px 12px;
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 0 12px;
   border: 1px solid var(--border-strong);
   border-radius: 6px;
   background: var(--surface);
   color: var(--fg-subtle);
   font-size: 13px;
   font-weight: 600;
+  line-height: 1;
   white-space: nowrap;
+}
+.header-actions .notification-button {
+  width: 42px;
+  height: 42px;
+  min-height: 42px;
 }
 .bn-glyph {
   font-family: "Noto Sans Bengali", Inter, sans-serif;
