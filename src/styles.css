@@ -12693,19 +12693,6 @@ canvas {
   max-width: 100%;
 }
 
-/* Keep authenticated workspaces on the same 1280px public-page grid. The
-   24px inner gutters line the sidebar edge up with the header and rates page
-   without changing either dashboard's internal column proportions. */
-@media (min-width: 1025px) {
-  .farmer-dashboard-shell,
-  .admin-console-shell {
-    width: 100%;
-    max-width: 1280px;
-    margin-inline: auto;
-    padding-inline: 24px;
-  }
-}
-
 @media (min-width: 1201px) {
   .site-header {
     flex-wrap: nowrap;
