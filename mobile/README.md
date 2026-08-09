@@ -24,8 +24,7 @@ The check runs ESLint, strict TypeScript, and the M0 unit tests.
 
 ## Included in M0
 
-- Expo SDK 56 blank TypeScript entry point, with Android as the priority target and Expo Go
-  compatibility on physical iOS devices.
+- Expo SDK 57 blank TypeScript entry point, with Android as the priority target.
 - README design tokens exposed through a typed theme and provider.
 - Noto Sans Bengali 400/600, Inter 400/500/600/700/800, and JetBrains Mono 500/600 loaded before UI.
 - i18next configured with `bn-BD` as the default and `en` as fallback. English title glosses default
