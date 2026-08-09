@@ -1,6 +1,7 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { CarrierPayoutState, CarrierStatus, HandoverKind, Prisma, TripBidState, TripState } from "@prisma/client";
+import { randomUUID } from "node:crypto";
 
 import { PrismaService } from "../prisma/prisma.service";
 import type { PlatformAuthenticatedUser } from "./platform-auth";
@@ -10,6 +11,7 @@ type ProofInput = {
   location?: { accuracy?: number; latitude: number; longitude: number } | null;
   photoKeys?: string[];
   photoUris?: string[];
+  photos?: { dataBase64: string; mimeType: string }[];
   signature: string;
   weightMon: number;
 };
@@ -22,7 +24,7 @@ export class CarrierService {
     const carrier = await this.carrier(user.id);
     const start = new Date(); start.setUTCHours(0, 0, 0, 0);
     const end = new Date(start); end.setUTCDate(end.getUTCDate() + (scope === "upcoming" ? 14 : 1));
-    return this.prisma.trip.findMany({ where: { carrierId: carrier.id, pickupAt: { gte: start, lt: end } }, select: this.safeTripSelect(), orderBy: { pickupAt: "asc" } });
+    return this.prisma.trip.findMany({ where: { carrierId: carrier.id, OR: [{ pickupAt: { gte: start, lt: end } }, { state: { in: [TripState.ACCEPTED, TripState.EN_ROUTE_PICKUP, TripState.PICKED_UP, TripState.EN_ROUTE_DELIVERY] } }] }, select: this.safeTripSelect(), orderBy: { pickupAt: "asc" } });
   }
 
   async trip(user: PlatformAuthenticatedUser, id: string) {
@@ -35,7 +37,7 @@ export class CarrierService {
   async accept(user: PlatformAuthenticatedUser, id: string, accepted: boolean) {
     const carrier = await this.carrier(user.id);
     const trip = await this.prisma.trip.findUnique({ where: { id } });
-    if (!trip || (trip.carrierId && trip.carrierId !== carrier.id)) throw new NotFoundException("Trip not found.");
+    if (!trip || trip.carrierId !== carrier.id) throw new NotFoundException("Trip not found.");
     if (trip.state !== TripState.OFFERED) throw new ConflictException("Trip is no longer offered.");
     return this.prisma.trip.update({ where: { id }, data: accepted ? { acceptedAt: new Date(), carrierId: carrier.id, state: TripState.ACCEPTED } : { state: TripState.CANCELLED } });
   }
@@ -52,22 +54,47 @@ export class CarrierService {
   async proof(user: PlatformAuthenticatedUser, tripId: string, key: string, input: ProofInput) {
     if (!key) throw new BadRequestException("Idempotency-Key is required.");
     const carrier = await this.carrier(user.id);
-    const trip = await this.prisma.trip.findFirst({ where: { id: tripId, carrierId: carrier.id } });
+    const trip = await this.prisma.trip.findFirst({ where: { id: tripId, carrierId: carrier.id }, include: { order: { select: { quantity: true } } } });
     if (!trip) throw new NotFoundException("Trip not found.");
     const existing = await this.prisma.proofOfHandover.findUnique({ where: { idempotencyKey: key } });
     if (existing) {
       if (existing.tripId !== tripId) throw new ConflictException("Idempotency key belongs to a different trip.");
       return existing;
     }
+    if (trip.state !== TripState.EN_ROUTE_PICKUP) throw new ConflictException("Pickup proof can only be submitted while en route to pickup.");
     if (!Number.isFinite(input.weightMon) || input.weightMon <= 0 || !input.signature.trim()) throw new BadRequestException("Weight and signature are required.");
-    const photoKeys = input.photoKeys?.length ? input.photoKeys : input.photoUris;
-    if (!photoKeys?.length) throw new BadRequestException("At least one proof photo is required.");
-    if (photoKeys.length > 6) throw new BadRequestException("At most six proof photos are allowed.");
-    if (this.config.get("NODE_ENV") === "production" && photoKeys.some((value) => /^(file|content|ph):/i.test(value))) throw new ConflictException("Proof media storage provider is not configured.");
+    const weightDifference = Math.abs(input.weightMon - trip.order.quantity) / trip.order.quantity;
+    if (weightDifference > 0.03) {
+      await this.prisma.$transaction(async (tx) => {
+        const existingReview = await tx.dispute.findFirst({ where: { orderId: trip.orderId, state: { in: ["OPEN", "AWAITING_INFO"] }, subject: "Pickup weight outside tolerance" } });
+        if (!existingReview) {
+          await tx.dispute.create({ data: { code: `D-${String(Date.now()).slice(-6)}`, openedById: user.id, orderId: trip.orderId, slaDueAt: new Date(Date.now() + 24 * 60 * 60 * 1000), state: "OPEN", subject: "Pickup weight outside tolerance" } });
+          await tx.escrow.updateMany({ where: { orderId: trip.orderId, state: "HELD" }, data: { state: "FROZEN" } });
+        }
+      });
+      throw new ConflictException({ error: { code: "WEIGHT_OUTSIDE_TOLERANCE", message: "Pickup weight differs by more than 3 percent and requires staff review.", messageBn: "ওজনের পার্থক্য ৩ শতাংশের বেশি। স্টাফ পর্যালোচনা ছাড়া পিকআপ সম্পন্ন হবে না।" } });
+    }
+    const media = input.photos?.map((photo) => ({ ...photo, buffer: Buffer.from(photo.dataBase64, "base64") })) ?? [];
+    let photoKeys = input.photoKeys?.length ? input.photoKeys : input.photoUris;
+    if (!media.length && !photoKeys?.length) throw new BadRequestException("At least one proof photo is required.");
+    if (media.length > 6 || (photoKeys?.length ?? 0) > 6) throw new BadRequestException("At most six proof photos are allowed.");
+    for (const photo of media) {
+      const validMime = photo.mimeType === "image/jpeg" || photo.mimeType === "image/png";
+      const validMagic = photo.mimeType === "image/jpeg"
+        ? photo.buffer.length >= 3 && photo.buffer[0] === 0xff && photo.buffer[1] === 0xd8 && photo.buffer[2] === 0xff
+        : photo.buffer.length >= 8 && photo.buffer.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
+      if (!validMime || !validMagic || photo.buffer.length > 500_000) throw new BadRequestException("Proof photos must be valid JPEG or PNG files under 500 KB.");
+    }
+    if (!media.length && this.config.get("NODE_ENV") === "production" && photoKeys?.some((value) => /^(file|content|ph):/i.test(value))) throw new ConflictException("Proof media storage provider is not configured.");
     const capturedAt = new Date(input.capturedAt);
     if (Number.isNaN(capturedAt.getTime())) throw new BadRequestException("A valid capture timestamp is required.");
     return this.prisma.$transaction(async (tx) => {
-      const proof = await tx.proofOfHandover.create({ data: { capturedAt, confirmedByUserId: user.id, idempotencyKey: key, kind: HandoverKind.PICKUP, lat: input.location?.latitude, lng: input.location?.longitude, photoKeys, signatureKey: input.signature, tripId, weighedMon: input.weightMon } });
+      if (media.length) {
+        const stored = media.map((photo) => { const id = randomUUID(); return { content: photo.buffer, id, key: `proof/${tripId}/${id}`, mimeType: photo.mimeType, ownerId: user.id, size: photo.buffer.length }; });
+        await tx.platformMedia.createMany({ data: stored });
+        photoKeys = stored.map((photo) => photo.key);
+      }
+      const proof = await tx.proofOfHandover.create({ data: { capturedAt, confirmedByUserId: user.id, idempotencyKey: key, kind: HandoverKind.PICKUP, lat: input.location?.latitude, lng: input.location?.longitude, photoKeys: photoKeys!, signatureKey: input.signature, tripId, weighedMon: input.weightMon } });
       await tx.trip.update({ where: { id: tripId }, data: { state: TripState.PICKED_UP } });
       return proof;
     });
@@ -125,6 +152,6 @@ export class CarrierService {
   }
 
   private safeTripSelect() {
-    return { acceptedAt: true, deliverAt: true, distanceKm: true, fee: true, id: true, locationAt: true, currentLat: true, currentLng: true, order: { select: { code: true, quantity: true, listing: { select: { crop: { select: { nameBn: true } }, grade: true } } } }, pickupAt: true, state: true, stops: { select: { address: true, arrivedAt: true, completedAt: true, district: { select: { nameBn: true } }, kind: true, lat: true, lng: true } } } satisfies Prisma.TripSelect;
+    return { acceptedAt: true, deliverAt: true, distanceKm: true, fee: true, id: true, locationAt: true, currentLat: true, currentLng: true, order: { select: { code: true, id: true, quantity: true, listing: { select: { crop: { select: { nameBn: true } }, grade: true } } } }, pickupAt: true, state: true, stops: { select: { address: true, arrivedAt: true, completedAt: true, district: { select: { nameBn: true } }, kind: true, lat: true, lng: true } } } satisfies Prisma.TripSelect;
   }
 }

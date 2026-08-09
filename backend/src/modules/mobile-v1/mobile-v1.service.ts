@@ -12,15 +12,38 @@ function integer(value: unknown, field: string) {
   return Number(value);
 }
 
-function listingData(listing: Prisma.ListingGetPayload<{ include: { crop: true; district: true; farmer: { include: { kycProfile: true } }; photos: true } }>) {
+function dhakaDateKey(value = new Date()) {
+  const parts = new Intl.DateTimeFormat("en-US", { day: "2-digit", month: "2-digit", timeZone: "Asia/Dhaka", year: "numeric" }).formatToParts(value);
+  const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((item) => item.type === type)?.value ?? "";
+  return `${part("year")}-${part("month")}-${part("day")}`;
+}
+
+function dhakaDayRange(value = new Date()) {
+  const start = new Date(`${dhakaDateKey(value)}T00:00:00+06:00`);
+  return { gte: start, lt: new Date(start.getTime() + 24 * 60 * 60 * 1000) };
+}
+
+function mediaPath(objectKey: string) {
+  return objectKey.startsWith("db:") ? `/api/v1/listing-media/${objectKey.slice(3)}` : objectKey;
+}
+
+function listingData(listing: Prisma.ListingGetPayload<{ include: { crop: true; district: true; farmer: { include: { kycProfile: true } }; photos: true } }>, ratePoisha?: number | null) {
+  const photos = [...listing.photos].sort((a, b) => a.position - b.position).map((photo) => mediaPath(photo.objectKey));
   return {
     cropBn: listing.crop.nameBn,
     cropEn: listing.crop.nameEn,
+    cropId: listing.cropId,
     districtBn: listing.district.nameBn,
+    districtId: listing.districtId,
     farmer: listing.farmer.name,
+    farmerId: listing.farmerId,
     grade: listing.grade,
     id: listing.id,
-    photo: listing.photos.sort((a, b) => a.position - b.position)[0]?.objectKey,
+    marketDelta: ratePoisha ? Math.round(((listing.price / ratePoisha) - 1) * 100) : null,
+    marketRatePoisha: ratePoisha ?? null,
+    note: listing.note,
+    photo: photos[0],
+    photos,
     pickup: listing.pickupWindow,
     pricePoisha: listing.price,
     quantityMon: listing.quantity,
@@ -34,9 +57,9 @@ export class MobileV1Service {
   constructor(private readonly config: ConfigService, private readonly prisma: PrismaService) {}
 
   async me(user: PlatformAuthenticatedUser) {
-    const found = await this.prisma.user.findUnique({ where: { id: user.id }, include: { district: true, kycProfile: true } });
+    const found = await this.prisma.user.findUnique({ where: { id: user.id }, include: { carrier: true, district: true, kycProfile: true } });
     if (!found) throw new NotFoundException("User not found.");
-    return { avatarUrl: found.avatarUrl, district: found.district.nameBn, email: found.email, id: found.id, kycStatus: found.kycProfile?.status ?? "NONE", name: found.name, phone: found.phone, role: found.role, status: found.status, verified: found.kycProfile?.status === "VERIFIED" };
+    return { avatarUrl: found.avatarUrl, carrier: found.carrier ? { companyName: found.carrier.companyName, online: found.carrier.online, vehicleReg: found.carrier.vehicleReg } : null, district: found.district.nameBn, email: found.email, id: found.id, kycStatus: found.kycProfile?.status ?? "NONE", name: found.name, phone: found.phone, role: found.role, status: found.status, verified: found.kycProfile?.status === "VERIFIED" };
   }
 
   async updateMe(user: PlatformAuthenticatedUser, body: { district?: string; email?: string; name?: string; upazila?: string }) {
@@ -88,13 +111,19 @@ export class MobileV1Service {
       orderBy: query.sort === "price_desc" ? { price: "desc" } : { price: "asc" },
       take: 50,
     });
-    return rows.map(listingData);
+    const rates = rows.length ? await this.prisma.marketRate.findMany({
+      where: { date: dhakaDayRange(), OR: rows.map((row) => ({ cropId: row.cropId, districtId: row.districtId })) },
+      distinct: ["cropId", "districtId"], orderBy: { date: "desc" },
+    }) : [];
+    const rateByMarket = new Map(rates.map((rate) => [`${rate.cropId}:${rate.districtId}`, rate.price]));
+    return rows.map((row) => listingData(row, rateByMarket.get(`${row.cropId}:${row.districtId}`)));
   }
 
   async listing(id: string) {
     const row = await this.prisma.listing.findUnique({ where: { id }, include: { crop: true, district: true, farmer: { include: { kycProfile: true } }, photos: true } });
     if (!row || row.status !== ListingStatus.LIVE) throw new NotFoundException("Listing not found.");
-    return listingData(row);
+    const rate = await this.prisma.marketRate.findFirst({ where: { cropId: row.cropId, districtId: row.districtId, date: dhakaDayRange() }, orderBy: { date: "desc" } });
+    return listingData(row, rate?.price);
   }
 
   async createListing(user: PlatformAuthenticatedUser, body: { cropId: string; districtId: string; grade: ListingGrade; note?: string; pickupWindow: string; pricePoisha: number; quantityMon: number }) {
@@ -120,8 +149,19 @@ export class MobileV1Service {
     return { deleted: true };
   }
 
-  async prepareListingPhoto(user: PlatformAuthenticatedUser, id: string, body: { contentType?: string; objectKey?: string; position?: number; sizeBytes?: number }) {
+  async prepareListingPhoto(user: PlatformAuthenticatedUser, id: string, body: { contentType?: string; dataBase64?: string; objectKey?: string; position?: number; sizeBytes?: number }, key = "") {
     await this.ownedListing(user, id);
+    if (body.dataBase64) {
+      return this.idempotent(user.id, `listing-photo:${id}`, key, async () => {
+        if (await this.prisma.listingPhoto.count({ where: { listingId: id } }) >= 6) throw new BadRequestException("A listing can have at most six photos.");
+        const media = this.validatedImage(body.dataBase64!, body.contentType, body.sizeBytes);
+        const mediaKey = randomUUID();
+        return this.prisma.$transaction(async (tx) => {
+          await tx.platformMedia.create({ data: { content: media.content, key: mediaKey, mimeType: media.mimeType, ownerId: user.id, size: media.content.length } });
+          return tx.listingPhoto.create({ data: { listingId: id, objectKey: `db:${mediaKey}`, position: body.position ?? 0 } });
+        });
+      });
+    }
     if (body.objectKey) {
       if (await this.prisma.listingPhoto.count({ where: { listingId: id } }) >= 6) throw new BadRequestException("A listing can have at most six photos.");
       return this.prisma.listingPhoto.create({ data: { listingId: id, objectKey: body.objectKey, position: body.position ?? 0 } });
@@ -134,8 +174,31 @@ export class MobileV1Service {
   }
 
   async deskSummary(user: PlatformAuthenticatedUser) {
-    const [liveLots, offers, escrow] = await Promise.all([this.prisma.listing.count({ where: { farmerId: user.id, status: ListingStatus.LIVE } }), this.prisma.offer.count({ where: { listing: { farmerId: user.id }, status: OfferStatus.OPEN } }), this.prisma.escrow.aggregate({ _sum: { amount: true }, where: { order: { farmerId: user.id }, state: EscrowState.HELD } })]);
-    return { escrowPoisha: escrow._sum.amount ?? 0, liveLots, openOffers: offers };
+    const monthStart = new Date(`${dhakaDateKey().slice(0, 7)}-01T00:00:00+06:00`);
+    const [listings, offers, escrow, monthlyEarnings] = await Promise.all([
+      this.prisma.listing.findMany({ where: { farmerId: user.id }, include: { crop: true, district: true, farmer: { include: { kycProfile: true } }, photos: true }, orderBy: { createdAt: "desc" } }),
+      this.prisma.offer.count({ where: { listing: { farmerId: user.id }, status: OfferStatus.OPEN } }),
+      this.prisma.escrow.aggregate({ _sum: { amount: true }, where: { order: { farmerId: user.id }, state: EscrowState.HELD } }),
+      this.prisma.payout.aggregate({ _sum: { amount: true }, where: { farmerId: user.id, sentAt: { gte: monthStart }, state: "SENT" } }),
+    ]);
+    const cropCounts = new Map<string, number>();
+    listings.forEach((listing) => cropCounts.set(listing.cropId, (cropCounts.get(listing.cropId) ?? 0) + 1));
+    const focusCropId = [...cropCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
+    const focusListing = listings.find((listing) => listing.cropId === focusCropId);
+    const todayRates = listings.length ? await this.prisma.marketRate.findMany({
+      where: { date: dhakaDayRange(), OR: listings.map((listing) => ({ cropId: listing.cropId, districtId: listing.districtId })) },
+      distinct: ["cropId", "districtId"], orderBy: { date: "desc" },
+    }) : [];
+    const rateByMarket = new Map(todayRates.map((rate) => [`${rate.cropId}:${rate.districtId}`, rate.price]));
+    const focusRate = focusListing ? rateByMarket.get(`${focusListing.cropId}:${focusListing.districtId}`) : undefined;
+    return {
+      escrowPoisha: escrow._sum.amount ?? 0,
+      focusRate: focusListing && focusRate ? { cropBn: focusListing.crop.nameBn, delta: null, districtBn: focusListing.district.nameBn, pricePoisha: focusRate } : null,
+      listings: listings.map((row) => listingData(row, rateByMarket.get(`${row.cropId}:${row.districtId}`))),
+      liveLots: listings.filter((row) => row.status === ListingStatus.LIVE).length,
+      monthlyEarningsPoisha: monthlyEarnings._sum.amount ?? 0,
+      openOffers: offers,
+    };
   }
 
   offers(user: PlatformAuthenticatedUser) { return this.prisma.offer.findMany({ where: { listing: { farmerId: user.id } }, include: { buyer: true, listing: { include: { crop: true } } } }); }
@@ -159,6 +222,11 @@ export class MobileV1Service {
       const order = await this.prisma.$transaction(async (tx) => {
         const created = await tx.order.create({ data: { buyerId: user.id, code, farmerId: listing.farmerId, feeAmount: 0, listingId: listing.id, paymentMethod: body.paymentMethod ?? "bKash", quantity, total, unitPrice: listing.price } });
         await tx.escrow.create({ data: { amount: total, heldAt: new Date(), orderId: created.id } });
+        await tx.thread.create({ data: { kind: "DIRECT", orderId: created.id, subject: `অর্ডার ${created.code}`, members: { create: [{ lastReadAt: new Date(), userId: user.id }, { lastReadAt: new Date(), userId: listing.farmerId }] } } });
+        await tx.notification.createMany({ data: [
+          { body: "টাকা এসক্রোতে সুরক্ষিত আছে।", category: "ORDER", channel: "APP", entityRef: created.id, icon: "shield", sentAt: new Date(), title: `${created.code} অর্ডার হয়েছে`, tone: "green", userId: user.id },
+          { body: `${quantity} মণ ফসলের নতুন অর্ডার এসেছে।`, category: "ORDER", channel: "APP", entityRef: created.id, icon: "package", sentAt: new Date(), title: `${created.code} নতুন অর্ডার`, tone: "blue", userId: listing.farmerId },
+        ] });
         return created;
       });
       return { orderId: order.id, orderCode: order.code };
@@ -181,6 +249,7 @@ export class MobileV1Service {
       await this.prisma.$transaction(async (tx) => {
         await tx.escrow.update({ where: { orderId: id }, data: { releasedAt: new Date(), releasedById: user.id, state: EscrowState.RELEASED } });
         await tx.order.update({ where: { id }, data: { stage: OrderStage.PAID } });
+        await tx.payout.create({ data: { accountNo: "PAYOUT_ACCOUNT_PENDING", amount: Math.max(0, order.total - order.feeAmount), batchId: `ORDER-${order.code}`, farmerId: order.farmerId, method: "BKASH", state: "QUEUED" } });
         if (order.trip?.carrierId) await tx.carrierPayout.updateMany({ where: { tripId: order.trip.id }, data: { state: "AVAILABLE" } });
       });
       return { state: EscrowState.RELEASED };
@@ -197,7 +266,10 @@ export class MobileV1Service {
     const order = await this.prisma.order.findFirst({ where: { id: orderId, buyerId: user.id } });
     if (!order) throw new NotFoundException("Order not found.");
     if (!subject.trim()) throw new BadRequestException("Dispute subject is required.");
-    return this.prisma.dispute.create({ data: { code: `D-${String(Date.now()).slice(-6)}`, openedById: user.id, orderId, slaDueAt: new Date(Date.now() + 24 * 60 * 60 * 1000), state: "OPEN", subject: subject.trim() } });
+    return this.prisma.$transaction(async (tx) => {
+      await tx.escrow.updateMany({ where: { orderId, state: EscrowState.HELD }, data: { state: EscrowState.FROZEN } });
+      return tx.dispute.create({ data: { code: `D-${String(Date.now()).slice(-6)}`, openedById: user.id, orderId, slaDueAt: new Date(Date.now() + 24 * 60 * 60 * 1000), state: "OPEN", subject: subject.trim() } });
+    });
   }
 
   farmerPayouts(user: PlatformAuthenticatedUser) { return this.prisma.payout.findMany({ where: { farmerId: user.id }, orderBy: { sentAt: "desc" } }); }
@@ -225,7 +297,17 @@ export class MobileV1Service {
 
   async kyc(user: PlatformAuthenticatedUser) { return this.prisma.kycProfile.findUnique({ where: { userId: user.id }, include: { user: { select: { kycDocuments: true } } } }); }
   async updateKyc(user: PlatformAuthenticatedUser, body: { khatian: string; nid: string }) { return this.prisma.kycProfile.upsert({ where: { userId: user.id }, update: { khatian: body.khatian, nid: body.nid, status: "IN_REVIEW" }, create: { khatian: body.khatian, nid: body.nid, status: "IN_REVIEW", userId: user.id } }); }
-  async addKycDocument(user: PlatformAuthenticatedUser, body: { contentType?: string; kind: KycDocumentKind; objectKey?: string; sizeBytes?: number }, key: string) {
+  async addKycDocument(user: PlatformAuthenticatedUser, body: { contentType?: string; dataBase64?: string; kind: KycDocumentKind; objectKey?: string; sizeBytes?: number }, key: string) {
+    if (body.dataBase64) {
+      return this.idempotent(user.id, `kyc-document:${body.kind}`, key, async () => {
+        const media = this.validatedImage(body.dataBase64!, body.contentType, body.sizeBytes);
+        const mediaKey = randomUUID();
+        return this.prisma.$transaction(async (tx) => {
+          await tx.platformMedia.create({ data: { content: media.content, key: mediaKey, mimeType: media.mimeType, ownerId: user.id, size: media.content.length } });
+          return tx.kycDocument.create({ data: { kind: body.kind, objectKey: `db:${mediaKey}`, status: "IN_REVIEW", userId: user.id } });
+        });
+      });
+    }
     if (!body.objectKey) {
       if (!body.contentType?.startsWith("image/") || !body.sizeBytes || body.sizeBytes > 500_000) throw new BadRequestException("A JPEG or PNG under 500 KB is required.");
       const objectBase = this.config.get<string>("OBJECT_UPLOAD_BASE_URL");
@@ -236,6 +318,14 @@ export class MobileV1Service {
     return this.idempotent(user.id, `kyc-document:${body.kind}`, key, () => this.prisma.kycDocument.create({ data: { kind: body.kind, objectKey: body.objectKey!, status: "IN_REVIEW", userId: user.id } }));
   }
   async deleteKycDocument(user: PlatformAuthenticatedUser, id: string) { await this.prisma.kycDocument.deleteMany({ where: { id, userId: user.id } }); return { deleted: true }; }
+
+  async listingMedia(key: string) {
+    const photo = await this.prisma.listingPhoto.findFirst({ where: { objectKey: `db:${key}`, listing: { status: ListingStatus.LIVE } } });
+    if (!photo) throw new NotFoundException("Listing photo not found.");
+    const media = await this.prisma.platformMedia.findUnique({ where: { key } });
+    if (!media) throw new NotFoundException("Listing photo not found.");
+    return media;
+  }
 
   async reorderPhotos(user: PlatformAuthenticatedUser, listingId: string, ids: string[]) { await this.ownedListing(user, listingId); if (ids.length > 6) throw new BadRequestException("At most six photos are allowed."); if (await this.prisma.listingPhoto.count({ where: { id: { in: ids }, listingId } }) !== ids.length) throw new ForbiddenException("A photo does not belong to this listing."); await this.prisma.$transaction(ids.map((id, position) => this.prisma.listingPhoto.update({ where: { id }, data: { position } }))); return { updated: true }; }
   async deletePhoto(user: PlatformAuthenticatedUser, listingId: string, photoId: string) { await this.ownedListing(user, listingId); await this.prisma.listingPhoto.deleteMany({ where: { id: photoId, listingId } }); return { deleted: true }; }
@@ -248,6 +338,17 @@ export class MobileV1Service {
 
   private async assertThreadMember(userId: string, threadId: string) {
     if (!await this.prisma.threadMember.findUnique({ where: { threadId_userId: { threadId, userId } } })) throw new NotFoundException("Thread not found.");
+  }
+
+  private validatedImage(dataBase64: string, contentType?: string, declaredSize?: number) {
+    const mimeType = contentType?.toLowerCase();
+    const content = Buffer.from(dataBase64, "base64");
+    const jpeg = content[0] === 0xff && content[1] === 0xd8 && content[2] === 0xff;
+    const png = content.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
+    if ((mimeType !== "image/jpeg" && mimeType !== "image/png") || (!jpeg && !png) || !content.length || content.length > 500_000 || (declaredSize !== undefined && declaredSize !== content.length)) {
+      throw new BadRequestException("A valid JPEG or PNG under 500 KB is required.");
+    }
+    return { content, mimeType };
   }
 
   private async idempotent<T extends object>(userId: string, scope: string, key: string, operation: () => Promise<T>): Promise<T> {

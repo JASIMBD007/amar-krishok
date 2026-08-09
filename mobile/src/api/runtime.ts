@@ -1,6 +1,13 @@
 import { sessionStore } from "../auth/sessionStore";
 import { ApiClient } from "./client";
+import { resolveApiBaseUrl } from "./config";
 
-const baseUrl = process.env.EXPO_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:4000/api/v1";
+export const apiBaseUrl = resolveApiBaseUrl();
 
-export const api = new ApiClient({ baseUrl, session: sessionStore });
+export const api = new ApiClient({ baseUrl: apiBaseUrl, session: sessionStore });
+
+export function absoluteApiUrl(path: string) {
+  if (/^https?:\/\//.test(path) || path.startsWith("data:")) return path;
+  const origin = apiBaseUrl.replace(/\/api\/v1\/?$/, "");
+  return `${origin}${path.startsWith("/") ? path : `/${path}`}`;
+}

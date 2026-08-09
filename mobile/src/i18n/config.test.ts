@@ -14,6 +14,8 @@ describe("mobile localisation", () => {
       locale: "bn-BD",
       showEnglishGloss: false,
     });
+    expect(i18next.isInitialized).toBe(true);
+    expect(i18next.language).toBe(defaultLocale);
     expect(i18next.options.fallbackLng).toEqual([fallbackLocale]);
   });
 

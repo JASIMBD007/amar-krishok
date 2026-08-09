@@ -2,8 +2,7 @@ import * as SecureStore from "expo-secure-store";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type PropsWithChildren } from "react";
 
 import { api } from "../api/runtime";
-import { ApiError } from "../api/errors";
-import { previewUsers } from "../data/demo";
+import { websiteAuthRequest } from "../api/webAuth";
 import type { AppRole, AppUser } from "../domain/types";
 import { sessionStore } from "./sessionStore";
 import { getDeviceRegistration } from "../notifications/push";
@@ -13,12 +12,25 @@ const REFRESH_TOKEN_KEY = "amarkrishok.refreshToken";
 const USER_KEY = "amarkrishok.user";
 
 type AuthResult = { accessToken: string; refreshToken?: string; user: AppUser };
+export type RegistrationInput = {
+  address: string;
+  district: string;
+  focus: string;
+  identity: string;
+  name: string;
+  organization: string;
+  password: string;
+  phone: string;
+  role: Exclude<AppRole, "CARRIER">;
+  upazila: string;
+};
 
 type SessionContextValue = {
   isLoading: boolean;
+  login: (phone: string, password: string, role: AppRole) => Promise<void>;
   logout: () => Promise<void>;
-  requestOtp: (phone: string, role: AppRole) => Promise<void>;
-  signInWithOtp: (phone: string, role: AppRole, otp: string, pin: string) => Promise<void>;
+  refreshUser: () => Promise<void>;
+  register: (input: RegistrationInput) => Promise<void>;
   user: AppUser | null;
 };
 
@@ -40,6 +52,12 @@ async function persistSession(result: AuthResult) {
   ]);
 }
 
+function websitePhone(value: string) {
+  const digits = value.replace(/\D/g, "");
+  const local = digits.startsWith("880") ? digits.slice(3) : digits.startsWith("0") ? digits.slice(1) : digits;
+  return `0${local}`;
+}
+
 export function SessionProvider({ children }: PropsWithChildren) {
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<AppUser | null>(null);
@@ -57,30 +75,29 @@ export function SessionProvider({ children }: PropsWithChildren) {
       .finally(() => setIsLoading(false));
   }, []);
 
-  const requestOtp = useCallback(async (phone: string, role: AppRole) => {
-    try {
-      await api.request("/auth/otp/request", { auth: false, body: { phone, role }, method: "POST" });
-    } catch (error) {
-      if (!__DEV__ || error instanceof ApiError) throw error;
-    }
-  }, []);
-
-  const signInWithOtp = useCallback(async (phone: string, role: AppRole, otp: string, pin: string) => {
-    let result: AuthResult;
-    try {
-      const device = await getDeviceRegistration();
-      result = await api.request<AuthResult>("/auth/otp/verify", {
-        auth: false,
-        body: { ...device, otp, phone, pin, role },
-        method: "POST",
-      });
-    } catch (error) {
-      if (!__DEV__ || otp !== "1234" || error instanceof ApiError) throw error;
-      result = { accessToken: `preview.${role.toLowerCase()}.token`, user: { ...previewUsers[role], phone } };
-    }
-
+  const login = useCallback(async (phone: string, password: string, role: AppRole) => {
+    const device = await getDeviceRegistration();
+    const result = role === "CARRIER"
+      ? await api.request<AuthResult>("/auth/login", { auth: false, body: { ...device, password, phone, role }, method: "POST" })
+      : await websiteAuthRequest<AuthResult>("/api/auth/login", { ...device, client: "mobile", password, phone: websitePhone(phone), role });
     await persistSession(result);
     setUser(result.user);
+  }, []);
+
+  const register = useCallback(async (input: RegistrationInput) => {
+    const rolePath = input.role === "BUYER" ? "buyer" : "farmer";
+    await websiteAuthRequest(`/api/auth/register/${rolePath}`, {
+      address: input.address,
+      district: input.district,
+      focus: input.focus,
+      identity: input.identity,
+      name: input.name,
+      organization: input.organization,
+      password: input.password,
+      phone: websitePhone(input.phone),
+      role: input.role,
+      upazilla: input.upazila,
+    });
   }, []);
 
   const logout = useCallback(async () => {
@@ -94,7 +111,13 @@ export function SessionProvider({ children }: PropsWithChildren) {
     await Promise.all([SecureStore.deleteItemAsync(ACCESS_TOKEN_KEY), SecureStore.deleteItemAsync(USER_KEY), SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY)]);
   }, []);
 
-  const value = useMemo(() => ({ isLoading, logout, requestOtp, signInWithOtp, user }), [isLoading, logout, requestOtp, signInWithOtp, user]);
+  const refreshUser = useCallback(async () => {
+    const refreshed = await api.request<AppUser>("/me");
+    setUser(refreshed);
+    await SecureStore.setItemAsync(USER_KEY, JSON.stringify(refreshed));
+  }, []);
+
+  const value = useMemo(() => ({ isLoading, login, logout, refreshUser, register, user }), [isLoading, login, logout, refreshUser, register, user]);
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
 }
 

@@ -283,9 +283,14 @@ model User {
   email              String?
   bio                String?
   avatarUrl          String?
+  organization       String?
+  address            String?
+  identity           String?
+  focus              String?
   status             PlatformUserStatus  @default(PENDING)
   locale             String              @default("bn-BD")
   pinHash            String
+  passwordHash       String?
   twoFactorEnabled   Boolean             @default(false)
   tokenVersion       Int                 @default(0)
   createdAt          DateTime            @default(now())
@@ -315,9 +320,23 @@ model User {
   auditLogs          AuditLog[]          @relation("AuditActor")
   confirmedProofs    ProofOfHandover[]   @relation("ProofConfirmer")
   idempotencyRecords IdempotencyRecord[]
+  platformMedia      PlatformMedia[]
 
   @@index([role, status])
   @@map("PlatformUser")
+}
+
+model PlatformMedia {
+  id        String   @id @default(cuid())
+  ownerId   String
+  key       String   @unique
+  mimeType  String
+  size      Int
+  content   Bytes
+  createdAt DateTime @default(now())
+  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([ownerId, createdAt])
 }
 
 model StaffRole {

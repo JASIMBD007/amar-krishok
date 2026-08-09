@@ -1,5 +1,6 @@
-import { Body, Controller, Delete, Get, Headers, Param, Patch, Post, Put, Query, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Headers, Param, Patch, Post, Put, Query, Res, UseGuards } from "@nestjs/common";
 import { KycDocumentKind, ListingGrade, ListingStatus, NotificationCategory, OfferStatus, PlatformRole } from "@prisma/client";
+import type { Response } from "express";
 
 import { CurrentPlatformUser, PlatformAuthenticatedUser, PlatformJwtGuard, PlatformRoles, PlatformRolesGuard } from "./platform-auth";
 import { MobileV1Service } from "./mobile-v1.service";
@@ -15,6 +16,12 @@ export class MobilePublicController {
   @Get("rates") async rates(@Query() query: { crop?: string; date?: string; district?: string }) { return envelope(await this.service.rates(query)); }
   @Get("listings") async listings(@Query() query: { crop?: string; district?: string; grade?: ListingGrade; maxPrice?: string; q?: string; sort?: string; verifiedOnly?: string }) { const data = await this.service.listings(query); return envelope(data, { count: data.length }); }
   @Get("listings/:id") async listing(@Param("id") id: string) { return envelope(await this.service.listing(id)); }
+  @Get("listing-media/:key") async listingMedia(@Param("key") key: string, @Res() response: Response) {
+    const media = await this.service.listingMedia(key);
+    response.setHeader("Content-Type", media.mimeType);
+    response.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+    response.send(media.content);
+  }
 }
 
 @UseGuards(PlatformJwtGuard, PlatformRolesGuard)
@@ -33,7 +40,7 @@ export class MobileSharedController {
   @Put("me/payout-account") async setPayoutAccount(@CurrentPlatformUser() user: PlatformAuthenticatedUser, @Body() body: { accountNo: string; method: "BKASH" | "NAGAD" | "BANK" }) { return envelope(await this.service.setPayoutAccount(user, body)); }
   @Get("me/kyc") async kyc(@CurrentPlatformUser() user: PlatformAuthenticatedUser) { return envelope(await this.service.kyc(user)); }
   @Patch("me/kyc") async updateKyc(@CurrentPlatformUser() user: PlatformAuthenticatedUser, @Body() body: { khatian: string; nid: string }) { return envelope(await this.service.updateKyc(user, body)); }
-  @Post("me/kyc/documents") async addKycDocument(@CurrentPlatformUser() user: PlatformAuthenticatedUser, @Headers("idempotency-key") key = "", @Body() body: { contentType?: string; kind: KycDocumentKind; objectKey?: string; sizeBytes?: number }) { return envelope(await this.service.addKycDocument(user, body, key)); }
+  @Post("me/kyc/documents") async addKycDocument(@CurrentPlatformUser() user: PlatformAuthenticatedUser, @Headers("idempotency-key") key = "", @Body() body: { contentType?: string; dataBase64?: string; kind: KycDocumentKind; objectKey?: string; sizeBytes?: number }) { return envelope(await this.service.addKycDocument(user, body, key)); }
   @Delete("me/kyc/documents/:id") async deleteKycDocument(@CurrentPlatformUser() user: PlatformAuthenticatedUser, @Param("id") id: string) { return envelope(await this.service.deleteKycDocument(user, id)); }
 
   @Get("notifications") async notifications(@CurrentPlatformUser() user: PlatformAuthenticatedUser, @Query("category") category?: NotificationCategory) { return envelope(await this.service.notifications(user, category)); }
@@ -61,7 +68,7 @@ export class MobileFarmerController {
   @Post("listings/:id/pause") async pause(@CurrentPlatformUser() user: PlatformAuthenticatedUser, @Param("id") id: string) { return envelope(await this.service.setListingStatus(user, id, ListingStatus.PAUSED)); }
   @Post("listings/:id/publish") async publish(@CurrentPlatformUser() user: PlatformAuthenticatedUser, @Param("id") id: string) { return envelope(await this.service.setListingStatus(user, id, ListingStatus.LIVE)); }
   @Delete("listings/:id") async remove(@CurrentPlatformUser() user: PlatformAuthenticatedUser, @Param("id") id: string) { return envelope(await this.service.deleteListing(user, id)); }
-  @Post("listings/:id/photos") async photo(@CurrentPlatformUser() user: PlatformAuthenticatedUser, @Param("id") id: string, @Body() body: { contentType?: string; objectKey?: string; position?: number; sizeBytes?: number }) { return envelope(await this.service.prepareListingPhoto(user, id, body)); }
+  @Post("listings/:id/photos") async photo(@CurrentPlatformUser() user: PlatformAuthenticatedUser, @Param("id") id: string, @Headers("idempotency-key") key = "", @Body() body: { contentType?: string; dataBase64?: string; objectKey?: string; position?: number; sizeBytes?: number }) { return envelope(await this.service.prepareListingPhoto(user, id, body, key)); }
   @Patch("listings/:id/photos/order") async photoOrder(@CurrentPlatformUser() user: PlatformAuthenticatedUser, @Param("id") id: string, @Body("ids") ids: string[]) { return envelope(await this.service.reorderPhotos(user, id, ids)); }
   @Delete("listings/:id/photos/:photoId") async deletePhoto(@CurrentPlatformUser() user: PlatformAuthenticatedUser, @Param("id") id: string, @Param("photoId") photoId: string) { return envelope(await this.service.deletePhoto(user, id, photoId)); }
   @Get("desk/summary") async summary(@CurrentPlatformUser() user: PlatformAuthenticatedUser) { return envelope(await this.service.deskSummary(user)); }

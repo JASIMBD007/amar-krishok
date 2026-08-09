@@ -17,6 +17,7 @@ import "../i18n/config";
 import { SessionProvider } from "../auth/SessionProvider";
 import { ThemeProvider, colors } from "../theme";
 import { subscribeProofQueue } from "../offline/proofQueue";
+import { LocaleSettingsProvider } from "../i18n/LocaleSettingsProvider";
 
 export function AppProviders({ children }: PropsWithChildren) {
   const [queryClient] = useState(() => new QueryClient());
@@ -47,7 +48,7 @@ export function AppProviders({ children }: PropsWithChildren) {
     <QueryClientProvider client={queryClient}>
       <SafeAreaProvider>
         <ThemeProvider>
-          <SessionProvider>{children}</SessionProvider>
+          <LocaleSettingsProvider><SessionProvider>{children}</SessionProvider></LocaleSettingsProvider>
         </ThemeProvider>
       </SafeAreaProvider>
     </QueryClientProvider>

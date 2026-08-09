@@ -57,7 +57,7 @@ export class PlatformJwtGuard implements CanActivate {
       throw new UnauthorizedException("Invalid platform access token payload.");
     }
     const user = await this.prisma.user.findUnique({ where: { id: payload.sub } });
-    if (!user || user.role !== payload.role || user.status === PlatformUserStatus.RESTRICTED || payload.version !== user.tokenVersion) {
+    if (!user || user.role !== payload.role || user.status !== PlatformUserStatus.ACTIVE || payload.version !== user.tokenVersion) {
       throw new UnauthorizedException("Invalid platform user.");
     }
     request.platformUser = { id: user.id, name: user.name, phone: user.phone, role: user.role, status: user.status };

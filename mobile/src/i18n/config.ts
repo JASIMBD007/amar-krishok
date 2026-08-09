@@ -28,6 +28,7 @@ const i18next = createInstance();
 void i18next.use(initReactI18next).init({
   compatibilityJSON: "v4",
   fallbackLng: fallbackLocale,
+  initAsync: false,
   interpolation: {
     escapeValue: false,
   },

@@ -12,6 +12,18 @@ function envelope<T>(data: T) { return { data }; }
 export class MobileAuthController {
   constructor(private readonly auth: MobileAuthService, private readonly prisma: PrismaService) {}
 
+  @Post("login")
+  async login(@Body() body: Parameters<MobileAuthService["loginWithPassword"]>[0], @Res({ passthrough: true }) response: Response) {
+    const result = await this.auth.loginWithPassword(body);
+    response.cookie("ak_refresh", result.refreshToken, { httpOnly: true, maxAge: 30 * 24 * 60 * 60 * 1000, sameSite: "strict", secure: process.env.NODE_ENV === "production" });
+    return envelope(result);
+  }
+
+  @Post("register")
+  async register(@Body() body: Parameters<MobileAuthService["register"]>[0]) {
+    return envelope(await this.auth.register(body));
+  }
+
   @Post("otp/request")
   requestOtp(@Body() body: { phone: string; role: PlatformRole }) {
     return envelope(this.auth.requestOtp(body.phone, body.role));

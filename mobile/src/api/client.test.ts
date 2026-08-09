@@ -13,14 +13,17 @@ function jsonResponse(body: unknown, status = 200) {
 
 describe("ApiClient", () => {
   it("refreshes once and retries concurrent 401 responses with the new token", async () => {
-    const session = createMemorySessionStore("expired-token");
+    const session = createMemorySessionStore("expired-token", "old-refresh-token");
     let refreshCalls = 0;
     const fetcher = vi.fn<FetchLike>(async (input, init) => {
       const url = String(input);
       if (url.endsWith("/auth/refresh")) {
         refreshCalls += 1;
         await Promise.resolve();
-        return jsonResponse({ data: { accessToken: "fresh-token" } });
+        expect(JSON.parse(String(init?.body))).toEqual({ refreshToken: "old-refresh-token" });
+        return jsonResponse({
+          data: { accessToken: "fresh-token", refreshToken: "rotated-refresh-token" },
+        });
       }
 
       const authorization = new Headers(init?.headers).get("Authorization");
@@ -53,6 +56,7 @@ describe("ApiClient", () => {
     expect(second.ok).toBe(true);
     expect(refreshCalls).toBe(1);
     expect(session.getAccessToken()).toBe("fresh-token");
+    expect(session.getRefreshToken()).toBe("rotated-refresh-token");
   });
 
   it("preserves the bilingual API error envelope", async () => {

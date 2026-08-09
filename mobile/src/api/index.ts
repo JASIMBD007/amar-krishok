@@ -1,14 +1,7 @@
-import { sessionStore } from "../auth/sessionStore";
-import { ApiClient } from "./client";
-
-const apiBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL;
-
-export const apiClient = apiBaseUrl
-  ? new ApiClient({ baseUrl: apiBaseUrl, session: sessionStore })
-  : null;
-
 export { ApiClient } from "./client";
+export { defaultApiBaseUrl, resolveApiBaseUrl } from "./config";
 export { ApiError } from "./errors";
+export { absoluteApiUrl, api, apiBaseUrl } from "./runtime";
 export type {
   ApiEnvelope,
   ApiErrorEnvelope,

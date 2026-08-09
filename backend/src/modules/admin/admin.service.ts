@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
-import { AccountStatus, PasswordResetStatus, Prisma, Role } from "@prisma/client";
+import { AccountStatus, PasswordResetStatus, PlatformRole, PlatformUserStatus, Prisma, Role } from "@prisma/client";
 import { districtCreateData } from "../../common/catalogue-data";
 import { hash } from "bcryptjs";
 import { NotificationsService } from "../notifications/notifications.service";
@@ -312,6 +312,12 @@ export class AdminService {
         where: { id: request.userId },
       });
 
+      const platformPhone = request.phone.startsWith("0") ? `+88${request.phone}` : request.phone;
+      await tx.user.updateMany({
+        data: { passwordHash: request.passwordHash, pinHash: request.passwordHash, tokenVersion: { increment: 1 } },
+        where: { phone: platformPhone },
+      });
+
       return tx.passwordResetRequest.update({
         data: {
           passwordHash: "",
@@ -376,6 +382,18 @@ export class AdminService {
       },
       select: accountSelect,
       where: { id },
+    });
+
+    const platformPhone = updatedUser.phone.startsWith("0") ? `+88${updatedUser.phone}` : updatedUser.phone;
+    await this.prisma.user.updateMany({
+      data: {
+        status: action === "approve" ? PlatformUserStatus.ACTIVE : PlatformUserStatus.RESTRICTED,
+        tokenVersion: { increment: 1 },
+      },
+      where: {
+        phone: platformPhone,
+        role: updatedUser.role === Role.BUYER ? PlatformRole.BUYER : PlatformRole.FARMER,
+      },
     });
 
     await this.notificationsService.markVerificationRequestNotificationsReviewed(updatedUser);

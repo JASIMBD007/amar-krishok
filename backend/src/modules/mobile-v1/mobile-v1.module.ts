@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { NotificationsModule } from "../notifications/notifications.module";
 
 import { CarrierController } from "./carrier.controller";
 import { CarrierService } from "./carrier.service";
@@ -9,6 +10,7 @@ import { MobileV1Service } from "./mobile-v1.service";
 import { PlatformJwtGuard, PlatformRolesGuard } from "./platform-auth";
 
 @Module({
+  imports: [NotificationsModule],
   controllers: [MobileAuthController, MobilePublicController, MobileSharedController, MobileFarmerController, MobileBuyerController, CarrierController],
   providers: [MobileAuthService, MobileV1Service, CarrierService, PlatformJwtGuard, PlatformRolesGuard],
 })

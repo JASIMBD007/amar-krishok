@@ -1,6 +1,6 @@
-import { ConflictException, Injectable, UnauthorizedException } from "@nestjs/common";
+import { ConflictException, ForbiddenException, Injectable, ServiceUnavailableException, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { AccountStatus, LegacyUser as User, PasswordResetStatus, Role } from "@prisma/client";
+import { AccountStatus, LegacyUser as User, PasswordResetStatus, PlatformRole, PlatformUserStatus, Role } from "@prisma/client";
 import { districtCreateData } from "../../common/catalogue-data";
 import { compare, hash } from "bcryptjs";
 import { sign } from "jsonwebtoken";
@@ -23,6 +23,12 @@ function registrationUsername(role: typeof Role.BUYER | typeof Role.FARMER, phon
 
   const phoneKey = phone.replace(/\D/g, "").slice(0, 24) || phone.toLowerCase().replace(/[^a-z0-9._-]/g, "").slice(0, 24) || "account";
   return normalizeUsername(`${role === Role.BUYER ? "buyer" : "farmer"}-${phoneKey}`);
+}
+
+function platformPhone(value: string) {
+  const digits = value.replace(/\D/g, "");
+  const local = digits.startsWith("880") ? digits.slice(3) : digits.startsWith("0") ? digits.slice(1) : digits;
+  return `+880${local}`;
 }
 
 @Injectable()
@@ -64,6 +70,13 @@ export class AuthService {
 
     if (user.role !== Role.ADMIN && user.status !== AccountStatus.ACTIVE) {
       throw new UnauthorizedException("Account is waiting for admin verification.");
+    }
+
+    if (dto.client === "mobile") {
+      if (user.role !== Role.BUYER && user.role !== Role.FARMER) {
+        throw new ForbiddenException("The mobile app is available to buyer and farmer website accounts.");
+      }
+      return this.issueMobileSession(user, dto);
     }
 
     const secret = requireJwtSecret(this.config);
@@ -191,6 +204,77 @@ export class AuthService {
     return {
       message: "Registration submitted for admin verification.",
       user: publicUser(user),
+    };
+  }
+
+  private async issueMobileSession(legacy: User, dto: LoginDto) {
+    const role = legacy.role === Role.BUYER ? PlatformRole.BUYER : PlatformRole.FARMER;
+    const phone = platformPhone(legacy.phone);
+    const district = legacy.districtId
+      ? await this.prisma.district.findUnique({ where: { id: legacy.districtId } })
+      : await this.prisma.district.findFirst({ where: { active: true }, orderBy: { nameEn: "asc" } });
+    if (!district) {
+      throw new ServiceUnavailableException("No active district is configured.");
+    }
+
+    const existing = await this.prisma.user.findUnique({ where: { phone } });
+    if (existing && existing.role !== role) {
+      throw new ForbiddenException("This mobile number belongs to another account role.");
+    }
+    const account = await this.prisma.user.upsert({
+      where: { phone },
+      update: {
+        address: legacy.address,
+        districtId: district.id,
+        focus: legacy.focus,
+        identity: legacy.identity,
+        name: legacy.name,
+        organization: legacy.organization,
+        passwordHash: legacy.passwordHash,
+        role,
+        status: PlatformUserStatus.ACTIVE,
+        upazila: legacy.upazilla ?? district.nameBn,
+      },
+      create: {
+        address: legacy.address,
+        districtId: district.id,
+        focus: legacy.focus,
+        identity: legacy.identity,
+        name: legacy.name,
+        organization: legacy.organization,
+        passwordHash: legacy.passwordHash,
+        phone,
+        pinHash: legacy.passwordHash,
+        role,
+        status: PlatformUserStatus.ACTIVE,
+        upazila: legacy.upazilla ?? district.nameBn,
+      },
+      include: { district: true, kycProfile: true },
+    });
+
+    if (dto.deviceId) {
+      await this.prisma.device.upsert({
+        where: { id: dto.deviceId },
+        update: { lastSeenAt: new Date(), pushToken: dto.pushToken, revokedAt: null, userId: account.id },
+        create: { id: dto.deviceId, label: dto.platform ?? "mobile", lastSeenAt: new Date(), pushToken: dto.pushToken, userId: account.id },
+      });
+    }
+
+    const secret = requireJwtSecret(this.config);
+    const accessToken = sign({ platform: true, role: account.role, version: account.tokenVersion }, secret, { algorithm: "HS256", expiresIn: "15m", subject: account.id });
+    const refreshToken = sign({ kind: "refresh", platform: true, version: account.tokenVersion }, secret, { algorithm: "HS256", expiresIn: "30d", subject: account.id });
+    return {
+      accessToken,
+      refreshToken,
+      user: {
+        district: account.district.nameBn,
+        id: account.id,
+        name: account.name,
+        phone: account.phone,
+        role: account.role,
+        status: account.status,
+        verified: account.kycProfile?.status === "VERIFIED",
+      },
     };
   }
 

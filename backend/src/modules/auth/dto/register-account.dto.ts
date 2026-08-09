@@ -70,6 +70,22 @@ export class LoginDto {
   @IsString()
   @MinLength(4)
   password!: string;
+
+  @IsOptional()
+  @IsIn(["mobile"])
+  client?: "mobile";
+
+  @IsOptional()
+  @IsString()
+  deviceId?: string;
+
+  @IsOptional()
+  @IsString()
+  platform?: string;
+
+  @IsOptional()
+  @IsString()
+  pushToken?: string;
 }
 
 export class PasswordResetLookupDto {

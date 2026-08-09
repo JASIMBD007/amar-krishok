@@ -51,7 +51,7 @@ function icon(Icon: typeof Home) {
 }
 
 function FarmerTabs() {
-  return <Tab.Navigator screenOptions={tabOptions}><Tab.Screen component={FarmerHomeScreen} name="FarmerHome" options={{ tabBarIcon: icon(Home), tabBarLabel: "হোম" }} /><Tab.Screen component={MyLotsScreen} name="FarmerLots" options={{ tabBarIcon: icon(ListChecks), tabBarLabel: "আমার লট" }} /><Tab.Screen component={OffersScreen} name="FarmerOffers" options={{ tabBarBadge: 2, tabBarIcon: icon(WalletCards), tabBarLabel: "অফার" }} /><Tab.Screen component={ChatScreen} name="FarmerChat" options={{ tabBarIcon: icon(MessageCircle), tabBarLabel: "বার্তা" }} /><Tab.Screen component={ProfileScreen} name="FarmerProfile" options={{ tabBarIcon: icon(UserRound), tabBarLabel: "প্রোফাইল" }} /></Tab.Navigator>;
+  return <Tab.Navigator screenOptions={tabOptions}><Tab.Screen component={FarmerHomeScreen} name="FarmerHome" options={{ tabBarIcon: icon(Home), tabBarLabel: "হোম" }} /><Tab.Screen component={MyLotsScreen} name="FarmerLots" options={{ tabBarIcon: icon(ListChecks), tabBarLabel: "আমার লট" }} /><Tab.Screen component={OffersScreen} name="FarmerOffers" options={{ tabBarIcon: icon(WalletCards), tabBarLabel: "অফার" }} /><Tab.Screen component={ChatScreen} name="FarmerChat" options={{ tabBarIcon: icon(MessageCircle), tabBarLabel: "বার্তা" }} /><Tab.Screen component={ProfileScreen} name="FarmerProfile" options={{ tabBarIcon: icon(UserRound), tabBarLabel: "প্রোফাইল" }} /></Tab.Navigator>;
 }
 
 function BuyerTabs() {
@@ -59,7 +59,7 @@ function BuyerTabs() {
 }
 
 function CarrierTabs() {
-  return <Tab.Navigator screenOptions={{ ...tabOptions, tabBarActiveTintColor: colors.status.warn }}><Tab.Screen component={TripsScreen} name="CarrierTrips" options={{ tabBarBadge: 6, tabBarIcon: icon(Home), tabBarLabel: "ট্রিপ" }} /><Tab.Screen component={JobsScreen} name="CarrierJobs" options={{ tabBarIcon: icon(BriefcaseBusiness), tabBarLabel: "কাজ" }} /><Tab.Screen component={EarningsScreen} name="CarrierEarnings" options={{ tabBarIcon: icon(CircleDollarSign), tabBarLabel: "আয়" }} /><Tab.Screen component={ChatScreen} name="CarrierChat" options={{ tabBarIcon: icon(MessageCircle), tabBarLabel: "বার্তা" }} /><Tab.Screen component={ProfileScreen} name="CarrierProfile" options={{ tabBarIcon: icon(UserRound), tabBarLabel: "প্রোফাইল" }} /></Tab.Navigator>;
+  return <Tab.Navigator screenOptions={{ ...tabOptions, tabBarActiveTintColor: colors.status.warn }}><Tab.Screen component={TripsScreen} name="CarrierTrips" options={{ tabBarIcon: icon(Home), tabBarLabel: "ট্রিপ" }} /><Tab.Screen component={JobsScreen} name="CarrierJobs" options={{ tabBarIcon: icon(BriefcaseBusiness), tabBarLabel: "কাজ" }} /><Tab.Screen component={EarningsScreen} name="CarrierEarnings" options={{ tabBarIcon: icon(CircleDollarSign), tabBarLabel: "আয়" }} /><Tab.Screen component={ChatScreen} name="CarrierChat" options={{ tabBarIcon: icon(MessageCircle), tabBarLabel: "বার্তা" }} /><Tab.Screen component={ProfileScreen} name="CarrierProfile" options={{ tabBarIcon: icon(UserRound), tabBarLabel: "প্রোফাইল" }} /></Tab.Navigator>;
 }
 
 function RoleTabs() {

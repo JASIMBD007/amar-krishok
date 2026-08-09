@@ -18,6 +18,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { formatMoneyFromPoisha } from "../utils/formatters";
 import { colors, fontFamilies, fontSizes, radii, spacing, touchTargets } from "../theme";
+import { useLocaleSettings } from "../i18n/LocaleSettingsProvider";
 
 export function AppScreen({
   children,
@@ -34,11 +35,12 @@ export function AppScreen({
 }
 
 export function ScreenTitle({ bn, en, right }: { bn: string; en?: string; right?: ReactNode }) {
+  const { showEnglishGloss } = useLocaleSettings();
   return (
     <View style={styles.titleRow}>
       <View style={styles.titleCopy}>
         <Text style={styles.title}>{bn}</Text>
-        {en ? <Text style={styles.gloss}>{en}</Text> : null}
+        {en && showEnglishGloss ? <Text style={styles.gloss}>{en}</Text> : null}
       </View>
       {right}
     </View>
@@ -118,12 +120,14 @@ export function Field({
   label,
   onChangeText,
   placeholder,
+  secureTextEntry = false,
   value,
 }: {
   keyboardType?: KeyboardTypeOptions;
   label: string;
   onChangeText: (value: string) => void;
   placeholder?: string;
+  secureTextEntry?: boolean;
   value: string;
 }) {
   return (
@@ -135,6 +139,7 @@ export function Field({
         onChangeText={onChangeText}
         placeholder={placeholder}
         placeholderTextColor={colors.text.subtle}
+        secureTextEntry={secureTextEntry}
         style={styles.input}
         value={value}
       />

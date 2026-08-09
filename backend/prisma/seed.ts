@@ -84,6 +84,7 @@ const notifications = [
 async function clearPlatformSeed() {
   await prisma.$transaction([
     prisma.auditLog.deleteMany(),
+    prisma.platformMedia.deleteMany(),
     prisma.idempotencyRecord.deleteMany(),
     prisma.notification.deleteMany(),
     prisma.notificationPref.deleteMany(),
@@ -149,6 +150,7 @@ async function main() {
         id: user.id,
         locale: "bn-BD",
         name: user.name,
+        passwordHash: pinHash,
         phone: user.phone,
         pinHash,
         role: user.role,
