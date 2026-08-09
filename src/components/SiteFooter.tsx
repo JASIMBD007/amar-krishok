@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
-import { Sprout } from "lucide-react";
 import { useTranslate } from "../i18n";
+import { BrandMark } from "./BrandMark";
 
 /** Internal routes get a link; the rest are plain labels until those pages exist. */
 type FooterLink = { label: string; to?: string };
@@ -37,9 +37,7 @@ export function SiteFooter() {
       <div className="site-footer-inner">
         <div className="site-footer-brand">
           <NavLink className="site-footer-mark" to="/" aria-label={t("AmarKrishok home")} end>
-            <span aria-hidden="true">
-              <Sprout size={20} strokeWidth={2.6} />
-            </span>
+            <BrandMark className="site-footer-logo" />
             <strong>AmarKrishok</strong>
           </NavLink>
           <p>{t("A direct farmer-to-buyer supply chain for Bangladesh. Fair prices, visible to everyone.")}</p>

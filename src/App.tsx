@@ -19,6 +19,7 @@ import {
 } from "./api/auth";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { LaunchNoticeModal } from "./components/LaunchNoticeModal";
+import { BrandMark } from "./components/BrandMark";
 import { Seo } from "./components/Seo";
 import { SiteFooter } from "./components/SiteFooter";
 import { FloatingSupportChat } from "./components/chat/FloatingSupportChat";
@@ -557,9 +558,7 @@ export default function App() {
           {menuOpen ? <X size={21} /> : <Menu size={21} />}
         </button>
         <NavLink className="brand" to="/" onClick={closeAllHeaderMenus} aria-label={t("AmarKrishok home")} end>
-          <span className="brand-mark" aria-hidden="true">
-            অ
-          </span>
+          <BrandMark className="brand-mark" />
           <strong>AmarKrishok</strong>
         </NavLink>
 
