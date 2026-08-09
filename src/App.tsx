@@ -539,7 +539,7 @@ export default function App() {
   return (
     <LanguageContext.Provider value={language}>
     <Seo language={language} pathname={location.pathname} />
-    <div className={location.pathname === "/marketplace" ? "app-shell marketplace-shell" : "app-shell"} lang={language}>
+    <div className="app-shell" lang={language}>
       <header className="site-header">
         <button
           className="icon-button mobile-only"
