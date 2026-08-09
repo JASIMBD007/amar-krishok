@@ -76,7 +76,45 @@ enum OfferStatus {
 enum PlatformRole {
   FARMER
   BUYER
+  CARRIER
   STAFF
+}
+
+enum CarrierStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum TripState {
+  OFFERED
+  ACCEPTED
+  EN_ROUTE_PICKUP
+  PICKED_UP
+  EN_ROUTE_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
+enum TripStopKind {
+  PICKUP
+  DELIVERY
+}
+
+enum TripBidState {
+  OPEN
+  WON
+  LOST
+}
+
+enum HandoverKind {
+  PICKUP
+  DELIVERY
+}
+
+enum CarrierPayoutState {
+  PENDING
+  AVAILABLE
+  PAID
 }
 
 enum PlatformUserStatus {
@@ -236,43 +274,47 @@ model FarmerProfile {
 }
 
 model User {
-  id                String             @id @default(cuid())
-  phone             String             @unique
-  name              String
-  role              PlatformRole
-  districtId        String
-  upazila           String
-  email             String?
-  bio               String?
-  avatarUrl         String?
-  status            PlatformUserStatus @default(PENDING)
-  locale            String             @default("bn-BD")
-  pinHash           String
-  twoFactorEnabled  Boolean            @default(false)
-  createdAt         DateTime           @default(now())
-  district          District           @relation(fields: [districtId], references: [id])
-  staffRole         StaffRole?
-  devices           Device[]
-  kycProfile        KycProfile?        @relation("UserKycProfile")
-  kycReviews        KycProfile[]       @relation("KycReviewer")
-  kycDocuments      KycDocument[]
-  payoutAccount     PayoutAccount?
-  listings          Listing[]          @relation("ListingFarmer")
-  suspendedListings Listing[]          @relation("ListingSuspender")
-  offers            Offer[]            @relation("OfferBuyer")
-  buyerOrders       Order[]            @relation("PlatformBuyerOrders")
-  farmerOrders      Order[]            @relation("PlatformFarmerOrders")
-  releasedEscrows   Escrow[]           @relation("EscrowReleaser")
-  payouts           Payout[]           @relation("PlatformFarmerPayouts")
-  openedDisputes    Dispute[]          @relation("DisputeOpener")
-  resolvedDisputes  Dispute[]          @relation("DisputeResolver")
-  assignedThreads   Thread[]           @relation("AssignedStaff")
-  threadMemberships ThreadMember[]
-  messages          Message[]
-  notifications     Notification[]
-  notificationPref  NotificationPref?
-  publishedRates    MarketRate[]       @relation("RatePublisher")
-  auditLogs         AuditLog[]         @relation("AuditActor")
+  id                 String              @id @default(cuid())
+  phone              String              @unique
+  name               String
+  role               PlatformRole
+  districtId         String
+  upazila            String
+  email              String?
+  bio                String?
+  avatarUrl          String?
+  status             PlatformUserStatus  @default(PENDING)
+  locale             String              @default("bn-BD")
+  pinHash            String
+  twoFactorEnabled   Boolean             @default(false)
+  tokenVersion       Int                 @default(0)
+  createdAt          DateTime            @default(now())
+  district           District            @relation(fields: [districtId], references: [id])
+  staffRole          StaffRole?
+  carrier            Carrier?
+  devices            Device[]
+  kycProfile         KycProfile?         @relation("UserKycProfile")
+  kycReviews         KycProfile[]        @relation("KycReviewer")
+  kycDocuments       KycDocument[]
+  payoutAccount      PayoutAccount?
+  listings           Listing[]           @relation("ListingFarmer")
+  suspendedListings  Listing[]           @relation("ListingSuspender")
+  offers             Offer[]             @relation("OfferBuyer")
+  buyerOrders        Order[]             @relation("PlatformBuyerOrders")
+  farmerOrders       Order[]             @relation("PlatformFarmerOrders")
+  releasedEscrows    Escrow[]            @relation("EscrowReleaser")
+  payouts            Payout[]            @relation("PlatformFarmerPayouts")
+  openedDisputes     Dispute[]           @relation("DisputeOpener")
+  resolvedDisputes   Dispute[]           @relation("DisputeResolver")
+  assignedThreads    Thread[]            @relation("AssignedStaff")
+  threadMemberships  ThreadMember[]
+  messages           Message[]
+  notifications      Notification[]
+  notificationPref   NotificationPref?
+  publishedRates     MarketRate[]        @relation("RatePublisher")
+  auditLogs          AuditLog[]          @relation("AuditActor")
+  confirmedProofs    ProofOfHandover[]   @relation("ProofConfirmer")
+  idempotencyRecords IdempotencyRecord[]
 
   @@index([role, status])
   @@map("PlatformUser")
@@ -290,6 +332,7 @@ model Device {
   label      String
   lastSeenAt DateTime
   revokedAt  DateTime?
+  pushToken  String?
   user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, revokedAt])
@@ -346,6 +389,8 @@ model District {
   rateFeeds     RateFeed[]
   logisticsFrom LogisticsJob[] @relation("OriginDistrict")
   logisticsTo   LogisticsJob[] @relation("DestinationDistrict")
+  carriers      Carrier[]
+  tripStops     TripStop[]
 }
 
 model Crop {
@@ -510,10 +555,135 @@ model Order {
   escrow        Escrow?
   disputes      Dispute[]
   threads       Thread[]
+  trip          Trip?
 
   @@index([buyerId, createdAt])
   @@index([farmerId, createdAt])
   @@map("PlatformOrder")
+}
+
+model Carrier {
+  id          String          @id @default(cuid())
+  userId      String          @unique
+  companyName String
+  vehicleReg  String          @unique
+  capacityMon Int
+  online      Boolean         @default(false)
+  ratingAvg   Decimal         @default(0) @db.Decimal(3, 2)
+  status      CarrierStatus   @default(ACTIVE)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  districts   District[]
+  trips       Trip[]
+  bids        TripBid[]
+  payouts     CarrierPayout[]
+
+  @@index([online, status])
+}
+
+model Trip {
+  id             String            @id @default(cuid())
+  orderId        String            @unique
+  carrierId      String?
+  state          TripState         @default(OFFERED)
+  fee            Int
+  distanceKm     Int
+  pickupAt       DateTime
+  deliverAt      DateTime
+  acceptedAt     DateTime?
+  currentLat     Decimal?          @db.Decimal(10, 7)
+  currentLng     Decimal?          @db.Decimal(10, 7)
+  locationAt     DateTime?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  order          Order             @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  carrier        Carrier?          @relation(fields: [carrierId], references: [id])
+  stops          TripStop[]
+  bids           TripBid[]
+  proofs         ProofOfHandover[]
+  carrierPayouts CarrierPayout[]
+
+  @@index([carrierId, state, pickupAt])
+  @@index([state, pickupAt])
+}
+
+model TripStop {
+  id          String       @id @default(cuid())
+  tripId      String
+  kind        TripStopKind
+  address     String
+  districtId  String
+  lat         Decimal      @db.Decimal(10, 7)
+  lng         Decimal      @db.Decimal(10, 7)
+  arrivedAt   DateTime?
+  completedAt DateTime?
+  trip        Trip         @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  district    District     @relation(fields: [districtId], references: [id])
+
+  @@unique([tripId, kind])
+  @@index([districtId, kind])
+}
+
+model TripBid {
+  id        String       @id @default(cuid())
+  tripId    String
+  carrierId String
+  amount    Int
+  state     TripBidState @default(OPEN)
+  createdAt DateTime     @default(now())
+  trip      Trip         @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  carrier   Carrier      @relation(fields: [carrierId], references: [id], onDelete: Cascade)
+
+  @@unique([tripId, carrierId])
+  @@index([tripId, state, amount])
+}
+
+model ProofOfHandover {
+  id                String       @id @default(cuid())
+  tripId            String
+  kind              HandoverKind
+  weighedMon        Decimal      @db.Decimal(10, 2)
+  photoKeys         String[]
+  signatureKey      String
+  confirmedByUserId String
+  lat               Decimal?     @db.Decimal(10, 7)
+  lng               Decimal?     @db.Decimal(10, 7)
+  capturedAt        DateTime
+  createdAt         DateTime     @default(now())
+  idempotencyKey    String       @unique
+  trip              Trip         @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  confirmedBy       User         @relation("ProofConfirmer", fields: [confirmedByUserId], references: [id])
+
+  @@unique([tripId, kind])
+}
+
+model CarrierPayout {
+  id        String             @id @default(cuid())
+  carrierId String
+  tripId    String
+  amount    Int
+  state     CarrierPayoutState @default(PENDING)
+  paidAt    DateTime?
+  createdAt DateTime           @default(now())
+  carrier   Carrier            @relation(fields: [carrierId], references: [id], onDelete: Cascade)
+  trip      Trip               @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@unique([carrierId, tripId])
+  @@index([carrierId, state])
+}
+
+model IdempotencyRecord {
+  id        String   @id @default(cuid())
+  userId    String
+  scope     String
+  key       String
+  response  Json
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, scope, key])
+  @@index([createdAt])
 }
 
 model Escrow {

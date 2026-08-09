@@ -1,16 +1,34 @@
 {
   "expo": {
     "name": "AmarKrishok",
+    "scheme": "amarkrishok",
     "slug": "amar-krishok",
     "version": "0.1.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.amarkrishok.mobile"
+      "bundleIdentifier": "com.amarkrishok.mobile",
+      "infoPlist": {
+        "NSCameraUsageDescription": "ফসল, কেওয়াইসি ও হস্তান্তরের প্রমাণের ছবি তুলতে ক্যামেরা ব্যবহার করা হয়।",
+        "NSLocationWhenInUseUsageDescription": "সক্রিয় ট্রিপ চলাকালে অবস্থান শেয়ার করতে লোকেশন ব্যবহার করা হয়।",
+        "NSPhotoLibraryUsageDescription": "ফসল ও প্রমাণের ছবি বেছে নিতে ফটো লাইব্রেরি ব্যবহার করা হয়।"
+      }
     },
     "android": {
-      "package": "com.amarkrishok.mobile"
-    }
+      "package": "com.amarkrishok.mobile",
+      "permissions": [
+        "CAMERA",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "POST_NOTIFICATIONS"
+      ]
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-image-picker",
+      "expo-notifications",
+      "expo-location"
+    ]
   }
 }

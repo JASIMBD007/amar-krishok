@@ -141,12 +141,15 @@ export class ApiClient {
   }
 
   private async performRefresh() {
+    const refreshToken = this.session.getRefreshToken();
     const response = await this.fetcher(joinUrl(this.baseUrl, "/auth/refresh"), {
       credentials: "include",
       headers: {
         Accept: "application/json",
+        "Content-Type": "application/json",
       },
       method: "POST",
+      ...(refreshToken ? { body: JSON.stringify({ refreshToken }) } : {}),
     });
 
     if (!response.ok) {
@@ -165,6 +168,7 @@ export class ApiClient {
     }
 
     this.session.setAccessToken(envelope.data.accessToken);
+    if (envelope.data.refreshToken) this.session.setRefreshToken(envelope.data.refreshToken);
     return envelope.data.accessToken;
   }
 

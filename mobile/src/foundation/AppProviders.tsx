@@ -9,11 +9,14 @@ import { NotoSansBengali_400Regular } from "@expo-google-fonts/noto-sans-bengali
 import { NotoSansBengali_600SemiBold } from "@expo-google-fonts/noto-sans-bengali/600SemiBold";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useFonts } from "expo-font";
-import { useState, type PropsWithChildren } from "react";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { useEffect, useState, type PropsWithChildren } from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 
 import "../i18n/config";
+import { SessionProvider } from "../auth/SessionProvider";
 import { ThemeProvider, colors } from "../theme";
+import { subscribeProofQueue } from "../offline/proofQueue";
 
 export function AppProviders({ children }: PropsWithChildren) {
   const [queryClient] = useState(() => new QueryClient());
@@ -29,6 +32,8 @@ export function AppProviders({ children }: PropsWithChildren) {
     NotoSansBengali_600SemiBold,
   });
 
+  useEffect(() => subscribeProofQueue(), []);
+
   if (fontError) throw fontError;
   if (!areFontsLoaded) {
     return (
@@ -40,7 +45,11 @@ export function AppProviders({ children }: PropsWithChildren) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider>{children}</ThemeProvider>
+      <SafeAreaProvider>
+        <ThemeProvider>
+          <SessionProvider>{children}</SessionProvider>
+        </ThemeProvider>
+      </SafeAreaProvider>
     </QueryClientProvider>
   );
 }

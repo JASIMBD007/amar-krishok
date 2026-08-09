@@ -11,6 +11,7 @@ import { DistrictsModule } from "./modules/districts/districts.module";
 import { HealthModule } from "./modules/health/health.module";
 import { LotsModule } from "./modules/lots/lots.module";
 import { MarketPricesModule } from "./modules/market-prices/market-prices.module";
+import { MobileV1Module } from "./modules/mobile-v1/mobile-v1.module";
 import { NotificationsModule } from "./modules/notifications/notifications.module";
 import { OffersModule } from "./modules/offers/offers.module";
 import { OrdersModule } from "./modules/orders/orders.module";
@@ -36,6 +37,7 @@ import { UploadsModule } from "./modules/uploads/uploads.module";
     StatsModule,
     ChatModule,
     UploadsModule,
+    MobileV1Module,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

@@ -18,6 +18,7 @@ export type ApiErrorEnvelope = {
 
 export type RefreshData = {
   accessToken: string;
+  refreshToken?: string;
 };
 
 export type ApiRequestOptions<TBody = unknown> = Omit<

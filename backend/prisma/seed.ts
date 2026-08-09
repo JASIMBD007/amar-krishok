@@ -1,4 +1,5 @@
 import {
+  CarrierPayoutState,
   DisputeState,
   EscrowState,
   KycStatus,
@@ -11,6 +12,8 @@ import {
   PlatformUserStatus,
   PrismaClient,
   ThreadKind,
+  TripState,
+  TripStopKind,
 } from "@prisma/client";
 import { hash } from "bcryptjs";
 
@@ -52,6 +55,7 @@ const users = [
   // The prototype's listing and dispute fixtures name these farmers even though its directory array omits them.
   { id: "U7", name: "Rahim Uddin", phone: "+8801700000007", role: PlatformRole.FARMER, district: "Bogura", status: PlatformUserStatus.ACTIVE, joined: 2009 },
   { id: "U8", name: "Abdul Karim", phone: "+8801700000008", role: PlatformRole.FARMER, district: "Rangpur", status: PlatformUserStatus.ACTIVE, joined: 2015 },
+  { id: "U9", name: "Kamal Transport", phone: "+8801711828290", role: PlatformRole.CARRIER, district: "Dhaka", status: PlatformUserStatus.ACTIVE, joined: 2018 },
 ] as const;
 
 const listings = [
@@ -80,12 +84,18 @@ const notifications = [
 async function clearPlatformSeed() {
   await prisma.$transaction([
     prisma.auditLog.deleteMany(),
+    prisma.idempotencyRecord.deleteMany(),
     prisma.notification.deleteMany(),
     prisma.notificationPref.deleteMany(),
     prisma.message.deleteMany(),
     prisma.threadMember.deleteMany(),
     prisma.thread.deleteMany(),
     prisma.dispute.deleteMany(),
+    prisma.proofOfHandover.deleteMany(),
+    prisma.carrierPayout.deleteMany(),
+    prisma.tripBid.deleteMany(),
+    prisma.tripStop.deleteMany(),
+    prisma.trip.deleteMany(),
     prisma.escrow.deleteMany(),
     prisma.order.deleteMany(),
     prisma.offer.deleteMany(),
@@ -99,6 +109,7 @@ async function clearPlatformSeed() {
     prisma.payoutAccount.deleteMany(),
     prisma.device.deleteMany(),
     prisma.staffRole.deleteMany(),
+    prisma.carrier.deleteMany(),
     prisma.user.deleteMany(),
   ]);
 }
@@ -218,6 +229,37 @@ async function main() {
       data: { amount: poisha(order.totalTaka), heldAt: new Date("2026-08-03T08:05:00.000Z"), orderId: order.id, state: EscrowState.FROZEN },
     });
   }
+
+  const carrier = await prisma.carrier.create({
+    data: {
+      capacityMon: 240,
+      companyName: "Kamal Transport",
+      districts: { connect: [{ id: "district-bogura" }, { id: "district-dhaka" }, { id: "district-faridpur" }, { id: "district-chattogram" }] },
+      id: "carrier-kamal",
+      online: true,
+      ratingAvg: 4.8,
+      userId: "U9",
+      vehicleReg: "DHAKA-METRO-TA-11-8289",
+    },
+  });
+  const trip = await prisma.trip.create({
+    data: {
+      acceptedAt: new Date("2026-08-06T01:00:00.000Z"),
+      carrierId: carrier.id,
+      deliverAt: new Date("2026-08-07T08:00:00.000Z"),
+      distanceKm: 144,
+      fee: poisha(4200),
+      id: "trip-ak-4818",
+      orderId: "order-ak-4818",
+      pickupAt: new Date("2026-08-06T03:30:00.000Z"),
+      state: TripState.EN_ROUTE_DELIVERY,
+    },
+  });
+  await prisma.tripStop.createMany({ data: [
+    { address: "Shibganj depot", districtId: "district-bogura", id: "stop-ak-4818-pickup", kind: TripStopKind.PICKUP, lat: 24.8500, lng: 89.3700, tripId: trip.id },
+    { address: "Karwan Bazar", districtId: "district-dhaka", id: "stop-ak-4818-delivery", kind: TripStopKind.DELIVERY, lat: 23.7515, lng: 90.3932, tripId: trip.id },
+  ] });
+  await prisma.carrierPayout.create({ data: { amount: poisha(4200), carrierId: carrier.id, id: "carrier-payout-ak-4818", state: CarrierPayoutState.PENDING, tripId: trip.id } });
 
   await prisma.dispute.createMany({
     data: [

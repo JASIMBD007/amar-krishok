@@ -1,10 +1,10 @@
 import { AppProviders } from "./src/foundation/AppProviders";
-import { FoundationScreen } from "./src/foundation/FoundationScreen";
+import { AppNavigator } from "./src/navigation/AppNavigator";
 
 export default function App() {
   return (
     <AppProviders>
-      <FoundationScreen />
+      <AppNavigator />
     </AppProviders>
   );
 }
