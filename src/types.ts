@@ -67,9 +67,11 @@ export type RegisteredCropLotRecord = {
   harvestDate?: string;
   imageUrl?: string;
   notes?: string;
+  pickupWithin24h?: boolean;
   pricePerKg: number;
   quantityKg: number;
   status: string;
+  transportIncluded?: boolean;
   createdAt?: string;
   updatedAt?: string;
 };
@@ -96,7 +98,10 @@ export type CropLot = {
   completedOrders?: number;
   farmingSince?: number;
   rating?: number;
+  /** True only when the farmer uploaded a real image; catalogue fallback art does not count. */
+  hasFarmPhotos?: boolean;
   transportIncluded?: boolean;
+  pickupWithin24h?: boolean;
   /** The farmer's account status: ACTIVE means staff verified their NID and land papers. */
   farmerStatus?: string;
   /** The lot's own status. Anything other than ACTIVE is hidden from the marketplace. */

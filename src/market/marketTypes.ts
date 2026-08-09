@@ -13,9 +13,11 @@ export type MarketLotSource = {
   quantityMon: number;
   pricePerMon: number;
   image?: string;
+  hasFarmPhotos: boolean;
   harvest?: string;
   postedAt?: string;
   transportIncluded: boolean;
+  pickupWithin24h: boolean;
   farmingSince: number;
   rating: number;
   completedOrders: number;
@@ -56,8 +58,13 @@ export type MarketSort = "price" | "delta";
 export type MarketFilters = {
   crop: string;
   grade: string;
-  /** null means "no cap" — the slider parks at the top of whatever the catalogue currently holds. */
+  /** null means the corresponding end of the range follows the current catalogue bounds. */
+  minPrice: number | null;
   maxPrice: number | null;
   verifiedOnly: boolean;
+  hasFarmPhotos: boolean;
+  rating45Only: boolean;
+  transportIncluded: boolean;
+  pickupWithin24h: boolean;
   sort: MarketSort;
 };

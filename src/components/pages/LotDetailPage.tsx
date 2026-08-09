@@ -181,7 +181,9 @@ export function LotDetailPage({ lots, user }: { lots: CropLot[]; user: AuthUser 
               </div>
               <div>
                 <span>{t("Pickup")}</span>
-                <strong>{t(lot.transportIncluded ? "Transport incl." : "Within 24 h")}</strong>
+                <strong>
+                  {t(lot.transportIncluded ? "Transport incl." : lot.pickupWithin24h ? "Within 24 h" : "Pickup details unavailable")}
+                </strong>
               </div>
             </div>
             <p>

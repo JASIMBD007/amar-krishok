@@ -38,9 +38,11 @@ type ApiUser = {
     id: string;
     imageUrl?: string | null;
     notes?: string | null;
+    pickupWithin24h?: boolean;
     pricePerKg: string | number;
     quantityKg: string | number;
     status: string;
+    transportIncluded?: boolean;
     updatedAt?: string;
   }>;
   orders?: Array<{
@@ -111,9 +113,11 @@ export type BackendCropLot = {
   harvestDate: string | null;
   imageUrl: string | null;
   notes: string | null;
+  pickupWithin24h: boolean;
   pricePerKg: string | number;
   quantityKg: string | number;
   status: string;
+  transportIncluded: boolean;
   createdAt: string;
   updatedAt: string;
 };
@@ -126,8 +130,10 @@ export type CreateCropLotPayload = {
   harvestDate?: string;
   imageUrl?: string;
   notes?: string;
+  pickupWithin24h?: boolean;
   pricePerKg: number;
   quantityKg: number;
+  transportIncluded?: boolean;
 };
 
 export type UpdateCropLotPayload = Partial<CreateCropLotPayload>;
@@ -419,9 +425,11 @@ export function toRegisteredCropLotRecord(lot: NonNullable<ApiUser["cropLots"]>[
     id: lot.id,
     imageUrl: lot.imageUrl ?? undefined,
     notes: lot.notes ?? undefined,
+    pickupWithin24h: lot.pickupWithin24h ?? false,
     pricePerKg: numericValue(lot.pricePerKg),
     quantityKg: numericValue(lot.quantityKg),
     status: lot.status,
+    transportIncluded: lot.transportIncluded ?? false,
     upazilla: lot.upazilla ?? undefined,
     updatedAt: lot.updatedAt,
   };

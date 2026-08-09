@@ -430,27 +430,31 @@ model Crop {
 }
 
 model CropLot {
-  id            String         @id @default(cuid())
-  farmerId      String
-  cropId        String
-  districtId    String
-  upazilla      String?
-  quantityKg    Decimal        @db.Decimal(12, 2)
-  pricePerKg    Decimal        @db.Decimal(12, 2)
-  grade         String
-  harvestDate   DateTime?
-  status        LotStatus      @default(ACTIVE)
-  notes         String?
-  imageUrl      String?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  farmer        LegacyUser     @relation("FarmerLots", fields: [farmerId], references: [id])
-  crop          Crop           @relation(fields: [cropId], references: [id])
-  district      District       @relation(fields: [districtId], references: [id])
-  orderItems    OrderItem[]
-  logisticsJobs LogisticsJob[]
-  qualityChecks QualityCheck[]
-  offers        LotOffer[]
+  id                String         @id @default(cuid())
+  farmerId          String
+  cropId            String
+  districtId        String
+  upazilla          String?
+  quantityKg        Decimal        @db.Decimal(12, 2)
+  pricePerKg        Decimal        @db.Decimal(12, 2)
+  grade             String
+  harvestDate       DateTime?
+  status            LotStatus      @default(ACTIVE)
+  notes             String?
+  imageUrl          String?
+  /// The farmer will arrange transport as part of the quoted lot price.
+  transportIncluded Boolean        @default(false)
+  /// The lot can be collected from the farm within 24 hours of confirmation.
+  pickupWithin24h   Boolean        @default(false)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  farmer            LegacyUser     @relation("FarmerLots", fields: [farmerId], references: [id])
+  crop              Crop           @relation(fields: [cropId], references: [id])
+  district          District       @relation(fields: [districtId], references: [id])
+  orderItems        OrderItem[]
+  logisticsJobs     LogisticsJob[]
+  qualityChecks     QualityCheck[]
+  offers            LotOffer[]
 
   @@index([cropId, districtId, status])
   @@index([farmerId, status])

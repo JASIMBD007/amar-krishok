@@ -49,13 +49,16 @@ function backendLotToCropLot(lot: BackendCropLot): CropLot {
     farmerStatus: lot.farmer.status,
     grade: lot.grade,
     harvest: "",
+    hasFarmPhotos: Boolean(lot.imageUrl),
     id: lot.id,
     image: lot.imageUrl ?? "",
     postedAt: lot.createdAt,
     pricePerKg: Number(lot.pricePerKg) || 0,
     quantity: `${Number(lot.quantityKg) || 0} kg`,
     quantityKg: Number(lot.quantityKg) || 0,
+    pickupWithin24h: Boolean(lot.pickupWithin24h),
     status: lot.status,
+    transportIncluded: Boolean(lot.transportIncluded),
     upazilla: lot.upazilla ?? undefined,
   };
 }

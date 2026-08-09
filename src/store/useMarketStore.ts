@@ -8,8 +8,13 @@ const MARKET_STORAGE_KEY = "amarKrishokMarketState";
 export const defaultFilters: MarketFilters = {
   crop: "All crops",
   grade: "All",
+  minPrice: null,
   maxPrice: null,
   verifiedOnly: false,
+  hasFarmPhotos: false,
+  rating45Only: false,
+  transportIncluded: false,
+  pickupWithin24h: false,
   sort: "price",
 };
 

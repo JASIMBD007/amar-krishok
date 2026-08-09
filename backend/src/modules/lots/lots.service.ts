@@ -103,6 +103,8 @@ function buildLotChangeList(before: IncludedLot, after: IncludedLot) {
   addChange("Harvest date", formatOptionalDate(before.harvestDate), formatOptionalDate(after.harvestDate));
   addChange("Notes", formatValue(before.notes), formatValue(after.notes));
   addChange("Crop image", before.imageUrl ? "Uploaded" : "Not added", after.imageUrl ? "Uploaded" : "Not added");
+  addChange("Transport included", before.transportIncluded ? "Yes" : "No", after.transportIncluded ? "Yes" : "No");
+  addChange("Pickup within 24 h", before.pickupWithin24h ? "Yes" : "No", after.pickupWithin24h ? "Yes" : "No");
 
   return changes.length > 0 ? changes : ["No visible field changed"];
 }
@@ -116,6 +118,8 @@ function buildLotAuditBody(lot: IncludedLot, changes: string[]) {
     `Quantity: ${formatValue(lot.quantityKg)} kg`,
     `Price: ৳${formatValue(lot.pricePerKg)}/kg`,
     `Grade: ${lot.grade}`,
+    `Transport included: ${lot.transportIncluded ? "Yes" : "No"}`,
+    `Pickup within 24 h: ${lot.pickupWithin24h ? "Yes" : "No"}`,
     `Status: ${formatLotStatus(lot.status)}`,
     `Changes: ${changes.join("; ")}`,
   ].join("\n");
@@ -176,9 +180,11 @@ export class LotsService {
         harvestDate: dto.harvestDate ? new Date(dto.harvestDate) : undefined,
         imageUrl: dto.imageUrl,
         notes: dto.notes,
+        pickupWithin24h: dto.pickupWithin24h ?? false,
         pricePerKg: new Prisma.Decimal(dto.pricePerKg),
         quantityKg: new Prisma.Decimal(dto.quantityKg),
         status: LotStatus.ACTIVE,
+        transportIncluded: dto.transportIncluded ?? false,
         upazilla: dto.upazilla,
       },
       include: lotInclude,
@@ -254,6 +260,14 @@ export class LotsService {
 
     if (dto.imageUrl !== undefined) {
       data.imageUrl = dto.imageUrl.trim() || null;
+    }
+
+    if (dto.transportIncluded !== undefined) {
+      data.transportIncluded = dto.transportIncluded;
+    }
+
+    if (dto.pickupWithin24h !== undefined) {
+      data.pickupWithin24h = dto.pickupWithin24h;
     }
 
     if (existingLot.status === LotStatus.DRAFT) {

@@ -41,7 +41,6 @@ import {
   monToKg,
   perKgToPerMon,
   perMonToPerKg,
-  pickupOptions,
   taka,
 } from "../../market/marketData";
 import { useMarketStore } from "../../store/useMarketStore";
@@ -72,7 +71,11 @@ type CropLotForm = {
   notes: string;
   pricePerKg: string;
   quantityKg: string;
+  transportIncluded: boolean;
+  pickupWithin24h: boolean;
 };
+
+type TextCropLotField = Exclude<keyof CropLotForm, "transportIncluded" | "pickupWithin24h">;
 
 const emptyForm: CropLotForm = {
   crop: "",
@@ -83,6 +86,8 @@ const emptyForm: CropLotForm = {
   notes: "",
   pricePerKg: "",
   quantityKg: "",
+  transportIncluded: false,
+  pickupWithin24h: false,
 };
 
 const farmerNavItems = [
@@ -133,6 +138,8 @@ function lotToForm(lot: BackendCropLot): CropLotForm {
     notes: lot.notes ?? "",
     pricePerKg: String(numericValue(lot.pricePerKg) || ""),
     quantityKg: String(numericValue(lot.quantityKg) || ""),
+    transportIncluded: Boolean(lot.transportIncluded),
+    pickupWithin24h: Boolean(lot.pickupWithin24h),
     upazilla,
   };
 }
@@ -169,7 +176,6 @@ export function PostCropPage({
   const rates = useMarketStore((state) => state.rates);
   const rateCrops = useMemo(() => Object.keys(rates).slice(0, 6), [rates]);
   const [step, setStep] = useState(1);
-  const [pickup, setPickup] = useState<string>(pickupOptions[0]);
 
   // The wizard speaks mon; the form and the backend keep kg, so the two stay in step here.
   const quantityMon = Math.round(kgToMon(Number(form.quantityKg) || 0));
@@ -321,11 +327,11 @@ export function PostCropPage({
     setStep((current) => Math.min(3, current + 1));
   };
 
-  const updateField = (field: keyof CropLotForm, value: string) => {
+  const updateField = (field: TextCropLotField, value: string) => {
     setForm((current) => ({ ...current, [field]: value, ...(field === "district" ? { upazilla: "" } : {}) }));
   };
 
-  const updateEditField = (field: keyof CropLotForm, value: string) => {
+  const updateEditField = (field: TextCropLotField, value: string) => {
     setEditForm((current) => ({ ...current, [field]: value, ...(field === "district" ? { upazilla: "" } : {}) }));
   };
 
@@ -340,8 +346,10 @@ export function PostCropPage({
     harvestDate: normalizeDateInput(source.harvestDate) || undefined,
     imageUrl,
     notes: source.notes.trim() || undefined,
+    pickupWithin24h: source.pickupWithin24h,
     pricePerKg: Number(source.pricePerKg),
     quantityKg: Number(source.quantityKg),
+    transportIncluded: source.transportIncluded,
     upazilla: source.upazilla.trim(),
   });
 
@@ -388,11 +396,7 @@ export function PostCropPage({
 
     (async () => {
       const uploadedCropImage = cropImageFile ? await uploadFile(accessToken, cropImageFile, "crop-lot-image") : null;
-      // Pickup readiness rides along in the notes so buyers see it on the lot page. The backend
-      // has no dedicated column for it yet.
-      const pickupNote = `${t("Pickup readiness")}: ${pickup}`;
-      const withPickup = { ...form, notes: form.notes.trim() ? `${form.notes.trim()}\n${pickupNote}` : pickupNote };
-      return createCropLot(accessToken, buildLotPayload(withPickup, uploadedCropImage?.url));
+      return createCropLot(accessToken, buildLotPayload(form, uploadedCropImage?.url));
     })()
       .then((lot) => {
         const normalizedLot = preserveFarmerLotStatus(lot);
@@ -400,7 +404,6 @@ export function PostCropPage({
         setForm(emptyForm);
         setCropImageFile(null);
         setStep(1);
-        setPickup(pickupOptions[0]);
         setSnackbar("Published to the marketplace");
       })
       .catch((apiError) => {
@@ -740,22 +743,30 @@ export function PostCropPage({
                       </em>
                     </div>
                   </FormGrid>
-                  <div className="wizard-grade-row">
-                    <span className="filter-eyebrow">{t("Pickup readiness")}</span>
-                    <div className="filter-pill-group" role="radiogroup" aria-label={t("Pickup readiness")}>
-                      {pickupOptions.map((option) => (
-                        <button
-                          aria-checked={pickup === option}
-                          className={pickup === option ? "filter-pill on" : "filter-pill"}
-                          key={option}
-                          role="radio"
-                          type="button"
-                          onClick={() => setPickup(option)}
-                        >
-                          {t(option)}
-                        </button>
-                      ))}
-                    </div>
+                  <div className="listing-logistics-options" role="group" aria-labelledby="listing-logistics-title">
+                    <span className="filter-eyebrow" id="listing-logistics-title">{t("Logistics")}</span>
+                    <label className="listing-logistics-option">
+                      <input
+                        checked={form.transportIncluded}
+                        onChange={(event) => setForm((current) => ({ ...current, transportIncluded: event.target.checked }))}
+                        type="checkbox"
+                      />
+                      <span>
+                        <strong>{t("Transport included")}</strong>
+                        <small>{t("I will arrange transport to the buyer.")}</small>
+                      </span>
+                    </label>
+                    <label className="listing-logistics-option">
+                      <input
+                        checked={form.pickupWithin24h}
+                        onChange={(event) => setForm((current) => ({ ...current, pickupWithin24h: event.target.checked }))}
+                        type="checkbox"
+                      />
+                      <span>
+                        <strong>{t("Pickup within 24 h")}</strong>
+                        <small>{t("A buyer or carrier can collect from my farm within 24 hours.")}</small>
+                      </span>
+                    </label>
                   </div>
 
                   <label className="full-field">
@@ -769,7 +780,7 @@ export function PostCropPage({
                     </strong>
                     <span>
                       {v(taka(pricePerMon))} / {t("mon")} · {t("total")}{" "}
-                      {v(taka(pricePerMon * quantityMon))} · {t("pickup")} {t(pickup).toLowerCase()} ·{" "}
+                      {v(taka(pricePerMon * quantityMon))} · {t(form.transportIncluded ? "Transport included" : form.pickupWithin24h ? "Pickup within 24 h" : "Pickup details unavailable")} ·{" "}
                       {form.upazilla ? `${t(form.upazilla)}, ` : ""}
                       {t(form.district || "-")}
                     </span>
@@ -1036,6 +1047,31 @@ export function PostCropPage({
                   </div>
                 </div>
               </FormGrid>
+              <div className="listing-logistics-options edit-listing-logistics" role="group" aria-labelledby="edit-listing-logistics-title">
+                <span className="filter-eyebrow" id="edit-listing-logistics-title">{t("Logistics")}</span>
+                <label className="listing-logistics-option">
+                  <input
+                    checked={editForm.transportIncluded}
+                    onChange={(event) => setEditForm((current) => ({ ...current, transportIncluded: event.target.checked }))}
+                    type="checkbox"
+                  />
+                  <span>
+                    <strong>{t("Transport included")}</strong>
+                    <small>{t("I will arrange transport to the buyer.")}</small>
+                  </span>
+                </label>
+                <label className="listing-logistics-option">
+                  <input
+                    checked={editForm.pickupWithin24h}
+                    onChange={(event) => setEditForm((current) => ({ ...current, pickupWithin24h: event.target.checked }))}
+                    type="checkbox"
+                  />
+                  <span>
+                    <strong>{t("Pickup within 24 h")}</strong>
+                    <small>{t("A buyer or carrier can collect from my farm within 24 hours.")}</small>
+                  </span>
+                </label>
+              </div>
               <label className="full-field">
                 <span>{t("Notes")}</span>
                 <textarea value={editForm.notes} onChange={(event) => updateEditField("notes", event.target.value)} />

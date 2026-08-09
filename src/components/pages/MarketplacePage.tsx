@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowUpDown, Check, Inbox, Leaf, PenLine, Search, SlidersHorizontal, Star, Truck } from "lucide-react";
 import { useLanguage, useTranslate, useValueText } from "../../i18n";
@@ -63,7 +63,13 @@ export function MarketplacePage({
 
   const marketLots = useMarketLots(filteredLots);
   const bounds = useMemo(() => priceBounds(marketLots), [marketLots]);
-  const maxPrice = filters.maxPrice ?? bounds.max;
+  const selectedMinPrice = Math.min(Math.max(filters.minPrice ?? bounds.min, bounds.min), bounds.max - PRICE_STEP);
+  const selectedMaxPrice = Math.max(Math.min(filters.maxPrice ?? bounds.max, bounds.max), selectedMinPrice + PRICE_STEP);
+  const priceSpan = Math.max(PRICE_STEP, bounds.max - bounds.min);
+  const rangeStyle = {
+    "--range-end": `${((selectedMaxPrice - bounds.min) / priceSpan) * 100}%`,
+    "--range-start": `${((selectedMinPrice - bounds.min) / priceSpan) * 100}%`,
+  } as CSSProperties;
 
   const cropCounts = useMemo(() => {
     const counts = new Map<string, number>();
@@ -78,9 +84,17 @@ export function MarketplacePage({
   const visibleCount = useMemo(() => marketLots.filter((lot) => lot.visible).length, [marketLots]);
   const cropOptions = useMemo(() => ["All crops", ...Array.from(cropCounts.keys()).sort()], [cropCounts]);
 
+  const effectiveFilters = useMemo(
+    () => ({
+      ...filters,
+      maxPrice: filters.maxPrice === null ? null : selectedMaxPrice,
+      minPrice: filters.minPrice === null ? null : selectedMinPrice,
+    }),
+    [filters, selectedMaxPrice, selectedMinPrice],
+  );
   const results = useMemo(
-    () => sortLots(applyMarketFilters(marketLots, { ...filters, maxPrice }), filters.sort),
-    [filters, marketLots, maxPrice],
+    () => sortLots(applyMarketFilters(marketLots, effectiveFilters), filters.sort),
+    [effectiveFilters, filters.sort, marketLots],
   );
 
   const totalPages = Math.max(1, Math.ceil(results.length / MARKETPLACE_PAGE_SIZE));
@@ -182,22 +196,40 @@ export function MarketplacePage({
         </div>
 
         <div className="filter-section">
-          <div className="filter-label-row">
-            <span className="filter-eyebrow" id="market-price-label">
-              {t("Max price / mon")}
-            </span>
-            <strong className="mono-figure">{v(taka(maxPrice))}</strong>
+          <span className="filter-eyebrow" id="market-price-label">
+            {t("Price per mon")}
+          </span>
+          <div className="dual-range" style={rangeStyle}>
+            <span className="dual-range-track" aria-hidden="true" />
+            <input
+              aria-label={t("Minimum price per mon")}
+              className="dual-range-input dual-range-min"
+              max={bounds.max}
+              min={bounds.min}
+              onChange={(event) =>
+                setFilter("minPrice", Math.min(Number(event.target.value), selectedMaxPrice - PRICE_STEP))
+              }
+              step={PRICE_STEP}
+              type="range"
+              value={selectedMinPrice}
+            />
+            <input
+              aria-label={t("Maximum price per mon")}
+              className="dual-range-input dual-range-max"
+              max={bounds.max}
+              min={bounds.min}
+              onChange={(event) =>
+                setFilter("maxPrice", Math.max(Number(event.target.value), selectedMinPrice + PRICE_STEP))
+              }
+              step={PRICE_STEP}
+              type="range"
+              value={selectedMaxPrice}
+            />
           </div>
-          <input
-            aria-labelledby="market-price-label"
-            className="filter-range"
-            max={bounds.max}
-            min={bounds.min}
-            onChange={(event) => setFilter("maxPrice", Number(event.target.value))}
-            step={PRICE_STEP}
-            type="range"
-            value={maxPrice}
-          />
+          <div className="dual-range-values" aria-labelledby="market-price-label">
+            <strong className="mono-figure">{v(taka(selectedMinPrice))}</strong>
+            <strong className="mono-figure">{v(taka(selectedMaxPrice))}</strong>
+          </div>
         </div>
 
         <div className="filter-section">
@@ -231,6 +263,58 @@ export function MarketplacePage({
               <span className="switch-knob" />
             </span>
             {t("Verified farms only")}
+          </button>
+          <button
+            aria-checked={filters.hasFarmPhotos}
+            className="filter-switch"
+            role="switch"
+            type="button"
+            onClick={() => setFilter("hasFarmPhotos", !filters.hasFarmPhotos)}
+          >
+            <span className={filters.hasFarmPhotos ? "switch-track on" : "switch-track"} aria-hidden="true">
+              <span className="switch-knob" />
+            </span>
+            {t("Has farm photos")}
+          </button>
+          <button
+            aria-checked={filters.rating45Only}
+            className="filter-switch"
+            role="switch"
+            type="button"
+            onClick={() => setFilter("rating45Only", !filters.rating45Only)}
+          >
+            <span className={filters.rating45Only ? "switch-track on" : "switch-track"} aria-hidden="true">
+              <span className="switch-knob" />
+            </span>
+            {t("Rating 4.5 ★ and up")}
+          </button>
+        </div>
+
+        <div className="filter-section">
+          <span className="filter-eyebrow">{t("Logistics")}</span>
+          <button
+            aria-checked={filters.transportIncluded}
+            className={filters.transportIncluded ? "filter-check on" : "filter-check"}
+            role="checkbox"
+            type="button"
+            onClick={() => setFilter("transportIncluded", !filters.transportIncluded)}
+          >
+            <span className="filter-box" aria-hidden="true">
+              {filters.transportIncluded ? <Check size={12} /> : null}
+            </span>
+            {t("Transport included")}
+          </button>
+          <button
+            aria-checked={filters.pickupWithin24h}
+            className={filters.pickupWithin24h ? "filter-check on" : "filter-check"}
+            role="checkbox"
+            type="button"
+            onClick={() => setFilter("pickupWithin24h", !filters.pickupWithin24h)}
+          >
+            <span className="filter-box" aria-hidden="true">
+              {filters.pickupWithin24h ? <Check size={12} /> : null}
+            </span>
+            {t("Pickup within 24 h")}
           </button>
         </div>
       </aside>

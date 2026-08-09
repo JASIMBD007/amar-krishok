@@ -152,10 +152,12 @@ export function FarmerListingsVsMarket({ lots }: { lots: FarmerLotSummary[] }) {
           farmer: "",
           farmingSince: 2020,
           grade: lot.grade.replace(/^Grade\s+/i, "") || "B",
+          hasFarmPhotos: false,
           id: lot.id,
           pricePerMon: perKgToPerMon(lot.pricePerKg),
           quantityMon: Math.max(1, Math.round(kgToMon(lot.quantityKg))),
           rating: 0,
+          pickupWithin24h: false,
           transportIncluded: false,
         };
         return { ...decorateLot(source, { rates }), active: lot.active };

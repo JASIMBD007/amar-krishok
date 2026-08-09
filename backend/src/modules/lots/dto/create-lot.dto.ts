@@ -1,5 +1,5 @@
 import { LotStatus } from "@prisma/client";
-import { IsDateString, IsIn, IsNotEmpty, IsNumber, IsOptional, IsString, Min } from "class-validator";
+import { IsBoolean, IsDateString, IsIn, IsNotEmpty, IsNumber, IsOptional, IsString, Min } from "class-validator";
 
 export class CreateLotDto {
   @IsString()
@@ -38,6 +38,14 @@ export class CreateLotDto {
   @IsString()
   @IsOptional()
   imageUrl?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  transportIncluded?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  pickupWithin24h?: boolean;
 }
 
 export class UpdateLotDto {
@@ -78,6 +86,14 @@ export class UpdateLotDto {
   @IsString()
   @IsOptional()
   imageUrl?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  transportIncluded?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  pickupWithin24h?: boolean;
 }
 
 export class UpdateLotStatusDto {

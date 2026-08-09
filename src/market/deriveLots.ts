@@ -60,6 +60,7 @@ export function toMarketLotSource(lot: CropLot): MarketLotSource {
     farmerStatus: lot.farmerStatus,
     farmingSince: lot.farmingSince ?? 2006 + (seed % 18),
     grade: lot.grade.replace(/^Grade\s+/i, "") || "B",
+    hasFarmPhotos: lot.hasFarmPhotos ?? Boolean(lot.image),
     harvest: lot.harvest,
     id: lot.id,
     image: lot.image,
@@ -67,8 +68,9 @@ export function toMarketLotSource(lot: CropLot): MarketLotSource {
     pricePerMon: perKgToPerMon(pricePerKg),
     quantityMon: Math.max(1, Math.round(kgToMon(quantityKg))),
     rating: lot.rating ?? Math.round((41 + (seed % 9)) / 10 * 10) / 10,
+    pickupWithin24h: lot.pickupWithin24h ?? false,
     status: lot.status,
-    transportIncluded: lot.transportIncluded ?? seed % 2 === 0,
+    transportIncluded: lot.transportIncluded ?? false,
     upazilla: lot.upazilla,
   };
 }
@@ -95,7 +97,11 @@ export function decorateLot(source: MarketLotSource, context: { rates: Record<st
     deltaShort: signedPercent(delta),
     farmerKey,
     initials: farmerInitials(source.farmer),
-    logisticsLabel: source.transportIncluded ? "Transport incl." : "Pickup 24 h",
+    logisticsLabel: source.transportIncluded
+      ? "Transport incl."
+      : source.pickupWithin24h
+        ? "Pickup 24 h"
+        : "Pickup details unavailable",
     priceLabel: taka(source.pricePerMon),
     pricePerKg: perMonToPerKg(source.pricePerMon),
     quantityKg: monToKg(source.quantityMon),
@@ -138,7 +144,27 @@ export function applyMarketFilters(lots: MarketLot[], filters: MarketFilters) {
       return false;
     }
 
+    if (filters.minPrice !== null && lot.pricePerMon < filters.minPrice) {
+      return false;
+    }
+
     if (filters.verifiedOnly && !lot.verified) {
+      return false;
+    }
+
+    if (filters.hasFarmPhotos && !lot.hasFarmPhotos) {
+      return false;
+    }
+
+    if (filters.rating45Only && lot.rating < 4.5) {
+      return false;
+    }
+
+    if (filters.transportIncluded && !lot.transportIncluded) {
+      return false;
+    }
+
+    if (filters.pickupWithin24h && !lot.pickupWithin24h) {
       return false;
     }
 

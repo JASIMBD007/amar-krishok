@@ -143,13 +143,16 @@ function toMarketplaceLot(lot: BackendCropLot): CropLot {
     farmer: lot.farmer.name,
     grade: lot.grade.replace(/^Grade\s+/i, ""),
     harvest: formatBackendHarvestDate(lot.harvestDate),
+    hasFarmPhotos: Boolean(lot.imageUrl),
     id: lot.id,
     image: lot.imageUrl || staticLot?.image || "/assets/crops/rice.png",
     postedAt: lot.createdAt,
     pricePerKg: numericBackendValue(lot.pricePerKg),
     quantity: formatBackendQuantity(lot.quantityKg),
     quantityKg: numericBackendValue(lot.quantityKg),
+    pickupWithin24h: Boolean(lot.pickupWithin24h),
     status: lot.status,
+    transportIncluded: Boolean(lot.transportIncluded),
     upazilla: lot.upazilla ?? lot.farmer.upazilla ?? staticLot?.upazilla,
   };
 }
