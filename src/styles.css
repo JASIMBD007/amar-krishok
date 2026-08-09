@@ -12697,6 +12697,16 @@ canvas {
   .market-layout {
     max-width: 1536px;
   }
+  /* The four-column marketplace uses a wider grid than the other public
+     screens. Keep its shared header, ticker and footer on that same grid so
+     the page does not jump sideways below the navigation. */
+  .marketplace-shell .site-header {
+    padding-inline: max(24px, calc((100% - 1536px) / 2 + 24px));
+  }
+  .marketplace-shell .rate-ticker-inner,
+  .marketplace-shell .site-footer-inner {
+    max-width: 1536px;
+  }
   .lot-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
