@@ -14451,3 +14451,76 @@ canvas {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* ---- Post a crop, step 2: the fields as the v2 handoff draws them ---- */
+/* The stepper is one outlined box: white controls, thin dividers, a seamless middle. */
+.post-crop-card .qty-stepper {
+  border-color: var(--border-strong);
+}
+.post-crop-card .qty-stepper-value {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px;
+  /* The buttons already carry the dividers; a border here would double them. */
+  border-inline: 0;
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 600;
+}
+.post-crop-card .qty-stepper-value input {
+  min-width: 1ch;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: right;
+}
+.post-crop-card .qty-stepper-value input:focus {
+  outline: none;
+}
+/* Number spinners would break the "120 mon" reading. */
+.post-crop-card .qty-stepper-value input::-webkit-outer-spin-button,
+.post-crop-card .qty-stepper-value input::-webkit-inner-spin-button {
+  margin: 0;
+  appearance: none;
+}
+.post-crop-card .qty-stepper-value input {
+  appearance: textfield;
+}
+/* The ask is the field that decides whether the lot sells, and v2 outlines it in green. */
+.post-crop-card .price-input {
+  gap: 8px;
+  padding: 10px 12px;
+  border: 2px solid var(--ak-green);
+}
+.post-crop-card .price-input input {
+  min-height: 0;
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 600;
+}
+.post-crop-card .price-input:focus-within {
+  outline: 3px solid var(--ak-green-soft);
+  border-color: var(--ak-green);
+}
+/* Market check keeps one neutral surface — the pill carries the verdict, not the panel. */
+.post-crop-card .market-check,
+.post-crop-card .market-check.fair,
+.post-crop-card .market-check.above,
+.post-crop-card .market-check.below {
+  gap: 12px;
+  padding: 18px;
+  border-color: var(--border);
+  background: var(--bg);
+}
+.post-crop-card .market-check-bar {
+  height: 8px;
+  background: linear-gradient(90deg, #fee2e2 0%, #dcfce7 30%, #dcfce7 70%, #fee2e2 100%);
+}
+.post-crop-card .market-check-marker {
+  top: -3px;
+  height: 14px;
+}

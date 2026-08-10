@@ -325,14 +325,20 @@ export function PostCropPage({ user }: { user: AuthUser | null }) {
                   >
                     <Minus aria-hidden="true" size={16} />
                   </button>
-                  <input
-                    aria-label={t("Quantity (mon)")}
-                    className="mono-figure"
-                    min="1"
-                    onChange={(event) => setQuantityMon(Math.max(0, Number(event.target.value) || 0))}
-                    type="number"
-                    value={quantityMon || ""}
-                  />
+                  {/* The unit sits beside the field, so the box reads "120 mon" like the design
+                      while the number itself stays typeable. Monospace makes the ch width exact. */}
+                  <div className="qty-stepper-value">
+                    <input
+                      aria-label={t("Quantity (mon)")}
+                      className="mono-figure"
+                      min="1"
+                      onChange={(event) => setQuantityMon(Math.max(0, Number(event.target.value) || 0))}
+                      style={{ width: `${Math.max(1, String(quantityMon || "").length)}ch` }}
+                      type="number"
+                      value={quantityMon || ""}
+                    />
+                    <span>{t("mon")}</span>
+                  </div>
                   <button aria-label={t("Increase quantity")} type="button" onClick={() => setQuantityMon((current) => current + 10)}>
                     <Plus aria-hidden="true" size={16} />
                   </button>
