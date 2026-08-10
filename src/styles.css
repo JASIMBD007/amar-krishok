@@ -13889,7 +13889,9 @@ canvas {
   justify-content: space-between;
   gap: 16px;
 }
-.edit-listing-head > div {
+/* Only the title block stacks. The actions div is also a direct child, and without :first-child
+   it inherited flex-direction: column and stood the two buttons on top of each other. */
+.edit-listing-head > div:first-child {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -14573,9 +14575,12 @@ canvas {
 }
 /* Pause and Save sit side by side in v2, level with the foot of the title block. */
 .edit-listing-actions {
+  flex-direction: row;
   flex-wrap: nowrap;
+  align-items: center;
 }
 .edit-secondary-button,
 .edit-primary-button {
+  width: auto;
   white-space: nowrap;
 }
