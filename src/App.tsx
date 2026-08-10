@@ -831,7 +831,7 @@ export default function App() {
           path="/farmer/post"
           element={
             <ProtectedRoute allowedRoles={["farmer", "admin"]} user={user} t={t}>
-              <PostCropPage user={user} onProfileSaved={handleProfileSaved} />
+              <PostCropPage user={user} />
             </ProtectedRoute>
           }
         />
