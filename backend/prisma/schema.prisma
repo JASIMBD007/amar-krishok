@@ -455,9 +455,25 @@ model CropLot {
   logisticsJobs     LogisticsJob[]
   qualityChecks     QualityCheck[]
   offers            LotOffer[]
+  photos            CropLotPhoto[]
 
   @@index([cropId, districtId, status])
   @@index([farmerId, status])
+}
+
+/// A photo on a lot. The farmer orders them and picks which one buyers see first, so trust in a
+/// listing does not hinge on whichever image happened to upload first.
+model CropLotPhoto {
+  id        String   @id @default(cuid())
+  cropLotId String
+  url       String
+  caption   String?
+  sortOrder Int      @default(0)
+  isCover   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  cropLot   CropLot  @relation(fields: [cropLotId], references: [id], onDelete: Cascade)
+
+  @@index([cropLotId, sortOrder])
 }
 
 /// A buyer's counter-offer on a lot. The farmer accepts or declines; no money moves either way.

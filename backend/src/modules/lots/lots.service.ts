@@ -5,10 +5,12 @@ import { AuthenticatedUser } from "../auth/types/authenticated-user";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateLotDto, UpdateLotDto } from "./dto/create-lot.dto";
+import { UpdateLotPhotoDto } from "./dto/lot-photo.dto";
 
 const lotInclude = {
   crop: true,
   district: true,
+  photos: { orderBy: { sortOrder: "asc" } },
   farmer: {
     select: {
       createdAt: true,
@@ -32,6 +34,7 @@ const lotInclude = {
 const publicLotInclude = {
   crop: true,
   district: true,
+  photos: { orderBy: { sortOrder: "asc" } },
   farmer: {
     select: {
       createdAt: true,
@@ -355,6 +358,83 @@ export class LotsService {
     });
 
     return lot;
+  }
+
+  /** Photos belong to the farmer who owns the lot; staff may also manage them. */
+  async addPhoto(lotId: string, url: string, caption: string | undefined, user: AuthenticatedUser) {
+    const lot = await this.findEditableLot(lotId, user);
+    const count = await this.prisma.cropLotPhoto.count({ where: { cropLotId: lot.id } });
+
+    if (count >= 6) {
+      throw new BadRequestException("A listing can carry six photos at most.");
+    }
+
+    await this.prisma.cropLotPhoto.create({
+      data: {
+        caption: caption?.trim() || null,
+        cropLotId: lot.id,
+        // The first photo on a lot becomes its cover, so a listing always has one.
+        isCover: count === 0,
+        sortOrder: count,
+        url,
+      },
+    });
+
+    return this.prisma.cropLot.findUnique({ include: lotInclude, where: { id: lot.id } });
+  }
+
+  async updatePhoto(lotId: string, photoId: string, dto: UpdateLotPhotoDto, user: AuthenticatedUser) {
+    const lot = await this.findEditableLot(lotId, user);
+    const photo = await this.prisma.cropLotPhoto.findUnique({ where: { id: photoId } });
+
+    if (!photo || photo.cropLotId !== lot.id) {
+      throw new NotFoundException("Photo not found on this listing.");
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      if (dto.isCover) {
+        // Exactly one cover per lot.
+        await tx.cropLotPhoto.updateMany({ data: { isCover: false }, where: { cropLotId: lot.id } });
+      }
+
+      await tx.cropLotPhoto.update({
+        data: {
+          caption: dto.caption === undefined ? undefined : dto.caption.trim() || null,
+          isCover: dto.isCover ?? undefined,
+          sortOrder: dto.sortOrder ?? undefined,
+        },
+        where: { id: photoId },
+      });
+    });
+
+    return this.prisma.cropLot.findUnique({ include: lotInclude, where: { id: lot.id } });
+  }
+
+  async removePhoto(lotId: string, photoId: string, user: AuthenticatedUser) {
+    const lot = await this.findEditableLot(lotId, user);
+    const photo = await this.prisma.cropLotPhoto.findUnique({ where: { id: photoId } });
+
+    if (!photo || photo.cropLotId !== lot.id) {
+      throw new NotFoundException("Photo not found on this listing.");
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.cropLotPhoto.delete({ where: { id: photoId } });
+      const remaining = await tx.cropLotPhoto.findMany({
+        orderBy: { sortOrder: "asc" },
+        where: { cropLotId: lot.id },
+      });
+
+      // Close the gap in the ordering, and hand the cover on if it was the one removed.
+      for (const [index, item] of remaining.entries()) {
+        await tx.cropLotPhoto.update({
+          data: { isCover: photo.isCover ? index === 0 : item.isCover, sortOrder: index },
+          where: { id: item.id },
+        });
+      }
+    });
+
+    return this.prisma.cropLot.findUnique({ include: lotInclude, where: { id: lot.id } });
   }
 
   private async findEditableLot(id: string, user: AuthenticatedUser) {

@@ -104,6 +104,7 @@ type ApiLotFarmer = Omit<ApiUser, "phone"> & {
 };
 
 export type BackendCropLot = {
+  photos?: Array<{ id: string; url: string; caption: string | null; sortOrder: number; isCover: boolean }>;
   id: string;
   crop: { name: string };
   district: { name: string };
@@ -793,4 +794,40 @@ export async function updateBackendVerification(accessToken: string, id: string,
     method: "PATCH",
   });
   return toRegisteredAccount(user);
+}
+
+export type BackendLotPhoto = {
+  id: string;
+  url: string;
+  caption: string | null;
+  sortOrder: number;
+  isCover: boolean;
+};
+
+export function addCropLotPhoto(accessToken: string, lotId: string, payload: { caption?: string; url: string }) {
+  return apiRequest<BackendCropLot>(`/api/lots/${lotId}/photos`, {
+    accessToken,
+    body: JSON.stringify(payload),
+    method: "POST",
+  });
+}
+
+export function updateCropLotPhoto(
+  accessToken: string,
+  lotId: string,
+  photoId: string,
+  payload: { caption?: string; isCover?: boolean; sortOrder?: number },
+) {
+  return apiRequest<BackendCropLot>(`/api/lots/${lotId}/photos/${photoId}`, {
+    accessToken,
+    body: JSON.stringify(payload),
+    method: "PATCH",
+  });
+}
+
+export function removeCropLotPhoto(accessToken: string, lotId: string, photoId: string) {
+  return apiRequest<BackendCropLot>(`/api/lots/${lotId}/photos/${photoId}`, {
+    accessToken,
+    method: "DELETE",
+  });
 }
