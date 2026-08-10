@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Camera, ImageIcon, Leaf, Minus, Plus, X } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Camera, ImageIcon, Leaf, Minus, Plus, X } from "lucide-react";
 import {
   ApiRequestError,
   addCropLotPhoto,
@@ -157,6 +157,13 @@ export function PostCropPage({ user }: { user: AuthUser | null }) {
     const accessToken = user?.accessToken;
     if (!accessToken) {
       setError("Please sign in again to post a crop.");
+      return;
+    }
+
+    // A lot without a photo is one buyers scroll past, so the listing cannot go out without one.
+    // The backend rejects it too; this is the message that explains why before the round trip.
+    if (photos.length === 0) {
+      setError("Add at least one photo before publishing.");
       return;
     }
 
@@ -428,6 +435,13 @@ export function PostCropPage({ user }: { user: AuthUser | null }) {
               })}
             </div>
 
+            {photos.length === 0 ? (
+              <p className="photo-warning">
+                <AlertTriangle aria-hidden="true" size={16} />
+                {t("Add at least one photo. Buyers skip listings they cannot see.")}
+              </p>
+            ) : null}
+
             <div className="post-crop-field">
               <span className="post-crop-label">{t("Pickup readiness")}</span>
               <div className="filter-pill-group" role="radiogroup" aria-label={t("Pickup readiness")}>
@@ -463,7 +477,12 @@ export function PostCropPage({ user }: { user: AuthUser | null }) {
               <button className="secondary-button" type="button" disabled={isPublishing} onClick={() => setStep(2)}>
                 {t("Back")}
               </button>
-              <button className="primary-button danger-button" type="button" disabled={isPublishing} onClick={publish}>
+              <button
+                className="primary-button danger-button"
+                type="button"
+                disabled={isPublishing || photos.length === 0}
+                onClick={publish}
+              >
                 {t(isPublishing ? "Publishing" : "Publish listing")}
               </button>
             </div>

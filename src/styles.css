@@ -14584,3 +14584,9 @@ canvas {
   width: auto;
   white-space: nowrap;
 }
+
+/* Publish stays visibly out of reach until the listing has a photo. */
+.post-crop-actions .primary-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

@@ -1212,6 +1212,10 @@ const bn: Record<string, string> = {
   offers: "অফার",
   "vs. today's": "আজকের",
   "Remove photo": "ছবি সরান",
+  "Add at least one photo before publishing.": "প্রকাশ করার আগে অন্তত একটি ছবি যোগ করুন।",
+  "Add at least one photo. Buyers skip listings they cannot see.":
+    "অন্তত একটি ছবি যোগ করুন। ছবি না থাকলে ক্রেতারা লট এড়িয়ে যান।",
+  "A listing needs at least one photo.": "একটি লটের জন্য অন্তত একটি ছবি প্রয়োজন।",
   "Lots with three or more photos sell about 30 % faster.": "তিন বা তার বেশি ছবি থাকলে লট প্রায় ৩০ % দ্রুত বিক্রি হয়।",
   "Above the fair range. Lots priced this high usually sit unsold for over a week.":
     "ন্যায্য সীমার উপরে। এত দাম হলে লট সাধারণত এক সপ্তাহের বেশি অবিক্রীত থাকে।",

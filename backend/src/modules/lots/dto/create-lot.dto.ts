@@ -35,9 +35,13 @@ export class CreateLotDto {
   @IsOptional()
   notes?: string;
 
+  /**
+   * A listing needs at least one photo. The client uploads its photos first and sends the cover
+   * here, so a lot can never reach the marketplace with nothing for a buyer to look at.
+   */
   @IsString()
-  @IsOptional()
-  imageUrl?: string;
+  @IsNotEmpty({ message: "A listing needs at least one photo." })
+  imageUrl!: string;
 
   @IsBoolean()
   @IsOptional()
