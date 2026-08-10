@@ -1278,6 +1278,32 @@ const bn: Record<string, string> = {
   "Support scope · escrow actions hidden": "সাপোর্ট সীমা · এসক্রো পদক্ষেপ লুকানো",
   "Loading document...": "ডকুমেন্ট লোড হচ্ছে...",
 
+  // Edit listing screen.
+  "Edit listing": "লিস্টিং সম্পাদনা",
+  "Changes go live at once. Buyers watching this crop get an SMS if the price drops.": "পরিবর্তন সঙ্গে সঙ্গেই কার্যকর হয়। এই ফসলে নজর রাখা ক্রেতারা দাম কমলে এসএমএস পান।",
+  "Crop & price": "ফসল ও দাম",
+  "Ask ৳ / mon": "চাহিদা ৳ / মন",
+  "Notes for buyers": "ক্রেতাদের জন্য নোট",
+  "Price check": "দাম যাচাই",
+  "Today's district rate per mon": "আজকের জেলার দর প্রতি মন",
+  "Inside the fair range. Buyers see a green badge on this lot.": "ন্যায্য সীমার ভেতরে। ক্রেতারা এই লটে সবুজ ব্যাজ দেখবেন।",
+  "vs. today's rate for": "আজকের দরের তুলনায়",
+  "Lot value": "লটের মূল্য",
+  "Before the": "বাদ দেওয়ার আগে",
+  "platform fee": "প্ল্যাটফর্ম ফি",
+  "Photos": "ছবি",
+  "photos": "ছবি",
+  "of": "এর",
+  "Add photo": "ছবি যোগ করুন",
+  "COVER": "কভার",
+  "Set cover": "কভার করুন",
+  "Move earlier": "আগে সরান",
+  "Move later": "পরে সরান",
+  "Delete photo": "ছবি মুছুন",
+  "No photos yet. Buyers trust a listing with real farm photos.": "এখনো কোনো ছবি নেই। আসল খামারের ছবি থাকলে ক্রেতারা বেশি ভরসা করেন।",
+  "Listing not found": "লিস্টিং পাওয়া যায়নি",
+  "Loading this listing...": "লিস্টিং লোড হচ্ছে...",
+
 };
 
 export const LanguageContext = React.createContext<Language>(DEFAULT_LOCALE);

@@ -111,7 +111,7 @@ export function FarmerDeskPage({ user }: { user: AuthUser | null }) {
       <div className="farmer-desk-columns">
         <FarmerListingsVsMarket
           lots={summaries}
-          onEditLot={(id) => navigate(`/farmer/post?editLot=${encodeURIComponent(id)}`)}
+          onEditLot={(id) => navigate(`/farmer/listings/${encodeURIComponent(id)}`)}
           onPostCrop={() => navigate("/farmer/post")}
         />
         <FarmerOffersPanel user={user} />

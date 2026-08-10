@@ -1,6 +1,7 @@
 export { AdminPage } from "./AdminPage";
 export { LoginPage, RegisterPage } from "./AuthPages";
 export { CheckoutPage } from "./CheckoutPage";
+export { EditListingPage } from "./EditListingPage";
 export { FarmerDeskPage } from "./FarmerDeskPage";
 export { HomePage } from "./HomePage";
 export { LotDetailPage } from "./LotDetailPage";

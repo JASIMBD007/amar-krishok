@@ -32,6 +32,7 @@ import { lots, routeByView, serviceDistricts } from "./data";
 import {
   AdminPage,
   CheckoutPage,
+  EditListingPage,
   FarmerDeskPage,
   HomePage,
   LotDetailPage,
@@ -814,6 +815,14 @@ export default function App() {
           element={
             <ProtectedRoute allowedRoles={["farmer", "admin"]} user={user} t={t}>
               <FarmerDeskPage user={user} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/farmer/listings/:lotId"
+          element={
+            <ProtectedRoute allowedRoles={["farmer", "admin"]} user={user} t={t}>
+              <EditListingPage user={user} />
             </ProtectedRoute>
           }
         />
