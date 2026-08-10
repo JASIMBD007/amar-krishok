@@ -13544,3 +13544,197 @@ canvas {
     width: 100%;
   }
 }
+
+/* =====================================================================
+   Farmer desk and My orders, matched to the v2 platform handoff.
+   Values read from the v2 prototype's inline styles.
+   ===================================================================== */
+
+/* KPI cards: 232px minimum, 18px padding, 28px mono values. */
+.farmer-escrow-grid {
+  grid-template-columns: repeat(auto-fit, minmax(232px, 1fr));
+  gap: 14px;
+}
+.farmer-escrow-grid .stat-card,
+.farmer-escrow-grid .kpi-card {
+  gap: 7px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+.farmer-escrow-grid .kpi-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+.farmer-escrow-grid .kpi-value {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.farmer-escrow-grid .kpi-detail {
+  font-size: 12px;
+  color: var(--fg-muted);
+}
+/* Withdraw sits inside its card, sized to its text. */
+.withdraw-button {
+  align-self: flex-start;
+  width: auto;
+  min-height: 0;
+  margin-top: 0;
+  padding: 9px 13px;
+  border-radius: 6px;
+  background: var(--ak-green);
+  font-size: 13px;
+  font-weight: 600;
+}
+.withdraw-button:hover {
+  background: var(--ak-green-deep);
+}
+
+/* Listings table gains an Edit column and pill statuses. */
+.listing-vs-market-head,
+.listing-vs-market-row {
+  grid-template-columns: 1fr 120px 130px 110px 96px;
+  gap: 0 16px;
+  padding: 14px 18px;
+}
+.listing-vs-market-head {
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+.listing-vs-market-head > :nth-child(n + 2),
+.listing-vs-market-row > :nth-child(n + 2) {
+  text-align: right;
+}
+.listing-vs-market-row {
+  border-bottom: 1px solid var(--surface-sunken);
+  font-size: 14px;
+}
+.listing-vs-market-row .mono-figure {
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+.listing-vs-market-row .delta-pill {
+  margin-left: auto;
+}
+.listing-status-pill {
+  display: inline-flex;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.listing-status-pill.live {
+  color: var(--mk-good);
+  background: var(--mk-good-soft);
+}
+.listing-status-pill.paused {
+  color: var(--mk-warn);
+  background: var(--mk-warn-soft);
+}
+.listing-vs-market-edit {
+  display: flex;
+  justify-content: flex-end;
+}
+.listing-edit-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 11px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--fg-subtle);
+  font-size: 12px;
+  font-weight: 600;
+}
+.listing-edit-button:hover {
+  background: var(--bg);
+}
+
+/* Offers panel. */
+.offer-item {
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+}
+.offer-item-price {
+  align-items: baseline;
+  gap: 9px;
+}
+.offer-item-actions .primary-button {
+  flex: 1.3;
+  min-height: 0;
+  padding: 9px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.offer-item-actions .secondary-button {
+  flex: 1;
+  min-height: 0;
+  padding: 9px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* My orders: outlined Track action and a roomier empty state. */
+.order-table-row .secondary-button {
+  min-height: 0;
+  padding: 8px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  box-shadow: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg-subtle);
+}
+.order-table-row > :nth-child(5) {
+  font-size: 13px;
+  color: var(--fg-subtle);
+}
+.orders-page .empty-state {
+  gap: 12px;
+  padding: 48px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+.orders-page .empty-state strong {
+  font-size: 16px;
+  font-weight: 600;
+}
+.orders-page .empty-state .primary-button {
+  min-height: 0;
+  margin-top: 4px;
+  padding: 11px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .listing-vs-market-head {
+    display: none;
+  }
+  .listing-vs-market-row > :nth-child(n + 2) {
+    text-align: left;
+  }
+  .listing-vs-market-edit {
+    justify-content: flex-start;
+  }
+  .listing-edit-button {
+    width: 100%;
+    min-height: 44px;
+    justify-content: center;
+  }
+}

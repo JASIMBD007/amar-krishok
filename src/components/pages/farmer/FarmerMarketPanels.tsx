@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { BadgeCheck, Clock3, Handshake, Sprout, TrendingUp, WalletCards, X } from "lucide-react";
+import { BadgeCheck, Clock3, Handshake, Pencil, Sprout, TrendingUp, WalletCards, X } from "lucide-react";
 import { ApiRequestError } from "../../../api/auth";
 import { fetchLotOffers, requestPayout, respondToLotOffer, type BackendLotOffer } from "../../../api/market";
 import { useLanguage, useTranslate, useValueText } from "../../../i18n";
@@ -136,7 +136,7 @@ export function FarmerDeskBadge({ district, verified }: { district: string; veri
 }
 
 /** My listings against today's district rate — the farmer's own version of the fair-price check. */
-export function FarmerListingsVsMarket({ lots }: { lots: FarmerLotSummary[] }) {
+export function FarmerListingsVsMarket({ lots, onEditLot }: { lots: FarmerLotSummary[]; onEditLot?: (id: string) => void }) {
   const language = useLanguage();
   const t = useTranslate();
   const v = useValueText();
@@ -187,6 +187,7 @@ export function FarmerListingsVsMarket({ lots }: { lots: FarmerLotSummary[] }) {
             <span>{t("Ask / mon")}</span>
             <span>{t("vs. market")}</span>
             <span>{t("Status")}</span>
+            <span>{t("Edit")}</span>
           </div>
           {rows.map((row) => (
             <div className="listing-vs-market-row" key={row.id}>
@@ -202,7 +203,17 @@ export function FarmerListingsVsMarket({ lots }: { lots: FarmerLotSummary[] }) {
               <span>
                 <DeltaPill delta={row.delta} />
               </span>
-              <span className="listing-vs-market-status">{row.active ? t("Live") : t("Paused")}</span>
+              <span className="listing-vs-market-status">
+                <span className={row.active ? "listing-status-pill live" : "listing-status-pill paused"}>
+                  {row.active ? t("Live") : t("Paused")}
+                </span>
+              </span>
+              <span className="listing-vs-market-edit">
+                <button className="listing-edit-button" type="button" onClick={() => onEditLot?.(row.id)}>
+                  <Pencil aria-hidden="true" size={13} />
+                  {t("Edit")}
+                </button>
+              </span>
             </div>
           ))}
         </div>

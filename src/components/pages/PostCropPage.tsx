@@ -878,7 +878,16 @@ export function PostCropPage({
               </div>
             </section>
 
-            <FarmerListingsVsMarket lots={farmerLotSummaries} />
+            <FarmerListingsVsMarket
+              lots={farmerLotSummaries}
+              onEditLot={(id) => {
+                // Reuse the existing edit modal rather than adding a second way to edit a lot.
+                const target = backendLots.find((lot) => lot.id === id);
+                if (target) {
+                  openEditLot(target);
+                }
+              }}
+            />
 
             <div id="farmer-profile">
               <AccountProfilePanel user={user} onProfileSaved={onProfileSaved} />
