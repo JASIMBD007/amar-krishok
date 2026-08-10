@@ -293,7 +293,6 @@ export function LoginPage({
       <section className="auth-login-page auth-reset-page">
         <div className="auth-login-copy">
           <h1>{t("Reset your password")}</h1>
-          <span className="auth-bn-subtitle">পাসওয়ার্ড রিসেট করুন</span>
           <p>{t("Enter your mobile number and new password. Admin will approve the change before it becomes active.")}</p>
           <div className="auth-benefit-list">
             <span><ShieldCheck aria-hidden="true" size={17} />{t("Your account stays protected during review")}</span>
@@ -331,7 +330,6 @@ export function LoginPage({
     <section className="auth-login-page">
       <div className="auth-login-copy">
         <h1>{t("Log in with your phone number")}</h1>
-        <span className="auth-bn-subtitle">মোবাইল নম্বর দিয়ে লগইন করুন</span>
         <p>{t("Use your mobile number and password. The same number receives your rate alerts and payout confirmations.")}</p>
         <div className="auth-benefit-list">
           <span><ShieldCheck aria-hidden="true" size={17} />{t("Escrow-protected orders")}</span>

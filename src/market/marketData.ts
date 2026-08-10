@@ -37,6 +37,8 @@ export const cropNamesBn: Record<string, string> = {
   Eggplant: "বেগুন",
   Cucumber: "শশা",
   Mango: "আম",
+  "Boro rice": "বোরো ধান",
+  Jute: "পাট",
 };
 
 export const marketCrops = Object.keys(publishedRates);

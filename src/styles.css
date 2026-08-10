@@ -10744,12 +10744,6 @@ textarea:focus-visible {
   line-height: 1.15;
   letter-spacing: -0.02em;
 }
-.auth-bn-subtitle {
-  color: #6b7280;
-  font-family: "Noto Sans Bengali", sans-serif;
-  font-size: 16px;
-  line-height: 1.4;
-}
 .auth-login-copy > p {
   margin: 0;
   color: #4b5563;
