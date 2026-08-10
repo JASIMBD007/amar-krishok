@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, ArrowRight, ImageIcon, Trash2, Upload } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import { AlertTriangle, ArrowLeft, ArrowRight, Check, ImageIcon, Trash2, Upload } from "lucide-react";
 import {
   ApiRequestError,
   addCropLotPhoto,
@@ -28,9 +28,10 @@ import {
 import { useMarketStore } from "../../store/useMarketStore";
 import type { AuthUser } from "../../types";
 import { EmptyState, ListLoading } from "../EmptyState";
-import { VerdictPill } from "../market/MarketBits";
 
 const MAX_PHOTOS = 6;
+/** Below this a listing under-performs badly enough that the design calls it out. */
+const HEALTHY_PHOTO_COUNT = 3;
 
 function numericValue(value: string | number) {
   const parsed = Number(value);
@@ -42,7 +43,6 @@ function numericValue(value: string | number) {
  * rather than behind a save: the farmer sees where their ask lands before committing to it.
  */
 export function EditListingPage({ user }: { user: AuthUser | null }) {
-  const navigate = useNavigate();
   const t = useTranslate();
   const v = useValueText();
   const { lotId } = useParams();
@@ -55,6 +55,7 @@ export function EditListingPage({ user }: { user: AuthUser | null }) {
   const [isSaving, setIsSaving] = useState(false);
   const [busyPhotoId, setBusyPhotoId] = useState<string | null>(null);
 
+  const [crop, setCrop] = useState("");
   const [grade, setGrade] = useState("A");
   const [quantityMon, setQuantityMon] = useState(0);
   const [pricePerMon, setPricePerMon] = useState(0);
@@ -65,11 +66,24 @@ export function EditListingPage({ user }: { user: AuthUser | null }) {
 
   const applyLot = useCallback((next: BackendCropLot) => {
     setLot(next);
+    setCrop(next.crop.name);
     setGrade(next.grade.replace(/^Grade\s+/i, "") || "A");
     setQuantityMon(Math.round(kgToMon(numericValue(next.quantityKg))));
     setPricePerMon(perKgToPerMon(numericValue(next.pricePerKg)));
     setNotes(next.notes ?? "");
+    // Pickup is stored as two booleans; the form shows the one label they add up to.
+    setPickup(next.pickupWithin24h ? pickupOptions[0] : next.transportIncluded ? pickupOptions[1] : pickupOptions[2]);
   }, []);
+
+  // The crop list is today's published rates, plus this lot's own crop in case its rate has lapsed.
+  const cropChoices = useMemo(() => {
+    const names = new Set(Object.keys(rates));
+    if (crop) {
+      names.add(crop);
+    }
+
+    return [...names];
+  }, [crop, rates]);
 
   useEffect(() => {
     if (!accessToken || !lotId) {
@@ -105,7 +119,7 @@ export function EditListingPage({ user }: { user: AuthUser | null }) {
 
   if (isLoading) {
     return (
-      <section className="page-wrap edit-listing-page">
+      <section className="edit-listing-page">
         <ListLoading label={t("Loading this listing...")} />
       </section>
     );
@@ -113,7 +127,7 @@ export function EditListingPage({ user }: { user: AuthUser | null }) {
 
   if (!lot) {
     return (
-      <section className="page-wrap edit-listing-page">
+      <section className="edit-listing-page">
         <EmptyState
           icon={ImageIcon}
           title={t("Listing not found")}
@@ -128,22 +142,28 @@ export function EditListingPage({ user }: { user: AuthUser | null }) {
     );
   }
 
-  const cropName = lot.crop.name;
+  // The rate follows the field, not the saved record, so switching crop re-checks the price at once.
+  const cropName = crop || lot.crop.name;
   const rate = rates[cropName];
   const delta = rate ? deltaVsRate(pricePerMon, rate) : 0;
+  const verdict = fairVerdict(delta);
   const lotValue = pricePerMon * quantityMon;
   const photos = [...(lot.photos ?? [])].sort((first, second) => first.sortOrder - second.sortOrder);
   const isPaused = lot.status.toUpperCase() !== "ACTIVE";
+  const localCropName = cropNamesBn[cropName] ? t(cropName) : cropName;
 
   const save = () => {
     if (!accessToken) return;
     setIsSaving(true);
     setError("");
     updateCropLot(accessToken, lot.id, {
+      crop: cropName,
       grade,
       notes: notes.trim() || undefined,
+      pickupWithin24h: pickup === pickupOptions[0],
       pricePerKg: perMonToPerKg(pricePerMon),
       quantityKg: monToKg(quantityMon),
+      transportIncluded: pickup !== pickupOptions[2],
     })
       .then((updated) => {
         applyLot(updated);
@@ -209,8 +229,8 @@ export function EditListingPage({ user }: { user: AuthUser | null }) {
   };
 
   return (
-    <section className="page-wrap edit-listing-page">
-      <Link className="back-link" to="/farmer">
+    <section className="edit-listing-page">
+      <Link className="edit-listing-back" to="/farmer">
         <ArrowLeft aria-hidden="true" size={16} />
         {t("Farmer desk")}
       </Link>
@@ -221,26 +241,37 @@ export function EditListingPage({ user }: { user: AuthUser | null }) {
           <span>{t("Changes go live at once. Buyers watching this crop get an SMS if the price drops.")}</span>
         </div>
         <div className="edit-listing-actions">
-          <button className="secondary-button" disabled={isSaving} type="button" onClick={togglePaused}>
+          <button className="edit-secondary-button" disabled={isSaving} type="button" onClick={togglePaused}>
             {t(isPaused ? "Resume listing" : "Pause listing")}
           </button>
-          <button className="primary-button" disabled={isSaving} type="button" onClick={save}>
+          <button className="edit-primary-button" disabled={isSaving} type="button" onClick={save}>
             {t(isSaving ? "Saving" : "Save & publish")}
           </button>
         </div>
       </div>
 
       {error ? <p className="soft-notice warn">{t(error)}</p> : null}
-      {notice ? <p className="soft-notice">{t(notice)}</p> : null}
+      {notice ? (
+        <p className="edit-listing-saved" role="status">
+          <Check aria-hidden="true" size={17} />
+          {t(notice)}
+        </p>
+      ) : null}
 
       <div className="edit-listing-layout">
         <div className="edit-listing-main">
-          <div className="panel edit-listing-card">
+          <div className="edit-listing-card">
             <h2>{t("Crop & price")}</h2>
             <div className="edit-listing-grid">
               <label className="input-field">
                 <span>{t("Crop")}</span>
-                <input disabled value={cropName} />
+                <select value={cropName} onChange={(event) => setCrop(event.target.value)}>
+                  {cropChoices.map((option) => (
+                    <option key={option} value={option}>
+                      {t(option)}
+                    </option>
+                  ))}
+                </select>
               </label>
               <label className="input-field">
                 <span>{t("Grade")}</span>
@@ -287,40 +318,48 @@ export function EditListingPage({ user }: { user: AuthUser | null }) {
             </label>
           </div>
 
-          <div className="panel edit-listing-card">
+          <div className="edit-listing-card">
             <div className="edit-photos-head">
               <h2>{t("Photos")}</h2>
               <span className="mono-figure">
                 {v(photos.length)} {t("of")} {v(MAX_PHOTOS)} {t("photos")}
               </span>
-              <label className="secondary-button photo-add-button">
-                <input
-                  accept="image/*"
-                  className="hidden-file-input"
-                  disabled={photos.length >= MAX_PHOTOS || busyPhotoId !== null}
-                  onChange={(event) => {
-                    const file = event.target.files?.[0];
-                    if (file) addPhoto(file);
-                  }}
-                  type="file"
-                />
-                <Upload aria-hidden="true" size={16} />
-                {t("Add photo")}
-              </label>
+              {photos.length < MAX_PHOTOS ? (
+                <label className="photo-add-button">
+                  <input
+                    accept="image/*"
+                    className="hidden-file-input"
+                    disabled={busyPhotoId !== null}
+                    onChange={(event) => {
+                      const file = event.target.files?.[0];
+                      if (file) addPhoto(file);
+                      event.target.value = "";
+                    }}
+                    type="file"
+                  />
+                  <Upload aria-hidden="true" size={15} />
+                  {t("Add photo")}
+                </label>
+              ) : null}
             </div>
 
-            {photos.length === 0 ? (
-              <p className="panel-note">{t("No photos yet. Buyers trust a listing with real farm photos.")}</p>
-            ) : (
+            {photos.length < HEALTHY_PHOTO_COUNT ? (
+              <p className="photo-warning">
+                <AlertTriangle aria-hidden="true" size={16} />
+                {t("Lots with three or more photos sell about 30 % faster.")}
+              </p>
+            ) : null}
+
+            {photos.length === 0 ? null : (
               <div className="photo-grid">
                 {photos.map((photo, index) => (
                   <figure className="photo-tile" key={photo.id}>
-                    <span className="photo-index mono-figure">{v(index + 1)}</span>
-                    {photo.isCover ? <span className="photo-cover-badge">{t("COVER")}</span> : null}
                     <span className="photo-thumb">
-                      {photo.url ? <img alt={photo.caption ?? cropName} src={photo.url} /> : <ImageIcon size={22} />}
+                      {photo.url ? <img alt={photo.caption ?? cropName} src={photo.url} /> : <ImageIcon size={26} />}
+                      <span className="photo-index mono-figure">{v(index + 1)}</span>
+                      {photo.isCover ? <span className="photo-cover-badge">{t("Cover")}</span> : null}
                     </span>
-                    <figcaption>{photo.caption ?? `${t(cropName)} ${v(index + 1)}`}</figcaption>
+                    <figcaption>{photo.caption ?? `${localCropName} ${v(index + 1)}`}</figcaption>
                     <div className="photo-actions">
                       <button
                         aria-label={t("Move earlier")}
@@ -342,7 +381,7 @@ export function EditListingPage({ user }: { user: AuthUser | null }) {
                       </button>
                       {photo.isCover ? null : (
                         <button
-                          className="secondary-button photo-cover-button"
+                          className="photo-cover-button"
                           disabled={busyPhotoId !== null}
                           type="button"
                           onClick={() =>
@@ -372,19 +411,22 @@ export function EditListingPage({ user }: { user: AuthUser | null }) {
         </div>
 
         <aside className="edit-listing-rail">
-          <div className="panel edit-rail-card">
-            <span className="filter-eyebrow">{t("Price check")}</span>
+          <div className="edit-rail-card">
+            <span className="edit-rail-eyebrow">{t("Price check")}</span>
             {rate ? (
               <>
                 <strong className="mono-figure edit-rail-value">{v(taka(rate))}</strong>
                 <span className="edit-rail-note">{t("Today's district rate per mon")}</span>
-                <VerdictPill verdict={fairVerdict(delta)} />
+                {/* The pill carries the number; the line under it says what the number means. */}
+                <span className={`edit-rail-delta ${verdict}`}>
+                  {v(`${delta > 0 ? "+" : ""}${delta} %`)} {t("vs. today's")} {localCropName} {t("rate")}
+                </span>
                 <p>
-                  {delta === 0
+                  {verdict === "fair"
                     ? t("Inside the fair range. Buyers see a green badge on this lot.")
-                    : `${v(`${delta > 0 ? "+" : ""}${delta} %`)} ${t("vs. today's rate for")} ${
-                        cropNamesBn[cropName] ? t(cropName) : cropName
-                      }.`}
+                    : verdict === "above"
+                      ? t("Above the fair range. Lots priced this high usually sit unsold for over a week.")
+                      : t("Below the fair range. It will sell fast, but you are leaving money on the table.")}
                 </p>
               </>
             ) : (
@@ -392,17 +434,13 @@ export function EditListingPage({ user }: { user: AuthUser | null }) {
             )}
           </div>
 
-          <div className="panel edit-rail-card">
-            <span className="filter-eyebrow">{t("Lot value")}</span>
+          <div className="edit-rail-card">
+            <span className="edit-rail-eyebrow">{t("Lot value")}</span>
             <strong className="mono-figure edit-rail-value">{v(taka(lotValue))}</strong>
             <span className="edit-rail-note">
               {t("Before the")} {v(`${PLATFORM_FEE_RATE * 100} %`)} {t("platform fee")}
             </span>
           </div>
-
-          <button className="secondary-button full" type="button" onClick={() => navigate("/farmer")}>
-            {t("Back to desk")}
-          </button>
         </aside>
       </div>
     </section>

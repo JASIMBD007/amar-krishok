@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plus } from "lucide-react";
 import { ApiRequestError, fetchMyCropLots, type BackendCropLot } from "../../api/auth";
-import { fetchFarmerEscrow } from "../../api/market";
+import { fetchFarmerEscrow, fetchLotOffers } from "../../api/market";
 import { useTranslate } from "../../i18n";
 import { kgToMon } from "../../market/marketData";
 import type { AuthUser } from "../../types";
@@ -41,6 +41,8 @@ export function FarmerDeskPage({ user }: { user: AuthUser | null }) {
   const t = useTranslate();
   const [lots, setLots] = useState<BackendCropLot[]>([]);
   const [escrow, setEscrow] = useState<FarmerEscrowSummary>(emptyEscrow);
+  // Open offers per lot, so the listings table can say "Live · 2 offers" the way the v2 desk does.
+  const [offerCounts, setOfferCounts] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -53,10 +55,22 @@ export function FarmerDeskPage({ user }: { user: AuthUser | null }) {
     }
 
     setIsLoading(true);
-    Promise.all([fetchMyCropLots(accessToken), fetchFarmerEscrow(accessToken).catch(() => emptyEscrow)])
-      .then(([myLots, summary]) => {
+    Promise.all([
+      fetchMyCropLots(accessToken),
+      fetchFarmerEscrow(accessToken).catch(() => emptyEscrow),
+      fetchLotOffers(accessToken).catch(() => []),
+    ])
+      .then(([myLots, summary, offers]) => {
         setLots(myLots);
         setEscrow(summary);
+        setOfferCounts(
+          offers
+            .filter((offer) => offer.status === "OPEN")
+            .reduce<Record<string, number>>((counts, offer) => {
+              counts[offer.cropLot.id] = (counts[offer.cropLot.id] ?? 0) + 1;
+              return counts;
+            }, {}),
+        );
         setError("");
       })
       .catch((requestError) => {
@@ -111,6 +125,7 @@ export function FarmerDeskPage({ user }: { user: AuthUser | null }) {
       <div className="farmer-desk-columns">
         <FarmerListingsVsMarket
           lots={summaries}
+          offerCounts={offerCounts}
           onEditLot={(id) => navigate(`/farmer/listings/${encodeURIComponent(id)}`)}
           onPostCrop={() => navigate("/farmer/post")}
         />

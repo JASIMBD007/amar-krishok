@@ -1208,7 +1208,15 @@ const bn: Record<string, string> = {
   "Buyer collects": "ক্রেতা নিজে নেবেন",
   pickup: "পিকআপ",
   Cover: "কভার",
+  offer: "অফার",
+  offers: "অফার",
+  "vs. today's": "আজকের",
   "Remove photo": "ছবি সরান",
+  "Lots with three or more photos sell about 30 % faster.": "তিন বা তার বেশি ছবি থাকলে লট প্রায় ৩০ % দ্রুত বিক্রি হয়।",
+  "Above the fair range. Lots priced this high usually sit unsold for over a week.":
+    "ন্যায্য সীমার উপরে। এত দাম হলে লট সাধারণত এক সপ্তাহের বেশি অবিক্রীত থাকে।",
+  "Below the fair range. It will sell fast, but you are leaving money on the table.":
+    "ন্যায্য সীমার নিচে। দ্রুত বিক্রি হবে, তবে আপনি লাভ কম পাচ্ছেন।",
   "Please choose the crop you are selling.": "আপনি কোন ফসল বিক্রি করছেন তা বেছে নিন।",
   "Please sign in again to post a crop.": "ফসল পোস্ট করতে আবার লগইন করুন।",
   "Withdraw to bKash": "বিকাশে তুলুন",

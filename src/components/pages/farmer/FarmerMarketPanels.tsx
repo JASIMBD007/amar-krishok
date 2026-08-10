@@ -1,16 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
-import { BadgeCheck, Clock3, Handshake, Pencil, Sprout, TrendingUp, WalletCards, X } from "lucide-react";
+import { BadgeCheck, Clock3, Pencil, Sprout, X } from "lucide-react";
 import { ApiRequestError } from "../../../api/auth";
 import { fetchLotOffers, requestPayout, respondToLotOffer, type BackendLotOffer } from "../../../api/market";
 import { useLanguage, useTranslate, useValueText } from "../../../i18n";
-import { decorateLot, farmerInitials } from "../../../market/deriveLots";
+import { decorateLot } from "../../../market/deriveLots";
 import { cropNamesBn, kgToMon, perKgToPerMon, taka } from "../../../market/marketData";
 import type { MarketLotSource } from "../../../market/marketTypes";
 import { useMarketStore } from "../../../store/useMarketStore";
 import type { AuthUser } from "../../../types";
 import { EmptyState, ListLoading } from "../../EmptyState";
-import { KpiCard } from "../../KpiCard";
 import { DeltaPill } from "../../market/MarketBits";
 
 export type FarmerLotSummary = {
@@ -74,17 +72,13 @@ export function FarmerEscrowKpis({
 
   return (
     <>
-      <section className="stats-grid kpi-grid farmer-escrow-grid" aria-label={t("Escrow and payouts")}>
-        <article className="stat-card dashboard-stat kpi-card">
-          <div className="kpi-top">
-            <span className="kpi-icon">
-              <WalletCards size={17} />
-            </span>
-          </div>
-          <span className="kpi-label">{t("Ready to withdraw")}</span>
-          <strong className="kpi-value mono-figure">{v(taka(summary.released))}</strong>
+      {/* The v2 desk cards carry no icon — the label, the figure and one line of context, nothing else. */}
+      <section className="farmer-escrow-grid" aria-label={t("Escrow and payouts")}>
+        <article className="desk-kpi">
+          <span className="desk-kpi-label">{t("Ready to withdraw")}</span>
+          <strong className="desk-kpi-value mono-figure">{v(taka(summary.released))}</strong>
           <button
-            className="primary-button full withdraw-button"
+            className="desk-withdraw-button"
             disabled={isWithdrawing || summary.released <= 0}
             type="button"
             onClick={withdraw}
@@ -92,24 +86,27 @@ export function FarmerEscrowKpis({
             {t(isWithdrawing ? "Requesting" : "Withdraw to bKash")}
           </button>
         </article>
-        <KpiCard
-          icon={Handshake}
-          label={t("In escrow")}
-          value={v(taka(summary.held))}
-          detail={`${t("Across")} ${v(summary.heldCount)} ${t("live orders")}`}
-        />
-        <KpiCard
-          icon={Sprout}
-          label={t("Active listings")}
-          value={v(activeListings)}
-          detail={`${v(listedMon.toLocaleString("en-IN"))} ${t("mon on the market")}`}
-        />
-        <KpiCard
-          icon={TrendingUp}
-          label={t("This season")}
-          value={v(taka(summary.grossValue))}
-          detail={summary.orderCount ? t("Gross value of your orders") : t("First season on AmarKrishok")}
-        />
+        <article className="desk-kpi">
+          <span className="desk-kpi-label">{t("In escrow")}</span>
+          <strong className="desk-kpi-value mono-figure">{v(taka(summary.held))}</strong>
+          <span className="desk-kpi-note">
+            {t("Across")} {v(summary.heldCount)} {t("live orders")}
+          </span>
+        </article>
+        <article className="desk-kpi">
+          <span className="desk-kpi-label">{t("Active listings")}</span>
+          <strong className="desk-kpi-value mono-figure">{v(activeListings)}</strong>
+          <span className="desk-kpi-note">
+            {v(listedMon.toLocaleString("en-US"))} {t("mon on the market")}
+          </span>
+        </article>
+        <article className="desk-kpi">
+          <span className="desk-kpi-label">{t("This season")}</span>
+          <strong className="desk-kpi-value mono-figure">{v(taka(summary.grossValue))}</strong>
+          <span className="desk-kpi-note">
+            {summary.orderCount ? t("Gross value of your orders") : t("First season on AmarKrishok")}
+          </span>
+        </article>
       </section>
       {withdrawNotice ? (
         <p className="soft-notice" role="status">
@@ -138,10 +135,13 @@ export function FarmerDeskBadge({ district, verified }: { district: string; veri
 /** My listings against today's district rate — the farmer's own version of the fair-price check. */
 export function FarmerListingsVsMarket({
   lots,
+  offerCounts,
   onEditLot,
   onPostCrop,
 }: {
   lots: FarmerLotSummary[];
+  /** Open offers per lot id. The status column reads "Live · 2 offers" when a lot has any. */
+  offerCounts?: Record<string, number>;
   onEditLot?: (id: string) => void;
   onPostCrop?: () => void;
 }) {
@@ -174,12 +174,10 @@ export function FarmerListingsVsMarket({
   );
 
   return (
-    <section className="panel farmer-rail-panel" id="farmer-market-check">
-      <div className="panel-header">
-        <div>
-          <span>{t("My listings")}</span>
-          <h3>{t("Price vs. today's district rate")}</h3>
-        </div>
+    <section className="desk-panel" id="farmer-market-check">
+      <div className="desk-panel-head">
+        <h2>{t("My listings")}</h2>
+        <span>{t("Price vs. today's district rate")}</span>
       </div>
 
       {rows.length === 0 ? (
@@ -216,12 +214,14 @@ export function FarmerListingsVsMarket({
               </div>
               <span className="mono-figure">{v(row.priceLabel)}</span>
               <span>
-                <DeltaPill delta={row.delta} />
+                <DeltaPill delta={row.delta} withSuffix />
               </span>
+              {/* Plain text, not a pill: the pill in this row belongs to the vs. market column. */}
               <span className="listing-vs-market-status">
-                <span className={row.active ? "listing-status-pill live" : "listing-status-pill paused"}>
-                  {row.active ? t("Live") : t("Paused")}
-                </span>
+                {row.active ? t("Live") : t("Paused")}
+                {offerCounts?.[row.id]
+                  ? ` · ${v(offerCounts[row.id])} ${t(offerCounts[row.id] === 1 ? "offer" : "offers")}`
+                  : ""}
               </span>
               <span className="listing-vs-market-edit">
                 <button className="listing-edit-button" type="button" onClick={() => onEditLot?.(row.id)}>
@@ -297,12 +297,9 @@ export function FarmerOffersPanel({ user }: { user: AuthUser | null }) {
   };
 
   return (
-    <section className="panel farmer-rail-panel" id="farmer-offers">
-      <div className="panel-header">
-        <div>
-          <span>{t("Buyer offers")}</span>
-          <h3>{t("Offers waiting")}</h3>
-        </div>
+    <section className="desk-panel desk-offers-panel" id="farmer-offers">
+      <div className="desk-panel-head">
+        <h2>{t("Offers waiting")}</h2>
         <strong className="mono-figure offers-count">{v(openOffers.length)}</strong>
       </div>
 
@@ -335,16 +332,11 @@ export function FarmerOffersPanel({ user }: { user: AuthUser | null }) {
             return (
               <article className="offer-item" key={offer.id}>
                 <div className="offer-item-head">
-                  <span className="farmer-avatar small" aria-hidden="true">
-                    {farmerInitials(offer.buyer.name)}
+                  <strong>{t(offer.buyer.name)}</strong>
+                  <span>
+                    {cropName} · {t("Grade")} {v(offer.cropLot.grade)} ·{" "}
+                    {v(Math.round(kgToMon(Number(offer.cropLot.quantityKg))))} {t("mon")}
                   </span>
-                  <div>
-                    <strong>{t(offer.buyer.name)}</strong>
-                    <span>
-                      {cropName} · {t("Grade")} {v(offer.cropLot.grade)} ·{" "}
-                      {v(Math.round(kgToMon(Number(offer.cropLot.quantityKg))))} {t("mon")}
-                    </span>
-                  </div>
                 </div>
                 <div className="offer-item-price">
                   <strong className="mono-figure">{v(taka(pricePerMon))}</strong>
@@ -374,10 +366,6 @@ export function FarmerOffersPanel({ user }: { user: AuthUser | null }) {
           })}
         </div>
       ) : null}
-
-      <Link className="link-button offers-link" to="/prices">
-        {t("See today's rates")}
-      </Link>
     </section>
   );
 }

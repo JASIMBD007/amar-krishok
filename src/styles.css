@@ -13552,48 +13552,55 @@ canvas {
 
 /* KPI cards: 232px minimum, 18px padding, 28px mono values. */
 .farmer-escrow-grid {
+  display: grid;
   grid-template-columns: repeat(auto-fit, minmax(232px, 1fr));
   gap: 14px;
 }
-.farmer-escrow-grid .stat-card,
-.farmer-escrow-grid .kpi-card {
+/* No icon, no sparkline: label, figure, one line of context, exactly as the v2 desk has it. */
+.desk-kpi {
+  display: flex;
+  flex-direction: column;
   gap: 7px;
   padding: 18px;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--surface);
 }
-.farmer-escrow-grid .kpi-label {
+.desk-kpi-label {
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--fg-muted);
 }
-.farmer-escrow-grid .kpi-value {
+.desk-kpi-value {
   font-family: var(--font-mono);
   font-size: 28px;
   font-weight: 600;
   letter-spacing: -0.02em;
 }
-.farmer-escrow-grid .kpi-detail {
+.desk-kpi-note {
   font-size: 12px;
   color: var(--fg-muted);
 }
 /* Withdraw sits inside its card, sized to its text. */
-.withdraw-button {
+.desk-withdraw-button {
   align-self: flex-start;
-  width: auto;
-  min-height: 0;
-  margin-top: 0;
   padding: 9px 13px;
+  border: 0;
   border-radius: 6px;
   background: var(--ak-green);
+  color: #ffffff;
   font-size: 13px;
   font-weight: 600;
+  cursor: pointer;
 }
-.withdraw-button:hover {
+.desk-withdraw-button:hover:not(:disabled) {
   background: var(--ak-green-deep);
+}
+.desk-withdraw-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 /* Listings table gains an Edit column and pill statuses. */
@@ -13622,21 +13629,6 @@ canvas {
 }
 .listing-vs-market-row .delta-pill {
   margin-left: auto;
-}
-.listing-status-pill {
-  display: inline-flex;
-  padding: 3px 8px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 700;
-}
-.listing-status-pill.live {
-  color: var(--mk-good);
-  background: var(--mk-good-soft);
-}
-.listing-status-pill.paused {
-  color: var(--mk-warn);
-  background: var(--mk-warn-soft);
 }
 .listing-vs-market-edit {
   display: flex;
@@ -13783,50 +13775,84 @@ canvas {
   gap: 20px;
 }
 /* The listings card owns its own chrome, so the table meets its edges. */
-.farmer-desk-columns .farmer-rail-panel {
-  padding: 0;
+.desk-panel {
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--surface);
   overflow: hidden;
 }
-.farmer-desk-columns .farmer-rail-panel .panel-header {
+/* Title and subtitle share one line — the v2 desk has no stacked eyebrow here. */
+.desk-panel-head {
+  display: flex;
   align-items: center;
   gap: 12px;
-  margin: 0;
   padding: 14px 18px;
   border-bottom: 1px solid var(--border);
 }
-.farmer-desk-columns .farmer-rail-panel .panel-header h3 {
+.desk-panel-head h2 {
   margin: 0;
   font-size: 16px;
   font-weight: 600;
+  letter-spacing: 0;
 }
-.farmer-desk-columns .farmer-rail-panel .panel-header span {
+.desk-panel-head > span {
+  flex: 1;
   font-size: 13px;
   color: var(--fg-muted);
 }
-.farmer-desk-columns #farmer-offers {
+.desk-offers-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
   padding: 18px;
 }
-.farmer-desk-columns #farmer-offers .panel-header {
+.desk-offers-panel .desk-panel-head {
   padding: 0;
   border-bottom: 0;
 }
-.farmer-desk-columns .empty-state,
-.farmer-desk-columns .panel-note,
-.farmer-desk-columns .offer-list,
-.farmer-desk-columns .soft-notice,
-.farmer-desk-columns .offers-link,
-.farmer-desk-columns .list-loading {
-  margin-inline: 18px;
+.desk-offers-panel .desk-panel-head h2 {
+  flex: 1;
 }
-.farmer-desk-columns #farmer-offers > * {
-  margin-inline: 0;
+.desk-panel .empty-state,
+.desk-panel .panel-note,
+.desk-panel .list-loading {
+  padding-inline: 18px;
 }
-.farmer-desk-columns .empty-state {
+.desk-offers-panel .empty-state,
+.desk-offers-panel .panel-note,
+.desk-offers-panel .list-loading,
+.desk-offers-panel .offer-list,
+.desk-offers-panel .soft-notice {
+  padding-inline: 0;
+}
+.desk-panel .empty-state {
   padding: 36px 18px;
-  margin-inline: 0;
+}
+/* Status is plain text in v2 — the only pill on the row belongs to the vs. market column. */
+.listing-vs-market-status {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--fg-subtle);
+}
+.desk-offers-panel .offers-count {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--fg-muted);
+}
+/* The v2 offer card leads with the buyer's name, no avatar. */
+.desk-offers-panel .offer-item-head {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.desk-offers-panel .offer-item-head strong {
+  font-size: 14px;
+  font-weight: 600;
+}
+.desk-offers-panel .offer-item-head > span {
+  font-size: 12px;
+  color: var(--fg-muted);
 }
 
 @media (max-width: 1020px) {
@@ -13842,20 +13868,35 @@ canvas {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  max-width: 1280px;
+  max-width: 1080px;
   margin: 0 auto;
-  padding: 20px 24px 40px;
+  padding: 24px 24px 48px;
+}
+.edit-listing-back {
+  display: flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 7px;
+  color: var(--interactive);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
 }
 .edit-listing-head {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
+  align-items: flex-end;
   justify-content: space-between;
   gap: 16px;
 }
+.edit-listing-head > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 .edit-listing-head h1 {
   margin: 0;
-  font-size: 30px;
+  font-size: 28px;
   font-weight: 700;
   letter-spacing: -0.02em;
 }
@@ -13866,15 +13907,53 @@ canvas {
 .edit-listing-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 9px;
 }
-.edit-listing-actions .primary-button,
-.edit-listing-actions .secondary-button {
-  min-height: 0;
-  padding: 12px 18px;
+.edit-secondary-button,
+.edit-primary-button {
+  border: 0;
   border-radius: 8px;
+  padding: 11px 18px;
   font-size: 14px;
   font-weight: 600;
+  cursor: pointer;
+}
+.edit-secondary-button {
+  padding: 11px 15px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--fg-subtle);
+}
+.edit-secondary-button:hover:not(:disabled) {
+  background: var(--bg);
+}
+.edit-primary-button {
+  background: var(--ak-green);
+  color: #ffffff;
+}
+.edit-primary-button:hover:not(:disabled) {
+  background: var(--ak-green-deep);
+}
+.edit-secondary-button:disabled,
+.edit-primary-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.edit-listing-saved {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 13px 15px;
+  border: 1px solid #c7e2d4;
+  border-radius: 8px;
+  background: var(--ak-green-soft);
+  color: #25543e;
+  font-size: 14px;
+}
+.edit-listing-saved svg {
+  flex: none;
+  color: var(--ak-green-deep);
 }
 .edit-listing-layout {
   display: grid;
@@ -13891,19 +13970,68 @@ canvas {
 .edit-listing-card {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 20px;
+  gap: 18px;
+  padding: 22px;
+  border: 1px solid var(--border);
   border-radius: 8px;
+  background: var(--surface);
 }
 .edit-listing-card h2 {
   margin: 0;
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 600;
+  letter-spacing: 0;
 }
 .edit-listing-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 14px;
+}
+/* The form controls are plain outlined fields in v2 — no filled surface, no inner label chrome. */
+.edit-listing-card .input-field,
+.edit-listing-card .full-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.edit-listing-card .input-field > span,
+.edit-listing-card .full-field > span {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg-subtle);
+}
+.edit-listing-card input,
+.edit-listing-card select,
+.edit-listing-card textarea {
+  min-height: 0;
+  padding: 11px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  background: var(--surface);
+  font-size: 15px;
+}
+.edit-listing-card input[type="number"] {
+  font-family: var(--font-mono);
+}
+.edit-listing-card textarea {
+  line-height: 1.5;
+  resize: vertical;
+}
+.photo-warning {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 11px 13px;
+  border: 1px solid #fbd9a5;
+  border-radius: 6px;
+  background: var(--mk-warn-soft);
+  color: #8a4b08;
+  font-size: 13px;
+}
+.photo-warning svg {
+  flex: none;
+  color: var(--mk-warn);
 }
 
 .edit-photos-head {
@@ -13916,20 +14044,25 @@ canvas {
   margin-right: auto;
 }
 .edit-photos-head .mono-figure {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--fg-muted);
 }
 .photo-add-button {
   position: relative;
-  min-height: 0;
+  display: inline-flex;
+  align-items: center;
   gap: 7px;
   padding: 9px 13px;
   border: 1px solid var(--border-strong);
   border-radius: 6px;
-  box-shadow: none;
+  background: var(--surface);
+  color: var(--fg-subtle);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+}
+.photo-add-button:hover {
+  background: var(--bg);
 }
 .photo-grid {
   display: grid;
@@ -13937,27 +14070,34 @@ canvas {
   gap: 14px;
 }
 .photo-tile {
-  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 8px;
   margin: 0;
-  padding: 0 0 12px;
+  padding: 0;
   overflow: hidden;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--surface);
 }
+.photo-thumb {
+  position: relative;
+  display: grid;
+  height: 132px;
+  place-items: center;
+  background: var(--surface-sunken);
+  color: var(--fg-disabled);
+}
+.photo-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 .photo-index {
   position: absolute;
   top: 8px;
   left: 8px;
-  z-index: 1;
-  display: grid;
-  width: 22px;
-  height: 22px;
-  place-items: center;
-  border-radius: 6px;
+  padding: 2px 7px;
+  border-radius: 4px;
   color: #ffffff;
   background: rgba(17, 24, 39, 0.72);
   font-size: 11px;
@@ -13967,30 +14107,17 @@ canvas {
   position: absolute;
   top: 8px;
   right: 8px;
-  z-index: 1;
   padding: 3px 8px;
-  border-radius: 6px;
+  border-radius: 4px;
   color: #ffffff;
   background: var(--ak-green);
   font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.06em;
-}
-.photo-thumb {
-  display: grid;
-  height: 130px;
-  place-items: center;
-  border-bottom: 1px solid var(--border);
-  background: var(--surface-sunken);
-  color: var(--fg-disabled);
-}
-.photo-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 .photo-tile figcaption {
-  padding: 0 12px;
+  padding: 11px 12px 0;
   font-size: 13px;
   font-weight: 600;
 }
@@ -13999,24 +14126,31 @@ canvas {
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
-  padding: 0 12px;
+  padding: 9px 12px 11px;
 }
 .photo-actions .icon-button {
-  width: 32px;
-  min-height: 32px;
-  border-radius: 6px;
-}
-.photo-cover-button {
+  width: auto;
   min-height: 0;
-  padding: 6px 10px;
+  padding: 6px 8px;
   border: 1px solid var(--border-strong);
   border-radius: 6px;
-  box-shadow: none;
+  background: var(--surface);
+  color: var(--fg-subtle);
+}
+.photo-cover-button {
+  padding: 6px 9px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--fg-subtle);
   font-size: 12px;
   font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
 }
-.photo-delete {
+.photo-actions .photo-delete {
   margin-left: auto;
+  border-color: #f3c7c7;
   color: var(--brand);
 }
 
@@ -14030,12 +14164,24 @@ canvas {
 .edit-rail-card {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
   padding: 20px;
+  border: 1px solid var(--border);
   border-radius: 8px;
+  background: var(--surface);
+}
+.edit-rail-card + .edit-rail-card {
+  gap: 8px;
+}
+.edit-rail-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
 }
 .edit-rail-value {
-  font-size: 30px;
+  font-size: 26px;
   font-weight: 600;
   letter-spacing: -0.02em;
 }
@@ -14043,14 +14189,33 @@ canvas {
   font-size: 13px;
   color: var(--fg-muted);
 }
+/* The delta pill takes its tone from the same verdict the marketplace badges use. */
+.edit-rail-delta {
+  align-self: flex-start;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.edit-rail-delta.fair {
+  color: var(--mk-good);
+  background: var(--mk-good-soft);
+}
+.edit-rail-delta.above {
+  color: var(--mk-warn);
+  background: var(--mk-warn-soft);
+}
+.edit-rail-delta.below {
+  color: var(--interactive);
+  background: var(--interactive-soft);
+}
 .edit-rail-card p {
   margin: 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--surface-sunken);
   font-size: 13px;
   line-height: 1.55;
   color: var(--fg-subtle);
-}
-.edit-rail-card .verdict-pill {
-  align-self: flex-start;
 }
 
 @media (max-width: 1020px) {
