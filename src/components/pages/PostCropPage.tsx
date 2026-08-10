@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { useSearchParams } from "react-router-dom";
+import { NavLink, useSearchParams } from "react-router-dom";
 import {
   BadgeCheck,
   CheckCircle2,
+  ArrowLeft,
   ClipboardList,
   Clock3,
   FileImage,
@@ -502,13 +503,15 @@ export function PostCropPage({
         <header className="dashboard-topbar farmer-dashboard-topbar">
           <div className="page-title">
             <span>{t("Farmer workspace")}</span>
-            <h1>
-              {t("Farmer desk")}
-              {user?.name ? ` · ${user.name}` : ""}
-            </h1>
+            <h1>{t("Post a crop")}</h1>
             <FarmerDeskBadge district={farmerDistrict} verified={isVerifiedFarmer} />
           </div>
           <div className="topbar-actions farmer-topbar-actions">
+            {/* The desk is the farmer's home now, so the workspace always offers a way back. */}
+            <NavLink className="secondary-button" to="/farmer">
+              <ArrowLeft size={18} />
+              {t("Back to desk")}
+            </NavLink>
             <button className="secondary-button" onClick={() => scrollToSection("published-lots")} type="button">
               <ListChecks size={18} />
               {t("My lots")}

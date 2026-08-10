@@ -13738,3 +13738,99 @@ canvas {
     justify-content: center;
   }
 }
+
+/* =====================================================================
+   Farmer desk page — v2 layout: header, KPI row, two columns.
+   ===================================================================== */
+.farmer-desk-page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px 24px 40px;
+}
+.farmer-desk-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.farmer-desk-head > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.farmer-desk-head h1 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.desk-post-button {
+  min-height: 0;
+  gap: 9px;
+  padding: 14px 20px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.farmer-desk-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 340px);
+  align-items: start;
+  gap: 20px;
+}
+/* The listings card owns its own chrome, so the table meets its edges. */
+.farmer-desk-columns .farmer-rail-panel {
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  overflow: hidden;
+}
+.farmer-desk-columns .farmer-rail-panel .panel-header {
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+}
+.farmer-desk-columns .farmer-rail-panel .panel-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+.farmer-desk-columns .farmer-rail-panel .panel-header span {
+  font-size: 13px;
+  color: var(--fg-muted);
+}
+.farmer-desk-columns #farmer-offers {
+  padding: 18px;
+}
+.farmer-desk-columns #farmer-offers .panel-header {
+  padding: 0;
+  border-bottom: 0;
+}
+.farmer-desk-columns .empty-state,
+.farmer-desk-columns .panel-note,
+.farmer-desk-columns .offer-list,
+.farmer-desk-columns .soft-notice,
+.farmer-desk-columns .offers-link,
+.farmer-desk-columns .list-loading {
+  margin-inline: 18px;
+}
+.farmer-desk-columns #farmer-offers > * {
+  margin-inline: 0;
+}
+.farmer-desk-columns .empty-state {
+  padding: 36px 18px;
+  margin-inline: 0;
+}
+
+@media (max-width: 1020px) {
+  .farmer-desk-columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

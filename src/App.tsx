@@ -32,6 +32,7 @@ import { lots, routeByView, serviceDistricts } from "./data";
 import {
   AdminPage,
   CheckoutPage,
+  FarmerDeskPage,
   HomePage,
   LotDetailPage,
   LoginPage,
@@ -810,6 +811,15 @@ export default function App() {
         />
         <Route
           path="/farmer"
+          element={
+            <ProtectedRoute allowedRoles={["farmer", "admin"]} user={user} t={t}>
+              <FarmerDeskPage user={user} />
+            </ProtectedRoute>
+          }
+        />
+        {/* Posting, editing and the profile panel keep their own route, as the v2 IA has them. */}
+        <Route
+          path="/farmer/post"
           element={
             <ProtectedRoute allowedRoles={["farmer", "admin"]} user={user} t={t}>
               <PostCropPage user={user} onProfileSaved={handleProfileSaved} />

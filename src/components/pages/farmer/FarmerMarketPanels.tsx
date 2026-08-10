@@ -136,7 +136,15 @@ export function FarmerDeskBadge({ district, verified }: { district: string; veri
 }
 
 /** My listings against today's district rate — the farmer's own version of the fair-price check. */
-export function FarmerListingsVsMarket({ lots, onEditLot }: { lots: FarmerLotSummary[]; onEditLot?: (id: string) => void }) {
+export function FarmerListingsVsMarket({
+  lots,
+  onEditLot,
+  onPostCrop,
+}: {
+  lots: FarmerLotSummary[];
+  onEditLot?: (id: string) => void;
+  onPostCrop?: () => void;
+}) {
   const language = useLanguage();
   const t = useTranslate();
   const v = useValueText();
@@ -179,6 +187,13 @@ export function FarmerListingsVsMarket({ lots, onEditLot }: { lots: FarmerLotSum
           icon={Sprout}
           title={t("No listings yet")}
           hint={t("Post your first crop and buyers in your district see it immediately.")}
+          action={
+            onPostCrop ? (
+              <button className="primary-button" type="button" onClick={onPostCrop}>
+                {t("Post a crop")}
+              </button>
+            ) : undefined
+          }
         />
       ) : (
         <div className="listing-vs-market">

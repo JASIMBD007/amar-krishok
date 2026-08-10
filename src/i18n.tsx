@@ -1155,6 +1155,8 @@ const bn: Record<string, string> = {
   "Payment refunded": "পেমেন্ট ফেরত হয়েছে",
   "Refunded to your account.": "আপনার অ্যাকাউন্টে ফেরত দেওয়া হয়েছে।",
   "Paid with": "পরিশোধ হয়েছে",
+  "Back to desk": "ডেস্কে ফিরুন",
+  "Loading your desk...": "আপনার ডেস্ক লোড হচ্ছে...",
   "Loading your orders...": "আপনার অর্ডার লোড হচ্ছে...",
   "Loading buyer offers...": "ক্রেতার প্রস্তাব লোড হচ্ছে...",
   "Loading market data...": "বাজারের তথ্য লোড হচ্ছে...",
