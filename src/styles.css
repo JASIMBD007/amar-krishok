@@ -14524,3 +14524,15 @@ canvas {
   top: -3px;
   height: 14px;
 }
+
+/* Both step-two fields answer one question, so they sit on the same baseline and share a height.
+   Border-box keeps the ask's thicker outline from making it the taller of the two. */
+.post-crop-card .qty-stepper,
+.post-crop-card .price-input {
+  box-sizing: border-box;
+  min-height: 48px;
+}
+.post-crop-card .qty-stepper-value,
+.post-crop-card .price-input {
+  padding-block: 0;
+}
