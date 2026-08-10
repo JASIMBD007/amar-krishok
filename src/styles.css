@@ -14536,3 +14536,46 @@ canvas {
 .post-crop-card .price-input {
   padding-block: 0;
 }
+
+/* ---- Edit listing: the fields, at a specificity that beats the global input layer ----
+   `.input-field input:not([type="file"])` outranks a plain `.edit-listing-card input`, so these
+   selectors name the wrapper too. Without that the fields keep the 50px height and 11px radius
+   from the older form styling and end up unequal next to each other. */
+.edit-listing-card .input-field input,
+.edit-listing-card .input-field select,
+.edit-listing-card .full-field textarea {
+  box-sizing: border-box;
+  min-height: 46px;
+  padding: 11px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  background: var(--surface);
+  font-size: 15px;
+  font-weight: 400;
+}
+/* The v2 selects show a chevron; the global layer removes it and puts nothing back. */
+.edit-listing-card .input-field select {
+  appearance: auto;
+  padding-right: 8px;
+}
+.edit-listing-card .input-field input[type="number"] {
+  font-family: var(--font-mono);
+}
+.edit-listing-card .full-field textarea {
+  min-height: 86px;
+  line-height: 1.5;
+  resize: vertical;
+}
+.edit-listing-card .input-field input:focus,
+.edit-listing-card .input-field select:focus,
+.edit-listing-card .full-field textarea:focus {
+  border-color: var(--ak-green);
+}
+/* Pause and Save sit side by side in v2, level with the foot of the title block. */
+.edit-listing-actions {
+  flex-wrap: nowrap;
+}
+.edit-secondary-button,
+.edit-primary-button {
+  white-space: nowrap;
+}
