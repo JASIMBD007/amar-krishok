@@ -233,7 +233,11 @@ model LegacyUser {
   upazilla             String?
   createdAt            DateTime               @default(now())
   updatedAt            DateTime               @updatedAt
+  /// When staff accepted the signup request. Status leaves PENDING at the same moment.
   reviewedAt           DateTime?
+  /// When staff checked the NID and land papers. Null means accepted but not yet verified: the
+  /// account can sign in and look around, but cannot post a lot or place an order.
+  verifiedAt           DateTime?
   district             District?              @relation(fields: [districtId], references: [id])
   buyerProfile         BuyerProfile?
   farmerProfile        FarmerProfile?
@@ -250,6 +254,7 @@ model LegacyUser {
 
   @@unique([phone, role])
   @@index([role, status])
+  @@index([status, verifiedAt])
   @@map("User")
 }
 
