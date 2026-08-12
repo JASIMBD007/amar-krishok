@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Area, AreaChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { ApiRequestError } from "../../../api/auth";
 import { fetchTrafficSummary, type TrafficSummary } from "../../../api/analytics";
 import { useLanguage, useTranslate, useValueText } from "../../../i18n";
@@ -7,6 +7,16 @@ import type { AuthUser } from "../../../types";
 import { ListLoading } from "../../EmptyState";
 
 const RANGES = [7, 30, 90] as const;
+
+/**
+ * Categorical slots in fixed order, so a country keeps its colour when the filter changes.
+ * Validated for colourblind separation against a light surface; three sit under 3:1 contrast,
+ * which is why every slice is also named and numbered in the legend rather than colour alone.
+ */
+const SLICE_COLOURS = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300"];
+const OTHER_COLOUR = "#9aa3af";
+/** Past six slices a pie stops being readable, so the tail is folded into one "Other". */
+const MAX_SLICES = 6;
 
 /**
  * Country names without a dependency. `Intl.DisplayNames` ships with the browser and localises
@@ -74,6 +84,34 @@ export function AdminTraffic({ user }: { user: AuthUser | null }) {
   const topCountry = summary?.countries[0];
   // Short labels: 90 daily ticks will not fit, so only the day-of-month is drawn.
   const chartData = (summary?.daily ?? []).map((day) => ({ ...day, label: day.date.slice(8) }));
+
+  // Six named slices plus one "Other", so the donut stays readable however many countries appear.
+  const countrySlices = (() => {
+    const rows = summary?.countries.filter((row) => row.countryCode !== "??") ?? [];
+    const total = rows.reduce((sum, row) => sum + row.views, 0) || 1;
+    const head = rows.slice(0, MAX_SLICES);
+    const tail = rows.slice(MAX_SLICES);
+    const slices = head.map((row, index) => ({
+      code: row.countryCode,
+      colour: SLICE_COLOURS[index % SLICE_COLOURS.length],
+      label: `${flagFor(row.countryCode)}  ${countryName(row.countryCode, locale) ?? row.countryCode}`,
+      share: Math.round((row.views / total) * 100),
+      views: row.views,
+    }));
+
+    if (tail.length) {
+      const views = tail.reduce((sum, row) => sum + row.views, 0);
+      slices.push({
+        code: "other",
+        colour: OTHER_COLOUR,
+        label: `${t("Other")} (${tail.length})`,
+        share: Math.round((views / total) * 100),
+        views,
+      });
+    }
+
+    return slices;
+  })();
 
   return (
     <div className="admin-traffic">
@@ -185,24 +223,45 @@ export function AdminTraffic({ user }: { user: AuthUser | null }) {
                 <span>{t("By page views")}</span>
               </div>
               {summary.hasCountryData ? (
-                <div className="admin-traffic-list">
-                  {summary.countries.slice(0, 10).map((row) => {
-                    const share = summary.totalViews ? Math.round((row.views / summary.totalViews) * 100) : 0;
-                    return (
-                      <div className="admin-traffic-row" key={row.countryCode}>
-                        <span aria-hidden="true">{flagFor(row.countryCode)}</span>
-                        <strong>{countryName(row.countryCode, locale) ?? t("Unknown")}</strong>
-                        <span className="admin-traffic-bar" aria-hidden="true">
-                          <span style={{ width: `${Math.max(2, share)}%` }} />
-                        </span>
-                        <span className="mono-figure">{v(row.views.toLocaleString("en-US"))}</span>
-                      </div>
-                    );
-                  })}
+                <div className="admin-traffic-donut">
+                  <ResponsiveContainer height={190} width="100%">
+                    <PieChart>
+                      <Pie
+                        data={countrySlices}
+                        dataKey="views"
+                        innerRadius={52}
+                        nameKey="label"
+                        outerRadius={82}
+                        paddingAngle={2}
+                        stroke="var(--surface)"
+                        strokeWidth={2}
+                      >
+                        {countrySlices.map((slice) => (
+                          <Cell fill={slice.colour} key={slice.code} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        contentStyle={{ border: "1px solid #e2e5eb", borderRadius: 8, fontSize: 13 }}
+                        formatter={(value, name) => [`${Number(value ?? 0)} ${t("Page views")}`, String(name ?? "")]}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  {/* The legend is not decoration: three of the slice colours sit under 3:1 on
+                      this surface, so identity has to be carried by name and number too. */}
+                  <ul className="admin-traffic-legend">
+                    {countrySlices.map((slice) => (
+                      <li key={slice.code}>
+                        <i style={{ background: slice.colour }} aria-hidden="true" />
+                        <span>{slice.label}</span>
+                        <em className="mono-figure">{v(slice.views.toLocaleString("en-US"))}</em>
+                        <b className="mono-figure">{v(`${slice.share} %`)}</b>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               ) : (
                 <p className="panel-note">
-                  {t("No country data yet. Add the GeoLite2 database to place visitors on a map.")}
+                  {t("No country data yet. Redeploy the API to build the country database.")}
                 </p>
               )}
             </div>
@@ -216,12 +275,22 @@ export function AdminTraffic({ user }: { user: AuthUser | null }) {
                 {summary.topPaths.length === 0 ? (
                   <p className="panel-note">{t("No visits recorded yet.")}</p>
                 ) : (
-                  summary.topPaths.map((row) => (
-                    <div className="admin-traffic-row compact" key={row.path}>
-                      <strong className="mono-figure">{row.path}</strong>
-                      <span className="mono-figure">{v(row.views.toLocaleString("en-US"))}</span>
-                    </div>
-                  ))
+                  // A ranking of close values with long text labels: bars, not slices. Widths are
+                  // relative to the busiest page so the comparison is against the leader.
+                  summary.topPaths.map((row) => {
+                    const top = summary.topPaths[0]?.views || 1;
+                    return (
+                      <div className="admin-traffic-path" key={row.path}>
+                        <span className="admin-traffic-path-head">
+                          <strong className="mono-figure">{row.path}</strong>
+                          <em className="mono-figure">{v(row.views.toLocaleString("en-US"))}</em>
+                        </span>
+                        <span className="admin-traffic-bar" aria-hidden="true">
+                          <span style={{ width: `${Math.max(3, Math.round((row.views / top) * 100))}%` }} />
+                        </span>
+                      </div>
+                    );
+                  })
                 )}
               </div>
               {summary.referrers.length > 0 ? (

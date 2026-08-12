@@ -1211,6 +1211,8 @@ const bn: Record<string, string> = {
   offers: "অফার",
   "vs. today's": "আজকের",
   "Remove photo": "ছবি সরান",
+  "Other": "অন্যান্য",
+  "No country data yet. Redeploy the API to build the country database.": "এখনো দেশের তথ্য নেই। দেশের ডেটাবেস তৈরি করতে API আবার ডিপ্লয় করুন।",
   "New conversation": "নতুন কথোপকথন",
   "Write the first message to start this conversation.": "এই কথোপকথন শুরু করতে প্রথম বার্তাটি লিখুন।",
   "Messages": "বার্তা",

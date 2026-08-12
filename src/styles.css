@@ -14998,3 +14998,74 @@ canvas {
   display: flex;
   flex-direction: column;
 }
+
+/* ---- Admin · Traffic: donut and ranked pages ---- */
+.admin-traffic-donut {
+  padding: 14px 18px 18px;
+}
+.admin-traffic-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.admin-traffic-legend li {
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+.admin-traffic-legend i {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+.admin-traffic-legend span {
+  overflow: hidden;
+  color: var(--fg-subtle);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.admin-traffic-legend em {
+  color: var(--fg);
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+}
+.admin-traffic-legend b {
+  min-width: 42px;
+  color: var(--fg-muted);
+  font-weight: 400;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.admin-traffic-path {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 11px 18px;
+}
+.admin-traffic-path:not(:last-child) {
+  border-bottom: 1px solid var(--surface-sunken);
+}
+.admin-traffic-path-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.admin-traffic-path-head strong {
+  overflow: hidden;
+  color: var(--fg-subtle);
+  font-size: 13px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.admin-traffic-path-head em {
+  color: var(--fg);
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+}
