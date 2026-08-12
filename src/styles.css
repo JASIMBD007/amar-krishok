@@ -15392,3 +15392,12 @@ canvas {
     order: 1;
   }
 }
+
+@media (max-width: 768px) {
+  /* The ticker is a marquee sized for a desktop row. On a phone only one or two crops fit, so it
+     renders as fragments — ")0 0.0 %", "00 0.0 %" — which reads as a broken page rather than as
+     market data. Market rates is a whole screen in the nav; the strip earns nothing here. */
+  .rate-ticker {
+    display: none;
+  }
+}
