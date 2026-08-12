@@ -137,7 +137,10 @@ export const pickupOptions = ["Within 24 h", "2-3 days", "Buyer collects"] as co
 
 /** Transport is quoted per mon on the lot page and the checkout summary. */
 export const TRANSPORT_PER_MON = 78;
-export const PLATFORM_FEE_RATE = 0.01;
+/** Keep in step with PLATFORM_FEE_RATE in backend/src/modules/orders/escrow.ts, which charges it. */
+export const PLATFORM_FEE_RATE = 0.015;
+/** Pre-formatted because 0.015 * 100 is the kind of arithmetic that prints 1.4999999999999998. */
+export const PLATFORM_FEE_LABEL = "1.5 %";
 export const MIN_ORDER_MON = 20;
 export const QTY_STEP_MON = 10;
 

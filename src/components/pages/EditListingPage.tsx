@@ -14,7 +14,7 @@ import {
 } from "../../api/auth";
 import { useTranslate, useValueText } from "../../i18n";
 import {
-  PLATFORM_FEE_RATE,
+  PLATFORM_FEE_LABEL,
   cropNamesBn,
   deltaVsRate,
   fairVerdict,
@@ -438,7 +438,7 @@ export function EditListingPage({ user }: { user: AuthUser | null }) {
             <span className="edit-rail-eyebrow">{t("Lot value")}</span>
             <strong className="mono-figure edit-rail-value">{v(taka(lotValue))}</strong>
             <span className="edit-rail-note">
-              {t("Before the")} {v(`${PLATFORM_FEE_RATE * 100} %`)} {t("platform fee")}
+              {t("Before the")} {v(PLATFORM_FEE_LABEL)} {t("platform fee")}
             </span>
           </div>
         </aside>

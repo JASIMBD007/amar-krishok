@@ -7,6 +7,7 @@ import { useLanguage, useTranslate, useValueText } from "../../i18n";
 import {
   cropNamesBn,
   MIN_ORDER_MON,
+  PLATFORM_FEE_LABEL,
   QTY_STEP_MON,
   monToKg,
   orderCosts,
@@ -297,7 +298,10 @@ export function LotDetailPage({ lots, user }: { lots: CropLot[]; user: AuthUser 
                 <dd className="mono-figure">{v(taka(costs.transport))}</dd>
               </div>
               <div>
-                <dt>{t("Platform fee · 1 %")}</dt>
+                {/* The rate comes from the constant, so the label cannot drift from what is charged. */}
+                <dt>
+                  {t("Platform fee")} · {v(PLATFORM_FEE_LABEL)}
+                </dt>
                 <dd className="mono-figure">{v(taka(costs.fee))}</dd>
               </div>
               <div className="cost-total">

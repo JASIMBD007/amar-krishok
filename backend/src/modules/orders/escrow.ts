@@ -12,7 +12,8 @@ export const ESCROW_STAGES: OrderStatus[] = [
   OrderStatus.COMPLETED,
 ];
 
-export const PLATFORM_FEE_RATE = 0.01;
+/** Keep in step with PLATFORM_FEE_RATE in src/market/marketData.ts, which quotes it to buyers. */
+export const PLATFORM_FEE_RATE = 0.015;
 
 /** 1-based stage number for the timeline. PENDING is treated as stage 1 alongside MATCHING. */
 export function stageOf(status: OrderStatus) {

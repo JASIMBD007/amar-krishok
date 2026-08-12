@@ -898,7 +898,6 @@ const bn: Record<string, string> = {
   rating: "রেটিং",
   "Reduce quantity": "পরিমাণ কমান",
   "Increase quantity": "পরিমাণ বাড়ান",
-  "Platform fee · 1 %": "প্ল্যাটফর্ম ফি · ১ %",
   "Platform fee": "প্ল্যাটফর্ম ফি",
   Transport: "পরিবহন",
   Total: "মোট",
