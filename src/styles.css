@@ -15359,3 +15359,36 @@ canvas {
     display: none;
   }
 }
+
+@media (max-width: 768px) {
+  /* The footer stacked into one long column — three headings and eleven links, most of a screen
+     of scrolling past the page's actual end. Three columns fit a phone at this size. */
+  .site-footer-inner {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 22px;
+  }
+  .site-footer-columns {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px 12px;
+  }
+  .site-footer-columns a {
+    font-size: 13px;
+  }
+  .site-footer-heading {
+    font-size: 11px;
+  }
+
+  /* Filters were ordered after the results, which on a phone means after nine lot cards and the
+     footer — reachable in theory, gone in practice. They come first again, but capped to about a
+     third of the screen and scrolling inside themselves, so the listings stay in view. */
+  .market-layout > .filter-rail {
+    order: 0;
+    max-height: 42vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .market-layout > :not(.filter-rail) {
+    order: 1;
+  }
+}
