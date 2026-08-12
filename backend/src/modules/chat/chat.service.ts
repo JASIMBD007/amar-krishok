@@ -109,35 +109,52 @@ export class ChatService {
 
   async createThread(dto: CreateChatThreadDto, requester?: AuthenticatedUser) {
     const isTrustedParticipant = requester && requester.role !== Role.ADMIN;
-    const participantId = isTrustedParticipant ? requester.id : undefined;
+    // A client-supplied participantId is only honoured for staff. This endpoint accepts anonymous
+    // callers, so trusting it generally would let anyone attach a thread to another user's account.
+    const participantId = isTrustedParticipant
+      ? requester.id
+      : requester?.role === Role.ADMIN
+        ? dto.participantId
+        : undefined;
     const participantName = isTrustedParticipant ? requester.name : dto.participantName;
     const participantPhone = isTrustedParticipant ? requester.phone : dto.participantPhone;
     const participantRole = isTrustedParticipant ? requester.role : toPrismaRole(dto.participantRole);
 
+    // Staff can open a conversation with a user. The opening message is then theirs — attributing
+    // it to the participant would put words in a user's mouth inside a support record.
+    const openedByStaff = requester?.role === Role.ADMIN;
+    const senderName = openedByStaff ? requester.name : participantName;
+    const senderRole = openedByStaff ? Role.ADMIN : participantRole;
+    const senderId = openedByStaff ? requester.id : participantRole === Role.GUEST ? undefined : participantId;
+
     const thread = await this.prisma.chatThread.create({
       data: {
-        messages: {
-          create: {
-            senderId: participantRole === Role.GUEST ? undefined : participantId,
-            senderName: participantName,
-            senderRole: participantRole,
-            text: dto.message,
-          },
-        },
+        messages: { create: { senderId, senderName, senderRole, text: dto.message } },
         participantId,
         participantName,
         participantPhone,
         participantRole,
-        status: ChatStatus.WAITING,
+        // A thread staff opened is already answered by them; it waits on the user, not on us.
+        staffReadAt: openedByStaff ? new Date() : undefined,
+        status: openedByStaff ? ChatStatus.OPEN : ChatStatus.WAITING,
         subject: dto.subject,
       },
       include: { messages: true },
     });
 
-    await this.notifications.notifyAdmins({
-      body: `${participantName}: ${dto.message}`,
-      title: "New chat message",
-    });
+    if (openedByStaff) {
+      if (participantId) {
+        await this.notifications.notifyUser(participantId, {
+          body: dto.message,
+          title: "Message from AmarKrishok support",
+        });
+      }
+    } else {
+      await this.notifications.notifyAdmins({
+        body: `${participantName}: ${dto.message}`,
+        title: "New chat message",
+      });
+    }
 
     return thread;
   }

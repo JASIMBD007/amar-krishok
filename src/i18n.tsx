@@ -1211,6 +1211,8 @@ const bn: Record<string, string> = {
   offers: "অফার",
   "vs. today's": "আজকের",
   "Remove photo": "ছবি সরান",
+  "New conversation": "নতুন কথোপকথন",
+  "Write the first message to start this conversation.": "এই কথোপকথন শুরু করতে প্রথম বার্তাটি লিখুন।",
   "Messages": "বার্তা",
   "Conversations with AmarKrishok support": "আমারকৃষক সাপোর্টের সাথে কথোপকথন",
   "AmarKrishok support": "আমারকৃষক সাপোর্ট",

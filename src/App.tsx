@@ -1,7 +1,7 @@
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate, NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { usePageViewBeacon } from "./analytics/usePageViewBeacon";
-import { MessengerPanel } from "./components/messages/MessengerPanel";
+import { MessengerPanel, type ComposeTarget } from "./components/messages/MessengerPanel";
 import { fetchMyThreads } from "./api/chat";
 import {
   LogOut,
@@ -263,6 +263,7 @@ export default function App() {
   const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
   const [messengerOpen, setMessengerOpen] = useState(false);
   const [messengerFocusId, setMessengerFocusId] = useState<string | null>(null);
+  const [composeTarget, setComposeTarget] = useState<ComposeTarget | null>(null);
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [notificationError, setNotificationError] = useState("");
   const [marketplaceError, setMarketplaceError] = useState("");
@@ -691,6 +692,7 @@ export default function App() {
                   closeHeaderMenus();
                   setNotificationPanelOpen(false);
                   setMessengerFocusId(null);
+                  setComposeTarget(null);
                   setMessengerOpen((value) => !value);
                 }}
               >
@@ -699,6 +701,7 @@ export default function App() {
               </button>
               {messengerOpen ? (
                 <MessengerPanel
+                  composeWith={composeTarget}
                   focusThreadId={messengerFocusId}
                   locale={language}
                   onClose={() => setMessengerOpen(false)}
@@ -916,6 +919,14 @@ export default function App() {
           element={
             <ProtectedRoute allowedRoles={["admin"]} user={user} t={t}>
               <AdminPage
+                onMessageUser={(target) => {
+                  // Staff message from a user record; the panel finds or starts that conversation.
+                  closeHeaderMenus();
+                  setNotificationPanelOpen(false);
+                  setMessengerFocusId(null);
+                  setComposeTarget(target);
+                  setMessengerOpen(true);
+                }}
                 chatThreads={chatThreads}
                 orderCount={notificationOrders.length}
                 openDisputeCount={notificationOrders.filter((order) => Boolean(order.disputeOpenedAt)).length}

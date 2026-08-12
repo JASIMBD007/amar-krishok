@@ -110,6 +110,7 @@ export function AdminPage({
   chatThreads,
   onAdminReply,
   onLogout,
+  onMessageUser,
   onThreadOpen,
   onUpdateRegistration,
   openDisputeCount,
@@ -120,6 +121,8 @@ export function AdminPage({
   chatThreads: ChatThread[];
   onAdminReply: (threadId: string, text: string) => void;
   onLogout: () => void;
+  /** Opens the header messenger on a conversation with this person. */
+  onMessageUser: (target: { id?: string; name: string; phone: string; role: "buyer" | "farmer" }) => void;
   onThreadOpen: (threadId: string) => void;
   onUpdateRegistration: (id: string, status: AccountStatus) => void;
   openDisputeCount: number;
@@ -272,7 +275,7 @@ export function AdminPage({
         {section === "activity" ? <AdminActivity /> : null}
         {section === "traffic" ? <AdminTraffic user={user} /> : null}
         {operationTab ? <MarketSection activeTab={operationTab} onUpdateRegistration={updateRegistration} registrations={accounts} showTabs={false} staffRole={staffRole} user={user} /> : null}
-        {section === "users" ? <AdminUsers onNavigate={openSection} onNotice={setNotice} onOpenDocument={openDocument} onSetVerified={setAccountVerified} onUpdateRegistration={updateRegistration} registrations={accounts} staffRole={staffRole} /> : null}
+        {section === "users" ? <AdminUsers onMessageUser={onMessageUser} onNavigate={openSection} onNotice={setNotice} onOpenDocument={openDocument} onSetVerified={setAccountVerified} onUpdateRegistration={updateRegistration} registrations={accounts} staffRole={staffRole} /> : null}
         {section === "disputes" ? <AdminDisputes onNavigate={openSection} onNotice={setNotice} /> : null}
         {section === "inbox" ? <AdminInbox chatThreads={chatThreads} onAdminReply={onAdminReply} onThreadOpen={onThreadOpen} /> : null}
         {section === "roles" && staffRole === "super" ? <AdminRoles onNotice={setNotice} /> : null}

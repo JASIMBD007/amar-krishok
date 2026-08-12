@@ -380,6 +380,7 @@ function toConsoleUsers(registrations: RegisteredAccount[]): ConsoleUser[] {
 }
 
 export function AdminUsers({
+  onMessageUser,
   onNavigate,
   onNotice,
   onOpenDocument,
@@ -389,6 +390,7 @@ export function AdminUsers({
   staffRole,
 }: {
   onNavigate: (section: AdminConsoleSection) => void;
+  onMessageUser: (target: { id?: string; name: string; phone: string; role: "buyer" | "farmer" }) => void;
   onNotice: (message: string) => void;
   onOpenDocument: (value: string) => void;
   onSetVerified: (id: string, verified: boolean) => void;
@@ -481,7 +483,7 @@ export function AdminUsers({
                 {selected.status === "Restricted" ? (
                   <button className="primary" onClick={() => update("active", `${selected.name} restored. Verify their documents to let them trade.`)} type="button">{t("Restore account")}</button>
                 ) : null}
-                <button onClick={() => { setSelectedId(null); onNavigate("inbox"); }} type="button">{t("Message this user")}</button>
+                <button onClick={() => { setSelectedId(null); onMessageUser({ id: selected.account?.id, name: selected.name, phone: selected.phone, role: selected.role === "Farmer" ? "farmer" : "buyer" }); }} type="button">{t("Message this user")}</button>
                 <button onClick={() => { onNotice(`A new 4-digit PIN was sent to ${selected.phone}.`); setSelectedId(null); }} type="button">{t("Send new login PIN")}</button>
                 {staffRole === "super" && selected.status !== "Restricted" ? <button className="danger" onClick={() => update("rejected", `${selected.name} restricted — listings hidden, payouts paused.`)} type="button">{t("Restrict account")}</button> : null}
               </div>

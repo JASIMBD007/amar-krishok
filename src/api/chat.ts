@@ -103,13 +103,21 @@ export async function markThreadRead(accessToken: string, threadId: string, isSt
  */
 export async function openThread(
   accessToken: string,
-  input: { participantName: string; participantPhone: string; participantRole: "buyer" | "farmer"; subject: string; text: string },
+  input: {
+    participantId?: string;
+    participantName: string;
+    participantPhone: string;
+    participantRole: "buyer" | "farmer";
+    subject: string;
+    text: string;
+  },
   isStaff: boolean,
 ) {
   const thread = await apiRequest<ApiChatThread>("/api/chat/threads", {
     accessToken,
     body: JSON.stringify({
       message: input.text,
+      participantId: input.participantId,
       participantName: input.participantName,
       participantPhone: input.participantPhone,
       participantRole: input.participantRole,

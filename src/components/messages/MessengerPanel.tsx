@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Send, X } from "lucide-react";
 import { ApiRequestError } from "../../api/auth";
-import { fetchMyThreads, markThreadRead, sendThreadMessage, type MessageThread } from "../../api/chat";
+import { fetchMyThreads, markThreadRead, openThread as openNewThread, sendThreadMessage, type MessageThread } from "../../api/chat";
 import { useTranslate } from "../../i18n";
 import type { AuthUser, ChatSenderRole } from "../../types";
 import { ListLoading } from "../EmptyState";
@@ -31,13 +31,20 @@ function timeLabel(value: string, locale: string) {
  * Staff see every conversation and reply as support; a farmer or buyer sees only their own. The
  * same component serves both because the only real difference is whose messages sit on the right.
  */
+/** Staff starting a conversation with someone who has no thread yet. */
+export type ComposeTarget = { id?: string; name: string; phone: string; role: "buyer" | "farmer" };
+
+const NEW_THREAD = "__new__";
+
 export function MessengerPanel({
+  composeWith,
   focusThreadId,
   locale,
   onClose,
   onUnreadChange,
   user,
 }: {
+  composeWith?: ComposeTarget | null;
   /** Set when staff opened this from a user record, so it lands straight in that conversation. */
   focusThreadId?: string | null;
   locale: string;
@@ -57,6 +64,7 @@ export function MessengerPanel({
 
   const accessToken = user.accessToken;
   const openThread = threads.find((thread) => thread.id === openId) ?? null;
+  const composing = openId === NEW_THREAD && Boolean(composeWith);
 
   const load = useCallback(() => {
     if (!accessToken) {
@@ -78,7 +86,20 @@ export function MessengerPanel({
 
   useEffect(() => load(), [load]);
 
-  useEffect(() => setOpenId(focusThreadId ?? null), [focusThreadId]);
+  useEffect(() => {
+    if (focusThreadId) {
+      setOpenId(focusThreadId);
+      return;
+    }
+
+    if (!composeWith) {
+      return;
+    }
+
+    // One conversation per person: reuse theirs if it exists rather than starting a second.
+    const existing = threads.find((thread) => thread.participantPhone === composeWith.phone);
+    setOpenId(existing ? existing.id : NEW_THREAD);
+  }, [composeWith, focusThreadId, threads]);
 
   // Opening a conversation is what marks it read; the badge should not clear from the list alone.
   useEffect(() => {
@@ -109,15 +130,37 @@ export function MessengerPanel({
 
   const send = () => {
     const text = draft.trim();
-    if (!accessToken || !openThread || !text || isSending) {
+    if (!accessToken || !text || isSending || (!openThread && !composing)) {
       return;
     }
 
     setIsSending(true);
     const role: ChatSenderRole = isStaff ? "admin" : (user.role as ChatSenderRole);
-    sendThreadMessage(accessToken, openThread.id, text, { name: user.name, role }, isStaff)
+    // Composing has no thread yet, so the first message is what creates it.
+    const request =
+      composing && composeWith
+        ? openNewThread(
+            accessToken,
+            {
+              participantId: composeWith.id,
+              participantName: composeWith.name,
+              participantPhone: composeWith.phone,
+              participantRole: composeWith.role,
+              subject: "Message from AmarKrishok support",
+              text,
+            },
+            isStaff,
+          )
+        : sendThreadMessage(accessToken, openThread!.id, text, { name: user.name, role }, isStaff);
+
+    request
       .then((updated) => {
-        setThreads((current) => current.map((thread) => (thread.id === updated.id ? updated : thread)));
+        setThreads((current) =>
+          current.some((thread) => thread.id === updated.id)
+            ? current.map((thread) => (thread.id === updated.id ? updated : thread))
+            : [updated, ...current],
+        );
+        setOpenId(updated.id);
         setDraft("");
         setError("");
       })
@@ -135,14 +178,14 @@ export function MessengerPanel({
   return (
     <div className="messenger-panel" role="dialog" aria-label={t("Messages")}>
       <header className="messenger-head">
-        {openThread ? (
+        {openThread || composing ? (
           <button aria-label={t("Back")} className="messenger-back" type="button" onClick={() => setOpenId(null)}>
             <ArrowLeft aria-hidden="true" size={18} />
           </button>
         ) : null}
         <div>
-          <strong>{openThread ? openThread.participantName : t("Messages")}</strong>
-          <small>{openThread ? openThread.subject : t("Conversations with AmarKrishok support")}</small>
+          <strong>{openThread?.participantName ?? (composing ? composeWith!.name : t("Messages"))}</strong>
+          <small>{openThread?.subject ?? (composing ? t("New conversation") : t("Conversations with AmarKrishok support"))}</small>
         </div>
         <button aria-label={t("Close")} className="messenger-close" type="button" onClick={onClose}>
           <X aria-hidden="true" size={18} />
@@ -152,7 +195,7 @@ export function MessengerPanel({
       {error ? <p className="messenger-error">{t(error)}</p> : null}
       {isLoading ? <ListLoading label={t("Loading messages...")} /> : null}
 
-      {!isLoading && !openThread ? (
+      {!isLoading && !openThread && !composing ? (
         <div className="messenger-list">
           {sorted.length === 0 ? (
             <p className="messenger-empty">
@@ -178,10 +221,11 @@ export function MessengerPanel({
         </div>
       ) : null}
 
-      {openThread ? (
+      {openThread || composing ? (
         <>
           <div className="messenger-thread" ref={scrollRef}>
-            {openThread.messages.map((message) => {
+            {composing ? <p className="messenger-empty">{t("Write the first message to start this conversation.")}</p> : null}
+            {(openThread?.messages ?? []).map((message) => {
               // "Mine" is whichever side the viewer is on, so the layout reads the same for both.
               const fromStaff = message.senderRole === "admin";
               const mine = isStaff ? fromStaff : !fromStaff;
