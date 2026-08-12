@@ -1232,6 +1232,8 @@ const bn: Record<string, string> = {
   "No visits recorded yet.": "এখনো কোনো ভিজিট রেকর্ড হয়নি।",
   "Loading traffic...": "ভিজিটর তথ্য লোড হচ্ছে...",
   "Could not load traffic.": "ভিজিটর তথ্য লোড করা যায়নি।",
+  "Traffic needs a newer API build. Deploy the backend, then reload this page.":
+    "ভিজিটর তথ্যের জন্য নতুন API বিল্ড দরকার। ব্যাকএন্ড ডিপ্লয় করে পাতাটি রিলোড করুন।",
   "Traffic summary": "ভিজিটর সারসংক্ষেপ",
   "Date range": "সময়সীমা",
   "Over the last": "গত",

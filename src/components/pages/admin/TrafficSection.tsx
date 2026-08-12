@@ -57,6 +57,13 @@ export function AdminTraffic({ user }: { user: AuthUser | null }) {
         setError("");
       })
       .catch((requestError) => {
+        // A 404 here means the API is older than this page: the route ships with the analytics
+        // module. Saying so beats showing the server's raw "Cannot GET /api/..." to an operator.
+        if (requestError instanceof ApiRequestError && requestError.status === 404) {
+          setError("Traffic needs a newer API build. Deploy the backend, then reload this page.");
+          return;
+        }
+
         setError(requestError instanceof ApiRequestError ? requestError.message : "Could not load traffic.");
       })
       .finally(() => setIsLoading(false));
