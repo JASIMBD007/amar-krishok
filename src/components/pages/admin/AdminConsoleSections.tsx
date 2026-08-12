@@ -28,6 +28,7 @@ import type { AccountStatus, AuthUser, ChatMessage, ChatThread, RegisteredAccoun
 export type AdminConsoleSection =
   | "overview"
   | "activity"
+  | "traffic"
   | "orders"
   | "verification"
   | "listings"

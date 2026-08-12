@@ -5,6 +5,7 @@ import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
 import { validateEnvironment } from "./config/environment";
 import { AccountModule } from "./modules/account/account.module";
 import { AdminModule } from "./modules/admin/admin.module";
+import { AnalyticsModule } from "./modules/analytics/analytics.module";
 import { AuthModule } from "./modules/auth/auth.module";
 import { ChatModule } from "./modules/chat/chat.module";
 import { DistrictsModule } from "./modules/districts/districts.module";
@@ -28,6 +29,7 @@ import { UploadsModule } from "./modules/uploads/uploads.module";
     AccountModule,
     AuthModule,
     AdminModule,
+    AnalyticsModule,
     DistrictsModule,
     LotsModule,
     OffersModule,

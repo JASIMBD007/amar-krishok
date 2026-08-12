@@ -11,3 +11,6 @@ backend/.backend.log
 
 # Local Netlify folder
 .netlify
+
+# GeoLite2 country table, built at deploy time. MaxMind does not permit redistribution.
+backend/geo/

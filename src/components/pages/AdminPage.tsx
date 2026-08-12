@@ -5,6 +5,7 @@ import {
   BadgeCheck,
   BarChart3,
   Check,
+  Globe,
   History,
   LayoutDashboard,
   LogOut,
@@ -38,10 +39,12 @@ import {
   type AdminConsoleSection,
   type AdminStaffRole,
 } from "./admin/AdminConsoleSections";
+import { AdminTraffic } from "./admin/TrafficSection";
 
 const SECTION_META: Record<AdminConsoleSection, { path: string; title: string; subtitle: string }> = {
   overview: { path: "dashboard", title: "Dashboard", subtitle: "Platform health for today · 08:00 · all figures live" },
   activity: { path: "activity", title: "Activity log", subtitle: "Every staff action on the platform, newest first" },
+  traffic: { path: "traffic", title: "Traffic", subtitle: "Who is visiting the site, where from, and which pages they open" },
   orders: { path: "orders", title: "Orders & escrow", subtitle: "Release, refund or dispute any escrow held on the platform" },
   verification: { path: "verification", title: "Verification queue", subtitle: "Farmers waiting for NID and land-record checks" },
   listings: { path: "listings", title: "Listing moderation", subtitle: "Suspend listings that break the pricing or photo rules" },
@@ -58,6 +61,7 @@ const NAV_GROUPS = [
     items: [
       { section: "overview" as const, label: "Dashboard", icon: LayoutDashboard },
       { section: "activity" as const, label: "Activity log", icon: History },
+      { section: "traffic" as const, label: "Traffic", icon: Globe },
     ],
   },
   {
@@ -231,6 +235,7 @@ export function AdminPage({
 
         {section === "overview" ? <AdminDashboard registrations={accounts} user={user} /> : null}
         {section === "activity" ? <AdminActivity /> : null}
+        {section === "traffic" ? <AdminTraffic user={user} /> : null}
         {operationTab ? <MarketSection activeTab={operationTab} onUpdateRegistration={updateRegistration} registrations={accounts} showTabs={false} staffRole={staffRole} user={user} /> : null}
         {section === "users" ? <AdminUsers onNavigate={openSection} onNotice={setNotice} onUpdateRegistration={updateRegistration} registrations={accounts} staffRole={staffRole} /> : null}
         {section === "disputes" ? <AdminDisputes onNavigate={openSection} onNotice={setNotice} /> : null}

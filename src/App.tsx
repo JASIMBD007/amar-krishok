@@ -1,5 +1,6 @@
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate, NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { usePageViewBeacon } from "./analytics/usePageViewBeacon";
 import {
   LogOut,
   Menu,
@@ -221,6 +222,7 @@ export default function App() {
     updateRegistrationStatus,
     user,
   } = useAppStore();
+  usePageViewBeacon(user);
   const t = useCallback((text: string) => translate(language, text), [language]);
   const [backendNotifications, setBackendNotifications] = useState<AppNotification[] | null>(null);
   const [notificationOrders, setNotificationOrders] = useState<BackendOrder[]>([]);

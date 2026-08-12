@@ -1059,3 +1059,25 @@ model LegacyAuditLog {
 
   @@map("AuditLog")
 }
+
+/// One page view, recorded by a first-party beacon.
+///
+/// No IP address is stored. `visitorHash` is a digest of the address, the user agent and a salt
+/// that rotates daily, which is enough to count a person once per day and useless for identifying
+/// them afterwards. Because the salt changes at midnight the hash cannot be joined across days,
+/// so this table answers "how many people" without becoming a record of who.
+model PageView {
+  id           String   @id @default(cuid())
+  /// Pathname only. Query strings are dropped at the edge in case they carry a phone or a token.
+  path         String
+  /// ISO 3166-1 alpha-2, or null when the address could not be placed.
+  countryCode  String?  @db.Char(2)
+  visitorHash  String
+  /// Host only, so an inbound link tells us the source without recording the visitor's full URL.
+  referrerHost String?
+  viewedAt     DateTime @default(now())
+
+  @@index([viewedAt])
+  @@index([countryCode, viewedAt])
+  @@index([visitorHash, viewedAt])
+}
