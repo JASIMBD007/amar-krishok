@@ -48,6 +48,7 @@ import {
   OrderTrackingPage,
   PostCropPage,
   PricesPage,
+  ProfilePage,
   RegisterPage,
   SignedOutPage,
 } from "./components/pages";
@@ -588,7 +589,9 @@ export default function App() {
       )
     : undefined;
   const accountDistrict = user?.district || currentRegistration?.district || "";
-  const participantProfilePath = user?.role === "buyer" ? "/buyer#buyer-profile" : "/farmer#farmer-profile";
+  // Was an anchor into the buyer workspace and the farmer desk. The farmer desk lost its
+  // profile panel when it was rebuilt, so that link went nowhere. Both roles get a real page.
+  const participantProfilePath = "/profile";
   const participantRoleLabel = user?.role === "buyer" ? "Buyer" : "Seller";
   const accountInitials = user
     ? user.name
@@ -945,6 +948,14 @@ export default function App() {
         <Route path="/register/buyer" element={<RegisterPage role="buyer" onRegister={handleRegister} />} />
         <Route path="/register/farmer" element={<RegisterPage role="farmer" onRegister={handleRegister} />} />
         <Route path="/signed-out" element={<SignedOutPage />} />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute allowedRoles={["buyer", "farmer"]} user={user} t={t}>
+              <ProfilePage user={user} onProfileSaved={handleProfileSaved} />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/market" element={<Navigate to="/marketplace" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

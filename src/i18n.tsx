@@ -1211,6 +1211,8 @@ const bn: Record<string, string> = {
   offers: "অফার",
   "vs. today's": "আজকের",
   "Remove photo": "ছবি সরান",
+  "Buyer profile": "ক্রেতা প্রোফাইল",
+  "Farmer profile": "কৃষক প্রোফাইল",
   "Loading disputes...": "বিরোধ লোড হচ্ছে...",
   "Could not load disputes.": "বিরোধ লোড করা যায়নি।",
   "No open disputes. Escrow is moving normally.": "কোনো খোলা বিরোধ নেই। এসক্রো স্বাভাবিকভাবে চলছে।",

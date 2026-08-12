@@ -15401,3 +15401,42 @@ canvas {
     display: none;
   }
 }
+
+/* ---- Account profile page ---- */
+.profile-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 1080px;
+}
+.profile-page-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+.profile-page-avatar {
+  display: grid;
+  flex: none;
+  width: 52px;
+  height: 52px;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--ak-green-soft);
+  color: var(--ak-green-deep);
+  font-size: 16px;
+  font-weight: 700;
+}
+.profile-page-head h1 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.profile-page-head span {
+  color: var(--fg-muted);
+  font-size: 14px;
+}
