@@ -1,9 +1,12 @@
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate, NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { usePageViewBeacon } from "./analytics/usePageViewBeacon";
+import { MessengerPanel } from "./components/messages/MessengerPanel";
+import { fetchMyThreads } from "./api/chat";
 import {
   LogOut,
   Menu,
+  MessageCircle,
   Shield,
   X,
 } from "lucide-react";
@@ -224,10 +227,43 @@ export default function App() {
   } = useAppStore();
   usePageViewBeacon(user);
   const t = useCallback((text: string) => translate(language, text), [language]);
+
+  // The badge has to be right before the panel is ever opened, so the count is polled on its own.
+  // A minute is slow enough to be free and fast enough that a reply does not sit unnoticed.
+  useEffect(() => {
+    const accessToken = user?.accessToken;
+    if (!accessToken) {
+      setUnreadMessages(0);
+      return;
+    }
+
+    let active = true;
+    const isStaff = user.role === "admin";
+    const count = () =>
+      fetchMyThreads(accessToken, isStaff)
+        .then((threads) => {
+          if (active) {
+            setUnreadMessages(threads.reduce((total, thread) => total + thread.unread, 0));
+          }
+        })
+        .catch(() => {
+          // An unreachable backend should not put an error in the header.
+        });
+
+    void count();
+    const timer = window.setInterval(count, 60_000);
+    return () => {
+      active = false;
+      window.clearInterval(timer);
+    };
+  }, [user?.accessToken, user?.role]);
   const [backendNotifications, setBackendNotifications] = useState<AppNotification[] | null>(null);
   const [notificationOrders, setNotificationOrders] = useState<BackendOrder[]>([]);
   const [notificationLots, setNotificationLots] = useState<BackendCropLot[]>([]);
   const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
+  const [messengerOpen, setMessengerOpen] = useState(false);
+  const [messengerFocusId, setMessengerFocusId] = useState<string | null>(null);
+  const [unreadMessages, setUnreadMessages] = useState(0);
   const [notificationError, setNotificationError] = useState("");
   const [marketplaceError, setMarketplaceError] = useState("");
   const [marketplaceLots, setMarketplaceLots] = useState<CropLot[]>([]);
@@ -642,6 +678,35 @@ export default function App() {
               open={notificationPanelOpen}
               reviewedIds={reviewedNotificationIds}
             />
+          ) : null}
+          {/* Messages sit beside notifications: both are "something is waiting for you". */}
+          {user ? (
+            <div className="header-messages">
+              <button
+                aria-expanded={messengerOpen}
+                aria-label={t("Messages")}
+                className="icon-button header-icon-button"
+                type="button"
+                onClick={() => {
+                  closeHeaderMenus();
+                  setNotificationPanelOpen(false);
+                  setMessengerFocusId(null);
+                  setMessengerOpen((value) => !value);
+                }}
+              >
+                <MessageCircle aria-hidden="true" size={20} />
+                {unreadMessages > 0 ? <em className="header-badge">{unreadMessages > 9 ? "9+" : unreadMessages}</em> : null}
+              </button>
+              {messengerOpen ? (
+                <MessengerPanel
+                  focusThreadId={messengerFocusId}
+                  locale={language}
+                  onClose={() => setMessengerOpen(false)}
+                  onUnreadChange={setUnreadMessages}
+                  user={user}
+                />
+              ) : null}
+            </div>
           ) : null}
           {/* Signed out, the demo shows the two calls to action directly rather than a menu. */}
           {!user ? (
