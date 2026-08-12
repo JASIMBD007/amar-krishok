@@ -68,25 +68,30 @@ export class AdminController {
     return this.adminService.deleteAccount(id);
   }
 
+  @Get("activity")
+  activity(@Query("limit") limit?: string) {
+    return this.adminService.activity(Number(limit) || undefined);
+  }
+
   @Patch("verifications/:id/approve")
-  approveVerification(@Param("id") id: string) {
-    return this.adminService.updateVerification(id, "approve");
+  approveVerification(@Param("id") id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.adminService.updateVerification(id, "approve", user.id);
   }
 
   @Patch("verifications/:id/reject")
-  rejectVerification(@Param("id") id: string) {
-    return this.adminService.updateVerification(id, "reject");
+  rejectVerification(@Param("id") id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.adminService.updateVerification(id, "reject", user.id);
   }
 
   /** Stage two: the NID and land papers have been seen, so the account may now trade. */
   @Patch("accounts/:id/verify")
-  verifyAccount(@Param("id") id: string) {
-    return this.adminService.setVerified(id, true);
+  verifyAccount(@Param("id") id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.adminService.setVerified(id, true, user.id);
   }
 
   @Patch("accounts/:id/unverify")
-  unverifyAccount(@Param("id") id: string) {
-    return this.adminService.setVerified(id, false);
+  unverifyAccount(@Param("id") id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.adminService.setVerified(id, false, user.id);
   }
 
   @Get("dashboard")

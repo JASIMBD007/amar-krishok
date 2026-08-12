@@ -378,7 +378,7 @@ export class AdminService {
    * the NID and land papers through `setVerified`. Splitting the two means a account can be opened
    * quickly without that speed becoming a trust claim the platform has not actually checked.
    */
-  async updateVerification(id: string, action: "approve" | "reject") {
+  async updateVerification(id: string, action: "approve" | "reject", adminId?: string) {
     const user = await this.prisma.legacyUser.findUnique({ where: { id } });
     if (!user) {
       throw new NotFoundException("Registration not found.");
@@ -407,6 +407,15 @@ export class AdminService {
       },
     });
 
+    await this.prisma.legacyAuditLog.create({
+      data: {
+        action: action === "approve" ? "account.request.accepted" : "account.request.declined",
+        actorId: adminId,
+        metadata: { name: updatedUser.name, role: updatedUser.role },
+        target: `User:${updatedUser.id}`,
+      },
+    });
+
     await this.notificationsService.markVerificationRequestNotificationsReviewed(updatedUser);
     await this.notificationsService.notifyUser(updatedUser.id, {
       body:
@@ -425,7 +434,7 @@ export class AdminService {
    * Kept apart from `updateVerification` so the audit trail records who cleared the papers rather
    * than only who let the person in.
    */
-  async setVerified(id: string, verified: boolean) {
+  async setVerified(id: string, verified: boolean, adminId?: string) {
     const user = await this.prisma.legacyUser.findUnique({ where: { id } });
     if (!user) {
       throw new NotFoundException("Account not found.");
@@ -441,6 +450,15 @@ export class AdminService {
       where: { id },
     });
 
+    await this.prisma.legacyAuditLog.create({
+      data: {
+        action: verified ? "account.verified" : "account.verification.withdrawn",
+        actorId: adminId,
+        metadata: { name: updatedUser.name, role: updatedUser.role },
+        target: `User:${updatedUser.id}`,
+      },
+    });
+
     await this.notificationsService.notifyUser(updatedUser.id, {
       body: verified
         ? "Your documents were verified. You can now post crops and place orders."
@@ -449,6 +467,29 @@ export class AdminService {
     });
 
     return updatedUser;
+  }
+
+  /**
+   * The activity log. Reads every audit row, whoever wrote it — staff decisions from this service
+   * as well as the payout, escrow and rate-publishing entries other modules already record.
+   */
+  async activity(limit = 60) {
+    const rows = await this.prisma.legacyAuditLog.findMany({
+      include: { actor: { select: { name: true, role: true, username: true } } },
+      orderBy: { createdAt: "desc" },
+      take: Math.min(200, Math.max(1, Math.trunc(limit) || 60)),
+    });
+
+    return rows.map((row) => ({
+      action: row.action,
+      // "System" is honest for rows with no actor: a scheduled rate publish has no person behind it.
+      actorName: row.actor?.name ?? "System",
+      actorRole: row.actor?.role ?? null,
+      createdAt: row.createdAt,
+      id: row.id,
+      metadata: row.metadata,
+      target: row.target,
+    }));
   }
 
   async dashboard() {

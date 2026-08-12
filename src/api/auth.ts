@@ -810,6 +810,20 @@ export async function setBackendAccountVerified(accessToken: string, id: string,
   return toRegisteredAccount(user);
 }
 
+export type BackendActivityEntry = {
+  action: string;
+  actorName: string;
+  actorRole: string | null;
+  createdAt: string;
+  id: string;
+  metadata: Record<string, unknown> | null;
+  target: string;
+};
+
+export function fetchAdminActivity(accessToken: string, limit = 60) {
+  return apiRequest<BackendActivityEntry[]>(`/api/admin/activity?limit=${encodeURIComponent(limit)}`, { accessToken });
+}
+
 export type BackendLotPhoto = {
   id: string;
   url: string;

@@ -15301,3 +15301,11 @@ canvas {
 .admin-traffic-legend.paths span {
   font-size: 12px;
 }
+
+/* The audit target (User:xyz, AK-4818) is context, not the headline. */
+.admin-activity-target {
+  color: var(--fg-muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-style: normal;
+}

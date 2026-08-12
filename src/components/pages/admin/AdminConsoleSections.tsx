@@ -18,13 +18,16 @@ import {
 } from "lucide-react";
 import {
   ApiRequestError,
+  fetchAdminActivity,
   fetchMyCropLots,
   fetchMyOrders,
   isOwnUploadUrl,
+  type BackendActivityEntry,
   type BackendCropLot,
   type BackendOrder,
 } from "../../../api/auth";
-import { useTranslate } from "../../../i18n";
+import { useLanguage, useTranslate } from "../../../i18n";
+import { ListLoading } from "../../EmptyState";
 import type { AccountStatus, AuthUser, ChatMessage, ChatThread, RegisteredAccount } from "../../../types";
 
 export type AdminConsoleSection =
@@ -324,17 +327,92 @@ export function AdminDashboard({ registrations, user }: { registrations: Registe
   );
 }
 
-export function AdminActivity() {
+/** Colour by what the action did, not by which module wrote it. */
+function toneForAction(action: string) {
+  if (/reject|declin|withdraw|suspend|restrict|refund|dispute|delete/i.test(action)) return "red";
+  if (/late|warn|pending|freeze/i.test(action)) return "amber";
+  if (/publish|rate|feed|system/i.test(action)) return "blue";
+  return "green";
+}
+
+/** "account.request.accepted" reads as "account request accepted". */
+function readableAction(action: string) {
+  return action.replace(/[._]/g, " ");
+}
+
+export function AdminActivity({ user }: { user: AuthUser | null }) {
   const t = useTranslate();
+  const language = useLanguage();
+  const [entries, setEntries] = useState<BackendActivityEntry[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const accessToken = user?.accessToken;
+
+  useEffect(() => {
+    if (!accessToken) {
+      setIsLoading(false);
+      return;
+    }
+
+    let active = true;
+    fetchAdminActivity(accessToken)
+      .then((rows) => {
+        if (active) {
+          setEntries(rows);
+          setError("");
+        }
+      })
+      .catch((requestError) => {
+        if (active) {
+          setError(requestError instanceof ApiRequestError ? requestError.message : "Could not load the activity log.");
+        }
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [accessToken]);
+
+  if (isLoading) {
+    return <ListLoading label={t("Loading the activity log...")} />;
+  }
+
+  if (error) {
+    return <p className="soft-notice warn">{t(error)}</p>;
+  }
+
+  if (entries.length === 0) {
+    return (
+      <div className="admin-no-results">
+        <span>{t("No staff actions recorded yet.")}</span>
+      </div>
+    );
+  }
+
   return (
     <div className="admin-activity-list">
-      {ACTIVITY.map((activity) => (
-        <div key={`${activity.when}-${activity.what}`}>
-          <i style={{ background: activityColor(activity.tone) }} />
-          <span><strong>{t(activity.who)}</strong> {t(activity.what)}</span>
-          <time>{activity.when}</time>
-        </div>
-      ))}
+      {entries.map((entry) => {
+        const when = new Date(entry.createdAt);
+        const today = when.toDateString() === new Date().toDateString();
+        return (
+          <div key={entry.id}>
+            <i style={{ background: activityColor(toneForAction(entry.action)) }} />
+            <span>
+              <strong>{entry.actorName}</strong> {t(readableAction(entry.action))}{" "}
+              <em className="admin-activity-target">{entry.target}</em>
+            </span>
+            <time>
+              {today
+                ? when.toLocaleTimeString(language, { hour: "2-digit", minute: "2-digit" })
+                : when.toLocaleDateString(language, { day: "numeric", month: "short" })}
+            </time>
+          </div>
+        );
+      })}
     </div>
   );
 }

@@ -272,7 +272,7 @@ export function AdminPage({
         {verificationError ? <p className="marketplace-feedback warning">{t(verificationError)}</p> : null}
 
         {section === "overview" ? <AdminDashboard registrations={accounts} user={user} /> : null}
-        {section === "activity" ? <AdminActivity /> : null}
+        {section === "activity" ? <AdminActivity user={user} /> : null}
         {section === "traffic" ? <AdminTraffic user={user} /> : null}
         {operationTab ? <MarketSection activeTab={operationTab} onUpdateRegistration={updateRegistration} registrations={accounts} showTabs={false} staffRole={staffRole} user={user} /> : null}
         {section === "users" ? <AdminUsers onMessageUser={onMessageUser} onNotice={setNotice} onOpenDocument={openDocument} onSetVerified={setAccountVerified} onUpdateRegistration={updateRegistration} registrations={accounts} staffRole={staffRole} /> : null}
