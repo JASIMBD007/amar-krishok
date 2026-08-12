@@ -991,6 +991,10 @@ model ChatThread {
   status           ChatStatus    @default(WAITING)
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
+  /// Read marks are per side, so one unread badge cannot clear the other's. Anything newer than
+  /// the mark and sent by the other side is unread.
+  participantReadAt DateTime?
+  staffReadAt       DateTime?
   messages         ChatMessage[]
 
   @@index([participantPhone, participantRole])

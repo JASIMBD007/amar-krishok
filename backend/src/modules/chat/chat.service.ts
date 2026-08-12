@@ -63,6 +63,50 @@ export class ChatService {
     });
   }
 
+  /**
+   * The signed-in person's own conversations.
+   *
+   * Matched on participantId first. Threads opened before signing in carry no id, so phone and
+   * role are the fallback — that is how a guest conversation becomes theirs once they register
+   * with the same number.
+   */
+  async findMyThreads(user: AuthenticatedUser) {
+    if (user.role === Role.ADMIN) {
+      return this.findThreads();
+    }
+
+    return this.prisma.chatThread.findMany({
+      include: { messages: { orderBy: { createdAt: "asc" } } },
+      orderBy: { updatedAt: "desc" },
+      where: {
+        OR: [{ participantId: user.id }, { participantPhone: user.phone, participantRole: user.role }],
+      },
+    });
+  }
+
+  /**
+   * Marks the caller's side read up to now. Staff and participant have separate marks so one
+   * clearing their badge never clears the other's.
+   */
+  async markRead(threadId: string, user: AuthenticatedUser) {
+    const thread = await this.prisma.chatThread.findUnique({ where: { id: threadId } });
+    if (!thread) {
+      throw new NotFoundException("Conversation not found.");
+    }
+
+    const isStaff = user.role === Role.ADMIN;
+    const isOwner = thread.participantId === user.id || thread.participantPhone === user.phone;
+    if (!isStaff && !isOwner) {
+      throw new ForbiddenException("You can only read your own conversation.");
+    }
+
+    return this.prisma.chatThread.update({
+      data: isStaff ? { staffReadAt: new Date() } : { participantReadAt: new Date() },
+      include: { messages: { orderBy: { createdAt: "asc" } } },
+      where: { id: threadId },
+    });
+  }
+
   async createThread(dto: CreateChatThreadDto, requester?: AuthenticatedUser) {
     const isTrustedParticipant = requester && requester.role !== Role.ADMIN;
     const participantId = isTrustedParticipant ? requester.id : undefined;

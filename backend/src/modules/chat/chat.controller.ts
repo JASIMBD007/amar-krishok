@@ -19,6 +19,19 @@ export class ChatController {
     return this.chatService.findThreads();
   }
 
+  /** A signed-in person's own conversations. Staff get every thread, as they do from /threads. */
+  @Auth(Role.ADMIN, Role.BUYER, Role.FARMER)
+  @Get("my-threads")
+  findMyThreads(@CurrentUser() user: AuthenticatedUser) {
+    return this.chatService.findMyThreads(user);
+  }
+
+  @Auth(Role.ADMIN, Role.BUYER, Role.FARMER)
+  @Post("threads/:id/read")
+  markRead(@Param("id") threadId: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.chatService.markRead(threadId, user);
+  }
+
   @UseGuards(OptionalAuthGuard)
   @Post("threads")
   createThread(@Body() dto: CreateChatThreadDto, @CurrentUser() user: AuthenticatedUser | undefined) {
