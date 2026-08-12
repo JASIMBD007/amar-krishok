@@ -15492,3 +15492,88 @@ canvas {
     white-space: nowrap;
   }
 }
+
+/* Profile: the panel is the form, as the handoff has it. */
+.profile-page-head {
+  position: relative;
+}
+.profile-page-head > div {
+  flex: 1;
+  min-width: 0;
+}
+.profile-page-head span .verify-badge {
+  margin-left: 8px;
+}
+.profile-support {
+  flex: none;
+}
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+.profile-form h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.profile-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+.profile-form .input-field,
+.profile-form .full-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.profile-form .input-field > span,
+.profile-form .full-field > span {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg-subtle);
+}
+.profile-form .input-field input,
+.profile-form .input-field select,
+.profile-form .full-field textarea {
+  box-sizing: border-box;
+  min-height: 46px;
+  padding: 11px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  background: var(--surface);
+  font-size: 15px;
+  font-weight: 400;
+}
+.profile-form .input-field select {
+  appearance: auto;
+}
+.profile-form .full-field textarea {
+  min-height: 86px;
+  line-height: 1.5;
+  resize: vertical;
+}
+.profile-form .input-field input:disabled {
+  background: var(--bg);
+  color: var(--fg-muted);
+}
+.profile-form-actions {
+  display: flex;
+  gap: 10px;
+}
+.profile-doc-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+}
