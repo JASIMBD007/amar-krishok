@@ -15264,3 +15264,35 @@ canvas {
     padding-bottom: 84px;
   }
 }
+
+/* ---- Mobile: compact rate cards ---- */
+@media (max-width: 768px) {
+  /* `.rate-table-row > *` stretches every cell to full width, which turned Alert me into a
+     banner and left a tall empty band where the trend cell sits. The cells stay full width
+     because the numbers align to the right edge; the controls inside them do not. */
+  .rate-table-row {
+    gap: 4px;
+    padding: 12px 14px;
+  }
+  .rate-table-row .alert-toggle {
+    width: auto;
+    min-height: 0;
+    padding: 7px 13px;
+    font-size: 13px;
+  }
+  /* The button cell is the only one that reads left-aligned. */
+  .rate-table-row > span:has(> .alert-toggle) {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 2px;
+  }
+  /* An empty cell should collapse rather than hold a row's worth of height open. */
+  .rate-table-row > span:empty {
+    display: none;
+  }
+  /* Still overlapping the last card's figures at 52px. */
+  .floating-chat-button {
+    width: 46px;
+    height: 46px;
+  }
+}
