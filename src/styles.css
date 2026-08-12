@@ -15350,3 +15350,12 @@ canvas {
     margin: 0;
   }
 }
+
+@media (max-width: 768px) {
+  /* Beside the form on a desktop this copy costs nothing. Stacked above the fields on a phone it
+     pushes the login below the fold, so it is hidden here — not removed from the page. */
+  .auth-login-copy p,
+  .auth-benefit-list {
+    display: none;
+  }
+}
