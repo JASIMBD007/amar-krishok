@@ -381,7 +381,6 @@ function toConsoleUsers(registrations: RegisteredAccount[]): ConsoleUser[] {
 
 export function AdminUsers({
   onMessageUser,
-  onNavigate,
   onNotice,
   onOpenDocument,
   onSetVerified,
@@ -389,7 +388,6 @@ export function AdminUsers({
   registrations,
   staffRole,
 }: {
-  onNavigate: (section: AdminConsoleSection) => void;
   onMessageUser: (target: { id?: string; name: string; phone: string; role: "buyer" | "farmer" }) => void;
   onNotice: (message: string) => void;
   onOpenDocument: (value: string) => void;
