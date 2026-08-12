@@ -18,6 +18,9 @@ import {
 import {
   ApiRequestError,
   fetchAdminAccounts,
+  fetchUploadObjectUrl,
+  isOwnUploadUrl,
+  setBackendAccountVerified,
   updateBackendVerification,
 } from "../../api/auth";
 import { useTranslate } from "../../i18n";
@@ -161,6 +164,38 @@ export function AdminPage({
       });
   };
 
+  /** Stage two of review: clears the documents so the account can post and order. */
+  const setAccountVerified = (id: string, verified: boolean) => {
+    if (!user?.accessToken) {
+      return;
+    }
+
+    setBackendAccountVerified(user.accessToken, id, verified)
+      .then((account) => {
+        setBackendRegistrations((current) => (current ?? registrations).map((item) => (item.id === id ? account : item)));
+        setVerificationError("");
+      })
+      .catch((error) => {
+        setVerificationError(error instanceof ApiRequestError ? error.message : "Backend service is unavailable. Please try again.");
+      });
+  };
+
+  /**
+   * Identity documents are private objects, so they are opened through a signed URL rather than
+   * rendered from the stored value, which a registrant controls.
+   */
+  const openDocument = (value: string) => {
+    if (!user?.accessToken || !isOwnUploadUrl(value)) {
+      return;
+    }
+
+    fetchUploadObjectUrl(user.accessToken, value)
+      .then(({ url }) => window.open(url, "_blank", "noopener,noreferrer"))
+      .catch((error) => {
+        setVerificationError(error instanceof ApiRequestError ? error.message : "Could not open the document.");
+      });
+  };
+
   const badgeCounts = useMemo(() => ({
     orders: orderCount,
     verification: accounts.filter((account) => account.role === "farmer" && account.status === "pending").length,
@@ -237,7 +272,7 @@ export function AdminPage({
         {section === "activity" ? <AdminActivity /> : null}
         {section === "traffic" ? <AdminTraffic user={user} /> : null}
         {operationTab ? <MarketSection activeTab={operationTab} onUpdateRegistration={updateRegistration} registrations={accounts} showTabs={false} staffRole={staffRole} user={user} /> : null}
-        {section === "users" ? <AdminUsers onNavigate={openSection} onNotice={setNotice} onUpdateRegistration={updateRegistration} registrations={accounts} staffRole={staffRole} /> : null}
+        {section === "users" ? <AdminUsers onNavigate={openSection} onNotice={setNotice} onOpenDocument={openDocument} onSetVerified={setAccountVerified} onUpdateRegistration={updateRegistration} registrations={accounts} staffRole={staffRole} /> : null}
         {section === "disputes" ? <AdminDisputes onNavigate={openSection} onNotice={setNotice} /> : null}
         {section === "inbox" ? <AdminInbox chatThreads={chatThreads} onAdminReply={onAdminReply} onThreadOpen={onThreadOpen} /> : null}
         {section === "roles" && staffRole === "super" ? <AdminRoles onNotice={setNotice} /> : null}

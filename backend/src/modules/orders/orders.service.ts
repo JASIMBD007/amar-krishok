@@ -144,6 +144,19 @@ export class OrdersService {
       throw new BadRequestException("buyerId is required when an admin creates an order.");
     }
 
+    // Money only moves for buyers staff have actually checked. Enforced here rather than in the UI
+    // because this is the point where escrow starts.
+    if (user.role === Role.BUYER) {
+      const buyer = await this.prisma.legacyUser.findUnique({
+        select: { verifiedAt: true },
+        where: { id: buyerId },
+      });
+
+      if (!buyer?.verifiedAt) {
+        throw new ForbiddenException("Your account is waiting on verification. Staff will check your documents shortly.");
+      }
+    }
+
     const district = await this.prisma.district.upsert({
       create: districtCreateData(dto.district),
       update: { active: true },

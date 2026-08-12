@@ -47,6 +47,8 @@ export type RegisteredAccount = {
   focus: string;
   submittedAt: string;
   reviewedAt?: string;
+  /** Set once staff have checked the NID and land papers. Until then the account cannot trade. */
+  verifiedAt?: string;
   cropLots?: RegisteredCropLotRecord[];
   cropLotCount?: number;
   cropLotQuantityKg?: number;

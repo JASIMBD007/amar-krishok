@@ -78,6 +78,17 @@ export class AdminController {
     return this.adminService.updateVerification(id, "reject");
   }
 
+  /** Stage two: the NID and land papers have been seen, so the account may now trade. */
+  @Patch("accounts/:id/verify")
+  verifyAccount(@Param("id") id: string) {
+    return this.adminService.setVerified(id, true);
+  }
+
+  @Patch("accounts/:id/unverify")
+  unverifyAccount(@Param("id") id: string) {
+    return this.adminService.setVerified(id, false);
+  }
+
   @Get("dashboard")
   dashboard() {
     return this.adminService.dashboard();

@@ -55,6 +55,7 @@ const accountSelect = {
   upazilla: true,
   updatedAt: true,
   username: true,
+  verifiedAt: true,
 } satisfies Prisma.LegacyUserSelect;
 
 const passwordResetSelect = {
@@ -369,6 +370,14 @@ export class AdminService {
     return updatedRequest;
   }
 
+  /**
+   * Accepting a signup request, not clearing the documents.
+   *
+   * "approve" lets the person in: they can sign in and look around. It deliberately leaves
+   * `verifiedAt` null, so they still cannot post a lot or place an order until staff have checked
+   * the NID and land papers through `setVerified`. Splitting the two means a account can be opened
+   * quickly without that speed becoming a trust claim the platform has not actually checked.
+   */
   async updateVerification(id: string, action: "approve" | "reject") {
     const user = await this.prisma.legacyUser.findUnique({ where: { id } });
     if (!user) {
@@ -379,6 +388,8 @@ export class AdminService {
       data: {
         reviewedAt: new Date(),
         status: action === "approve" ? AccountStatus.ACTIVE : AccountStatus.REJECTED,
+        // Rejecting also withdraws any verification the account had.
+        ...(action === "reject" ? { verifiedAt: null } : {}),
       },
       select: accountSelect,
       where: { id },
@@ -400,9 +411,41 @@ export class AdminService {
     await this.notificationsService.notifyUser(updatedUser.id, {
       body:
         action === "approve"
-          ? "Your AmarKrishok account is active. You can now log in and use your dashboard."
+          ? "Your account request was accepted. You can sign in now. Posting a crop or ordering opens once staff have checked your NID."
           : "Your registration was reviewed. Please contact AmarKrishok support for the next step.",
-      title: action === "approve" ? "Account verified" : "Account review update",
+      title: action === "approve" ? "Account request accepted" : "Account review update",
+    });
+
+    return updatedUser;
+  }
+
+  /**
+   * The second stage: the documents have been seen and the account may now trade.
+   *
+   * Kept apart from `updateVerification` so the audit trail records who cleared the papers rather
+   * than only who let the person in.
+   */
+  async setVerified(id: string, verified: boolean) {
+    const user = await this.prisma.legacyUser.findUnique({ where: { id } });
+    if (!user) {
+      throw new NotFoundException("Account not found.");
+    }
+
+    if (verified && user.status !== AccountStatus.ACTIVE) {
+      throw new BadRequestException("Accept the account request before verifying the documents.");
+    }
+
+    const updatedUser = await this.prisma.legacyUser.update({
+      data: { verifiedAt: verified ? new Date() : null },
+      select: accountSelect,
+      where: { id },
+    });
+
+    await this.notificationsService.notifyUser(updatedUser.id, {
+      body: verified
+        ? "Your documents were verified. You can now post crops and place orders."
+        : "Your verification was withdrawn. Please contact AmarKrishok support.",
+      title: verified ? "Account verified" : "Verification withdrawn",
     });
 
     return updatedUser;

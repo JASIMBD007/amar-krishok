@@ -14669,3 +14669,50 @@ canvas {
     display: none;
   }
 }
+
+/* ---- Admin · user drawer documents ---- */
+.admin-user-documents {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 13px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+}
+.admin-user-document {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  padding: 8px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--interactive);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.admin-user-document:hover {
+  background: var(--bg);
+}
+/* A pasted value is not an object we issued, so it is shown as text and never made clickable. */
+.admin-user-document.plain {
+  color: var(--fg-subtle);
+  cursor: default;
+}
+.admin-user-document.empty {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--fg-muted);
+  font-size: 13px;
+  font-weight: 400;
+}
+/* Accepted but not yet checked: amber, because it is a waiting state rather than a good one. */
+.admin-users-table em.unverified,
+.admin-user-row em.unverified {
+  color: var(--mk-warn);
+  background: var(--mk-warn-soft);
+}

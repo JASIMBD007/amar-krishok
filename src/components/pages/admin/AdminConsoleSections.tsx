@@ -5,6 +5,7 @@ import {
   Check,
   Clock3,
   Eye,
+  FileText,
   MessageSquare,
   Minus,
   Package,
@@ -19,6 +20,7 @@ import {
   ApiRequestError,
   fetchMyCropLots,
   fetchMyOrders,
+  isOwnUploadUrl,
   type BackendCropLot,
   type BackendOrder,
 } from "../../../api/auth";
@@ -346,18 +348,31 @@ type ConsoleUser = {
   status: string;
   vol: number;
   joined: string;
+  /** Documents checked. An accepted-but-unverified account can sign in but cannot trade. */
+  verified: boolean;
   account?: RegisteredAccount;
 };
 
 function toConsoleUsers(registrations: RegisteredAccount[]): ConsoleUser[] {
-  if (!registrations.length) return PROTOTYPE_USERS;
+  if (!registrations.length) {
+    return PROTOTYPE_USERS.map((user) => ({ ...user, verified: user.status === "Verified" }));
+  }
+
   return registrations.map((account) => ({
     id: account.id,
     name: account.name,
     role: account.role === "farmer" ? "Farmer" : "Buyer",
     district: account.district,
     phone: account.phone,
-    status: account.status === "active" ? "Verified" : account.status === "pending" ? "Pending" : "Restricted",
+    status:
+      account.status === "active"
+        ? account.verifiedAt
+          ? "Verified"
+          : "Unverified"
+        : account.status === "pending"
+          ? "Pending"
+          : "Restricted",
+    verified: Boolean(account.verifiedAt),
     vol: account.orderCount ?? account.cropLotCount ?? 0,
     joined: Number.isNaN(new Date(account.submittedAt).getTime()) ? "—" : String(new Date(account.submittedAt).getFullYear()),
     account,
@@ -367,12 +382,16 @@ function toConsoleUsers(registrations: RegisteredAccount[]): ConsoleUser[] {
 export function AdminUsers({
   onNavigate,
   onNotice,
+  onOpenDocument,
+  onSetVerified,
   onUpdateRegistration,
   registrations,
   staffRole,
 }: {
   onNavigate: (section: AdminConsoleSection) => void;
   onNotice: (message: string) => void;
+  onOpenDocument: (value: string) => void;
+  onSetVerified: (id: string, verified: boolean) => void;
   onUpdateRegistration: (id: string, status: AccountStatus) => void;
   registrations: RegisteredAccount[];
   staffRole: AdminStaffRole;
@@ -400,7 +419,7 @@ export function AdminUsers({
     <>
       <div className="admin-user-tools">
         <label><Search aria-hidden="true" size={16} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t("Name, district or phone")} /></label>
-        <div>{["All", "Farmer", "Buyer", "Pending", "Restricted"].map((item) => <button className={filter === item ? "on" : ""} key={item} onClick={() => setFilter(item)} type="button">{t(item)}</button>)}</div>
+        <div>{["All", "Farmer", "Buyer", "Pending", "Unverified", "Restricted"].map((item) => <button className={filter === item ? "on" : ""} key={item} onClick={() => setFilter(item)} type="button">{t(item)}</button>)}</div>
       </div>
 
       {filtered.length ? (
@@ -422,12 +441,49 @@ export function AdminUsers({
             <header><i>{initials(selected.name)}</i><span><strong>{t(selected.name)}</strong><small>{t(selected.role)} · {t(selected.district)}</small></span><button aria-label={t("Close")} onClick={() => setSelectedId(null)} type="button"><X size={20} /></button></header>
             <div className="admin-user-drawer-body">
               <div className="admin-user-meta"><span><Phone size={15} />{selected.phone}</span><span><Calendar size={15} />{t("On the platform since")} {selected.joined}</span><span><Package size={15} />{selected.vol} {t("completed orders")}</span><span><BadgeCheck size={15} />{t("Status")} · {t(selected.status)}</span></div>
+              {/* The documents are the whole point of the review, so they sit above the buttons. */}
+              {selected.account ? (
+                <div className="admin-user-documents">
+                  <span className="filter-eyebrow">{t("Documents")}</span>
+                  {selected.account.identity ? (
+                    isOwnUploadUrl(selected.account.identity) ? (
+                      <button className="admin-user-document" type="button" onClick={() => onOpenDocument(selected.account!.identity)}>
+                        <FileText aria-hidden="true" size={15} />
+                        {t("Open NID or land paper")}
+                      </button>
+                    ) : (
+                      <span className="admin-user-document plain">
+                        <FileText aria-hidden="true" size={15} />
+                        {selected.account.identity}
+                      </span>
+                    )
+                  ) : (
+                    <span className="admin-user-document empty">{t("No document uploaded. Check the phone number instead.")}</span>
+                  )}
+                </div>
+              ) : null}
               <p>{t("Editing a user record is logged against your staff account and the user is notified by SMS.")}</p>
+              {/* Review is two acts. A pending request is accepted or turned down; only once the
+                  documents have been seen does the account become able to post or order. */}
               <div className="admin-user-actions">
-                <button className="primary" onClick={() => update("active", `${selected.name} verified. The badge is live on every listing.`)} type="button">{t("Mark verified")}</button>
+                {selected.status === "Pending" ? (
+                  <>
+                    <button className="primary" onClick={() => update("active", `${selected.name} accepted. They can sign in, but cannot trade until verified.`)} type="button">{t("Accept request")}</button>
+                    <button className="danger" onClick={() => update("rejected", `${selected.name}'s request was declined.`)} type="button">{t("Decline request")}</button>
+                  </>
+                ) : null}
+                {selected.status === "Unverified" ? (
+                  <button className="primary" onClick={() => { onSetVerified(selected.id, true); onNotice(`${selected.name} verified. They can now post and order.`); setSelectedId(null); }} type="button">{t("Mark verified")}</button>
+                ) : null}
+                {selected.status === "Verified" && staffRole === "super" ? (
+                  <button onClick={() => { onSetVerified(selected.id, false); onNotice(`${selected.name}'s verification was withdrawn.`); setSelectedId(null); }} type="button">{t("Withdraw verification")}</button>
+                ) : null}
+                {selected.status === "Restricted" ? (
+                  <button className="primary" onClick={() => update("active", `${selected.name} restored. Verify their documents to let them trade.`)} type="button">{t("Restore account")}</button>
+                ) : null}
                 <button onClick={() => { setSelectedId(null); onNavigate("inbox"); }} type="button">{t("Message this user")}</button>
                 <button onClick={() => { onNotice(`A new 4-digit PIN was sent to ${selected.phone}.`); setSelectedId(null); }} type="button">{t("Send new login PIN")}</button>
-                {staffRole === "super" ? <button className="danger" onClick={() => update("rejected", `${selected.name} restricted — listings hidden, payouts paused.`)} type="button">{t("Restrict account")}</button> : null}
+                {staffRole === "super" && selected.status !== "Restricted" ? <button className="danger" onClick={() => update("rejected", `${selected.name} restricted — listings hidden, payouts paused.`)} type="button">{t("Restrict account")}</button> : null}
               </div>
             </div>
           </aside>

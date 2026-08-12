@@ -161,6 +161,19 @@ export class LotsService {
       throw new BadRequestException("farmerId is required when an admin creates a lot.");
     }
 
+    // A listing carries the verified badge buyers rely on, so an unchecked farmer cannot publish
+    // one. Staff posting on a farmer's behalf are trusted and skip this.
+    if (user.role === Role.FARMER) {
+      const farmer = await this.prisma.legacyUser.findUnique({
+        select: { verifiedAt: true },
+        where: { id: farmerId },
+      });
+
+      if (!farmer?.verifiedAt) {
+        throw new ForbiddenException("Your account is waiting on verification. Staff will check your documents shortly.");
+      }
+    }
+
     const [crop, district] = await Promise.all([
       this.prisma.crop.upsert({
         create: cropCreateData(dto.crop),

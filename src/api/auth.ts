@@ -21,6 +21,7 @@ type ApiUser = {
   upazilla?: string | null;
   createdAt?: string;
   reviewedAt?: string | null;
+  verifiedAt?: string | null;
   district?: {
     name: string;
   } | null;
@@ -461,6 +462,7 @@ export function toRegisteredAccount(user: ApiUser): RegisteredAccount {
     phone: user.phone,
     username: user.username ?? user.phone,
     reviewedAt: user.reviewedAt ?? undefined,
+    verifiedAt: user.verifiedAt ?? undefined,
     role: apiRoleToAppRole[user.role] as RegistrationRole,
     status: user.status ? apiStatusToAccountStatus[user.status] : "pending",
     submittedAt: user.createdAt ?? new Date().toISOString(),
@@ -790,6 +792,18 @@ export async function deleteAdminAccount(accessToken: string, id: string) {
 export async function updateBackendVerification(accessToken: string, id: string, status: AccountStatus) {
   const action = status === "active" ? "approve" : "reject";
   const user = await apiRequest<ApiUser>(`/api/admin/verifications/${id}/${action}`, {
+    accessToken,
+    method: "PATCH",
+  });
+  return toRegisteredAccount(user);
+}
+
+/**
+ * Stage two of account review: the documents have been checked, so the account may trade.
+ * Separate from updateBackendVerification, which only accepts or rejects the signup request.
+ */
+export async function setBackendAccountVerified(accessToken: string, id: string, verified: boolean) {
+  const user = await apiRequest<ApiUser>(`/api/admin/accounts/${id}/${verified ? "verify" : "unverify"}`, {
     accessToken,
     method: "PATCH",
   });
