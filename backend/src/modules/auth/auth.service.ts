@@ -147,10 +147,16 @@ export class AuthService {
   private async registerAccount(role: typeof Role.BUYER | typeof Role.FARMER, dto: RegisterAccountDto) {
     const cleanPhone = dto.phone.trim();
     const username = registrationUsername(role, cleanPhone, dto.username);
-    const [existingUsername, existingUser] = await Promise.all([
+    const [existingUsername, existingUser, phoneHolder] = await Promise.all([
       this.prisma.legacyUser.findUnique({ where: { username } }),
       this.prisma.legacyUser.findUnique({
         where: { phone_role: { phone: cleanPhone, role } },
+      }),
+      // One number, one person, one account. The table still allows a buyer and a farmer row to
+      // share a phone, which is how the same person ended up with two accounts and support
+      // messages landing on whichever one staff happened to click.
+      this.prisma.legacyUser.findFirst({
+        where: { phone: cleanPhone, role: { in: [Role.BUYER, Role.FARMER] }, status: { not: AccountStatus.REJECTED } },
       }),
     ]);
 
@@ -160,6 +166,10 @@ export class AuthService {
 
     if (existingUser && existingUser.status !== AccountStatus.REJECTED) {
       throw new ConflictException("An account with this role and phone already exists.");
+    }
+
+    if (phoneHolder && phoneHolder.id !== existingUser?.id) {
+      throw new ConflictException("This mobile number already has an AmarKrishok account.");
     }
 
     if (existingUser) {

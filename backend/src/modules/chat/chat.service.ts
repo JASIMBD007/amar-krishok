@@ -34,7 +34,7 @@ function toApiChatRole(role: Role): ApiChatRole {
  * the client provided.
  */
 function resolveEffectiveSender(
-  thread: { participantId: string | null; participantRole: Role },
+  thread: { participantId: string | null; participantPhone: string; participantRole: Role },
   requester: AuthenticatedUser | undefined,
   claimedName: string,
 ) {
@@ -42,7 +42,10 @@ function resolveEffectiveSender(
     return { id: undefined, name: claimedName, role: "guest" as ApiChatRole };
   }
 
-  if (requester.role !== Role.ADMIN && requester.id !== thread.participantId) {
+  // Ownership by id or by phone, matching how the thread list finds it. Checking the id alone
+  // would let someone open a conversation from their list and then be refused when they replied.
+  const owns = requester.id === thread.participantId || requester.phone === thread.participantPhone;
+  if (requester.role !== Role.ADMIN && !owns) {
     throw new ForbiddenException("You can only reply in your own conversation.");
   }
 
@@ -79,7 +82,10 @@ export class ChatService {
       include: { messages: { orderBy: { createdAt: "asc" } } },
       orderBy: { updatedAt: "desc" },
       where: {
-        OR: [{ participantId: user.id }, { participantPhone: user.phone, participantRole: user.role }],
+        // Phone without role on purpose: accounts created before one-account-per-phone was
+        // enforced can hold a buyer and a farmer row on the same number, and a message sent to
+        // one of them is still meant for that person.
+        OR: [{ participantId: user.id }, { participantPhone: user.phone }],
       },
     });
   }
