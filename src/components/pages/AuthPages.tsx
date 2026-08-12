@@ -11,7 +11,6 @@ import {
   ShieldCheck,
   ShoppingBasket,
   Sprout,
-  WifiOff,
 } from "lucide-react";
 import {
   ApiRequestError,
@@ -328,14 +327,10 @@ export function LoginPage({
 
   return (
     <section className="auth-login-page">
+      {/* Nothing above the form but its name. Someone here already intends to sign in; the sales
+          copy and the benefit list only pushed the fields below the fold on a phone. */}
       <div className="auth-login-copy">
         <h1>{t("Log in with your phone number")}</h1>
-        <p>{t("Use your mobile number and password. The same number receives your rate alerts and payout confirmations.")}</p>
-        <div className="auth-benefit-list">
-          <span><ShieldCheck aria-hidden="true" size={17} />{t("Escrow-protected orders")}</span>
-          <span><WifiOff aria-hidden="true" size={17} />{t("Works on a slow connection")}</span>
-          <span><PhoneCall aria-hidden="true" size={17} />{t("Trouble signing in? Missed call to 16xxx")}</span>
-        </div>
       </div>
 
       <form className="auth-login-card" onSubmit={submitLogin}>

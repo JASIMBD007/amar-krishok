@@ -15309,3 +15309,44 @@ canvas {
   font-size: 12px;
   font-style: normal;
 }
+
+/* ---- Rates: the sparkline reads as a chart, and shares its row with the button ---- */
+/* Only two rate snapshots exist so far, and a flex row stretched those two bars into slabs.
+   A capped bar width keeps a thin series looking like a thin series. */
+.rate-sparkline {
+  align-items: flex-end;
+  height: 34px;
+}
+.rate-sparkline > span {
+  max-width: 10px;
+  min-height: 2px;
+  border-radius: 2px 2px 0 0;
+}
+
+@media (max-width: 768px) {
+  /* Chart and control on one line, as they are on desktop. */
+  .rate-table-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    row-gap: 8px;
+  }
+  .rate-table-row > .rate-crop {
+    grid-column: 1;
+  }
+  /* Price and change stack against the right edge beside the crop name. */
+  .rate-table-row > .mono-figure,
+  .rate-table-row > .rate-change {
+    grid-column: 2;
+    text-align: right;
+  }
+  .rate-table-row > .rate-sparkline {
+    grid-column: 1;
+    width: 100%;
+    height: 30px;
+  }
+  .rate-table-row > span:has(> .alert-toggle) {
+    grid-column: 2;
+    justify-content: flex-end;
+    margin: 0;
+  }
+}
