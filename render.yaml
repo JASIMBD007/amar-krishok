@@ -8,7 +8,9 @@ services:
     # Stated rather than left to the default: the API sat several commits behind main with the
     # migration unapplied, which is what an unnoticed auto-deploy toggle looks like from outside.
     autoDeploy: true
-    buildCommand: npm ci --include=dev && npm run prisma:generate && npm run prisma:deploy && npm run build
+    # geo:country downloads a CC0 IP-to-country table. It never fails the build: without it the
+    # Traffic section simply records views with no country.
+    buildCommand: npm ci --include=dev && npm run prisma:generate && npm run prisma:deploy && npm run geo:country && npm run build
     startCommand: npm run start:prod
     healthCheckPath: /api/health
     envVars:

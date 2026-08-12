@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { ApiRequestError } from "../../../api/auth";
 import { fetchTrafficSummary, type TrafficSummary } from "../../../api/analytics";
 import { useLanguage, useTranslate, useValueText } from "../../../i18n";
@@ -137,7 +137,13 @@ export function AdminTraffic({ user }: { user: AuthUser | null }) {
             </div>
             <div className="admin-traffic-chart-body">
               <ResponsiveContainer height={240} width="100%">
-                <BarChart data={chartData} margin={{ bottom: 4, left: -18, right: 8, top: 8 }}>
+                <AreaChart data={chartData} margin={{ bottom: 4, left: -18, right: 8, top: 8 }}>
+                  <defs>
+                    <linearGradient id="trafficFill" x1="0" x2="0" y1="0" y2="1">
+                      <stop offset="0%" stopColor="#146b45" stopOpacity={0.24} />
+                      <stop offset="100%" stopColor="#146b45" stopOpacity={0.02} />
+                    </linearGradient>
+                  </defs>
                   <CartesianGrid stroke="#f1f3f6" vertical={false} />
                   <XAxis
                     axisLine={false}
@@ -159,8 +165,15 @@ export function AdminTraffic({ user }: { user: AuthUser | null }) {
                     cursor={{ fill: "#f5f7fa" }}
                     labelFormatter={(label) => `${t("Day")} ${label}`}
                   />
-                  <Bar dataKey="views" fill="#146b45" name={t("Page views")} radius={[4, 4, 0, 0]} />
-                </BarChart>
+                  <Area
+                    dataKey="views"
+                    fill="url(#trafficFill)"
+                    name={t("Page views")}
+                    stroke="#146b45"
+                    strokeWidth={2}
+                    type="monotone"
+                  />
+                </AreaChart>
               </ResponsiveContainer>
             </div>
           </div>
