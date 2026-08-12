@@ -113,6 +113,34 @@ export function AdminTraffic({ user }: { user: AuthUser | null }) {
     return slices;
   })();
 
+  // Top pages, sliced the same way. Paths are their own labels, so no flag or lookup is needed.
+  const pathSlices = (() => {
+    const rows = summary?.topPaths ?? [];
+    const total = rows.reduce((sum, row) => sum + row.views, 0) || 1;
+    const head = rows.slice(0, MAX_SLICES);
+    const tail = rows.slice(MAX_SLICES);
+    const slices = head.map((row, index) => ({
+      code: row.path,
+      colour: SLICE_COLOURS[index % SLICE_COLOURS.length],
+      label: row.path,
+      share: Math.round((row.views / total) * 100),
+      views: row.views,
+    }));
+
+    if (tail.length) {
+      const views = tail.reduce((sum, row) => sum + row.views, 0);
+      slices.push({
+        code: "other",
+        colour: OTHER_COLOUR,
+        label: `${t("Other")} (${tail.length})`,
+        share: Math.round((views / total) * 100),
+        views,
+      });
+    }
+
+    return slices;
+  })();
+
   return (
     <div className="admin-traffic">
       <div className="admin-traffic-ranges" role="group" aria-label={t("Date range")}>
@@ -271,28 +299,46 @@ export function AdminTraffic({ user }: { user: AuthUser | null }) {
                 <h2>{t("Top pages")}</h2>
                 <span>{t("By page views")}</span>
               </div>
-              <div className="admin-traffic-list">
-                {summary.topPaths.length === 0 ? (
-                  <p className="panel-note">{t("No visits recorded yet.")}</p>
-                ) : (
-                  // A ranking of close values with long text labels: bars, not slices. Widths are
-                  // relative to the busiest page so the comparison is against the leader.
-                  summary.topPaths.map((row) => {
-                    const top = summary.topPaths[0]?.views || 1;
-                    return (
-                      <div className="admin-traffic-path" key={row.path}>
-                        <span className="admin-traffic-path-head">
-                          <strong className="mono-figure">{row.path}</strong>
-                          <em className="mono-figure">{v(row.views.toLocaleString("en-US"))}</em>
-                        </span>
-                        <span className="admin-traffic-bar" aria-hidden="true">
-                          <span style={{ width: `${Math.max(3, Math.round((row.views / top) * 100))}%` }} />
-                        </span>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
+              {summary.topPaths.length === 0 ? (
+                <p className="panel-note">{t("No visits recorded yet.")}</p>
+              ) : (
+                <div className="admin-traffic-donut">
+                  <ResponsiveContainer height={190} width="100%">
+                    <PieChart>
+                      <Pie
+                        data={pathSlices}
+                        dataKey="views"
+                        innerRadius={52}
+                        nameKey="label"
+                        outerRadius={82}
+                        paddingAngle={2}
+                        stroke="var(--surface)"
+                        strokeWidth={2}
+                      >
+                        {pathSlices.map((slice) => (
+                          <Cell fill={slice.colour} key={slice.code} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        contentStyle={{ border: "1px solid #e2e5eb", borderRadius: 8, fontSize: 13 }}
+                        formatter={(value, name) => [`${Number(value ?? 0)} ${t("Page views")}`, String(name ?? "")]}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  {/* Paths are long, so the legend carries them at full width in mono rather than
+                      trying to fit them around a wedge. */}
+                  <ul className="admin-traffic-legend paths">
+                    {pathSlices.map((slice) => (
+                      <li key={slice.code}>
+                        <i style={{ background: slice.colour }} aria-hidden="true" />
+                        <span className="mono-figure">{slice.label}</span>
+                        <em className="mono-figure">{v(slice.views.toLocaleString("en-US"))}</em>
+                        <b className="mono-figure">{v(`${slice.share} %`)}</b>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
               {summary.referrers.length > 0 ? (
                 <>
                   <div className="desk-panel-head admin-traffic-subhead">

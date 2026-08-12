@@ -15296,3 +15296,8 @@ canvas {
     height: 46px;
   }
 }
+
+/* Paths sit in mono at a smaller size: they are longer than country names. */
+.admin-traffic-legend.paths span {
+  font-size: 12px;
+}
