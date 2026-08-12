@@ -5,6 +5,9 @@ services:
     plan: free
     region: singapore
     rootDir: backend
+    # Stated rather than left to the default: the API sat several commits behind main with the
+    # migration unapplied, which is what an unnoticed auto-deploy toggle looks like from outside.
+    autoDeploy: true
     buildCommand: npm ci --include=dev && npm run prisma:generate && npm run prisma:deploy && npm run build
     startCommand: npm run start:prod
     healthCheckPath: /api/health
