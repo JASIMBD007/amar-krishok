@@ -90,11 +90,6 @@ const PROTOTYPE_USERS = [
   { id: "U6", name: "Nurul Islam", role: "Farmer", district: "Naogaon", phone: "01799 145 802", status: "Verified", vol: 63, joined: "2007" },
 ];
 
-const DISPUTES = [
-  { id: "D-118", order: "AK-4818", subject: "Quality below Grade A", buyer: "Rafiq Traders", farmer: "Sultana Begum", amount: 84_000, age: "19 h", sla: "due in 5 h", urgent: true, state: "Awaiting staff decision" },
-  { id: "D-117", order: "AK-4802", subject: "Short weight — 3,2 mon missing", buyer: "Chattogram Wholesale", farmer: "Abdul Karim", amount: 45_600, age: "2 d", sla: "due in 22 h", urgent: false, state: "Photos requested" },
-  { id: "D-115", order: "AK-4790", subject: "Late delivery, buyer wants refund", buyer: "Rafiq Traders", farmer: "Jahanara Khatun", amount: 139_200, age: "3 d", sla: "overdue 4 h", urgent: true, state: "Escrow frozen" },
-];
 
 const PERMISSIONS = [
   { area: "Release / refund escrow", super: true, support: false },
