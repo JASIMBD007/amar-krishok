@@ -276,7 +276,7 @@ export function AdminPage({
         {section === "traffic" ? <AdminTraffic user={user} /> : null}
         {operationTab ? <MarketSection activeTab={operationTab} onUpdateRegistration={updateRegistration} registrations={accounts} showTabs={false} staffRole={staffRole} user={user} /> : null}
         {section === "users" ? <AdminUsers onMessageUser={onMessageUser} onNotice={setNotice} onOpenDocument={openDocument} onSetVerified={setAccountVerified} onUpdateRegistration={updateRegistration} registrations={accounts} staffRole={staffRole} /> : null}
-        {section === "disputes" ? <AdminDisputes onNavigate={openSection} onNotice={setNotice} /> : null}
+        {section === "disputes" ? <AdminDisputes onMessageUser={onMessageUser} onNotice={setNotice} user={user} /> : null}
         {section === "inbox" ? <AdminInbox chatThreads={chatThreads} onAdminReply={onAdminReply} onThreadOpen={onThreadOpen} /> : null}
         {section === "roles" && staffRole === "super" ? <AdminRoles onNotice={setNotice} /> : null}
       </div>

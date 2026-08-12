@@ -127,6 +127,11 @@ export function advanceOrderStage(accessToken: string, id: string) {
   });
 }
 
+/** Staff: every order with an open dispute, escrow still frozen. */
+export function fetchDisputedOrders(accessToken: string) {
+  return apiRequest<BackendOrder[]>("/api/orders/disputes", { accessToken });
+}
+
 export function decideOrderEscrow(accessToken: string, id: string, action: "release" | "refund", reason?: string) {
   return apiRequest<BackendOrder>(`/api/orders/${id}/escrow`, {
     accessToken,

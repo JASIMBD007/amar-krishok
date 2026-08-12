@@ -21,6 +21,12 @@ export class OrdersController {
 
   /** A farmer's own escrow and payout totals. Deliberately does not return the buyers' orders. */
   @Auth(Role.ADMIN, Role.FARMER)
+  @Auth(Role.ADMIN)
+  @Get("disputes")
+  disputes() {
+    return this.ordersService.disputes();
+  }
+
   @Get("farmer-escrow")
   farmerEscrow(@CurrentUser() user: AuthenticatedUser) {
     return this.ordersService.farmerEscrowSummary(user);

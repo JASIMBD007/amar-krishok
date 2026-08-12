@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import {
   BadgeCheck,
   Calendar,
@@ -26,6 +26,7 @@ import {
   type BackendCropLot,
   type BackendOrder,
 } from "../../../api/auth";
+import { decideOrderDispute, decideOrderEscrow, fetchDisputedOrders } from "../../../api/market";
 import { useLanguage, useTranslate } from "../../../i18n";
 import { ListLoading } from "../../EmptyState";
 import type { AccountStatus, AuthUser, ChatMessage, ChatThread, RegisteredAccount } from "../../../types";
@@ -572,30 +573,140 @@ export function AdminUsers({
 }
 
 export function AdminDisputes({
-  onNavigate,
+  onMessageUser,
   onNotice,
+  user,
 }: {
-  onNavigate: (section: AdminConsoleSection) => void;
+  onMessageUser: (target: { id?: string; name: string; phone: string; role: "buyer" | "farmer" }) => void;
   onNotice: (message: string) => void;
+  user: AuthUser | null;
 }) {
   const t = useTranslate();
-  const resolve = (message: string) => onNotice(message);
+  const [orders, setOrders] = useState<BackendOrder[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  const accessToken = user?.accessToken;
+
+  const load = useCallback(() => {
+    if (!accessToken) {
+      setIsLoading(false);
+      return;
+    }
+
+    fetchDisputedOrders(accessToken)
+      .then((rows) => {
+        setOrders(rows);
+        setError("");
+      })
+      .catch((requestError) => {
+        setError(requestError instanceof ApiRequestError ? requestError.message : "Could not load disputes.");
+      })
+      .finally(() => setIsLoading(false));
+  }, [accessToken]);
+
+  useEffect(() => load(), [load]);
+
+  /**
+   * Release and refund settle the escrow and close the dispute; a partial refund is not a decision
+   * this endpoint can express, so it is not offered as though it were.
+   */
+  const settle = (order: BackendOrder, action: "release" | "refund") => {
+    if (!accessToken) return;
+    setBusyId(order.id);
+    decideOrderEscrow(accessToken, order.id, action)
+      .then(() => decideOrderDispute(accessToken, order.id, "close"))
+      .then(() => {
+        setOrders((current) => current.filter((row) => row.id !== order.id));
+        onNotice(
+          action === "release"
+            ? `${order.id} closed — escrow released to the farmer.`
+            : `${order.id} closed — escrow refunded to ${order.buyer?.name ?? "the buyer"}.`,
+        );
+      })
+      .catch((requestError) => {
+        setError(requestError instanceof ApiRequestError ? requestError.message : "Could not settle that dispute.");
+      })
+      .finally(() => setBusyId(null));
+  };
+
+  if (isLoading) {
+    return <ListLoading label={t("Loading disputes...")} />;
+  }
+
+  if (error) {
+    return <p className="soft-notice warn">{t(error)}</p>;
+  }
+
+  if (orders.length === 0) {
+    return (
+      <div className="admin-no-results">
+        <span>{t("No open disputes. Escrow is moving normally.")}</span>
+      </div>
+    );
+  }
+
   return (
     <div className="admin-dispute-list">
-      {DISPUTES.map((dispute) => (
-        <article key={dispute.id}>
-          <header><span><span><b>{dispute.id}</b><strong>{t(dispute.subject)}</strong><em className={dispute.urgent ? "urgent" : "calm"}>SLA {t(dispute.sla)}</em></span><small>{t("Order")} {dispute.order} · {t(dispute.buyer)} vs. {t(dispute.farmer)} · {t("opened")} {dispute.age} {t("ago")} · {t(dispute.state)}</small></span><span><strong>{money(dispute.amount)}</strong><small>{t("frozen in escrow")}</small></span></header>
-          <footer>
-            <button className="release" onClick={() => resolve(`${dispute.id} closed — escrow released to ${dispute.farmer}.`)} type="button">{t("Release to farmer")}</button>
-            <button onClick={() => resolve(`${dispute.id} settled with a partial refund. Both sides notified by SMS.`)} type="button">{t("Partial refund")}</button>
-            <button className="refund" onClick={() => resolve(`${dispute.id} closed — ${money(dispute.amount)} refunded to ${dispute.buyer}.`)} type="button">{t("Refund buyer")}</button>
-            <button className="conversation" onClick={() => onNavigate("inbox")} type="button"><MessageSquare size={15} />{t("Open conversation")}</button>
-          </footer>
-        </article>
-      ))}
+      {orders.map((order) => {
+        const opened = order.disputeOpenedAt ? new Date(order.disputeOpenedAt) : null;
+        const hoursOpen = opened ? Math.floor((Date.now() - opened.getTime()) / 3_600_000) : 0;
+        // 24 h SLA, as the page heading promises.
+        const overdue = hoursOpen >= 24;
+        const held = order.payments?.find((payment) => payment.status === "HELD");
+        const farmerName = order.items?.[0]?.cropLot?.farmer?.name ?? t("the farmer");
+        return (
+          <article key={order.id}>
+            <header>
+              <span>
+                <span>
+                  <b>{order.id.slice(-6).toUpperCase()}</b>
+                  <strong>{t(order.items?.[0]?.crop?.name ?? "Order dispute")}</strong>
+                  <em className={overdue ? "urgent" : "calm"}>
+                    SLA {overdue ? `${t("overdue")} ${hoursOpen - 24} h` : `${t("due in")} ${24 - hoursOpen} h`}
+                  </em>
+                </span>
+                <small>
+                  {t("Order")} {order.id.slice(-6).toUpperCase()} · {order.buyer?.name ?? t("Buyer")} vs. {farmerName} ·{" "}
+                  {t("opened")} {hoursOpen} h {t("ago")}
+                </small>
+              </span>
+              <span>
+                <strong>{money(Number(held?.amount ?? order.totalValue) || 0)}</strong>
+                <small>{t("frozen in escrow")}</small>
+              </span>
+            </header>
+            <footer>
+              <button className="release" disabled={busyId === order.id} onClick={() => settle(order, "release")} type="button">
+                {t("Release to farmer")}
+              </button>
+              <button className="refund" disabled={busyId === order.id} onClick={() => settle(order, "refund")} type="button">
+                {t("Refund buyer")}
+              </button>
+              <button
+                className="conversation"
+                type="button"
+                onClick={() =>
+                  onMessageUser({
+                    id: order.buyer?.id,
+                    name: order.buyer?.name ?? "",
+                    phone: order.buyer?.phone ?? "",
+                    role: "buyer",
+                  })
+                }
+              >
+                <MessageSquare size={15} />
+                {t("Open conversation")}
+              </button>
+            </footer>
+          </article>
+        );
+      })}
     </div>
   );
 }
+
 
 function readableTime(value: string) {
   const parsed = new Date(value);

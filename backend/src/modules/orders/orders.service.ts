@@ -39,6 +39,15 @@ export class OrdersService {
     private readonly prisma: PrismaService,
   ) {}
 
+  /** Every order with an open dispute. Staff only — the controller guards it. */
+  disputes() {
+    return this.prisma.legacyOrder.findMany({
+      include: orderInclude,
+      orderBy: { disputeOpenedAt: "asc" },
+      where: { disputeOpenedAt: { not: null } },
+    });
+  }
+
   findAll(filters: { buyerId?: string }, user: AuthenticatedUser) {
     return this.prisma.legacyOrder.findMany({
       include: orderInclude,
