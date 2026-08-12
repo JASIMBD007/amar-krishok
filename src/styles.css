@@ -15214,3 +15214,53 @@ canvas {
     min-height: 40px;
   }
 }
+
+/* =====================================================================
+   Mobile corrections, from real iPhone screenshots.
+   ===================================================================== */
+@media (max-width: 768px) {
+  /* Rate values were being cut mid-number ("2,88" for 2,880). The rows already had a stacking
+     treatment, but the table above them kept min-width: 820px, so the five columns were still
+     sized against 820px inside a 375px screen and the right-hand ones were clipped away.
+     Truncated money is worse than no table, so these stack properly instead of scrolling. */
+  .rate-table,
+  .order-table,
+  .listing-vs-market {
+    min-width: 0;
+  }
+  .rate-table-head,
+  .order-table-head,
+  .listing-vs-market-head {
+    display: none;
+  }
+  .rate-table-row,
+  .order-table-row,
+  .listing-vs-market-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+    padding: 14px 16px;
+  }
+
+  /* The filter panel came before the listings, so a buyer scrolled through every filter before
+     seeing a single crop. Results first; filters stay below, still reachable. */
+  .market-layout > .filter-rail {
+    order: 2;
+  }
+  .market-layout > :not(.filter-rail) {
+    order: 1;
+  }
+
+  /* The support button sat on top of content it covered — the Staff role button on login, the
+     verified badge on a lot card. Smaller, and every page keeps clear space beneath it. */
+  .floating-chat-button {
+    width: 52px;
+    height: 52px;
+  }
+  .page-wrap,
+  .farmer-desk-page,
+  .edit-listing-page,
+  .post-crop-page,
+  .admin-console-content {
+    padding-bottom: 84px;
+  }
+}
