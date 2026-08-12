@@ -27,39 +27,82 @@ export class GeoService implements OnModuleInit {
       const raw = await readFile(path, "utf8");
       this.load(raw);
       this.logger.log(`Country lookup ready: ${this.countries.length} ranges from ${path}`);
+      return;
     } catch {
-      this.logger.warn(`No country database at ${path}. Views will be recorded without a country.`);
+      this.logger.log(`No country database at ${path}; fetching one instead.`);
+    }
+
+    // Not awaited: a cold boot must not wait on a CDN. The table arrives a few seconds in and
+    // views recorded before then are simply filed without a country.
+    //
+    // This runs at startup rather than at build time on purpose. The build step only happens if
+    // the host actually uses render.yaml, and a service created by hand does not — which is how
+    // this ended up missing on a deploy that otherwise succeeded.
+    void this.download();
+  }
+
+  /** Pulls the CC0 range table straight into memory. Failure costs the country column, nothing more. */
+  private async download() {
+    if (process.env.GEO_COUNTRY_DOWNLOAD === "off") {
+      return;
+    }
+
+    const source =
+      process.env.GEO_COUNTRY_URL?.trim() ||
+      "https://cdn.jsdelivr.net/npm/@ip-location-db/geo-whois-asn-country/geo-whois-asn-country-ipv4-num.csv";
+
+    try {
+      const response = await fetch(source, { signal: AbortSignal.timeout(60_000) });
+      if (!response.ok) {
+        throw new Error(`${response.status} ${response.statusText}`);
+      }
+
+      this.load(await response.text());
+      this.logger.log(`Country lookup ready: ${this.countries.length} ranges downloaded.`);
+    } catch (error) {
+      this.logger.warn(
+        `Could not fetch a country database (${error instanceof Error ? error.message : error}). ` +
+          "Views will be recorded without a country.",
+      );
     }
   }
 
+  /** Accepts both the local tab file and the comma-separated set the CDN serves. */
   private load(raw: string) {
-    const rows = raw.split("\n");
-    const starts = new Uint32Array(rows.length);
-    const ends = new Uint32Array(rows.length);
-    const countries: string[] = [];
-    let count = 0;
+    const rows: [number, number, string][] = [];
 
-    for (const row of rows) {
+    for (const row of raw.split("\n")) {
       if (!row || row.startsWith("#")) {
         continue;
       }
 
-      const [start, end, country] = row.split("\t");
+      const [start, end, country] = row.includes("\t") ? row.split("\t") : row.split(",");
       const startIp = Number(start);
       const endIp = Number(end);
-      if (!Number.isFinite(startIp) || !Number.isFinite(endIp) || !country) {
+      const code = country?.trim().toUpperCase();
+      if (!Number.isFinite(startIp) || !Number.isFinite(endIp) || code?.length !== 2) {
         continue;
       }
 
-      starts[count] = startIp;
-      ends[count] = endIp;
-      countries.push(country.trim().toUpperCase().slice(0, 2));
-      count += 1;
+      rows.push([startIp, endIp, code]);
     }
 
-    // The builder emits sorted rows; sorting here too would cost startup time for no gain.
-    this.starts = starts.subarray(0, count);
-    this.ends = ends.subarray(0, count);
+    // Sorted here rather than trusted from the source: the binary search below returns a wrong
+    // country rather than an error if the table is out of order, and a wrong country is worse
+    // than none. One sort at boot is cheap against that.
+    rows.sort((first, second) => first[0] - second[0]);
+
+    const starts = new Uint32Array(rows.length);
+    const ends = new Uint32Array(rows.length);
+    const countries: string[] = [];
+    rows.forEach(([startIp, endIp, code], index) => {
+      starts[index] = startIp;
+      ends[index] = endIp;
+      countries.push(code);
+    });
+
+    this.starts = starts;
+    this.ends = ends;
     this.countries = countries;
   }
 
