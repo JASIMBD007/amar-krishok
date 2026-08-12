@@ -15069,3 +15069,148 @@ canvas {
   font-style: normal;
   font-variant-numeric: tabular-nums;
 }
+
+/* =====================================================================
+   Mobile — last layer, and entirely inside media queries so every rule
+   above keeps the desktop layout it was written for.
+
+   The recurring failures on a phone are: fixed-width grid columns that
+   cannot shrink, wide tables pushing the page sideways, and desktop
+   padding eating a 360px screen. Each is handled once here rather than
+   per component.
+   ===================================================================== */
+@media (max-width: 900px) {
+  /* The console is a 252px sidebar beside content. On a phone the sidebar
+     becomes a scrollable strip of destinations above the content. */
+  .admin-console-shell {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+  }
+  .admin-console-sidebar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    gap: 10px;
+    padding: 12px 14px;
+  }
+  .admin-console-nav {
+    display: flex;
+    flex-direction: row;
+    gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .admin-console-nav::-webkit-scrollbar {
+    display: none;
+  }
+  .admin-console-nav > * {
+    flex: none;
+  }
+  .admin-console-nav button {
+    white-space: nowrap;
+  }
+  /* Group headings and the footer identity are noise on a strip. */
+  .admin-console-nav > span,
+  .admin-console-user {
+    display: none;
+  }
+  .admin-console-content {
+    padding: 18px 14px 32px;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Desktop gutters are a quarter of a 360px screen. */
+  .page-wrap,
+  .farmer-desk-page,
+  .edit-listing-page,
+  .post-crop-page,
+  .admin-console-content {
+    padding-inline: 14px;
+  }
+  .farmer-desk-head h1,
+  .edit-listing-head h1,
+  .post-crop-head h1 {
+    font-size: 23px;
+  }
+  /* Page actions go full width rather than crowding the title. */
+  .desk-post-button,
+  .edit-listing-actions {
+    width: 100%;
+  }
+  .edit-listing-actions button {
+    flex: 1;
+  }
+  /* Anything still laid out in fixed columns falls back to one. */
+  .farmer-desk-columns,
+  .edit-listing-layout,
+  .admin-traffic-columns,
+  .post-crop-location,
+  .post-crop-price-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .edit-listing-rail {
+    position: static;
+  }
+  /* A wide table must never widen the page. These grids carry min-widths of 700-940px, and
+     overflow on the grid itself does nothing — the element is the wide thing. The parent is what
+     has to scroll, so it is selected by what it contains rather than by adding wrappers to the
+     markup of every console table. */
+  .admin-users-table-wrap,
+  .desk-panel,
+  div:has(> .order-table),
+  div:has(> .rate-table),
+  div:has(> .account-table),
+  div:has(> .admin-users-table),
+  div:has(> .admin-escrow-table),
+  div:has(> .admin-listing-table),
+  div:has(> .rate-publish-table) {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .messenger-panel {
+    position: fixed;
+    top: auto;
+    right: 8px;
+    bottom: 8px;
+    left: 8px;
+    width: auto;
+    max-height: 70vh;
+  }
+}
+
+@media (max-width: 560px) {
+  .admin-traffic-ranges,
+  .filter-pill-group {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .admin-traffic-ranges::-webkit-scrollbar,
+  .filter-pill-group::-webkit-scrollbar {
+    display: none;
+  }
+  .admin-traffic-ranges .filter-pill,
+  .filter-pill-group .filter-pill {
+    white-space: nowrap;
+  }
+  /* Two photo slots read better than four cramped ones. */
+  .post-crop-photos,
+  .photo-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .admin-traffic .desk-kpi-value,
+  .desk-kpi-value {
+    font-size: 24px;
+  }
+  .messenger-panel {
+    max-height: 78vh;
+  }
+  /* Tap targets: 44px is the smallest reliably hittable control. */
+  .icon-button,
+  .header-icon-button {
+    min-width: 40px;
+    min-height: 40px;
+  }
+}
