@@ -15440,3 +15440,55 @@ canvas {
   color: var(--fg-muted);
   font-size: 14px;
 }
+
+/* Profile: rail beside the panel, as the handoff has it. */
+.profile-page-layout {
+  display: grid;
+  grid-template-columns: minmax(200px, 240px) minmax(0, 1fr);
+  align-items: start;
+  gap: 16px;
+}
+.profile-page-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+.profile-page-rail button {
+  padding: 12px 14px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--fg-subtle);
+  font-size: 15px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+.profile-page-rail button:hover {
+  background: var(--bg);
+}
+.profile-page-rail button.on {
+  background: var(--ak-green-soft);
+  color: var(--ak-green-deep);
+  font-weight: 600;
+}
+.profile-page-panel > .panel {
+  margin: 0;
+}
+@media (max-width: 768px) {
+  .profile-page-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .profile-page-rail {
+    flex-direction: row;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .profile-page-rail button {
+    white-space: nowrap;
+  }
+}

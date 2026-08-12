@@ -1211,6 +1211,8 @@ const bn: Record<string, string> = {
   offers: "অফার",
   "vs. today's": "আজকের",
   "Remove photo": "ছবি সরান",
+  "Profile sections": "প্রোফাইল বিভাগ",
+  "Verification & documents": "যাচাই ও কাগজপত্র",
   "Buyer profile": "ক্রেতা প্রোফাইল",
   "Farmer profile": "কৃষক প্রোফাইল",
   "Loading disputes...": "বিরোধ লোড হচ্ছে...",
