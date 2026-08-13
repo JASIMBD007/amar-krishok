@@ -4,11 +4,15 @@ import { usePageViewBeacon } from "./analytics/usePageViewBeacon";
 import { MessengerPanel, type ComposeTarget } from "./components/messages/MessengerPanel";
 import { fetchMyThreads } from "./api/chat";
 import {
+  LineChart,
   LogOut,
-  Menu,
   MessageCircle,
+  Package,
   Shield,
+  Sprout,
+  Store,
   X,
+  type LucideIcon,
 } from "lucide-react";
 import {
   ApiRequestError,
@@ -211,7 +215,6 @@ export default function App() {
     district,
     language,
     markChatThreadOpen,
-    menuOpen,
     query,
     registrations,
     sendAdminChatReply,
@@ -221,7 +224,6 @@ export default function App() {
     setLanguage,
     setQuery,
     setUser,
-    toggleMenuOpen,
     updateRegistrationStatus,
     user,
   } = useAppStore();
@@ -605,14 +607,15 @@ export default function App() {
   // signed-in user to their own workspace (farmer/buyer/admin), or to login otherwise.
   // The demo's nav: the logo goes home, so the bar itself carries only the five destinations.
   // Staff enter the console through their account chip; the public nav stays focused on public destinations.
-  const navItems: Array<{ id: string; label: string; path: string; count?: number; staff?: boolean }> = [
-    { id: "market", label: "Marketplace", path: "/marketplace" },
-    { id: "prices", label: "Market rates", path: "/prices" },
-    { id: "farmer", label: "Farmer desk", path: user ? "/farmer" : "/login?next=%2Ffarmer" },
+  const navItems: Array<{ id: string; label: string; path: string; count?: number; staff?: boolean; icon: LucideIcon }> = [
+    { id: "market", label: "Marketplace", path: "/marketplace", icon: Store },
+    { id: "prices", label: "Market rates", path: "/prices", icon: LineChart },
+    { id: "farmer", label: "Farmer desk", path: user ? "/farmer" : "/login?next=%2Ffarmer", icon: Sprout },
     {
       id: "orders",
       label: "My orders",
       path: user ? "/orders" : "/login?next=%2Forders",
+      icon: Package,
     },
   ];
 
@@ -621,18 +624,6 @@ export default function App() {
     <Seo language={language} pathname={location.pathname} />
     <div className="app-shell" lang={language}>
       <header className="site-header">
-        <button
-          className="icon-button mobile-only"
-          type="button"
-          aria-expanded={menuOpen}
-          aria-label={menuOpen ? t("Close menu") : t("Open menu")}
-          onClick={() => {
-            setNotificationPanelOpen(false);
-            toggleMenuOpen();
-          }}
-        >
-          {menuOpen ? <X size={21} /> : <Menu size={21} />}
-        </button>
         <NavLink className="brand" to="/" onClick={closeAllHeaderMenus} aria-label={t("AmarKrishok home")} end>
           <BrandMark className="brand-mark" />
           <strong>AmarKrishok</strong>
@@ -766,60 +757,6 @@ export default function App() {
             </div>
           ) : null}
         </div>
-
-        {menuOpen && (
-          <nav className="mobile-menu-panel" aria-label={t("Mobile navigation")}>
-            <div className="mobile-menu-links">
-              {navItems.map((item) => (
-                <HeaderNavLink
-                  className={item.staff ? "nav-staff" : undefined}
-                  currentPath={location.pathname}
-                  currentSearch={location.search}
-                  key={item.id}
-                  to={item.path}
-                  onClick={closeAllHeaderMenus}
-                >
-                  {t(item.label)}
-                  {item.count === undefined ? null : <span className="nav-count">{t(String(item.count))}</span>}
-                </HeaderNavLink>
-              ))}
-            </div>
-            <div className="mobile-menu-actions">
-              <button
-                className="language-toggle"
-                type="button"
-                aria-label={t("Language switch")}
-                onClick={() => setLanguage(language === "en" ? "bn-BD" : "en")}
-              >
-                EN <span aria-hidden="true">·</span> <span className="bn-glyph">বাংলা</span>
-              </button>
-              {!user ? (
-                <>
-                  <NavLink className="mobile-menu-action-link" to="/login" onClick={closeAllHeaderMenus}>{t("Log in")}</NavLink>
-                  <button className="mobile-menu-signup" type="button" onClick={openHeaderRegisterChoice}>{t("Sign up free")}</button>
-                </>
-              ) : null}
-              {user?.role === "admin" ? (
-                <>
-                  <NavLink className="mobile-menu-action-link" to="/admin/users" onClick={closeAllHeaderMenus}>
-                    <span className="mobile-menu-avatar" aria-hidden="true">{accountInitials}</span>
-                    <span>{user.name}</span>
-                  </NavLink>
-                  <button className="mobile-menu-action-link" type="button" onClick={requestLogout}><LogOut aria-hidden="true" size={17} />{t("Log out")}</button>
-                </>
-              ) : null}
-              {user && user.role !== "admin" ? (
-                <>
-                  <NavLink className="mobile-menu-action-link" to={participantProfilePath} onClick={closeAllHeaderMenus}>
-                    <span className="mobile-menu-avatar" aria-hidden="true">{accountInitials}</span>
-                    <span>{t("Profile")}</span>
-                  </NavLink>
-                  <button className="mobile-menu-action-link" type="button" onClick={requestLogout}><LogOut aria-hidden="true" size={17} />{t("Log out")}</button>
-                </>
-              ) : null}
-            </div>
-          </nav>
-        )}
       </header>
       <RateTicker />
       {launchNoticeOpen && <LaunchNoticeModal onClose={() => setLaunchNoticeOpen(false)} />}
@@ -950,6 +887,26 @@ export default function App() {
         </Routes>
       </main>
       <SiteFooter />
+      {/* Phone-only primary navigation. On desktop the header nav carries these; here they
+          become a thumb-reachable bottom bar so the four destinations are always one tap away. */}
+      <nav className="mobile-tab-bar" aria-label={t("Main navigation")}>
+        {navItems.map((item) => {
+          const TabIcon = item.icon;
+          return (
+            <HeaderNavLink
+              className="mobile-tab"
+              currentPath={location.pathname}
+              currentSearch={location.search}
+              key={item.id}
+              to={item.path}
+              onClick={closeAllHeaderMenus}
+            >
+              <TabIcon aria-hidden="true" size={22} />
+              <span className="mobile-tab-label">{t(item.label)}</span>
+            </HeaderNavLink>
+          );
+        })}
+      </nav>
       <FloatingSupportChat chatThreads={chatThreads} user={user} onSendMessage={sendParticipantChatMessage} />
       {logoutConfirmOpen && (
         <div

@@ -12873,12 +12873,6 @@ canvas {
     width: auto;
     margin-left: 0;
   }
-  .site-header > .header-actions > .language-toggle,
-  .site-header > .header-actions > .admin-header-account,
-  .site-header > .header-actions > .participant-account,
-  .site-header > .header-actions > .header-auth {
-    display: none;
-  }
   .site-header .notification-button {
     display: inline-flex;
     align-items: center;
@@ -15399,5 +15393,126 @@ canvas {
      market data. Market rates is a whole screen in the nav; the strip earns nothing here. */
   .rate-ticker {
     display: none;
+  }
+}
+
+/* =====================================================================
+   SCREEN 1 — Phone / tablet global navigation (bottom tab bar)
+   The hamburger and its dropdown are gone from the markup. Below 1200px (the
+   width where the header's horizontal .main-nav collapses) navigation becomes
+   a fixed bottom tab bar: four thumb-reachable destinations that are always
+   visible, not hidden behind a menu. This is a phone-native component, not the
+   desktop header talked into a smaller size, so it is defined once here and
+   simply switched on at the same breakpoint where the top nav goes away — no
+   gap between the two regimes.
+   ===================================================================== */
+.mobile-tab-bar {
+  display: none;
+}
+
+@media (max-width: 1200px) {
+  /* The bar: four equal cells pinned to the bottom edge, above page content
+     (z-20 header) but below overlays (notifications 45, modals/messenger 60,
+     support chat 90) so it never pokes through a dialog. */
+  .mobile-tab-bar {
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 40;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+    padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
+    border-top: 1px solid #e2e5eb;
+    background: rgba(245, 247, 250, 0.97);
+    backdrop-filter: blur(14px);
+  }
+  .mobile-tab {
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    gap: 3px;
+    min-height: 52px;
+    padding: 4px 2px;
+    border-radius: 10px;
+    color: #6b7280;
+    text-decoration: none;
+  }
+  .mobile-tab svg {
+    width: 22px;
+    height: 22px;
+  }
+  .mobile-tab-label {
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.1;
+    text-align: center;
+    text-wrap: balance;
+  }
+  .mobile-tab.active,
+  .mobile-tab[aria-current="page"] {
+    color: #146b45;
+    background: #e7f2ec;
+  }
+
+  /* With the hamburger removed, the header is just brand + actions. Reset the
+     three-column desktop grid (and the ≤1200/≤820/≤560 hamburger variants) to
+     two columns so the actions sit hard against the right edge. The account
+     controls (language, log in / sign up, profile) that the old design pushed
+     into the dropdown now live in the header again — the dropdown is gone. */
+  .site-header {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .header-actions {
+    justify-content: flex-end;
+  }
+
+  /* Reserve the bar's height under the footer so the page's end clears it.
+     The footer's own dark background fills the reserved strip, so the bar
+     rests on colour rather than on a visible gap. */
+  .site-footer {
+    padding-bottom: calc(36px + 64px + env(safe-area-inset-bottom));
+  }
+
+  /* The support-chat button lifts above the bar instead of sitting on the
+     bottom edge, where it used to cover page content (the login Staff button,
+     a lot card's verified badge). It now rests over the footer's reserved
+     strip on short pages and clears the bar on long ones. */
+  .floating-chat {
+    bottom: calc(70px + env(safe-area-inset-bottom));
+  }
+}
+
+/* On a phone the restored account controls have to share one narrow row with
+   the brand, so they tighten up: smaller gaps, a compact language toggle, and
+   the admin identity chip drops its two lines of copy down to just the avatar.
+   The participant chip already sheds its copy at ≤1080 and its logout label at
+   ≤560, so it needs nothing more here. */
+@media (max-width: 640px) {
+  .header-actions {
+    gap: 6px;
+  }
+  .header-actions > .language-toggle {
+    min-height: 38px;
+    padding: 0 8px;
+    font-size: 12px;
+  }
+  .header-auth {
+    gap: 8px;
+  }
+  /* "Sign up free" is long in Bangla ("ফ্রি অ্যাকাউন্ট খুলুন"); on a narrow
+     header it wraps, so tighten the type to keep the button compact rather
+     than a tall three-line slab. The copy is shared with desktop, so only the
+     sizing changes here. */
+  .header-auth .primary-button {
+    padding: 7px 11px;
+    font-size: 12px;
+    line-height: 1.15;
+    text-align: center;
+  }
+  .admin-header-profile .account-chip-copy {
+    display: none;
+  }
+  .admin-header-profile {
+    padding: 4px;
   }
 }
