@@ -15756,6 +15756,19 @@ canvas {
   cursor: pointer;
 }
 
+/* Keep the final Company link clear of the fixed chat control at the footer edge. */
+@media (min-width: 761px) and (max-width: 1400px) {
+  .site-footer-columns nav:last-child {
+    margin-right: 96px;
+  }
+}
+
+@media (max-width: 760px) {
+  .site-footer-columns nav:last-child {
+    padding-bottom: 80px;
+  }
+}
+
 @media (max-width: 640px) {
   .cookie-consent {
     right: 12px;

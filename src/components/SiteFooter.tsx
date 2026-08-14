@@ -27,10 +27,10 @@ const COLUMNS: Array<{ heading: string; links: FooterLink[] }> = [
   {
     heading: "Company",
     links: [
-      { action: "cookie-settings", label: "Cookie settings" },
       { label: "About" },
       { label: "Field agents" },
       { label: "Contact" },
+      { action: "cookie-settings", label: "Cookie" },
     ],
   },
 ];

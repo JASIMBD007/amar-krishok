@@ -4,6 +4,7 @@ import type { Language } from "./types";
 
 const bn: Record<string, string> = {
   "Cookie settings": "কুকি সেটিংস",
+  Cookie: "কুকি",
   "Your privacy choices": "আপনার গোপনীয়তার পছন্দ",
   "We use necessary storage to keep the site working. With your permission, optional analytics helps us understand which pages are useful.":
     "সাইট চালু রাখতে আমরা প্রয়োজনীয় স্টোরেজ ব্যবহার করি। আপনার অনুমতি পেলে ঐচ্ছিক অ্যানালিটিকস কোন পৃষ্ঠাগুলো কাজে লাগে তা বুঝতে সাহায্য করে।",
