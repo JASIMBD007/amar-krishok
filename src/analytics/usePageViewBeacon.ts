@@ -1,6 +1,7 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { sendPageView } from "../api/analytics";
+import { COOKIE_CONSENT_CHANGE_EVENT, hasAnalyticsConsent } from "../privacy/cookieConsent";
 import type { AuthUser } from "../types";
 
 /**
@@ -13,10 +14,21 @@ import type { AuthUser } from "../types";
 export function usePageViewBeacon(user: AuthUser | null) {
   const location = useLocation();
   const lastPath = useRef<string | null>(null);
+  const [consentRevision, setConsentRevision] = useState(0);
   const isStaff = user?.role === "admin";
 
   useEffect(() => {
-    if (isStaff) {
+    const handleConsentChange = () => {
+      lastPath.current = null;
+      setConsentRevision((revision) => revision + 1);
+    };
+
+    window.addEventListener(COOKIE_CONSENT_CHANGE_EVENT, handleConsentChange);
+    return () => window.removeEventListener(COOKIE_CONSENT_CHANGE_EVENT, handleConsentChange);
+  }, []);
+
+  useEffect(() => {
+    if (isStaff || !hasAnalyticsConsent()) {
       return;
     }
 
@@ -27,5 +39,5 @@ export function usePageViewBeacon(user: AuthUser | null) {
 
     lastPath.current = path;
     sendPageView(path);
-  }, [isStaff, location.pathname]);
+  }, [consentRevision, isStaff, location.pathname]);
 }

@@ -3,6 +3,21 @@ import { DEFAULT_LOCALE } from "./i18n/config";
 import type { Language } from "./types";
 
 const bn: Record<string, string> = {
+  "Cookie settings": "কুকি সেটিংস",
+  "Your privacy choices": "আপনার গোপনীয়তার পছন্দ",
+  "We use necessary storage to keep the site working. With your permission, optional analytics helps us understand which pages are useful.":
+    "সাইট চালু রাখতে আমরা প্রয়োজনীয় স্টোরেজ ব্যবহার করি। আপনার অনুমতি পেলে ঐচ্ছিক অ্যানালিটিকস কোন পৃষ্ঠাগুলো কাজে লাগে তা বুঝতে সাহায্য করে।",
+  "Necessary cookies": "প্রয়োজনীয় কুকি",
+  "Required for login, language, security and your consent choice.":
+    "লগইন, ভাষা, নিরাপত্তা এবং আপনার সম্মতির পছন্দ সংরক্ষণে এটি প্রয়োজন।",
+  "Always on": "সবসময় চালু",
+  "Optional analytics": "ঐচ্ছিক অ্যানালিটিকস",
+  "Records page views, external referrer and approximate country. Form values are never included.":
+    "পৃষ্ঠা দেখা, বাইরের রেফারার এবং আনুমানিক দেশ রেকর্ড করে। ফর্মের তথ্য কখনো অন্তর্ভুক্ত হয় না।",
+  "Manage preferences": "পছন্দ পরিচালনা করুন",
+  "Only necessary": "শুধু প্রয়োজনীয়",
+  "Save preferences": "পছন্দ সংরক্ষণ করুন",
+  "Accept all": "সব গ্রহণ করুন",
   Home: "হোম",
   Marketplace: "ফসল বাজার",
   "Post Crop": "ফসল দিন",

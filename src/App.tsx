@@ -26,6 +26,7 @@ import { LaunchNoticeModal } from "./components/LaunchNoticeModal";
 import { BrandMark } from "./components/BrandMark";
 import { Seo } from "./components/Seo";
 import { SiteFooter } from "./components/SiteFooter";
+import { CookieConsentBanner } from "./components/CookieConsentBanner";
 import { FloatingSupportChat } from "./components/chat/FloatingSupportChat";
 import { RateTicker } from "./components/market/RateTicker";
 import { NotificationCenter } from "./components/notifications/NotificationCenter";
@@ -961,6 +962,7 @@ export default function App() {
         </Routes>
       </main>
       <SiteFooter />
+      <CookieConsentBanner />
       <FloatingSupportChat chatThreads={chatThreads} user={user} onSendMessage={sendParticipantChatMessage} />
       {logoutConfirmOpen && (
         <div

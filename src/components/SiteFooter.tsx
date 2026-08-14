@@ -1,5 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { useTranslate } from "../i18n";
+import { openCookiePreferences } from "../privacy/cookieConsent";
 import { BrandMark } from "./BrandMark";
 
 /** Internal routes get a link; the rest are plain labels until those pages exist. */
@@ -41,6 +42,9 @@ export function SiteFooter() {
             <strong>AmarKrishok</strong>
           </NavLink>
           <p>{t("A direct farmer-to-buyer supply chain for Bangladesh. Fair prices, visible to everyone.")}</p>
+          <button className="site-footer-cookie-button" onClick={openCookiePreferences} type="button">
+            {t("Cookie settings")}
+          </button>
         </div>
 
         <div className="site-footer-columns">

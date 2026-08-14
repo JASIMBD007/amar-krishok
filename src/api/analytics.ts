@@ -1,5 +1,6 @@
 import { apiRequest } from "./auth";
 import { environment } from "../config/environment";
+import { hasAnalyticsConsent } from "../privacy/cookieConsent";
 
 export type TrafficSummary = {
   countries: { countryCode: string; views: number; visitors: number }[];
@@ -34,7 +35,7 @@ function optedOut() {
  * request at the browser level, which is also why the reply is unreadable — and unneeded.
  */
 export function sendPageView(path: string) {
-  if (optedOut()) {
+  if (!hasAnalyticsConsent() || optedOut()) {
     return;
   }
 
