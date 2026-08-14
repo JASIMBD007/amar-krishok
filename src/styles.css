@@ -15001,13 +15001,21 @@ canvas {
 
 /* ---- Admin · Traffic: donut and ranked pages ---- */
 .admin-traffic-donut {
+  display: grid;
+  grid-template-columns: minmax(170px, 0.8fr) minmax(210px, 1.2fr);
+  align-items: center;
+  gap: 18px;
   padding: 14px 18px 18px;
+}
+.admin-traffic-donut > .recharts-responsive-container {
+  min-width: 0;
 }
 .admin-traffic-legend {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin: 12px 0 0;
+  min-width: 0;
+  margin: 0;
   padding: 0;
   list-style: none;
 }
@@ -15068,6 +15076,14 @@ canvas {
   color: var(--fg);
   font-style: normal;
   font-variant-numeric: tabular-nums;
+}
+
+/* Keep the chart readable when the sidebar leaves too little room. The outer cards retain their
+   own responsive grid; this breakpoint only stacks the chart and legend inside each card. */
+@media (max-width: 1180px) {
+  .admin-traffic-donut {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 /* =====================================================================

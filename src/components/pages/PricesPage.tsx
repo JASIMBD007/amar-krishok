@@ -61,16 +61,18 @@ export function PricesPage() {
               const direction = change > 0 ? "up" : change < 0 ? "down" : "flat";
               const changeLabel = change === 0 ? "0.0 %" : `${change > 0 ? "+" : "−"}${Math.abs(change).toFixed(1)} %`;
               const alertOn = Boolean(alerts[crop]);
+              const bengaliCropName = cropNamesBn[crop] ?? t(crop);
+              const visibleCropName = language === "bn-BD" ? bengaliCropName : crop;
 
               return (
                 <div className="rate-table-row" key={crop}>
                   <div className="rate-crop">
-                    <strong>{t(crop)}</strong>
-                    <span>{cropNamesBn[crop] ?? ""}</span>
+                    <strong>{visibleCropName}</strong>
+                    {language === "en" && bengaliCropName !== crop ? <span>{bengaliCropName}</span> : null}
                   </div>
                   <span className="mono-figure">{v(rates[crop].toLocaleString("en-IN"))}</span>
                   <span className={`rate-change ${direction}`}>{v(changeLabel)}</span>
-                  <RateSparkline crop={crop} label={`${t(crop)} ${t("Last 12 days")}`} />
+                  <RateSparkline crop={crop} label={`${visibleCropName} ${t("Last 12 days")}`} />
                   <span>
                     <button
                       aria-pressed={alertOn}

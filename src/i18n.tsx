@@ -429,6 +429,8 @@ const bn: Record<string, string> = {
   Eggplant: "বেগুন",
   Cucumber: "শসা",
   Mango: "আম",
+  "Boro rice": "বোরো ধান",
+  Jute: "পাট",
   "Post a crop lot for direct buyer orders.": "ক্রেতার সরাসরি অর্ডারের জন্য ফসলের লট দিন।",
   "Farmer app": "কৃষক প্যানেল",
   "Seller dashboard": "বিক্রেতা ড্যাশবোর্ড",
