@@ -4,7 +4,7 @@ import { openCookiePreferences } from "../privacy/cookieConsent";
 import { BrandMark } from "./BrandMark";
 
 /** Internal routes get a link; the rest are plain labels until those pages exist. */
-type FooterLink = { label: string; to?: string };
+type FooterLink = { action?: "cookie-settings"; label: string; to?: string };
 
 const COLUMNS: Array<{ heading: string; links: FooterLink[] }> = [
   {
@@ -26,7 +26,12 @@ const COLUMNS: Array<{ heading: string; links: FooterLink[] }> = [
   },
   {
     heading: "Company",
-    links: [{ label: "About" }, { label: "Field agents" }, { label: "Contact" }],
+    links: [
+      { action: "cookie-settings", label: "Cookie settings" },
+      { label: "About" },
+      { label: "Field agents" },
+      { label: "Contact" },
+    ],
   },
 ];
 
@@ -42,9 +47,6 @@ export function SiteFooter() {
             <strong>AmarKrishok</strong>
           </NavLink>
           <p>{t("A direct farmer-to-buyer supply chain for Bangladesh. Fair prices, visible to everyone.")}</p>
-          <button className="site-footer-cookie-button" onClick={openCookiePreferences} type="button">
-            {t("Cookie settings")}
-          </button>
         </div>
 
         <div className="site-footer-columns">
@@ -52,7 +54,16 @@ export function SiteFooter() {
             <nav aria-label={t(column.heading)} key={column.heading}>
               <span className="site-footer-heading">{t(column.heading)}</span>
               {column.links.map((link) =>
-                link.to ? (
+                link.action === "cookie-settings" ? (
+                  <button
+                    className="site-footer-cookie-button"
+                    key={link.label}
+                    onClick={openCookiePreferences}
+                    type="button"
+                  >
+                    {t(link.label)}
+                  </button>
+                ) : link.to ? (
                   <NavLink key={link.label} to={link.to}>
                     {t(link.label)}
                   </NavLink>
