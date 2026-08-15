@@ -10,10 +10,8 @@ import {
   Minus,
   Package,
   Phone,
-  Plus,
   Search,
   Send,
-  TrendingUp,
   X,
 } from "lucide-react";
 import {
@@ -26,10 +24,10 @@ import {
   type BackendCropLot,
   type BackendOrder,
 } from "../../../api/auth";
-import { decideOrderDispute, decideOrderEscrow, fetchDisputedOrders } from "../../../api/market";
+import { decideOrderDispute, decideOrderEscrow, fetchDisputedOrders, fetchPublishedRates } from "../../../api/market";
 import { useLanguage, useTranslate } from "../../../i18n";
 import { ListLoading } from "../../EmptyState";
-import type { AccountStatus, AuthUser, ChatMessage, ChatThread, RegisteredAccount } from "../../../types";
+import type { AccountStatus, AuthUser, ChatThread, RegisteredAccount } from "../../../types";
 
 export type AdminConsoleSection =
   | "overview"
@@ -46,51 +44,6 @@ export type AdminConsoleSection =
 
 export type AdminStaffRole = "super" | "support";
 
-const GROWTH = [
-  { label: "Mon", value: 46 },
-  { label: "Tue", value: 58 },
-  { label: "Wed", value: 51 },
-  { label: "Thu", value: 72 },
-  { label: "Fri", value: 88 },
-  { label: "Sat", value: 96 },
-  { label: "Sun", value: 64 },
-];
-
-const DISTRICTS = [
-  { name: "Bogura", gmv: 1_842_000, lots: 148, share: 100 },
-  { name: "Faridpur", gmv: 1_204_000, lots: 96, share: 65 },
-  { name: "Naogaon", gmv: 968_000, lots: 71, share: 52 },
-  { name: "Rangpur", gmv: 640_000, lots: 54, share: 35 },
-  { name: "Chattogram", gmv: 412_000, lots: 29, share: 22 },
-];
-
-const FEEDS = [
-  { name: "Bogura mandi", state: "Live", ok: true, at: "08:00" },
-  { name: "Faridpur mandi", state: "Live", ok: true, at: "08:00" },
-  { name: "Naogaon mandi", state: "Late 42 min", ok: false, at: "08:42" },
-  { name: "Rangpur mandi", state: "Live", ok: true, at: "08:00" },
-  { name: "Bandarban", state: "No feed today", ok: false, at: "—" },
-];
-
-const ACTIVITY = [
-  { who: "Nusrat (staff)", what: "released escrow on AK-4818", when: "08:41", tone: "green" },
-  { who: "System", what: "published Bogura rates for 8 crops", when: "08:00", tone: "blue" },
-  { who: "Tanvir (support)", what: "opened dispute D-118", when: "07:55", tone: "red" },
-  { who: "Nusrat (staff)", what: "approved farmer Md. Anwar Hossain", when: "07:20", tone: "green" },
-  { who: "Tanvir (support)", what: "suspended listing L8 — image mismatch", when: "Yesterday 18:02", tone: "red" },
-  { who: "System", what: "rate feed from Naogaon arrived 42 min late", when: "Yesterday 08:42", tone: "amber" },
-] as const;
-
-const PROTOTYPE_USERS = [
-  { id: "U1", name: "Sultana Begum", role: "Farmer", district: "Bogura", phone: "01711 004 442", status: "Verified", vol: 112, joined: "2011" },
-  { id: "U2", name: "Rafiq Traders", role: "Buyer", district: "Dhaka", phone: "01712 004 556", status: "Verified", vol: 64, joined: "2019" },
-  { id: "U3", name: "Md. Anwar Hossain", role: "Farmer", district: "Bogura", phone: "01733 991 087", status: "Pending", vol: 0, joined: "2024" },
-  { id: "U4", name: "Chattogram Wholesale", role: "Buyer", district: "Chattogram", phone: "01818 220 190", status: "Verified", vol: 231, joined: "2016" },
-  { id: "U5", name: "Jahanara Khatun", role: "Farmer", district: "Faridpur", phone: "01755 610 233", status: "Restricted", vol: 9, joined: "2022" },
-  { id: "U6", name: "Nurul Islam", role: "Farmer", district: "Naogaon", phone: "01799 145 802", status: "Verified", vol: 63, joined: "2007" },
-];
-
-
 const PERMISSIONS = [
   { area: "Release / refund escrow", super: true, support: false },
   { area: "Open and close disputes", super: true, support: true },
@@ -99,55 +52,6 @@ const PERMISSIONS = [
   { area: "Publish district rates", super: true, support: false },
   { area: "Restrict or delete a user", super: true, support: false },
   { area: "Change staff roles", super: true, support: false },
-];
-
-const STAFF = [
-  { name: "Nusrat Jahan", mail: "nusrat@amarkrishok.com", role: "Super admin", last: "Active now" },
-  { name: "Tanvir Ahmed", mail: "tanvir@amarkrishok.com", role: "Support agent", last: "12 min ago" },
-  { name: "Shirin Akter", mail: "shirin@amarkrishok.com", role: "Support agent", last: "Yesterday" },
-];
-
-const PROTOTYPE_THREADS: ChatThread[] = [
-  {
-    id: "T1",
-    participantName: "Sultana Begum",
-    participantPhone: "01711 004 442",
-    participantRole: "farmer",
-    status: "waiting",
-    subject: "AK-4821 · Potato Grade A · 120 mon",
-    updatedAt: new Date().toISOString(),
-    messages: [
-      { id: "T1-1", createdAt: "08:12", senderName: "Sultana Begum", senderRole: "farmer", text: "The lot is loaded. Transporter leaves Bogura at 09:30." },
-      { id: "T1-2", createdAt: "08:20", senderName: "AmarKrishok support", senderRole: "admin", text: "Good. Please send the weighbridge slip when you have it." },
-      { id: "T1-3", createdAt: "08:41", senderName: "Sultana Begum", senderRole: "farmer", text: "Weighbridge shows 120,4 mon. Slip attached at the depot office." },
-    ],
-  },
-  {
-    id: "T2",
-    participantName: "Rafiq Traders",
-    participantPhone: "01712 004 556",
-    participantRole: "buyer",
-    status: "waiting",
-    subject: "Dispute D-118 · quality claim",
-    updatedAt: new Date(Date.now() - 3_600_000).toISOString(),
-    messages: [
-      { id: "T2-1", createdAt: "Yesterday", senderName: "Rafiq Traders", senderRole: "buyer", text: "Two sacks in AK-4818 were below Grade A. Can we hold part of the escrow?" },
-      { id: "T2-2", createdAt: "07:55", senderName: "AmarKrishok support", senderRole: "admin", text: "Photos received. We propose a ৳ 4,200 partial refund — accept?" },
-    ],
-  },
-  {
-    id: "T3",
-    participantName: "Chattogram Wholesale",
-    participantPhone: "01818 220 190",
-    participantRole: "buyer",
-    status: "open",
-    subject: "Tomato Grade B · 40 mon",
-    updatedAt: new Date(Date.now() - 86_400_000).toISOString(),
-    messages: [
-      { id: "T3-1", createdAt: "Mon", senderName: "Chattogram Wholesale", senderRole: "buyer", text: "Can you hold the lot until Thursday?" },
-      { id: "T3-2", createdAt: "Mon", senderName: "AmarKrishok support", senderRole: "admin", text: "Yes, until Thursday 18:00. After that it goes back on the market." },
-    ],
-  },
 ];
 
 const money = (value: number) => `৳ ${Math.round(value).toLocaleString("en-IN")}`;
@@ -161,7 +65,9 @@ const initials = (name: string) =>
     .join("")
     .toUpperCase();
 
-function activityColor(tone: (typeof ACTIVITY)[number]["tone"]) {
+type ActivityTone = "amber" | "blue" | "green" | "red";
+
+function activityColor(tone: ActivityTone) {
   if (tone === "green") return "#15803D";
   if (tone === "red") return "#CC0001";
   if (tone === "amber") return "#B45309";
@@ -183,13 +89,22 @@ function isRefunded(order: BackendOrder) {
 
 export function AdminDashboard({ registrations, user }: { registrations: RegisteredAccount[]; user: AuthUser | null }) {
   const t = useTranslate();
+  const language = useLanguage();
   const [orders, setOrders] = useState<BackendOrder[]>([]);
   const [lots, setLots] = useState<BackendCropLot[]>([]);
+  const [activity, setActivity] = useState<BackendActivityEntry[]>([]);
+  const [activityError, setActivityError] = useState("");
+  const [districtRates, setDistrictRates] = useState<Record<string, Record<string, number>>>({});
+  const [rateFeeds, setRateFeeds] = useState<Array<{ district: string; error: string; publishedAt: string | null; rateCount: number }>>([]);
+  const [districtRatesLoaded, setDistrictRatesLoaded] = useState(false);
   const [loadError, setLoadError] = useState("");
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    if (!user?.accessToken) return;
+    if (!user?.accessToken) {
+      setLoaded(true);
+      return;
+    }
     setLoaded(false);
     Promise.all([fetchMyCropLots(user.accessToken), fetchMyOrders(user.accessToken)])
       .then(([nextLots, nextOrders]) => {
@@ -202,9 +117,74 @@ export function AdminDashboard({ registrations, user }: { registrations: Registe
         setLoadError(error instanceof ApiRequestError ? error.message : "Could not load live dashboard data.");
         setLoaded(true);
       });
+
+    fetchAdminActivity(user.accessToken, 6)
+      .then((nextActivity) => {
+        setActivity(nextActivity);
+        setActivityError("");
+      })
+      .catch((error) => {
+        setActivity([]);
+        setActivityError(error instanceof ApiRequestError ? error.message : "Could not load recent staff activity.");
+      });
   }, [user?.accessToken]);
 
-  const hasLiveData = loaded && !loadError;
+  useEffect(() => {
+    if (!loaded || loadError) return;
+    const districts = Array.from(new Set(lots.filter((lot) => lot.status.toUpperCase() === "ACTIVE").map((lot) => lot.district.name)));
+    if (!districts.length) {
+      setDistrictRates({});
+      setRateFeeds([]);
+      setDistrictRatesLoaded(true);
+      return;
+    }
+
+    let active = true;
+    setDistrictRatesLoaded(false);
+    Promise.all(districts.map(async (district) => {
+      try {
+        const published = await fetchPublishedRates(district);
+        const today = new Date().toISOString().slice(0, 10);
+        const currentRates = published.rates.filter((entry) => entry.publishedAt.slice(0, 10) === today);
+        return {
+          district,
+          error: "",
+          publishedAt: currentRates[0]?.publishedAt ?? null,
+          rates: Object.fromEntries(currentRates.map((entry) => [entry.crop, entry.ratePerMon])),
+        };
+      } catch (error) {
+        return {
+          district,
+          error: error instanceof ApiRequestError ? error.message : "Could not load this district's rates.",
+          publishedAt: null,
+          rates: {} as Record<string, number>,
+        };
+      }
+    })).then((results) => {
+      if (!active) return;
+      setDistrictRates(Object.fromEntries(results.map((result) => [result.district, result.rates])));
+      setRateFeeds(results.map((result) => ({
+        district: result.district,
+        error: result.error,
+        publishedAt: result.publishedAt,
+        rateCount: Object.keys(result.rates).length,
+      })));
+      setDistrictRatesLoaded(true);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [loadError, loaded, lots]);
+
+  if (!loaded) {
+    return <ListLoading label={t("Loading live dashboard data...")} />;
+  }
+
+  if (loadError) {
+    return <p className="soft-notice warn">{t(loadError)}</p>;
+  }
+
   const now = Date.now();
   const today = new Date().toDateString();
   const todaysOrders = orders.filter((order) => new Date(order.createdAt).toDateString() === today);
@@ -221,16 +201,14 @@ export function AdminDashboard({ registrations, user }: { registrations: Registe
   }).length;
 
   const kpis = [
-    ["GMV · today", money(hasLiveData ? gmv : 4_824_000), `${hasLiveData ? todaysOrders.length : 0} orders placed in this session`],
-    ["Held in escrow", money(hasLiveData ? escrow : 19_400_000), "Median release 1 h 48 min"],
-    ["Live listings", String(hasLiveData ? liveLots.length : 8), `${hasLiveData ? suspendedLots.length : 0} suspended by staff`],
-    ["Needs a decision", String(hasLiveData ? pending : 2), `${hasLiveData ? disputes : 3} open disputes`],
-    ["Payouts due today", money(486_300), "7 farmers · next batch 14:00"],
-    ["New signups", String(hasLiveData ? signups : 38), "+12 % vs. last week"],
+    { detail: `${todaysOrders.length} ${t("orders today")}`, label: "GMV · today", value: money(gmv) },
+    { detail: `${heldOrders.length} ${t("held orders")}`, label: "Held in escrow", value: money(escrow) },
+    { detail: `${suspendedLots.length} ${t("cancelled listings")}`, label: "Live listings", value: String(liveLots.length) },
+    { detail: `${pending} ${t("pending verifications")} · ${disputes} ${t("open disputes")}`, label: "Needs a decision", value: String(pending + disputes) },
+    { detail: t("Created in the last 7 days"), label: "New signups", value: String(signups) },
   ];
 
-  const liveGrowth = GROWTH.map((entry, index) => {
-    if (!hasLiveData) return { ...entry, height: entry.value };
+  const liveGrowth = Array.from({ length: 7 }, (_, index) => {
     const start = new Date();
     start.setHours(0, 0, 0, 0);
     start.setDate(start.getDate() - (6 - index));
@@ -239,35 +217,46 @@ export function AdminDashboard({ registrations, user }: { registrations: Registe
       const created = new Date(order.createdAt).getTime();
       return created >= start.getTime() && created < end;
     }).length;
-    return { ...entry, value, height: value };
+    return {
+      label: start.toLocaleDateString(language, { weekday: "short" }),
+      value,
+      height: value,
+    };
   });
   const growthPeak = Math.max(...liveGrowth.map((entry) => entry.height), 1);
-  const chartGrowth = liveGrowth.map((entry) => ({ ...entry, height: hasLiveData ? Math.max(8, Math.round((entry.height / growthPeak) * 100)) : entry.height }));
+  const chartGrowth = liveGrowth.map((entry) => ({ ...entry, height: entry.value ? Math.max(8, Math.round((entry.height / growthPeak) * 100)) : 0 }));
 
-  const liveDistricts = hasLiveData && orders.length
+  const liveDistricts = orders.length
     ? Array.from(new Set([...lots.map((lot) => lot.district.name), ...orders.map((order) => order.district.name)]))
         .map((name) => ({
           name,
           gmv: orders.filter((order) => order.district.name === name && !isRefunded(order)).reduce((sum, order) => sum + orderValue(order), 0),
           lots: lots.filter((lot) => lot.district.name === name).length,
-          share: 0,
         }))
         .sort((first, second) => second.gmv - first.gmv)
         .slice(0, 5)
-    : DISTRICTS;
+    : [];
   const districtPeak = Math.max(...liveDistricts.map((district) => district.gmv), 1);
+
+  const comparedLots = liveLots.flatMap((lot) => {
+    const districtRate = districtRates[lot.district.name]?.[lot.crop.name];
+    if (!districtRate) return [];
+    const delta = (Number(lot.pricePerKg) * 40) / districtRate - 1;
+    return [{ delta, postedAt: new Date(lot.createdAt).getTime() }];
+  });
+  const fairLots = comparedLots.filter(({ delta }) => delta >= -0.08 && delta <= 0.03).length;
+  const staleHighLots = comparedLots.filter(({ delta, postedAt }) => delta > 0.03 && postedAt < now - 7 * 86_400_000).length;
+  const underpricedLots = comparedLots.filter(({ delta }) => delta < -0.08).length;
+  const percentage = (count: number) => comparedLots.length ? Math.round((count / comparedLots.length) * 100) : 0;
 
   return (
     <div className="admin-dashboard">
       <div className="admin-dashboard-kpis">
-        {kpis.map(([label, value, detail], index) => (
-          <article className={index === 3 ? "needs-decision" : ""} key={label}>
+        {kpis.map(({ detail, label, value }) => (
+          <article className={label === "Needs a decision" ? "needs-decision" : ""} key={label}>
             <span>{t(label)}</span>
             <strong>{value}</strong>
-            <small className={index === 5 ? "positive" : ""}>
-              {index === 5 ? <TrendingUp aria-hidden="true" size={13} /> : null}
-              {t(detail)}
-            </small>
+            <small>{detail}</small>
           </article>
         ))}
       </div>
@@ -286,37 +275,60 @@ export function AdminDashboard({ registrations, user }: { registrations: Registe
 
         <article className="admin-dashboard-panel districts">
           <strong>{t("GMV by district")}</strong>
-          {liveDistricts.map((district) => (
+          {liveDistricts.length ? liveDistricts.map((district) => (
             <div className="admin-district-row" key={district.name}>
               <span><b>{t(district.name)}</b><small>{district.lots} {t("lots")}</small><em>{money(district.gmv)}</em></span>
-              <i><b style={{ width: `${hasLiveData ? Math.round((district.gmv / districtPeak) * 100) : district.share}%` }} /></i>
+              <i><b style={{ width: `${Math.round((district.gmv / districtPeak) * 100)}%` }} /></i>
             </div>
-          ))}
+          )) : <p className="admin-dashboard-empty">{t("No district GMV has been recorded yet.")}</p>}
         </article>
 
         <article className="admin-dashboard-panel feed-health">
           <strong>{t("Rate feed health")}</strong>
-          {FEEDS.map((feed) => (
-            <div key={feed.name}><i className={feed.ok ? "ok" : "bad"} /><span>{t(feed.name)}</span><em>{t(feed.state)}</em><small>{feed.at}</small></div>
-          ))}
+          {!districtRatesLoaded ? <p className="admin-dashboard-empty">{t("Loading today's district rates...")}</p> : null}
+          {districtRatesLoaded && rateFeeds.length === 0 ? <p className="admin-dashboard-empty">{t("No active listing districts to check.")}</p> : null}
+          {districtRatesLoaded ? rateFeeds.map((feed) => {
+            const publishedAt = feed.publishedAt ? new Date(feed.publishedAt) : null;
+            const publishedDate = publishedAt && !Number.isNaN(publishedAt.getTime())
+              ? publishedAt.toLocaleDateString(language, { day: "numeric", month: "short" })
+              : "—";
+            const ok = !feed.error && feed.rateCount > 0;
+            return (
+              <div key={feed.district}>
+                <i className={ok ? "ok" : "bad"} />
+                <span>{t(feed.district)}</span>
+                <em>{feed.error ? t("Unavailable") : ok ? `${feed.rateCount} ${t("crops")}` : t("No feed today")}</em>
+                <small>{publishedDate}</small>
+              </div>
+            );
+          }) : null}
         </article>
 
         <article className="admin-dashboard-panel recent-activity">
           <strong>{t("Recent staff activity")}</strong>
-          {ACTIVITY.map((activity) => (
-            <div key={`${activity.when}-${activity.what}`}>
-              <i style={{ background: activityColor(activity.tone) }} />
-              <span><b>{t(activity.who)}</b> {t(activity.what)}</span><small>{activity.when}</small>
+          {activityError ? <p className="admin-dashboard-empty">{t(activityError)}</p> : null}
+          {!activityError && activity.length ? activity.map((entry) => (
+            <div key={entry.id}>
+              <i style={{ background: activityColor(toneForAction(entry.action)) }} />
+              <span><b>{entry.actorName}</b> {t(readableAction(entry.action))} <em className="admin-activity-target">{entry.target}</em></span>
+              <small>{new Date(entry.createdAt).toLocaleString(language, { day: "numeric", hour: "2-digit", minute: "2-digit", month: "short" })}</small>
             </div>
-          ))}
+          )) : null}
+          {!activityError && activity.length === 0 ? <p className="admin-dashboard-empty">{t("No staff actions recorded yet.")}</p> : null}
         </article>
 
         <article className="admin-dashboard-panel integrity">
           <strong>{t("Rate integrity")}</strong>
-          <div><i className="good" /><span>{t("Listings within fair range")}</span><b>91 %</b></div>
-          <div><i className="warn" /><span>{t("Above range, unsold > 7 days")}</span><b>6 %</b></div>
-          <div><i className="danger" /><span>{t("Suspicious under-pricing")}</span><b>3 %</b></div>
-          <p>{t("Districts missing today’s rate: Bandarban, Khagrachhari, Rangamati.")}</p>
+          {!districtRatesLoaded ? <p className="admin-dashboard-empty">{t("Loading today's district rates...")}</p> : null}
+          {districtRatesLoaded && comparedLots.length ? (
+            <>
+              <div><i className="good" /><span>{t("Listings within fair range")}</span><b>{percentage(fairLots)} %</b></div>
+              <div><i className="warn" /><span>{t("Above range, unsold > 7 days")}</span><b>{percentage(staleHighLots)} %</b></div>
+              <div><i className="danger" /><span>{t("Suspicious under-pricing")}</span><b>{percentage(underpricedLots)} %</b></div>
+              <p>{comparedLots.length} {t("live listings compared with today's published rates.")}</p>
+            </>
+          ) : null}
+          {districtRatesLoaded && comparedLots.length === 0 ? <p className="admin-dashboard-empty">{t("No live listings have today's district rate for comparison.")}</p> : null}
         </article>
       </div>
     </div>
@@ -428,10 +440,6 @@ type ConsoleUser = {
 };
 
 function toConsoleUsers(registrations: RegisteredAccount[]): ConsoleUser[] {
-  if (!registrations.length) {
-    return PROTOTYPE_USERS.map((user) => ({ ...user, verified: user.status === "Verified" }));
-  }
-
   return registrations.map((account) => ({
     id: account.id,
     name: account.name,
@@ -706,45 +714,41 @@ export function AdminDisputes({
 function readableTime(value: string) {
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return value;
-  return new Intl.DateTimeFormat("en", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Dhaka" }).format(parsed);
+  return new Intl.DateTimeFormat(undefined, { hour: "2-digit", minute: "2-digit" }).format(parsed);
 }
 
 export function AdminInbox({ chatThreads, onAdminReply, onThreadOpen }: { chatThreads: ChatThread[]; onAdminReply: (threadId: string, text: string) => void; onThreadOpen: (threadId: string) => void }) {
   const t = useTranslate();
-  const source = chatThreads.length ? chatThreads : PROTOTYPE_THREADS;
-  const [activeId, setActiveId] = useState(source[0]?.id ?? "");
+  const [activeId, setActiveId] = useState(chatThreads[0]?.id ?? "");
   const [draft, setDraft] = useState("");
-  const [demoMessages, setDemoMessages] = useState<Record<string, ChatMessage[]>>({});
-  const active = source.find((thread) => thread.id === activeId) ?? source[0];
+  const active = chatThreads.find((thread) => thread.id === activeId) ?? chatThreads[0];
 
   useEffect(() => {
-    if (active?.status === "waiting" && chatThreads.length) onThreadOpen(active.id);
-  }, [active?.id, active?.status, chatThreads.length, onThreadOpen]);
+    if (active?.status === "waiting") onThreadOpen(active.id);
+  }, [active?.id, active?.status, onThreadOpen]);
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
     const text = draft.trim();
     if (!active || !text) return;
-    if (chatThreads.length) onAdminReply(active.id, text);
-    else setDemoMessages((current) => ({ ...current, [active.id]: [...(current[active.id] ?? []), { id: `${active.id}-${Date.now()}`, createdAt: new Date().toISOString(), senderName: "AmarKrishok support", senderRole: "admin", text }] }));
+    onAdminReply(active.id, text);
     setDraft("");
   };
 
   if (!active) return <div className="admin-no-results"><span>{t("No conversations yet")}</span></div>;
-  const messages = [...active.messages, ...(demoMessages[active.id] ?? [])];
   return (
     <div className="admin-inbox">
       <div className="admin-thread-list">
-        {source.map((thread, index) => (
+        {chatThreads.map((thread) => (
           <button className={thread.id === active.id ? "on" : ""} key={thread.id} onClick={() => setActiveId(thread.id)} type="button">
-            <i>{initials(thread.participantName)}</i><span><strong>{t(thread.participantName)}{thread.status === "waiting" && index < 2 ? <em>{index + 1}</em> : null}</strong><small>{t(thread.subject)}</small></span><time>{readableTime(thread.updatedAt)}</time>
+            <i>{initials(thread.participantName)}</i><span><strong>{t(thread.participantName)}</strong><small>{t(thread.subject)}</small></span><time>{readableTime(thread.updatedAt)}</time>
           </button>
         ))}
       </div>
       <section className="admin-conversation">
         <header><span><strong>{t(active.participantName)}</strong><small>{t(active.participantRole === "farmer" ? "Farmer" : active.participantRole === "buyer" ? "Buyer" : "Guest")} · {t(active.subject)}</small></span><em><Clock3 size={13} />{t("Reply due in 5 h")}</em></header>
         <div className="admin-message-list">
-          {messages.map((message) => <div className={message.senderRole === "admin" ? "staff" : "participant"} key={message.id}><span>{message.text}</span><time>{readableTime(message.createdAt)}</time></div>)}
+          {active.messages.map((message) => <div className={message.senderRole === "admin" ? "staff" : "participant"} key={message.id}><span>{message.text}</span><time>{readableTime(message.createdAt)}</time></div>)}
         </div>
         <form onSubmit={submit}><input value={draft} onChange={(event) => setDraft(event.target.value)} placeholder={t("Reply as AmarKrishok support")} /><button type="submit"><Send size={16} />{t("Reply")}</button></form>
       </section>
@@ -752,7 +756,7 @@ export function AdminInbox({ chatThreads, onAdminReply, onThreadOpen }: { chatTh
   );
 }
 
-export function AdminRoles({ onNotice }: { onNotice: (message: string) => void }) {
+export function AdminRoles({ user }: { user: AuthUser | null }) {
   const t = useTranslate();
   return (
     <div className="admin-roles">
@@ -761,8 +765,10 @@ export function AdminRoles({ onNotice }: { onNotice: (message: string) => void }
         {PERMISSIONS.map((permission) => <div className="admin-role-row" key={permission.area}><span>{t(permission.area)}</span><span>{permission.super ? <Check size={17} /> : <Minus size={17} />}</span><span>{permission.support ? <Check size={17} /> : <Minus size={17} />}</span></div>)}
       </div>
       <div className="admin-staff-accounts">
-        <header><strong>{t("Staff accounts")}</strong><button onClick={() => onNotice("Staff invitation flow is ready for server-side role provisioning.")} type="button"><Plus size={15} />{t("Invite staff")}</button></header>
-        {STAFF.map((staff) => <div key={staff.mail}><i>{initials(staff.name)}</i><span><strong>{t(staff.name)}</strong><small>{staff.mail}</small></span><em>{t(staff.role)}</em><time>{t(staff.last)}</time></div>)}
+        <header><strong>{t("Staff accounts")}</strong></header>
+        {user ? (
+          <div><i>{initials(user.name)}</i><span><strong>{user.name}</strong><small>{user.username}</small></span><em>{t("Super admin")}</em><time>{t("Current session")}</time></div>
+        ) : <div className="admin-no-results"><span>{t("No staff account is available from the current session.")}</span></div>}
       </div>
     </div>
   );

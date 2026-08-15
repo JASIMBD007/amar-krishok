@@ -11968,6 +11968,12 @@ textarea:focus-visible {
   font-size: 13px;
   line-height: 1.5;
 }
+.admin-dashboard-panel .admin-dashboard-empty {
+  margin: 0;
+  color: #6b7280;
+  font-size: 13px;
+  line-height: 1.5;
+}
 
 /* Activity */
 .admin-activity-list {

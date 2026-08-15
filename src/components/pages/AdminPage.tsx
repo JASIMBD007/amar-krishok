@@ -138,7 +138,12 @@ export function AdminPage({
   const [backendRegistrations, setBackendRegistrations] = useState<RegisteredAccount[] | null>(null);
   const [verificationError, setVerificationError] = useState("");
   const [notice, setNotice] = useState("");
-  const accounts = backendRegistrations ?? registrations;
+  // An authenticated admin must only see the server's account book. Local registration state is
+  // retained for the offline public signup flow, but is not a dashboard-data fallback.
+  const accounts = useMemo(
+    () => (user?.accessToken ? backendRegistrations ?? [] : registrations),
+    [backendRegistrations, registrations, user?.accessToken],
+  );
 
   useEffect(() => {
     if (user?.role !== "admin" || !user.accessToken) return;
@@ -159,7 +164,7 @@ export function AdminPage({
     }
     updateBackendVerification(user.accessToken, id, status)
       .then((account) => {
-        setBackendRegistrations((current) => (current ?? registrations).map((item) => (item.id === id ? account : item)));
+        setBackendRegistrations((current) => (current ?? []).map((item) => (item.id === id ? account : item)));
         setVerificationError("");
       })
       .catch((error) => {
@@ -175,7 +180,7 @@ export function AdminPage({
 
     setBackendAccountVerified(user.accessToken, id, verified)
       .then((account) => {
-        setBackendRegistrations((current) => (current ?? registrations).map((item) => (item.id === id ? account : item)));
+        setBackendRegistrations((current) => (current ?? []).map((item) => (item.id === id ? account : item)));
         setVerificationError("");
       })
       .catch((error) => {
@@ -202,8 +207,8 @@ export function AdminPage({
   const badgeCounts = useMemo(() => ({
     orders: orderCount,
     verification: accounts.filter((account) => account.role === "farmer" && account.status === "pending").length,
-    disputes: Math.max(3, openDisputeCount),
-    inbox: chatThreads.filter((thread) => thread.status === "waiting").length || 2,
+    disputes: openDisputeCount,
+    inbox: chatThreads.filter((thread) => thread.status === "waiting").length,
   }), [accounts, chatThreads, openDisputeCount, orderCount]);
 
   const openSection = (next: AdminConsoleSection) => {
@@ -278,7 +283,7 @@ export function AdminPage({
         {section === "users" ? <AdminUsers onMessageUser={onMessageUser} onNotice={setNotice} onOpenDocument={openDocument} onSetVerified={setAccountVerified} onUpdateRegistration={updateRegistration} registrations={accounts} staffRole={staffRole} /> : null}
         {section === "disputes" ? <AdminDisputes onMessageUser={onMessageUser} onNotice={setNotice} user={user} /> : null}
         {section === "inbox" ? <AdminInbox chatThreads={chatThreads} onAdminReply={onAdminReply} onThreadOpen={onThreadOpen} /> : null}
-        {section === "roles" && staffRole === "super" ? <AdminRoles onNotice={setNotice} /> : null}
+        {section === "roles" && staffRole === "super" ? <AdminRoles user={user} /> : null}
       </div>
     </section>
   );
