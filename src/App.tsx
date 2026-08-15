@@ -557,7 +557,7 @@ export default function App() {
   };
 
   const handleMarketplaceEditLot = (lot: CropLot) => {
-    navigate(`/farmer?editLot=${encodeURIComponent(lot.id)}`);
+    navigate(`/farmer/listings/${encodeURIComponent(lot.id)}`);
   };
 
   const openHeaderRegisterChoice = () => {
