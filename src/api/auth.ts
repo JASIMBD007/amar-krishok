@@ -440,6 +440,7 @@ function toAuthUser(data: LoginResponse): AuthUser {
   return {
     accessToken: data.accessToken,
     accountId: data.user.id,
+    avatarUrl: data.user.avatarUrl ?? "",
     district: data.user.district?.name ?? "",
     name: data.user.name,
     phone: data.user.phone,

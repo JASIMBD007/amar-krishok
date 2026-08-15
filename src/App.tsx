@@ -12,10 +12,13 @@ import {
 } from "lucide-react";
 import {
   ApiRequestError,
+  fetchMyProfile,
   fetchMyCropLots,
   fetchMyOrders,
   fetchNotifications,
   fetchPublicCropLots,
+  fetchUploadObjectUrl,
+  isOwnUploadUrl,
   markAllNotificationsRead,
   markNotificationRead,
   type BackendCropLot,
@@ -268,6 +271,7 @@ export default function App() {
   const [composeTarget, setComposeTarget] = useState<ComposeTarget | null>(null);
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [notificationError, setNotificationError] = useState("");
+  const [headerAvatarObjectUrl, setHeaderAvatarObjectUrl] = useState("");
   const [marketplaceError, setMarketplaceError] = useState("");
   const [marketplaceLots, setMarketplaceLots] = useState<CropLot[]>([]);
   const [marketplaceLoading, setMarketplaceLoading] = useState(false);
@@ -275,6 +279,75 @@ export default function App() {
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const [reviewedNotificationIds, setReviewedNotificationIds] = useState<string[]>([]);
   const [selectedNotification, setSelectedNotification] = useState<AppNotification | null>(null);
+
+  // Older persisted sessions predate avatarUrl on AuthUser. Refresh the current profile once so the
+  // header can show an existing photo immediately, without requiring the person to upload it again.
+  useEffect(() => {
+    const accessToken = user?.accessToken;
+    const accountId = user?.accountId;
+    const role = user?.role;
+    if (!accessToken || !accountId || role === "admin") {
+      return;
+    }
+
+    let active = true;
+    fetchMyProfile(accessToken)
+      .then((account) => {
+        if (!active) return;
+        const current = useAppStore.getState().user;
+        if (!current || current.accountId !== account.id) return;
+
+        const nextAvatarUrl = account.avatarUrl || "";
+        if (
+          current.avatarUrl === nextAvatarUrl
+          && current.name === account.name
+          && current.district === account.district
+        ) {
+          return;
+        }
+        setUser({
+          ...current,
+          avatarUrl: nextAvatarUrl,
+          district: account.district,
+          name: account.name,
+          phone: account.phone,
+          username: account.username,
+        });
+      })
+      .catch(() => {
+        // Other protected requests handle expired sessions; the header safely falls back to initials.
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [setUser, user?.accessToken, user?.accountId, user?.role]);
+
+  // Private profile uploads require the bearer token, so resolve them to a short-lived browser URL.
+  useEffect(() => {
+    const accessToken = user?.accessToken;
+    const avatarUrl = user?.avatarUrl ?? "";
+    if (!accessToken || !isOwnUploadUrl(avatarUrl)) {
+      setHeaderAvatarObjectUrl("");
+      return;
+    }
+
+    let active = true;
+    let objectUrl = "";
+    fetchUploadObjectUrl(accessToken, avatarUrl)
+      .then(({ url }) => {
+        objectUrl = url;
+        if (active) setHeaderAvatarObjectUrl(url);
+      })
+      .catch(() => {
+        if (active) setHeaderAvatarObjectUrl("");
+      });
+
+    return () => {
+      active = false;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [user?.accessToken, user?.avatarUrl]);
 
   const handleProtectedRequestError = useCallback(
     (error: unknown) => {
@@ -561,7 +634,14 @@ export default function App() {
     addRegistration(account);
 
     if (user?.accountId === account.id) {
-      setUser({ ...user, district: account.district, name: account.name, phone: account.phone, username: account.username });
+      setUser({
+        ...user,
+        avatarUrl: account.avatarUrl,
+        district: account.district,
+        name: account.name,
+        phone: account.phone,
+        username: account.username,
+      });
     }
   };
 
@@ -734,8 +814,8 @@ export default function App() {
                 to={participantProfilePath}
                 onClick={closeAllHeaderMenus}
               >
-                <span className="participant-profile-initials" aria-hidden="true">
-                  {accountInitials}
+                <span className={`participant-profile-initials${headerAvatarObjectUrl ? " has-photo" : ""}`} aria-hidden="true">
+                  {headerAvatarObjectUrl ? <img alt="" src={headerAvatarObjectUrl} /> : accountInitials}
                 </span>
                 <span className="participant-profile-copy">
                   <strong>{user.name}</strong>
@@ -815,7 +895,9 @@ export default function App() {
               {user && user.role !== "admin" ? (
                 <>
                   <NavLink className="mobile-menu-action-link" to={participantProfilePath} onClick={closeAllHeaderMenus}>
-                    <span className="mobile-menu-avatar" aria-hidden="true">{accountInitials}</span>
+                    <span className={`mobile-menu-avatar${headerAvatarObjectUrl ? " has-photo" : ""}`} aria-hidden="true">
+                      {headerAvatarObjectUrl ? <img alt="" src={headerAvatarObjectUrl} /> : accountInitials}
+                    </span>
                     <span>{t("Profile")}</span>
                   </NavLink>
                   <button className="mobile-menu-action-link" type="button" onClick={requestLogout}><LogOut aria-hidden="true" size={17} />{t("Log out")}</button>
