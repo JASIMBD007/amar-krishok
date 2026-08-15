@@ -83,7 +83,7 @@ export class AdminController {
     return this.adminService.updateVerification(id, "reject", user.id);
   }
 
-  /** Stage two: the NID and land papers have been seen, so the account may now trade. */
+  /** Stage two: the identity document has been seen, so the account may now trade. */
   @Patch("accounts/:id/verify")
   verifyAccount(@Param("id") id: string, @CurrentUser() user: AuthenticatedUser) {
     return this.adminService.setVerified(id, true, user.id);

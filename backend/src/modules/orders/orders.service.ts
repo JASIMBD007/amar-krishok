@@ -107,6 +107,20 @@ export class OrdersService {
    * bKash outside this system. The balance stays visible until staff confirm the transfer.
    */
   async requestPayout(user: AuthenticatedUser) {
+    const payoutAccount = await this.prisma.legacyUser.findUnique({
+      select: { paymentAccount: true, paymentAccountUpdatedAt: true },
+      where: { id: user.id },
+    });
+    if (!payoutAccount?.paymentAccount) {
+      throw new BadRequestException("Add a payout account in your profile before requesting a withdrawal.");
+    }
+    if (payoutAccount.paymentAccountUpdatedAt) {
+      const lockedUntil = payoutAccount.paymentAccountUpdatedAt.getTime() + 24 * 60 * 60 * 1000;
+      if (Date.now() < lockedUntil) {
+        throw new BadRequestException("Payouts are paused for 24 hours after the payout account changes.");
+      }
+    }
+
     const payouts = await this.prisma.legacyPayout.findMany({
       where: { farmerId: user.id, status: PaymentStatus.RELEASED, walletRef: null },
     });

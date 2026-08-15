@@ -17,7 +17,19 @@ type ApiUser = {
   organization?: string | null;
   address?: string | null;
   identity?: string | null;
+  nidNumber?: string | null;
+  payoutProof?: string | null;
   focus?: string | null;
+  email?: string | null;
+  bio?: string | null;
+  avatarUrl?: string | null;
+  paymentMethod?: "BKASH" | "NAGAD" | "BANK" | null;
+  paymentAccount?: string | null;
+  paymentAccountUpdatedAt?: string | null;
+  smsOrderUpdates?: boolean;
+  smsRateAlerts?: boolean;
+  appNotifications?: boolean;
+  weeklySummary?: boolean;
   upazilla?: string | null;
   createdAt?: string;
   reviewedAt?: string | null;
@@ -205,15 +217,35 @@ export type CreateOrderPayload = {
 
 export type UpdateProfilePayload = {
   address: string;
+  avatarUrl?: string;
+  bio?: string;
   district: string;
+  email?: string;
   upazilla: string;
   focus: string;
   identity: string;
+  nidNumber?: string;
+  payoutProof?: string;
   name: string;
   organization: string;
 };
 
+export type ProfilePaymentMethod = "BKASH" | "NAGAD" | "BANK";
+
+export type NotificationPreferencesPayload = {
+  appNotifications: boolean;
+  smsOrderUpdates: boolean;
+  smsRateAlerts: boolean;
+  weeklySummary: boolean;
+};
+
 export type AdminAccountPayload = UpdateProfilePayload & {
+  address: string;
+  district: string;
+  focus: string;
+  identity: string;
+  name: string;
+  organization: string;
   password?: string;
   phone: string;
   role: RegistrationRole;
@@ -442,14 +474,20 @@ export function toRegisteredAccount(user: ApiUser): RegisteredAccount {
   const latestLot = user.cropLots?.[0];
   return {
     address: user.address ?? "",
+    appNotifications: user.appNotifications ?? true,
+    avatarUrl: user.avatarUrl ?? "",
+    bio: user.bio ?? "",
     cropLots: user.cropLots?.map(toRegisteredCropLotRecord) ?? [],
     cropLotCount: user._count?.cropLots ?? user.cropLots?.length ?? 0,
     cropLotQuantityKg: user.cropLots?.reduce((total, lot) => total + numericValue(lot.quantityKg), 0) ?? 0,
     district: user.district?.name ?? "",
     upazilla: user.upazilla ?? "",
     focus: user.focus ?? "",
+    email: user.email ?? "",
     id: user.id,
     identity: user.identity ?? "",
+    nidNumber: user.nidNumber ?? "",
+    payoutProof: user.payoutProof ?? "",
     latestLotStatus: latestLot?.status,
     latestLotSummary: latestLot ? `${latestLot.crop.name} · ${latestLot.upazilla || latestLot.district.name}` : undefined,
     latestOrderStatus: latestOrder?.status,
@@ -458,6 +496,9 @@ export function toRegisteredAccount(user: ApiUser): RegisteredAccount {
     orderCount: user._count?.orders ?? user.orders?.length ?? 0,
     orderValue: user.orders?.reduce((total, order) => total + numericValue(order.totalValue), 0) ?? 0,
     organization: user.organization ?? "",
+    paymentAccount: user.paymentAccount ?? "",
+    paymentAccountUpdatedAt: user.paymentAccountUpdatedAt ?? undefined,
+    paymentMethod: user.paymentMethod ?? "BKASH",
     password: "",
     phone: user.phone,
     username: user.username ?? user.phone,
@@ -465,7 +506,10 @@ export function toRegisteredAccount(user: ApiUser): RegisteredAccount {
     verifiedAt: user.verifiedAt ?? undefined,
     role: apiRoleToAppRole[user.role] as RegistrationRole,
     status: user.status ? apiStatusToAccountStatus[user.status] : "pending",
+    smsOrderUpdates: user.smsOrderUpdates ?? true,
+    smsRateAlerts: user.smsRateAlerts ?? true,
     submittedAt: user.createdAt ?? new Date().toISOString(),
+    weeklySummary: user.weeklySummary ?? false,
   };
 }
 
@@ -652,7 +696,7 @@ export async function fetchMyProfile(accessToken: string) {
   return toRegisteredAccount(await apiRequest<ApiUser>("/api/account/me", { accessToken }));
 }
 
-export async function updateMyProfile(accessToken: string, payload: UpdateProfilePayload) {
+export async function updateMyProfile(accessToken: string, payload: Partial<UpdateProfilePayload>) {
   return toRegisteredAccount(await apiRequest<ApiUser>("/api/account/me", {
     accessToken,
     body: JSON.stringify(payload),
@@ -660,7 +704,41 @@ export async function updateMyProfile(accessToken: string, payload: UpdateProfil
   }));
 }
 
-export async function uploadFile(accessToken: string, file: File, purpose: "crop-lot-image" | "identity-document") {
+export async function updateMyPayment(
+  accessToken: string,
+  payload: { account: string; method: ProfilePaymentMethod },
+) {
+  return toRegisteredAccount(await apiRequest<ApiUser>("/api/account/me/payment", {
+    accessToken,
+    body: JSON.stringify(payload),
+    method: "PATCH",
+  }));
+}
+
+export async function updateMyNotificationPreferences(
+  accessToken: string,
+  payload: NotificationPreferencesPayload,
+) {
+  return toRegisteredAccount(await apiRequest<ApiUser>("/api/account/me/notifications", {
+    accessToken,
+    body: JSON.stringify(payload),
+    method: "PATCH",
+  }));
+}
+
+export function changeMyPassword(accessToken: string, payload: { currentPassword: string; newPassword: string }) {
+  return apiRequest<{ updated: boolean }>("/api/account/me/password", {
+    accessToken,
+    body: JSON.stringify(payload),
+    method: "PATCH",
+  });
+}
+
+export async function uploadFile(
+  accessToken: string,
+  file: File,
+  purpose: "crop-lot-image" | "identity-document" | "payout-proof" | "profile-avatar",
+) {
   const body = new FormData();
   body.append("file", file);
   body.append("purpose", purpose);

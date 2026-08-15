@@ -1,4 +1,4 @@
-import { IsOptional, IsString, MinLength } from "class-validator";
+import { IsEmail, IsOptional, IsString, MinLength, ValidateIf } from "class-validator";
 
 export class UpdateProfileDto {
   @IsString()
@@ -28,5 +28,26 @@ export class UpdateProfileDto {
 
   @IsString()
   @IsOptional()
+  nidNumber?: string;
+
+  @IsString()
+  @IsOptional()
+  payoutProof?: string;
+
+  @IsString()
+  @IsOptional()
   focus?: string;
+
+  @IsEmail()
+  @ValidateIf((_object, value) => value !== "")
+  @IsOptional()
+  email?: string;
+
+  @IsString()
+  @IsOptional()
+  bio?: string;
+
+  @IsString()
+  @IsOptional()
+  avatarUrl?: string;
 }

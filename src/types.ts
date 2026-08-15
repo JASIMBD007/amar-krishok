@@ -44,10 +44,22 @@ export type RegisteredAccount = {
   upazilla: string;
   address: string;
   identity: string;
+  nidNumber: string;
+  payoutProof: string;
   focus: string;
+  email: string;
+  bio: string;
+  avatarUrl: string;
+  paymentMethod: "BKASH" | "NAGAD" | "BANK";
+  paymentAccount: string;
+  paymentAccountUpdatedAt?: string;
+  smsOrderUpdates: boolean;
+  smsRateAlerts: boolean;
+  appNotifications: boolean;
+  weeklySummary: boolean;
   submittedAt: string;
   reviewedAt?: string;
-  /** Set once staff have checked the NID and land papers. Until then the account cannot trade. */
+  /** Set once staff have checked the identity document. Until then the account cannot trade. */
   verifiedAt?: string;
   cropLots?: RegisteredCropLotRecord[];
   cropLotCount?: number;
@@ -104,7 +116,7 @@ export type CropLot = {
   hasFarmPhotos?: boolean;
   transportIncluded?: boolean;
   pickupWithin24h?: boolean;
-  /** The farmer's account status: ACTIVE means staff verified their NID and land papers. */
+  /** The farmer's account status: ACTIVE means staff verified their identity document. */
   farmerStatus?: string;
   /** The lot's own status. Anything other than ACTIVE is hidden from the marketplace. */
   status?: string;

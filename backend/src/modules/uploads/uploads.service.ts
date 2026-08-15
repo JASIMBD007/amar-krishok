@@ -15,6 +15,7 @@ type UploadedMemoryFile = {
 const allowedImageTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 const allowedDocumentTypes = new Set([...allowedImageTypes, "application/pdf"]);
 export const PUBLIC_UPLOAD_PURPOSE = "crop-lot-image";
+const IMAGE_UPLOAD_PURPOSES = new Set([PUBLIC_UPLOAD_PURPOSE, "profile-avatar"]);
 
 function cleanPurpose(value?: string) {
   return value?.trim() || "general-upload";
@@ -83,17 +84,17 @@ export class UploadsService {
       throw new BadRequestException("Please choose a file to upload.");
     }
 
-    const isCropImage = cleanPurpose(purpose) === PUBLIC_UPLOAD_PURPOSE;
-    const allowedTypes = isCropImage ? allowedImageTypes : allowedDocumentTypes;
+    const uploadPurpose = cleanPurpose(purpose);
+    const isImageOnly = IMAGE_UPLOAD_PURPOSES.has(uploadPurpose);
+    const allowedTypes = isImageOnly ? allowedImageTypes : allowedDocumentTypes;
     const sniffedType = sniffMimeType(file.buffer);
     if (!sniffedType || !allowedTypes.has(sniffedType) || sniffedType !== file.mimetype) {
-      throw new BadRequestException(isCropImage ? "Crop image must be JPG, PNG, WEBP, or GIF." : "Document must be an image or PDF.");
+      throw new BadRequestException(isImageOnly ? "Image must be JPG, PNG, WEBP, or GIF." : "Document must be an image or PDF.");
     }
 
     const uploadId = randomUUID();
     const cleanUserRole = user.role === Role.ADMIN ? "admin" : user.role === Role.BUYER ? "buyer" : "farmer";
     const filename = `${cleanUserRole}-${user.id}-${Date.now()}-${uploadId.slice(0, 8)}${fileExtension(file)}`;
-    const uploadPurpose = cleanPurpose(purpose);
     const fileContent = Uint8Array.from(file.buffer);
 
     const uploadedFile = await this.prisma.uploadedFile.create({

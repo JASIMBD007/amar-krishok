@@ -218,39 +218,51 @@ enum NotificationCategory {
 
 /// Compatibility model for the currently deployed application. P0's v2 domain starts at `User` below.
 model LegacyUser {
-  id                   String                 @id @default(cuid())
-  username             String                 @unique
-  name                 String
-  phone                String
-  passwordHash         String
-  role                 Role
-  status               AccountStatus          @default(PENDING)
-  organization         String?
-  address              String?
-  identity             String?
-  focus                String?
-  districtId           String?
-  upazilla             String?
-  createdAt            DateTime               @default(now())
-  updatedAt            DateTime               @updatedAt
+  id                      String                 @id @default(cuid())
+  username                String                 @unique
+  name                    String
+  phone                   String
+  passwordHash            String
+  role                    Role
+  status                  AccountStatus          @default(PENDING)
+  organization            String?
+  address                 String?
+  identity                String?
+  nidNumber               String?
+  payoutProof             String?
+  focus                   String?
+  email                   String?
+  bio                     String?
+  avatarUrl               String?
+  paymentMethod           PayoutMethod?
+  paymentAccount          String?
+  paymentAccountUpdatedAt DateTime?
+  smsOrderUpdates         Boolean                @default(true)
+  smsRateAlerts           Boolean                @default(true)
+  appNotifications        Boolean                @default(true)
+  weeklySummary           Boolean                @default(false)
+  districtId              String?
+  upazilla                String?
+  createdAt               DateTime               @default(now())
+  updatedAt               DateTime               @updatedAt
   /// When staff accepted the signup request. Status leaves PENDING at the same moment.
-  reviewedAt           DateTime?
-  /// When staff checked the NID and land papers. Null means accepted but not yet verified: the
+  reviewedAt              DateTime?
+  /// When staff checked the identity document. Null means accepted but not yet verified: the
   /// account can sign in and look around, but cannot post a lot or place an order.
-  verifiedAt           DateTime?
-  district             District?              @relation(fields: [districtId], references: [id])
-  buyerProfile         BuyerProfile?
-  farmerProfile        FarmerProfile?
-  cropLots             CropLot[]              @relation("FarmerLots")
-  orders               LegacyOrder[]          @relation("BuyerOrders")
-  lotOffers            LotOffer[]             @relation("BuyerOffers")
-  payouts              LegacyPayout[]         @relation("FarmerPayouts")
-  notifications        LegacyNotification[]
-  auditLogs            LegacyAuditLog[]
-  uploadedFiles        UploadedFile[]
-  chatMessages         ChatMessage[]
-  passwordResets       PasswordResetRequest[] @relation("PasswordResetRequests")
-  passwordResetReviews PasswordResetRequest[] @relation("PasswordResetReviews")
+  verifiedAt              DateTime?
+  district                District?              @relation(fields: [districtId], references: [id])
+  buyerProfile            BuyerProfile?
+  farmerProfile           FarmerProfile?
+  cropLots                CropLot[]              @relation("FarmerLots")
+  orders                  LegacyOrder[]          @relation("BuyerOrders")
+  lotOffers               LotOffer[]             @relation("BuyerOffers")
+  payouts                 LegacyPayout[]         @relation("FarmerPayouts")
+  notifications           LegacyNotification[]
+  auditLogs               LegacyAuditLog[]
+  uploadedFiles           UploadedFile[]
+  chatMessages            ChatMessage[]
+  passwordResets          PasswordResetRequest[] @relation("PasswordResetRequests")
+  passwordResetReviews    PasswordResetRequest[] @relation("PasswordResetReviews")
 
   @@unique([phone, role])
   @@index([role, status])

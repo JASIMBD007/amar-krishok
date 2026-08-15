@@ -953,7 +953,15 @@ export default function App() {
           path="/profile"
           element={
             <ProtectedRoute allowedRoles={["buyer", "farmer"]} user={user} t={t}>
-              <ProfilePage user={user} onProfileSaved={handleProfileSaved} />
+              <ProfilePage
+                user={user}
+                onProfileSaved={handleProfileSaved}
+                onContactSupport={() => {
+                  closeHeaderMenus();
+                  setNotificationPanelOpen(false);
+                  setMessengerOpen(true);
+                }}
+              />
             </ProtectedRoute>
           }
         />

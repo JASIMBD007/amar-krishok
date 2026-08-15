@@ -531,7 +531,7 @@ export function AdminUsers({
                     isOwnUploadUrl(selected.account.identity) ? (
                       <button className="admin-user-document" type="button" onClick={() => onOpenDocument(selected.account!.identity)}>
                         <FileText aria-hidden="true" size={15} />
-                        {t("Open NID or land paper")}
+                        {t("Open identity document")}
                       </button>
                     ) : (
                       <span className="admin-user-document plain">

@@ -169,9 +169,6 @@ export function MarketSection({
 
     return pending.map((account) => {
       const own = marketLots.filter((lot) => lot.farmerId === account.id || lot.farmer === account.name);
-      const joined = new Date(account.submittedAt);
-      const joinedRecently = Number.isNaN(joined.getTime()) || joined.getUTCFullYear() >= 2026;
-
       return {
         district: account.district || own[0]?.district || "",
         id: account.id,
@@ -179,7 +176,7 @@ export function MarketSection({
         lotCount: own.length,
         name: account.name,
         // The checklist reflects what the account actually supplied at registration.
-        papers: account.identity ? "NID ✓ · land paper ✓" : joinedRecently ? "NID ✓ · land paper missing" : "NID ✓ · land paper ✓",
+        papers: account.identity ? "Identity document uploaded" : "Identity document missing",
         volumeMon: own.reduce((total, lot) => total + lot.quantityMon, 0),
       };
     });

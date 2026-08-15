@@ -375,7 +375,7 @@ export class AdminService {
    *
    * "approve" lets the person in: they can sign in and look around. It deliberately leaves
    * `verifiedAt` null, so they still cannot post a lot or place an order until staff have checked
-   * the NID and land papers through `setVerified`. Splitting the two means a account can be opened
+   * the identity document through `setVerified`. Splitting the two means an account can be opened
    * quickly without that speed becoming a trust claim the platform has not actually checked.
    */
   async updateVerification(id: string, action: "approve" | "reject", adminId?: string) {

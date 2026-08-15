@@ -77,7 +77,7 @@ const notifications = [
   { id: "N5", category: NotificationCategory.PAYOUT, icon: "shield-check", tone: "blue", title: "Escrow held for AK-4821", body: "৳ 142.560 is locked until delivery is confirmed.", entityRef: "order:AK-4821", sentAt: "2026-08-05T08:00:00.000Z", unread: false },
   { id: "N6", category: NotificationCategory.RATE, icon: "trending-up", tone: "green", title: "Onion up 4,8 % in Faridpur", body: "Today ৳ 2.250 / mon. Your open lot is priced ৳ 110 below the district rate.", entityRef: "rate:onion:faridpur", sentAt: "2026-08-06T02:00:00.000Z", unread: true },
   { id: "N7", category: NotificationCategory.RATE, icon: "trending-down", tone: "red", title: "Potato down 1,4 % in Bogura", body: "Today ৳ 1.250 / mon. Two of your lots sit above the fair range.", entityRef: "rate:potato:bogura", sentAt: "2026-08-06T02:00:00.000Z", unread: false },
-  { id: "N8", category: NotificationCategory.SYSTEM, icon: "badge-check", tone: "green", title: "Verification approved", body: "Your NID and land record were checked by staff. The verified badge is live.", entityRef: "user:U2", sentAt: "2026-08-04T08:00:00.000Z", unread: false },
+  { id: "N8", category: NotificationCategory.SYSTEM, icon: "badge-check", tone: "green", title: "Verification approved", body: "Your identity document was checked by staff. The verified badge is live.", entityRef: "user:U2", sentAt: "2026-08-04T08:00:00.000Z", unread: false },
   { id: "N9", category: NotificationCategory.SYSTEM, icon: "smartphone", tone: "grey", title: "New device signed in", body: "Android · Dhaka. If this was not you, change your PIN.", entityRef: "device:android-dhaka", sentAt: "2026-08-02T08:00:00.000Z", unread: false },
 ] as const;
 
