@@ -46,7 +46,7 @@ export function SiteFooter() {
             <BrandMark className="site-footer-logo" />
             <strong>AmarKrishok</strong>
           </NavLink>
-          <p>{t("A direct farmer-to-buyer supply chain for Bangladesh. Fair prices, visible to everyone.")}</p>
+          <p>{t("AmarKrishok (আমার কৃষক) is Bangladesh's direct farmer-to-buyer crop marketplace. Fair crop prices, visible to everyone.")}</p>
         </div>
 
         <div className="site-footer-columns">

@@ -4,9 +4,9 @@ import type { Language } from "../types";
 const siteUrl = "https://www.amarkrishok.com";
 const siteName = "AmarKrishok";
 const defaultDescription =
-  "AmarKrishok, also searched as Amar Krishok and Amarkrishok, is a direct farmer marketplace for Bangladesh where farmers post crops, buyers order transparently, and fair prices stay visible.";
+  "আমার কৃষক (AmarKrishok) বাংলাদেশের কৃষক ও পাইকারি ক্রেতাদের সরাসরি ফসল কেনাবেচার কৃষি মার্কেটপ্লেস—আজকের বাজারদর, যাচাইকৃত ফসল, লজিস্টিকস ও সুরক্ষিত পেমেন্ট।";
 const defaultKeywords =
-  "AmarKrishok, Amar Krishok, Amarkrishok, amar krishok, amarkrishok, আমার কৃষক, আমারকৃষক, Bangladesh farmers, farmer marketplace, crop marketplace, fair crop price, কৃষক, ফসল বাজার, বাজারদর";
+  "আমার কৃষক, আমারকৃষক, AmarKrishok, Amar Krishok, Amarkrishok, amar krishok, amarkrishok, কৃষি মার্কেটপ্লেস, কৃষকের বাজার, ফসলের বাজার, অনলাইন কৃষি বাজার, কৃষি বাজারদর, আজকের ফসলের দাম, পাইকারি ফসলের দাম, বাংলাদেশ কৃষি বাজার, কৃষক থেকে ক্রেতা, Bangladesh agriculture marketplace, Bangladesh crop market, farmer marketplace Bangladesh, farmer to buyer Bangladesh, wholesale crop prices Bangladesh, fair crop price, আলুর দাম, পেঁয়াজের দাম, ধানের দাম";
 
 type SeoConfig = {
   title: string;
@@ -17,18 +17,18 @@ type SeoConfig = {
 
 const publicSeo: Record<string, SeoConfig> = {
   "/": {
-    title: "AmarKrishok | Amar Krishok Farmer Marketplace for Bangladesh",
+    title: "আমার কৃষক (AmarKrishok) | বাংলাদেশের কৃষি মার্কেটপ্লেস",
     description: defaultDescription,
     path: "/",
   },
   "/marketplace": {
-    title: "Crop Marketplace | AmarKrishok",
-    description: "Search verified crop lots by district, crop, farmer, quantity, grade, harvest date, and asking price on AmarKrishok.",
+    title: "ফসলের বাজার | Crop Marketplace | আমার কৃষক",
+    description: "আমার কৃষক মার্কেটপ্লেসে জেলা, ফসল, কৃষক, পরিমাণ, গ্রেড ও দাম অনুযায়ী যাচাইকৃত ফসলের লট খুঁজুন ও সরাসরি অর্ডার করুন।",
     path: "/marketplace",
   },
   "/prices": {
-    title: "Bangladesh Crop Market Prices | AmarKrishok",
-    description: "Compare farmer asking prices, wholesale prices, and retail crop prices across AmarKrishok service districts.",
+    title: "আজকের কৃষি বাজারদর | Bangladesh Crop Prices | আমার কৃষক",
+    description: "আমার কৃষকে বাংলাদেশের বিভিন্ন জেলার আজকের কৃষি বাজারদর, কৃষকের চাওয়া দাম এবং পাইকারি ফসলের দাম তুলনা করুন।",
     path: "/prices",
   },
   "/register/buyer": {
@@ -70,12 +70,34 @@ const privateSeo: Record<string, SeoConfig> = {
   },
 };
 
+const privatePrefixes = ["/admin", "/buyer", "/checkout", "/farmer", "/login", "/orders", "/profile", "/signed-out"];
+
 function getSeo(pathname: string): SeoConfig {
-  if (pathname === "/admin" || pathname.startsWith("/admin/")) {
-    return privateSeo["/admin"];
+  const privatePrefix = privatePrefixes.find((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
+  if (privatePrefix) {
+    const base = privateSeo[privatePrefix] ?? {
+      title: `Private account page | ${siteName}`,
+      description: `Protected ${siteName} account page.`,
+      path: privatePrefix,
+      robots: "noindex, nofollow",
+    };
+    return { ...base, path: pathname };
   }
 
-  return publicSeo[pathname] ?? privateSeo[pathname] ?? publicSeo["/"];
+  if (pathname.startsWith("/lot/")) {
+    return {
+      title: "যাচাইকৃত ফসলের লট | Crop Lot | আমার কৃষক",
+      description: "আমার কৃষকে একটি যাচাইকৃত ফসলের লটের পরিমাণ, গ্রেড, জেলা, কৃষকের দাম, বাজারদরের তুলনা ও ডেলিভারি তথ্য দেখুন।",
+      path: pathname,
+    };
+  }
+
+  return publicSeo[pathname] ?? {
+    title: `Page not found | ${siteName}`,
+    description: `The requested ${siteName} page could not be found.`,
+    path: pathname,
+    robots: "noindex, nofollow",
+  };
 }
 
 function setMeta(attribute: "name" | "property", key: string, content: string) {
@@ -115,7 +137,7 @@ export function Seo({ language, pathname }: { language: Language; pathname: stri
     setMeta("name", "author", siteName);
     setMeta("name", "keywords", defaultKeywords);
     setMeta("name", "description", seo.description);
-    setMeta("name", "robots", seo.robots ?? "index, follow");
+    setMeta("name", "robots", seo.robots ?? "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1");
     setMeta("property", "og:site_name", siteName);
     setMeta("property", "og:type", "website");
     setMeta("property", "og:url", canonical);
@@ -123,6 +145,7 @@ export function Seo({ language, pathname }: { language: Language; pathname: stri
     setMeta("property", "og:description", seo.description);
     setMeta("property", "og:image", `${siteUrl}/og-image.jpg`);
     setMeta("property", "og:locale", language === "bn-BD" ? "bn_BD" : "en_BD");
+    setMeta("property", "og:locale:alternate", language === "bn-BD" ? "en_BD" : "bn_BD");
     setMeta("name", "twitter:card", "summary_large_image");
     setMeta("name", "twitter:title", seo.title);
     setMeta("name", "twitter:description", seo.description);

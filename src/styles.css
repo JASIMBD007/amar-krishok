@@ -8782,6 +8782,34 @@ textarea:focus-visible {
   letter-spacing: 0.05em;
   color: #7e9c8c;
 }
+
+/* Useful content remains readable while the JavaScript application loads or is unavailable. */
+.seo-app-fallback {
+  width: min(720px, calc(100% - 32px));
+  margin: 80px auto;
+  padding: 32px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.seo-app-fallback h1 {
+  margin: 0 0 12px;
+  color: var(--fg);
+}
+.seo-app-fallback p {
+  color: var(--fg-muted);
+  line-height: 1.7;
+}
+.seo-app-fallback nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 20px;
+}
+.seo-app-fallback a {
+  color: var(--ak-green);
+  font-weight: 600;
+}
 .site-footer-columns a,
 .site-footer-columns nav > span:not(.site-footer-heading) {
   font-size: 13px;

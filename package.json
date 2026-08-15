@@ -19,9 +19,9 @@
     "seed": "npm --prefix backend run seed",
     "test:p0": "npm --prefix backend run test:p0",
     "dev": "vite --host 0.0.0.0",
-    "lint": "eslint src backend/src backend/prisma/*.ts vite.config.ts",
+    "lint": "eslint src backend/src backend/prisma/*.ts scripts/*.mjs vite.config.ts",
     "check": "npm run lint && npm run build && npm run backend:build",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && node scripts/prerender-public.mjs",
     "preview": "vite preview --host 0.0.0.0"
   },
   "dependencies": {

@@ -1153,8 +1153,8 @@ const bn: Record<string, string> = {
     "আজকের দর প্রকাশ হয়েছে। প্রতিটি লিস্টিং পার্থক্য, সতর্কতা ও ন্যায্য-দাম প্যানেল এখন এটিই ব্যবহার করছে।",
 
   // Footer, login gating, logout escrow warning and the post-a-crop wizard.
-  "A direct farmer-to-buyer supply chain for Bangladesh. Fair prices, visible to everyone.":
-    "বাংলাদেশের জন্য কৃষক-থেকে-ক্রেতা সরাসরি সরবরাহ ব্যবস্থা। ন্যায্য দাম, সবার জন্য দৃশ্যমান।",
+  "AmarKrishok (আমার কৃষক) is Bangladesh's direct farmer-to-buyer crop marketplace. Fair crop prices, visible to everyone.":
+    "আমার কৃষক (AmarKrishok) বাংলাদেশের কৃষক ও ক্রেতার সরাসরি ফসলের বাজার। ন্যায্য ফসলের দাম সবার জন্য দৃশ্যমান।",
   Company: "কোম্পানি",
   About: "আমাদের সম্পর্কে",
   "Field agents": "মাঠকর্মী",

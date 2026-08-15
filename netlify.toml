@@ -3,6 +3,26 @@
   publish = "dist"
 
 [[redirects]]
+  from = "/marketplace"
+  to = "/marketplace/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/prices"
+  to = "/prices/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/register/farmer"
+  to = "/register/farmer/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/register/buyer"
+  to = "/register/buyer/index.html"
+  status = 200
+
+[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
@@ -34,5 +54,25 @@
 
 [[headers]]
   for = "/farmer*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+  for = "/orders*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+  for = "/checkout*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+  for = "/profile*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+  for = "/signed-out*"
   [headers.values]
     X-Robots-Tag = "noindex, nofollow"
