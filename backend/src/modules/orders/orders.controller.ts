@@ -13,20 +13,21 @@ import { OrdersService } from "./orders.service";
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
-  @Auth(Role.ADMIN, Role.BUYER)
+  /** Scoped by role in the service: buyers see their own, farmers see orders on their own lots. */
+  @Auth(Role.ADMIN, Role.BUYER, Role.FARMER)
   @Get()
   findAll(@CurrentUser() user: AuthenticatedUser, @Query("buyerId") buyerId?: string) {
     return this.ordersService.findAll({ buyerId }, user);
   }
 
-  /** A farmer's own escrow and payout totals. Deliberately does not return the buyers' orders. */
-  @Auth(Role.ADMIN, Role.FARMER)
   @Auth(Role.ADMIN)
   @Get("disputes")
   disputes() {
     return this.ordersService.disputes();
   }
 
+  /** A farmer's own escrow and payout totals. Deliberately does not return the buyers' orders. */
+  @Auth(Role.ADMIN, Role.FARMER)
   @Get("farmer-escrow")
   farmerEscrow(@CurrentUser() user: AuthenticatedUser) {
     return this.ordersService.farmerEscrowSummary(user);

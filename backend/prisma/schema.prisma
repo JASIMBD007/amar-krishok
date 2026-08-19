@@ -880,7 +880,15 @@ model LegacyOrder {
   status          OrderStatus    @default(PENDING)
   deliveryAddress String
   targetDate      DateTime?
+  /// The three-way split the dashboards read. Persisted rather than recomputed so the web app, the
+  /// mobile app and any SMS summary quote the same figures: cropTotal is the farmer's lot value,
+  /// transportAmount is the carrier's, feeAmount is the platform's, and totalValue is their sum.
+  cropTotal       Decimal        @default(0) @db.Decimal(12, 2)
+  transportAmount Decimal        @default(0) @db.Decimal(12, 2)
+  feeAmount       Decimal        @default(0) @db.Decimal(12, 2)
   totalValue      Decimal        @default(0) @db.Decimal(12, 2)
+  /// How the buyer paid, copied onto the order so the payments tab does not have to guess.
+  paymentMethod   String?
   notes           String?
   /// Set while staff are investigating a delivery or quality claim; cleared when the dispute closes.
   disputeOpenedAt DateTime?
@@ -904,9 +912,14 @@ model OrderItem {
   cropLotId         String?
   quantityKg        Decimal     @db.Decimal(12, 2)
   offeredPricePerKg Decimal     @db.Decimal(12, 2)
+  /// The grade agreed at the time of ordering. Copied off the lot because a farmer may re-grade it.
+  grade             String?
   order             LegacyOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
   crop              Crop        @relation(fields: [cropId], references: [id])
   cropLot           CropLot?    @relation(fields: [cropLotId], references: [id])
+
+  @@index([orderId])
+  @@index([cropLotId])
 }
 
 model MarketPrice {

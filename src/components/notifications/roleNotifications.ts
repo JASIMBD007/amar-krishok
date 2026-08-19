@@ -18,7 +18,7 @@ function roleHome(role: Role) {
     return "/admin";
   }
 
-  return role === "buyer" ? "/buyer" : "/farmer";
+  return role === "buyer" ? "/orders" : "/desk";
 }
 
 function hrefForNotification(role: Role, section: string, type: NotificationType) {
@@ -262,7 +262,7 @@ export function makeRoleNotifications({
     lots.slice(0, 4).forEach((lot) => {
       notifications.push({
         body: `${lot.crop.name} · ${lot.district.name} · ${statusText(lot.status)}`,
-        href: "/farmer",
+        href: "/desk",
         id: `farmer-lot-${lot.id}-${lot.updatedAt}`,
         meta: "Supply Lots",
         title: "Lot status update",
@@ -274,7 +274,7 @@ export function makeRoleNotifications({
     if (lots.length > 0) {
       notifications.push({
         body: "Payout will be released after buyer confirmation and quality check.",
-        href: "/farmer",
+        href: "/desk",
         id: `farmer-payout-${lots.length}`,
         meta: "Payment protection",
         title: "Payment update",

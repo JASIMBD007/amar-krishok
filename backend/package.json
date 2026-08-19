@@ -17,6 +17,7 @@
     "seed": "prisma db seed",
     "test:p0": "node --test -r ts-node/register prisma/seed.spec.ts",
     "test:mobile": "node --test -r ts-node/register src/modules/mobile-v1/*.spec.ts",
+    "test:dashboards": "node --test -r ts-node/register src/modules/dashboard/*.spec.ts",
     "start": "node dist/main.js",
     "start:prod": "node dist/main.js",
     "geo:country": "node scripts/fetch-geo-country-db.mjs"

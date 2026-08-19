@@ -62,6 +62,18 @@ const privateSeo: Record<string, SeoConfig> = {
     path: "/farmer",
     robots: "noindex, nofollow",
   },
+  "/desk": {
+    title: "Farmer Dashboard | AmarKrishok",
+    description: "Protected AmarKrishok farmer dashboard, listings, offers and payouts.",
+    path: "/desk",
+    robots: "noindex, nofollow",
+  },
+  "/orders": {
+    title: "Buyer Dashboard | AmarKrishok",
+    description: "Protected AmarKrishok buyer dashboard, orders and escrow.",
+    path: "/orders",
+    robots: "noindex, nofollow",
+  },
   "/login": {
     title: "Login | AmarKrishok",
     description: "Login to AmarKrishok.",
@@ -70,7 +82,7 @@ const privateSeo: Record<string, SeoConfig> = {
   },
 };
 
-const privatePrefixes = ["/admin", "/buyer", "/checkout", "/farmer", "/login", "/orders", "/profile", "/signed-out"];
+const privatePrefixes = ["/admin", "/buyer", "/checkout", "/desk", "/farmer", "/login", "/orders", "/profile", "/signed-out"];
 
 function getSeo(pathname: string): SeoConfig {
   const privatePrefix = privatePrefixes.find((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));

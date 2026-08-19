@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, Check, Inbox, Phone, Play, ShieldCheck } from "lucide-react";
 import { ApiRequestError, fetchMyOrders, type BackendOrder, type BackendPayment } from "../../api/auth";
 import { advanceOrderStage } from "../../api/market";
@@ -7,45 +7,12 @@ import { useLanguage, useTranslate, useValueText } from "../../i18n";
 import { cropNamesBn, escrowStages, kgToMon, taka } from "../../market/marketData";
 import type { AuthUser } from "../../types";
 import { EmptyState, ListLoading } from "../EmptyState";
-import { EscrowPill } from "../market/MarketBits";
-
-/** The five buyer-facing escrow stages, mapped from the order status the backend keeps. */
-const STAGE_BY_STATUS: Record<string, number> = {
-  COMPLETED: 5,
-  IN_TRANSIT: 3,
-  MATCHING: 1,
-  PENDING: 1,
-  PICKUP_BOOKED: 2,
-  QUALITY_CHECK: 4,
-};
-
-const STAGE_LABEL_BY_NUMBER: Record<number, string> = {
-  1: "Confirmed",
-  2: "Pickup scheduled",
-  3: "In transit",
-  4: "Delivered",
-  5: "Paid",
-};
+// The stage map and the escrow state live with the workspace order table, so the tracking page and
+// the two dashboards can never label the same order differently.
+import { escrowStateOf as escrowState, orderReference, stageOfOrder as stageOf } from "../workspace/orderStages";
 
 function heldPayment(order: BackendOrder): BackendPayment | undefined {
   return order.payments?.find((payment) => payment.status === "HELD");
-}
-
-function escrowState(order: BackendOrder) {
-  const payments = order.payments ?? [];
-  if (payments.some((payment) => payment.status === "REFUNDED")) {
-    return "refunded" as const;
-  }
-
-  if (payments.some((payment) => payment.status === "RELEASED")) {
-    return "released" as const;
-  }
-
-  return "held" as const;
-}
-
-function stageOf(order: BackendOrder) {
-  return STAGE_BY_STATUS[order.status.toUpperCase()] ?? 1;
 }
 
 function escrowAmount(order: BackendOrder) {
@@ -87,71 +54,6 @@ function useOrders(user: AuthUser | null) {
   useEffect(() => reload(), [reload]);
 
   return { error, isLoading, orders, reload, setOrders };
-}
-
-export function MyOrdersPage({ user }: { user: AuthUser | null }) {
-  const navigate = useNavigate();
-  const t = useTranslate();
-  const v = useValueText();
-  const { error, isLoading, orders } = useOrders(user);
-
-  return (
-    <section className="page-wrap orders-page">
-      <div className="section-title">
-        <span>{t("Escrow")}</span>
-        <h1>{t("My orders")}</h1>
-      </div>
-
-      {isLoading ? <ListLoading label={t("Loading your orders...")} /> : null}
-      {error ? <p className="marketplace-feedback warning">{t(error)}</p> : null}
-
-      {!isLoading && orders.length === 0 ? (
-        <EmptyState
-          icon={Inbox}
-          title={t("No orders yet")}
-          hint={t("Every order you place shows its escrow state here until the money is released.")}
-          action={
-            <Link className="primary-button" to="/marketplace">
-              {t("Browse the marketplace")}
-            </Link>
-          }
-        />
-      ) : null}
-
-      {orders.length > 0 ? (
-        <div className="panel table-card">
-          <div className="table-scroll">
-            <div className="order-table">
-              <div className="order-table-head" role="row">
-                <span>{t("Order")}</span>
-                <span>{t("Lot")}</span>
-                <span>{t("Value")}</span>
-                <span>{t("Escrow")}</span>
-                <span>{t("Stage")}</span>
-                <span>{t("Action")}</span>
-              </div>
-              {orders.map((order) => (
-                <div className="order-table-row" key={order.id} role="row">
-                  <span className="mono-figure">{v(order.id.slice(-8).toUpperCase())}</span>
-                  <span>{orderLotLabel(order, t, v)}</span>
-                  <span className="mono-figure">{v(taka(escrowAmount(order)))}</span>
-                  <span>
-                    <EscrowPill state={escrowState(order)} />
-                  </span>
-                  <span>{t(STAGE_LABEL_BY_NUMBER[stageOf(order)])}</span>
-                  <span>
-                    <button className="secondary-button" type="button" onClick={() => navigate(`/orders/${order.id}`)}>
-                      {t("Track")}
-                    </button>
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      ) : null}
-    </section>
-  );
 }
 
 export function OrderTrackingPage({ user }: { user: AuthUser | null }) {
@@ -258,7 +160,7 @@ export function OrderTrackingPage({ user }: { user: AuthUser | null }) {
       <div className="order-detail-head">
         <div>
           <h1>
-            {t("Order")} <span className="mono-figure">{v(order.id.slice(-8).toUpperCase())}</span>
+            {t("Order")} <span className="mono-figure">{v(orderReference(order))}</span>
           </h1>
           <span>
             {cropLabel} · {orderLotLabel(order, t, v)}

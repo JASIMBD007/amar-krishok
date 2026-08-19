@@ -76,3 +76,8 @@
   for = "/signed-out*"
   [headers.values]
     X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+  for = "/desk*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"

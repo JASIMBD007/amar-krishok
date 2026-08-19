@@ -6,6 +6,8 @@ import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateOrderDto } from "./dto/create-order.dto";
 import { nextStatusAfter, platformFeeFor, stageOf } from "./escrow";
+import { buyerGross, farmerShare } from "./order-money";
+import { ordersVisibleTo } from "./order-scope";
 
 const orderInclude = {
   buyer: {
@@ -32,6 +34,11 @@ const orderInclude = {
   payments: { orderBy: { createdAt: "desc" } },
 } satisfies Prisma.LegacyOrderInclude;
 
+/** Just enough of an order to work out one farmer's share of it. */
+const farmerMoneyInclude = {
+  items: { select: { cropLot: { select: { farmerId: true } }, offeredPricePerKg: true, quantityKg: true } },
+} satisfies Prisma.LegacyOrderInclude;
+
 @Injectable()
 export class OrdersService {
   constructor(
@@ -48,19 +55,34 @@ export class OrdersService {
     });
   }
 
-  findAll(filters: { buyerId?: string }, user: AuthenticatedUser) {
-    return this.prisma.legacyOrder.findMany({
+  /**
+   * The orders the caller may see. A buyer sees the ones they placed, a farmer the ones raised
+   * against their own lots, and staff the whole book. Leaving the farmer case unscoped is what once
+   * made one buyer's order show up as every farmer's income, so the scope is explicit here.
+   */
+  async findAll(filters: { buyerId?: string }, user: AuthenticatedUser) {
+    const orders = await this.prisma.legacyOrder.findMany({
       include: orderInclude,
       orderBy: { createdAt: "desc" },
-      where: {
-        buyerId: user.role === Role.BUYER ? user.id : filters.buyerId,
-      },
+      where: ordersVisibleTo(user, filters.buyerId),
     });
+
+    // viewerShare is the caller's own side of the money: what this farmer earns, or what this buyer
+    // paid. It is attached here so no client has to re-derive the split — the one thing four rounds
+    // of review kept catching. The raw cropTotal, transportAmount and feeAmount ride along with the
+    // order for anything that needs the itemised view.
+    return orders.map((order) => ({
+      ...order,
+      viewerShare: Math.round(
+        user.role === Role.FARMER ? farmerShare(order, user.id) : buyerGross(order),
+      ),
+    }));
   }
 
   /**
    * What a farmer is owed, without exposing the buyers' orders to them. "Ready to withdraw" is the
-   * sum of released payouts; "in escrow" is the held balance on orders containing their lots.
+   * sum of released payouts; "in escrow" is their own share of the balance still held on orders
+   * against their lots — their lots' crop value, not the gross the buyer paid.
    */
   async farmerEscrowSummary(user: AuthenticatedUser) {
     const farmerId = user.id;
@@ -70,30 +92,22 @@ export class OrdersService {
         where: { farmerId, status: PaymentStatus.RELEASED },
       }),
       this.prisma.legacyOrder.findMany({
-        include: { payments: true },
+        include: farmerMoneyInclude,
         where: {
           items: { some: { cropLot: { farmerId } } },
           payments: { some: { status: PaymentStatus.HELD } },
         },
       }),
       this.prisma.legacyOrder.findMany({
-        include: { payments: true },
+        include: farmerMoneyInclude,
         where: { items: { some: { cropLot: { farmerId } } } },
       }),
     ]);
 
-    const sumHeld = heldOrders.reduce(
-      (total, order) =>
-        total +
-        order.payments
-          .filter((payment) => payment.status === PaymentStatus.HELD)
-          .reduce((amount, payment) => amount + Number(payment.amount), 0),
-      0,
-    );
-
     return {
-      grossValue: allOrders.reduce((total, order) => total + Number(order.totalValue), 0),
-      held: Math.round(sumHeld),
+      // "This season" is the farmer's own earnings across their orders, not the platform's turnover.
+      grossValue: Math.round(allOrders.reduce((total, order) => total + farmerShare(order, farmerId), 0)),
+      held: Math.round(heldOrders.reduce((total, order) => total + farmerShare(order, farmerId), 0)),
       heldCount: heldOrders.length,
       orderCount: allOrders.length,
       released: Math.round(payouts.reduce((total, payout) => total + Number(payout.amount), 0)),
@@ -193,9 +207,15 @@ export class OrdersService {
           where: { name: item.crop },
         });
 
+        // The grade is agreed at ordering time; a later re-grade of the lot must not rewrite history.
+        const lot = item.cropLotId
+          ? await this.prisma.cropLot.findUnique({ select: { grade: true }, where: { id: item.cropLotId } })
+          : null;
+
         return {
           cropId: crop.id,
           cropLotId: item.cropLotId,
+          grade: lot?.grade,
           offeredPricePerKg: new Prisma.Decimal(item.offeredPricePerKg),
           quantityKg: new Prisma.Decimal(item.quantityKg),
         };
@@ -211,10 +231,16 @@ export class OrdersService {
     const order = await this.prisma.legacyOrder.create({
       data: {
         buyerId,
+        // The split is written onto the order itself: the dashboards read these columns rather than
+        // deriving a fee rate, so what a farmer earns can never disagree with what checkout charged.
+        cropTotal: new Prisma.Decimal(cropValue),
         deliveryAddress: dto.deliveryAddress,
         districtId: district.id,
+        feeAmount: new Prisma.Decimal(platformFee),
         items: { create: itemInputs },
         notes: dto.notes,
+        paymentMethod: dto.paymentMethod,
+        transportAmount: new Prisma.Decimal(transportFee),
         payments: {
           create: {
             amount: new Prisma.Decimal(totalValue),

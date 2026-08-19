@@ -133,7 +133,7 @@ export function EditListingPage({ user }: { user: AuthUser | null }) {
           title={t("Listing not found")}
           hint={t(error || "It may belong to another account.")}
           action={
-            <Link className="primary-button" to="/farmer">
+            <Link className="primary-button" to="/desk">
               {t("Back to desk")}
             </Link>
           }
@@ -230,7 +230,7 @@ export function EditListingPage({ user }: { user: AuthUser | null }) {
 
   return (
     <section className="edit-listing-page">
-      <Link className="edit-listing-back" to="/farmer">
+      <Link className="edit-listing-back" to="/desk">
         <ArrowLeft aria-hidden="true" size={16} />
         {t("Farmer desk")}
       </Link>
