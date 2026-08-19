@@ -2499,19 +2499,21 @@ button {
   font-weight: 600;
 }
 
+/* A round button, brand green, with the unread count on the rim. */
 .floating-chat-button {
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 9px;
+  justify-content: center;
+  width: 58px;
+  height: 58px;
   min-height: 58px;
-  padding: 0 18px;
+  padding: 0;
   border: 0;
   border-radius: 999px;
   color: #ffffff;
-  background: #146b45;
+  background: var(--color-brand);
   box-shadow: none;
-  font-weight: 700;
 }
 
 .floating-chat-badge,
@@ -2527,14 +2529,18 @@ button {
   line-height: 1;
 }
 
+/* The same red every other unread count in the app uses, on the rim rather than inline. */
 .floating-chat-badge {
-  margin-left: 2px;
-  color: #146b45;
-  background: #ffffff;
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  color: #ffffff;
+  background: var(--color-danger);
+  box-shadow: 0 0 0 2px var(--surface);
 }
 
 .floating-chat-button:hover {
-  background: #123f2f;
+  background: var(--color-brand-hover);
   transform: translateY(-1px);
 }
 

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
-import { MessageCircle, Send, ShieldCheck, X } from "lucide-react";
+import { MessageCircleMore, Send, ShieldCheck, X } from "lucide-react";
 import { useTranslate, useValueText } from "../../i18n";
 import type { AuthUser, ChatParticipant, ChatThread } from "../../types";
 import { countUnseenAdminReplies, getAdminReplyIds, readSeenChatMessageIds, saveSeenChatMessageIds } from "./chatUnread";
@@ -210,14 +210,15 @@ export function FloatingSupportChat({
         </section>
       )}
 
+      {/* A round icon button rather than a labelled pill: the speech bubble carries the meaning, and
+          the count sits on the rim where every other unread badge in the app sits. */}
       <button className="floating-chat-button" type="button" aria-label={t("Chat with admin")} onClick={() => setIsOpen((value) => !value)}>
-        <MessageCircle size={25} />
-        <span>{t("Chat")}</span>
-        {unreadReplyCount > 0 && (
+        {isOpen ? <X aria-hidden="true" size={26} /> : <MessageCircleMore aria-hidden="true" size={26} />}
+        {unreadReplyCount > 0 && !isOpen ? (
           <strong className="floating-chat-badge" aria-label={t("Unread chat messages")}>
             {v(unreadReplyCount)}
           </strong>
-        )}
+        ) : null}
       </button>
     </aside>
   );
