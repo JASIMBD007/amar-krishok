@@ -14041,7 +14041,7 @@ canvas {
 }
 
 /* =====================================================================
-   Farmer desk and My orders, matched to the v2 platform handoff.
+   Shared listing, offer and order pieces, matched to the v2 platform handoff.
    Values read from the v2 prototype's inline styles.
    ===================================================================== */
 
@@ -14227,7 +14227,7 @@ canvas {
 }
 
 /* =====================================================================
-   Farmer desk page — v2 layout: header, KPI row, two columns.
+   Listing and offer panels, used inside the farmer workspace tabs.
    ===================================================================== */
 /* The listings card owns its own chrome, so the table meets its edges. */
 .desk-panel {

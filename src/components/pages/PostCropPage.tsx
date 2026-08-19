@@ -209,7 +209,7 @@ export function PostCropPage({ user }: { user: AuthUser | null }) {
     <section className="post-crop-page">
       <button className="post-crop-back" type="button" onClick={() => navigate("/desk")}>
         <ArrowLeft aria-hidden="true" size={18} />
-        {t("Farmer desk")}
+        {t("Farmer dashboard")}
       </button>
 
       <div className="post-crop-head">

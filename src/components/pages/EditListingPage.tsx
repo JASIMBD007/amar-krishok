@@ -232,7 +232,7 @@ export function EditListingPage({ user }: { user: AuthUser | null }) {
     <section className="edit-listing-page">
       <Link className="edit-listing-back" to="/desk">
         <ArrowLeft aria-hidden="true" size={16} />
-        {t("Farmer desk")}
+        {t("Farmer dashboard")}
       </Link>
 
       <div className="edit-listing-head">
