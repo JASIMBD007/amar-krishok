@@ -850,6 +850,14 @@ export function markNotificationRead(accessToken: string, id: string) {
   });
 }
 
+/** Puts a notification back to unread, so the centre's "Mark unread" link can undo a skim. */
+export function markNotificationUnread(accessToken: string, id: string) {
+  return apiRequest<BackendNotification>(`/api/notifications/${encodeURIComponent(id)}/unread`, {
+    accessToken,
+    method: "PATCH",
+  });
+}
+
 export function markAllNotificationsRead(accessToken: string) {
   return apiRequest<{ count: number }>("/api/notifications/read-all", {
     accessToken,

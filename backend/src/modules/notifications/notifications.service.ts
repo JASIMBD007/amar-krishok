@@ -157,6 +157,24 @@ export class NotificationsService {
     return toNotification(notification);
   }
 
+  /**
+   * Put a notification back to unread. The notification centre offers it beside "Mark read" so a row
+   * you have skimmed can be kept in view, which is only useful if it can be undone.
+   */
+  async markUnread(userId: string, id: string) {
+    const result = await this.prisma.legacyNotification.updateMany({
+      data: { readAt: null },
+      where: { id, userId },
+    });
+
+    if (result.count === 0) {
+      throw new NotFoundException("Notification not found.");
+    }
+
+    const notification = await this.prisma.legacyNotification.findUniqueOrThrow({ where: { id } });
+    return toNotification(notification);
+  }
+
   async markAllRead(userId: string) {
     return this.prisma.legacyNotification.updateMany({
       data: { readAt: new Date() },
