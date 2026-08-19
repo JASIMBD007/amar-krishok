@@ -18,7 +18,12 @@ export type ChatParticipantRole = RegistrationRole | "guest";
 export type ChatSenderRole = Role | "guest";
 export type ChatStatus = "open" | "waiting" | "resolved";
 export type NotificationTone = "info" | "success" | "urgent" | "warning";
-export type NotificationType = "account" | "chat" | "logistics" | "order" | "payout" | "supply" | "system";
+/**
+ * "rate" is the 08:00 district-rate broadcast. The server's NotificationCategory already has RATE,
+ * but nothing emits one yet, so the notification centre's Rates tab stays empty until it does —
+ * without this the category would be coerced to "system" and land on the wrong tab.
+ */
+export type NotificationType = "account" | "chat" | "logistics" | "order" | "payout" | "rate" | "supply" | "system";
 
 export type AuthUser = {
   accountId?: string;

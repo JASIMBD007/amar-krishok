@@ -1,9 +1,9 @@
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate, NavLink, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
 import { usePageViewBeacon } from "./analytics/usePageViewBeacon";
-import { MessengerPanel, type ComposeTarget } from "./components/messages/MessengerPanel";
 import { fetchMyThreads } from "./api/chat";
 import {
+  Bell,
   LogOut,
   Menu,
   MessageCircle,
@@ -21,6 +21,7 @@ import {
   isOwnUploadUrl,
   markAllNotificationsRead,
   markNotificationRead,
+  markNotificationUnread,
   type BackendCropLot,
   type BackendOrder,
 } from "./api/auth";
@@ -32,7 +33,6 @@ import { SiteFooter } from "./components/SiteFooter";
 import { CookieConsentBanner } from "./components/CookieConsentBanner";
 import { FloatingSupportChat } from "./components/chat/FloatingSupportChat";
 import { RateTicker } from "./components/market/RateTicker";
-import { NotificationCenter } from "./components/notifications/NotificationCenter";
 import { NotificationDetailDialog } from "./components/notifications/NotificationDetailDialog";
 import { makeRoleNotifications, mergeNotifications, toAppNotification } from "./components/notifications/roleNotifications";
 import { LanguageContext, translate } from "./i18n";
@@ -47,6 +47,8 @@ import {
   LotDetailPage,
   LoginPage,
   MarketplacePage,
+  MessagesPage,
+  NotificationsPage,
   OrderPage,
   OrderPlacedPage,
   OrderTrackingPage,
@@ -238,6 +240,8 @@ export default function App() {
   } = useAppStore();
   usePageViewBeacon(user);
   const t = useCallback((text: string) => translate(language, text), [language]);
+  /** Figures in the chrome are localised the same way the pages localise theirs. */
+  const v = useCallback((value: string | number) => translate(language, String(value)), [language]);
 
   // The badge has to be right before the panel is ever opened, so the count is polled on its own.
   // A minute is slow enough to be free and fast enough that a reply does not sit unnoticed.
@@ -271,10 +275,6 @@ export default function App() {
   const [backendNotifications, setBackendNotifications] = useState<AppNotification[] | null>(null);
   const [notificationOrders, setNotificationOrders] = useState<BackendOrder[]>([]);
   const [notificationLots, setNotificationLots] = useState<BackendCropLot[]>([]);
-  const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
-  const [messengerOpen, setMessengerOpen] = useState(false);
-  const [messengerFocusId, setMessengerFocusId] = useState<string | null>(null);
-  const [composeTarget, setComposeTarget] = useState<ComposeTarget | null>(null);
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [notificationError, setNotificationError] = useState("");
   const [headerAvatarObjectUrl, setHeaderAvatarObjectUrl] = useState("");
@@ -367,7 +367,6 @@ export default function App() {
 
       sessionExpiryHandled.current = true;
       setUser(null);
-      setNotificationPanelOpen(false);
       setNotificationError("");
       navigate(`/login?next=${encodeURIComponent(location.pathname)}`, { replace: true });
       return true;
@@ -377,60 +376,13 @@ export default function App() {
 
   const closeAllHeaderMenus = () => {
     closeHeaderMenus();
-    setNotificationPanelOpen(false);
   };
 
-  /**
-   * The header panels close when you click away from them, or on Escape. Until now the only way to
-   * dismiss one was to press its own button again, so a panel stayed open over the page while you
-   * carried on reading and clicking behind it.
-   *
-   * pointerdown rather than click: it fires before the button's own handler, and each panel only
-   * closes when the press landed outside its own wrapper, so toggling still works.
-   */
-  useEffect(() => {
-    if (!notificationPanelOpen && !messengerOpen) {
-      return;
-    }
 
-    const dismissOnPressOutside = (event: PointerEvent) => {
-      const target = event.target instanceof Element ? event.target : null;
-      if (!target) {
-        return;
-      }
-
-      if (notificationPanelOpen && !target.closest(".notification-shell")) {
-        setNotificationPanelOpen(false);
-      }
-
-      if (messengerOpen && !target.closest(".header-messages")) {
-        setMessengerOpen(false);
-      }
-    };
-
-    const dismissOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setNotificationPanelOpen(false);
-        setMessengerOpen(false);
-      }
-    };
-
-    document.addEventListener("pointerdown", dismissOnPressOutside);
-    document.addEventListener("keydown", dismissOnEscape);
-
-    return () => {
-      document.removeEventListener("pointerdown", dismissOnPressOutside);
-      document.removeEventListener("keydown", dismissOnEscape);
-    };
-  }, [messengerOpen, notificationPanelOpen]);
-
-  /** Both workspaces pin Messages to the sidebar; conversations live in the header panel. */
+  /** Both workspaces pin Messages to the sidebar; it opens the conversations page. */
   const openMessenger = () => {
-    closeHeaderMenus();
-    setNotificationPanelOpen(false);
-    setMessengerFocusId(null);
-    setComposeTarget(null);
-    setMessengerOpen(true);
+    closeAllHeaderMenus();
+    navigate("/messages");
   };
 
   useEffect(() => {
@@ -552,7 +504,6 @@ export default function App() {
       setNotificationOrders([]);
       setNotificationLots([]);
       setNotificationError("");
-      setNotificationPanelOpen(false);
       return;
     }
 
@@ -609,6 +560,17 @@ export default function App() {
     () => mergeNotifications(backendNotifications, fallbackNotifications),
     [backendNotifications, fallbackNotifications],
   );
+  /**
+   * The header badge and the notification centre count the same way: unread on the server, and not
+   * yet reviewed in this browser. Two different counts on two surfaces would be worse than none.
+   */
+  const unreadNotifications = useMemo(
+    () =>
+      activeNotifications.filter(
+        (notification) => !notification.readAt && !reviewedNotificationIds.includes(notification.id),
+      ).length,
+    [activeNotifications, reviewedNotificationIds],
+  );
 
   const selectView = (nextView: View) => {
     navigate(routeByView[nextView]);
@@ -649,7 +611,6 @@ export default function App() {
         });
     }
 
-    setNotificationPanelOpen(false);
     closeAllHeaderMenus();
 
     if (notificationShowsDetails(notification)) {
@@ -660,6 +621,48 @@ export default function App() {
     if (notification.href) {
       navigate(notification.href);
     }
+  };
+
+  /**
+   * The notification centre's read toggle. Read state belongs to the server, so this goes through the
+   * API and mirrors it locally; the reviewed list is this browser's memory of what has been skimmed
+   * and has to move with it, or the row would flip back on the next render.
+   */
+  const toggleNotificationRead = (notification: AppNotification, read: boolean) => {
+    setReviewedNotificationIds((current) => {
+      const nextIds = read
+        ? current.includes(notification.id)
+          ? current
+          : [...current, notification.id]
+        : current.filter((id) => id !== notification.id);
+      saveStoredReviewedNotificationIds(user, nextIds);
+      return nextIds;
+    });
+
+    if (!user?.accessToken || !backendNotifications?.some((item) => item.id === notification.id)) {
+      return;
+    }
+
+    const optimisticReadAt = read ? new Date().toISOString() : null;
+    setBackendNotifications((current) =>
+      current?.map((item) => (item.id === notification.id ? { ...item, readAt: optimisticReadAt } : item)) ?? current,
+    );
+
+    const request = read
+      ? markNotificationRead(user.accessToken, notification.id)
+      : markNotificationUnread(user.accessToken, notification.id);
+
+    request
+      .then((updated) => {
+        setBackendNotifications((current) =>
+          current?.map((item) => (item.id === notification.id ? toAppNotification(updated, user.role) : item)) ?? current,
+        );
+        setNotificationError("");
+      })
+      .catch((error) => {
+        if (handleProtectedRequestError(error)) return;
+        setNotificationError(error instanceof ApiRequestError ? error.message : "Backend service is unavailable. Please try again.");
+      });
   };
 
   const markAllNotificationsReviewed = () => {
@@ -771,10 +774,7 @@ export default function App() {
           type="button"
           aria-expanded={menuOpen}
           aria-label={menuOpen ? t("Close menu") : t("Open menu")}
-          onClick={() => {
-            setNotificationPanelOpen(false);
-            toggleMenuOpen();
-          }}
+          onClick={toggleMenuOpen}
         >
           {menuOpen ? <X size={21} /> : <Menu size={21} />}
         </button>
@@ -815,49 +815,31 @@ export default function App() {
           <span className="header-divider" aria-hidden="true" />
           {/* Messages, then notifications: both are "something is waiting for you", in the order
               the handoff's topbar spec has them. */}
+          {/* Both open their own page, as the prototype has them: a conversation and a filterable
+              notification list both need more room than a dropdown under the icon. */}
           {user ? (
-            <div className="header-messages">
-              <button
-                aria-expanded={messengerOpen}
-                aria-label={t("Messages")}
-                className="icon-button header-icon-button"
-                type="button"
-                onClick={() => {
-                  closeHeaderMenus();
-                  setNotificationPanelOpen(false);
-                  setMessengerFocusId(null);
-                  setComposeTarget(null);
-                  setMessengerOpen((value) => !value);
-                }}
-              >
-                <MessageCircle aria-hidden="true" size={20} />
-                {unreadMessages > 0 ? <em className="header-badge">{unreadMessages > 9 ? "9+" : unreadMessages}</em> : null}
-              </button>
-              {messengerOpen ? (
-                <MessengerPanel
-                  composeWith={composeTarget}
-                  focusThreadId={messengerFocusId}
-                  locale={language}
-                  onClose={() => setMessengerOpen(false)}
-                  onUnreadChange={setUnreadMessages}
-                  user={user}
-                />
-              ) : null}
-            </div>
+            <NavLink
+              aria-label={t("Messages")}
+              className="icon-button header-icon-button header-messages-link"
+              to="/messages"
+              onClick={closeAllHeaderMenus}
+            >
+              <MessageCircle aria-hidden="true" size={20} />
+              {unreadMessages > 0 ? <em className="header-badge">{unreadMessages > 9 ? "9+" : unreadMessages}</em> : null}
+            </NavLink>
           ) : null}
           {user ? (
-            <NotificationCenter
-              emptyLabel="No notifications right now"
-              notifications={activeNotifications}
-              onMarkAllReviewed={markAllNotificationsReviewed}
-              onOpenNotification={openNotification}
-              onToggle={() => {
-                closeHeaderMenus();
-                setNotificationPanelOpen((value) => !value);
-              }}
-              open={notificationPanelOpen}
-              reviewedIds={reviewedNotificationIds}
-            />
+            <NavLink
+              aria-label={t("Notifications")}
+              className="icon-button notification-button header-notifications-link"
+              to="/notifications"
+              onClick={closeAllHeaderMenus}
+            >
+              <Bell aria-hidden="true" size={19} />
+              {unreadNotifications > 0 ? (
+                <span className="notification-badge">{v(unreadNotifications)}</span>
+              ) : null}
+            </NavLink>
           ) : null}
           {/* Signed out, the demo shows the two calls to action directly rather than a menu. */}
           {!user ? (
@@ -1055,12 +1037,13 @@ export default function App() {
             <ProtectedRoute allowedRoles={["admin"]} user={user} t={t}>
               <AdminPage
                 onMessageUser={(target) => {
-                  // Staff message from a user record; the panel finds or starts that conversation.
-                  closeHeaderMenus();
-                  setNotificationPanelOpen(false);
-                  setMessengerFocusId(null);
-                  setComposeTarget(target);
-                  setMessengerOpen(true);
+                  // Staff messaging from a user record: the page finds their thread or starts one.
+                  closeAllHeaderMenus();
+                  const query = new URLSearchParams({ name: target.name, phone: target.phone, role: target.role });
+                  if (target.id) {
+                    query.set("id", target.id);
+                  }
+                  navigate(`/messages?${query.toString()}`);
                 }}
                 chatThreads={chatThreads}
                 orderCount={notificationOrders.length}
@@ -1079,6 +1062,29 @@ export default function App() {
         <Route path="/register/buyer" element={<RegisterPage role="buyer" onRegister={handleRegister} />} />
         <Route path="/register/farmer" element={<RegisterPage role="farmer" onRegister={handleRegister} />} />
         <Route path="/signed-out" element={<SignedOutPage />} />
+        {/* Notifications and conversations are their own screens, as the v2 IA has them. */}
+        <Route
+          path="/notifications"
+          element={
+            <ProtectedRoute allowedRoles={["admin", "buyer", "farmer"]} user={user} t={t}>
+              <NotificationsPage
+                notifications={activeNotifications}
+                onMarkAllRead={markAllNotificationsReviewed}
+                onOpenNotification={openNotification}
+                onToggleRead={toggleNotificationRead}
+                reviewedIds={reviewedNotificationIds}
+              />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/messages"
+          element={
+            <ProtectedRoute allowedRoles={["admin", "buyer", "farmer"]} user={user} t={t}>
+              <MessagesPage user={user} />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/profile"
           element={
@@ -1086,11 +1092,7 @@ export default function App() {
               <ProfilePage
                 user={user}
                 onProfileSaved={handleProfileSaved}
-                onContactSupport={() => {
-                  closeHeaderMenus();
-                  setNotificationPanelOpen(false);
-                  setMessengerOpen(true);
-                }}
+                onContactSupport={openMessenger}
               />
             </ProtectedRoute>
           }

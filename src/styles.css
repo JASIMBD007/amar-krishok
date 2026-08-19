@@ -15105,212 +15105,6 @@ canvas {
   font-weight: 700;
   font-style: normal;
 }
-.messenger-panel {
-  position: absolute;
-  top: calc(100% + 10px);
-  right: 0;
-  z-index: 60;
-  display: flex;
-  flex-direction: column;
-  width: min(360px, calc(100vw - 32px));
-  max-height: min(520px, calc(100vh - 120px));
-  overflow: hidden;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--surface);
-  box-shadow: 0 18px 48px rgba(17, 24, 39, 0.18);
-}
-.messenger-head {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 13px 14px;
-  border-bottom: 1px solid var(--border);
-}
-.messenger-head > div {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  min-width: 0;
-}
-.messenger-head strong {
-  font-size: 15px;
-  font-weight: 600;
-}
-.messenger-head small {
-  overflow: hidden;
-  color: var(--fg-muted);
-  font-size: 12px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.messenger-back,
-.messenger-close {
-  display: grid;
-  place-items: center;
-  padding: 4px;
-  border: 0;
-  background: none;
-  color: var(--fg-muted);
-  cursor: pointer;
-}
-.messenger-list {
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-}
-.messenger-row {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  padding: 12px 14px;
-  border: 0;
-  border-bottom: 1px solid var(--surface-sunken);
-  background: none;
-  text-align: left;
-  cursor: pointer;
-}
-.messenger-row:hover {
-  background: var(--bg);
-}
-.messenger-avatar {
-  display: grid;
-  flex: none;
-  width: 36px;
-  height: 36px;
-  place-items: center;
-  border-radius: 999px;
-  background: var(--surface-sunken);
-  color: var(--fg-subtle);
-  font-size: 12px;
-  font-weight: 700;
-}
-.messenger-row-body {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-.messenger-row-body strong {
-  font-size: 14px;
-  font-weight: 600;
-}
-.messenger-row-body small {
-  overflow: hidden;
-  color: var(--fg-muted);
-  font-size: 12px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.messenger-row-meta {
-  display: flex;
-  flex: none;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 5px;
-}
-.messenger-row-meta em {
-  color: var(--fg-disabled);
-  font-size: 11px;
-  font-style: normal;
-}
-.messenger-unread {
-  display: grid;
-  min-width: 18px;
-  height: 18px;
-  place-items: center;
-  padding: 0 5px;
-  border-radius: 999px;
-  background: var(--brand);
-  color: #ffffff;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 700;
-  font-style: normal;
-}
-.messenger-thread {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: 8px;
-  padding: 14px;
-  overflow-y: auto;
-  background: var(--bg);
-}
-.messenger-bubble {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  align-self: flex-start;
-  max-width: 78%;
-  padding: 9px 12px;
-  border: 1px solid var(--border);
-  border-radius: 12px 12px 12px 4px;
-  background: var(--surface);
-  font-size: 14px;
-  line-height: 1.45;
-}
-/* The viewer's own messages sit right and green, whichever side of the conversation they are on. */
-.messenger-bubble.mine {
-  align-self: flex-end;
-  border-color: transparent;
-  border-radius: 12px 12px 4px 12px;
-  background: var(--ak-green);
-  color: #ffffff;
-}
-.messenger-bubble em {
-  color: var(--fg-disabled);
-  font-size: 10px;
-  font-style: normal;
-}
-.messenger-bubble.mine em {
-  color: rgba(255, 255, 255, 0.75);
-}
-.messenger-composer {
-  display: flex;
-  gap: 8px;
-  padding: 10px 12px;
-  border-top: 1px solid var(--border);
-}
-.messenger-composer input {
-  flex: 1;
-  min-width: 0;
-  min-height: 38px;
-  padding: 0 12px;
-  border: 1px solid var(--border-strong);
-  border-radius: 999px;
-  background: var(--surface);
-  font-size: 14px;
-}
-.messenger-composer button {
-  display: grid;
-  width: 38px;
-  height: 38px;
-  place-items: center;
-  border: 0;
-  border-radius: 999px;
-  background: var(--ak-green);
-  color: #ffffff;
-  cursor: pointer;
-}
-.messenger-composer button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-.messenger-empty,
-.messenger-error {
-  margin: 0;
-  padding: 22px 16px;
-  color: var(--fg-muted);
-  font-size: 13px;
-  text-align: center;
-}
-.messenger-error {
-  padding: 12px 16px;
-  color: var(--mk-warn);
-  text-align: left;
-}
 
 /* ---- Admin · Traffic: a little more presence than a plain stat grid ---- */
 /* A hairline of brand colour reads as "this card is a measurement", without adding chrome. */
@@ -15544,15 +15338,6 @@ canvas {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
-  .messenger-panel {
-    position: fixed;
-    top: auto;
-    right: 8px;
-    bottom: 8px;
-    left: 8px;
-    width: auto;
-    max-height: 70vh;
-  }
 }
 
 @media (max-width: 560px) {
@@ -15577,9 +15362,6 @@ canvas {
   .admin-traffic .desk-kpi-value,
   .desk-kpi-value {
     font-size: 24px;
-  }
-  .messenger-panel {
-    max-height: 78vh;
   }
   /* Tap targets: 44px is the smallest reliably hittable control. */
   .icon-button,
@@ -17017,5 +16799,464 @@ canvas {
   }
   .workspace-task .secondary-button {
     align-self: flex-start;
+  }
+}
+
+/* ==========================================================================
+   Notification centre  /notifications
+   Four tabs over one list, per the handoff's row recipe.
+   ========================================================================== */
+
+.notifications-page,
+.messages-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.notifications-page {
+  max-width: 920px;
+}
+
+.notifications-head,
+.messages-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.messages-head {
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 4px;
+}
+.notifications-head > div,
+.messages-head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.notifications-head h1,
+.messages-head h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+.notifications-head > div > span,
+.messages-head > span {
+  color: #6b7280;
+  font-size: 14px;
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+.notifications-head-actions {
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+
+.notification-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.notification-tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 0;
+  padding: 10px 15px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  color: #374151;
+  background: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+}
+.notification-tabs button:hover {
+  background: #f5f7fa;
+}
+.notification-tabs button.on {
+  border-color: #111827;
+  color: #ffffff;
+  background: #111827;
+  font-weight: 600;
+}
+.notification-tabs button > em {
+  padding: 1px 7px;
+  border-radius: 999px;
+  color: #cc0001;
+  background: #fee2e2;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 700;
+}
+.notification-tabs button.on > em {
+  color: #111827;
+  background: #ffffff;
+}
+
+.notification-rows {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+.notification-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 18px;
+  border-bottom: 1px solid #f1f3f6;
+}
+.notification-row:last-child {
+  border-bottom: 0;
+}
+.notification-row-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border-radius: 8px;
+}
+.notification-row-icon.green {
+  color: #15803d;
+  background: #dcfce7;
+}
+.notification-row-icon.blue {
+  color: #1c69d4;
+  background: #dbeafe;
+}
+.notification-row-icon.red {
+  color: #cc0001;
+  background: #fee2e2;
+}
+.notification-row-icon.amber {
+  color: #b45309;
+  background: #fef3e2;
+}
+/* The row body is a button so the whole notification is one target, but it must read as text. */
+.notification-row-copy {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
+}
+.notification-row-title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.notification-row-title strong {
+  font-size: 15px;
+  font-weight: 600;
+}
+.notification-row-dot {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 999px;
+  background: #cc0001;
+}
+.notification-row-body {
+  color: #4b5563;
+  font-size: 14px;
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+.notification-row-copy:hover .notification-row-title strong {
+  text-decoration: underline;
+}
+.notification-row-side {
+  display: flex;
+  align-items: flex-end;
+  flex: none;
+  flex-direction: column;
+  gap: 8px;
+}
+.notification-row-side small {
+  color: #6b7280;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.notification-row-side .text-link {
+  font-size: 12px;
+  font-weight: 600;
+}
+.notification-rows-empty {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 8px;
+  padding: 44px 18px;
+  color: #9aa3af;
+  text-align: center;
+}
+.notification-rows-empty strong {
+  color: #111827;
+  font-size: 15px;
+  font-weight: 600;
+}
+.notification-rows-empty span {
+  color: #6b7280;
+  font-size: 13px;
+}
+
+/* ==========================================================================
+   Messages  /messages
+   Thread list beside the open conversation, the support inbox's two-pane shape.
+   ========================================================================== */
+
+.messages-layout {
+  display: grid;
+  grid-template-columns: minmax(240px, 320px) minmax(0, 1fr);
+  align-items: stretch;
+  gap: 16px;
+  min-height: 520px;
+}
+.messages-threads {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden auto;
+  max-height: 620px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+.messages-thread {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  min-height: 0;
+  padding: 14px 16px;
+  border: 0;
+  border-bottom: 1px solid #f1f3f6;
+  border-left: 3px solid transparent;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
+}
+.messages-thread:hover {
+  background: #f5f7fa;
+}
+.messages-thread.on {
+  border-left-color: #146b45;
+  background: #f5f7fa;
+}
+.messages-thread-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border-radius: 999px;
+  color: #374151;
+  background: #f1f3f6;
+  font-size: 12px;
+  font-weight: 700;
+}
+.messages-thread.on .messages-thread-avatar,
+.messages-conversation .messages-thread-avatar {
+  color: #0f5636;
+  background: #e7f2ec;
+}
+.messages-thread-copy {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+}
+.messages-thread-name {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.messages-thread-name strong {
+  font-size: 14px;
+  font-weight: 600;
+}
+.messages-thread-name > em {
+  padding: 1px 6px;
+  border-radius: 999px;
+  color: #ffffff;
+  background: #cc0001;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 700;
+}
+.messages-thread-copy small {
+  color: #6b7280;
+  font-size: 12px;
+}
+.messages-thread-preview {
+  overflow: hidden;
+  color: #4b5563;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.messages-thread-at {
+  flex: none;
+  color: #9aa3af;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.messages-conversation {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+.messages-conversation > header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.messages-conversation-copy {
+  display: flex;
+  min-width: 140px;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+}
+.messages-conversation-copy strong {
+  font-size: 15px;
+  font-weight: 600;
+}
+.messages-conversation-copy small {
+  color: #6b7280;
+  font-size: 12px;
+}
+.messages-conversation .soft-notice {
+  margin: 12px 18px 0;
+}
+.messages-stream {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  max-height: 420px;
+  padding: 18px;
+  background: #f5f7fa;
+}
+.messages-bubble-row {
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 4px;
+}
+.messages-bubble-row.mine {
+  align-items: flex-end;
+}
+.messages-bubble {
+  max-width: 66%;
+  padding: 11px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #ffffff;
+  font-size: 14px;
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+/* Your own side is green, whichever side of the conversation you are on. */
+.messages-bubble-row.mine .messages-bubble {
+  border-color: transparent;
+  color: #ffffff;
+  background: #146b45;
+}
+.messages-bubble-row small {
+  color: #9aa3af;
+  font-size: 11px;
+}
+.messages-composer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-top: 1px solid var(--border);
+}
+.messages-composer input {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  font-size: 14px;
+}
+.messages-composer .primary-button {
+  min-height: 0;
+  gap: 8px;
+  padding: 12px 18px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+.messages-stream .panel-note {
+  padding: 12px 0;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .messages-layout {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+  }
+  .messages-threads {
+    max-height: 260px;
+  }
+  .messages-bubble {
+    max-width: 82%;
+  }
+}
+
+@media (max-width: 640px) {
+  .notifications-head h1,
+  .messages-head h1 {
+    font-size: 23px;
+  }
+  .notification-row {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  /* Time and the read toggle drop below the copy rather than squeezing it. */
+  .notification-row-side {
+    align-items: flex-start;
+    flex-direction: row;
+    gap: 12px;
+    width: 100%;
+    padding-left: 50px;
+  }
+  .notifications-head-actions {
+    width: 100%;
+  }
+  .notifications-head-actions .secondary-button {
+    flex: 1;
+  }
+  .messages-composer {
+    flex-wrap: wrap;
+  }
+  .messages-composer .primary-button {
+    width: 100%;
   }
 }

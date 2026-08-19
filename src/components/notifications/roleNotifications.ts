@@ -2,7 +2,7 @@ import type { BackendCropLot, BackendNotification, BackendOrder } from "../../ap
 import type { AppNotification, AuthUser, ChatThread, NotificationTone, NotificationType, RegisteredAccount, Role } from "../../types";
 
 const notificationTones: NotificationTone[] = ["info", "success", "urgent", "warning"];
-const notificationTypes: NotificationType[] = ["account", "chat", "logistics", "order", "payout", "supply", "system"];
+const notificationTypes: NotificationType[] = ["account", "chat", "logistics", "order", "payout", "rate", "supply", "system"];
 const adminSections = new Set(["dashboard", "orders", "buyers", "supply", "farmers", "logistics", "payouts", "chat", "settings"]);
 
 function isNotificationTone(value: string): value is NotificationTone {

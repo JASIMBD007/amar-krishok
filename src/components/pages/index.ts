@@ -7,6 +7,8 @@ export { FarmerDashboardPage } from "./FarmerDashboardPage";
 export { HomePage } from "./HomePage";
 export { LotDetailPage } from "./LotDetailPage";
 export { MarketplacePage } from "./MarketplacePage";
+export { MessagesPage } from "./MessagesPage";
+export { NotificationsPage } from "./NotificationsPage";
 export { OrderPlacedPage, OrderTrackingPage } from "./OrdersPages";
 export { OrderPage } from "./OrderPage";
 export { PostCropPage } from "./PostCropPage";
