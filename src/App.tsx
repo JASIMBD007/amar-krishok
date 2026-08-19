@@ -36,7 +36,7 @@ import { NotificationCenter } from "./components/notifications/NotificationCente
 import { NotificationDetailDialog } from "./components/notifications/NotificationDetailDialog";
 import { makeRoleNotifications, mergeNotifications, toAppNotification } from "./components/notifications/roleNotifications";
 import { LanguageContext, translate } from "./i18n";
-import { lots, routeByView, serviceDistricts } from "./data";
+import { lots, roleHomePath, routeByView, serviceDistricts } from "./data";
 import {
   AdminPage,
   BuyerDashboardPage,
@@ -704,16 +704,14 @@ export default function App() {
   // rather than a farmer desk and an order list side by side. Counts belong in the workspace sidebar,
   // next to the section they open, so the global nav never carries a number.
   // Staff enter the console through their account chip; the public nav stays focused on public destinations.
-  const workspacePath = user?.role === "farmer" ? "/desk" : "/orders";
-  const workspaceLabel = user?.role === "farmer" ? "Farmer dashboard" : "Buyer dashboard";
+  // One "Dashboard" item for everyone. Where it goes depends on the account: a farmer's desk, a
+  // buyer's orders, or the staff console. Naming the role in the label made the bar announce
+  // "Buyer dashboard" to signed-out visitors, who have no role yet — and no `next` here means the
+  // login lands each account on its own dashboard rather than a guessed one.
   const navItems: Array<{ id: string; label: string; path: string; count?: number; staff?: boolean }> = [
     { id: "market", label: "Marketplace", path: "/marketplace" },
     { id: "prices", label: "Market rates", path: "/prices" },
-    {
-      id: "workspace",
-      label: workspaceLabel,
-      path: user ? workspacePath : `/login?next=${encodeURIComponent(workspacePath)}`,
-    },
+    { id: "dashboard", label: "Dashboard", path: user ? roleHomePath[user.role] : "/login" },
   ];
 
   return (

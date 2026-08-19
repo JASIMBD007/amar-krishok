@@ -187,9 +187,14 @@ export const roleOptions: Array<{ role: Role; label: string; detail: string; vie
   { role: "farmer", label: "Seller / Farmer", detail: "Farmer app", view: "farmer", icon: Sprout },
 ];
 
+/**
+ * Where each role's own dashboard lives. The topbar's single "Dashboard" item and the redirect after
+ * login both read this, so signing in and clicking Dashboard can never disagree about the
+ * destination. A buyer's home is the buyer dashboard, not the older /buyer request form.
+ */
 export const roleHomePath: Record<Role, string> = {
-  admin: "/admin",
-  buyer: "/buyer",
+  admin: "/admin/dashboard",
+  buyer: "/orders",
   farmer: "/desk",
 };
 
