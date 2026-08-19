@@ -8193,6 +8193,14 @@ textarea:focus-visible {
   background: var(--brand);
 }
 
+/* A hairline between the language toggle and the account cluster, as the topbar reference has it. */
+.header-divider {
+  width: 1px;
+  height: 26px;
+  flex: none;
+  margin: 0 2px;
+  background: var(--border-strong);
+}
 .language-toggle {
   display: inline-flex;
   min-height: 42px;
@@ -12819,6 +12827,7 @@ canvas {
     margin-left: 0;
   }
   .site-header > .header-actions > .language-toggle,
+  .site-header > .header-actions > .header-divider,
   .site-header > .header-actions > .participant-account,
   .site-header > .header-actions > .header-auth {
     display: none;
