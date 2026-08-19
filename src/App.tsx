@@ -685,10 +685,13 @@ export default function App() {
       )
     : undefined;
   const accountDistrict = user?.district || currentRegistration?.district || "";
-  // Was an anchor into the buyer workspace and the farmer desk. The farmer desk lost its
-  // profile panel when it was rebuilt, so that link went nowhere. Both roles get a real page.
-  const participantProfilePath = "/profile";
-  const participantRoleLabel = user?.role === "buyer" ? "Buyer" : "Seller";
+  // Where the account chip goes. Buyers and farmers have a profile page; staff have no profile
+  // screen, so their chip opens the console dashboard rather than the Users table it used to.
+  const accountHomePath = user?.role === "admin" ? "/admin/dashboard" : "/profile";
+  const accountSubtitle =
+    user?.role === "admin"
+      ? `${t("Operations")} · ${accountDistrict ? `${t(accountDistrict)} HQ` : t("Dhaka HQ")}`
+      : `${t(user?.role === "buyer" ? "Buyer" : "Seller")}${accountDistrict ? ` · ${t(accountDistrict)}` : ""}`;
   const accountInitials = user
     ? user.name
         .replace(/^(Md\.|Mst\.|Mrs\.|Mr\.)\s*/i, "")
@@ -764,21 +767,8 @@ export default function App() {
           >
             EN <span aria-hidden="true">·</span> <span className="bn-glyph">বাংলা</span>
           </button>
-          {user ? (
-            <NotificationCenter
-              emptyLabel="No notifications right now"
-              notifications={activeNotifications}
-              onMarkAllReviewed={markAllNotificationsReviewed}
-              onOpenNotification={openNotification}
-              onToggle={() => {
-                closeHeaderMenus();
-                setNotificationPanelOpen((value) => !value);
-              }}
-              open={notificationPanelOpen}
-              reviewedIds={reviewedNotificationIds}
-            />
-          ) : null}
-          {/* Messages sit beside notifications: both are "something is waiting for you". */}
+          {/* Messages, then notifications: both are "something is waiting for you", in the order
+              the handoff's topbar spec has them. */}
           {user ? (
             <div className="header-messages">
               <button
@@ -809,6 +799,20 @@ export default function App() {
               ) : null}
             </div>
           ) : null}
+          {user ? (
+            <NotificationCenter
+              emptyLabel="No notifications right now"
+              notifications={activeNotifications}
+              onMarkAllReviewed={markAllNotificationsReviewed}
+              onOpenNotification={openNotification}
+              onToggle={() => {
+                closeHeaderMenus();
+                setNotificationPanelOpen((value) => !value);
+              }}
+              open={notificationPanelOpen}
+              reviewedIds={reviewedNotificationIds}
+            />
+          ) : null}
           {/* Signed out, the demo shows the two calls to action directly rather than a menu. */}
           {!user ? (
             <span className="header-auth">
@@ -820,12 +824,15 @@ export default function App() {
               </button>
             </span>
           ) : null}
-          {user && user.role !== "admin" ? (
+          {/* One account block for every role: avatar, name, and Log out. Staff used to get a chip
+              with no way out of the app except the console sidebar, and buyers and farmers got a
+              different-looking one. */}
+          {user ? (
             <div className="participant-account">
               <NavLink
                 aria-label={t("Open profile")}
                 className="participant-profile"
-                to={participantProfilePath}
+                to={accountHomePath}
                 onClick={closeAllHeaderMenus}
               >
                 <span className={`participant-profile-initials${headerAvatarObjectUrl ? " has-photo" : ""}`} aria-hidden="true">
@@ -833,34 +840,13 @@ export default function App() {
                 </span>
                 <span className="participant-profile-copy">
                   <strong>{user.name}</strong>
-                  <small>
-                    {t(participantRoleLabel)}
-                    {accountDistrict ? ` · ${t(accountDistrict)}` : ""}
-                  </small>
+                  <small>{accountSubtitle}</small>
                 </span>
               </NavLink>
               <button className="secondary-button participant-logout-button" type="button" onClick={requestLogout}>
                 <LogOut aria-hidden="true" size={17} />
                 <span>{t("Log out")}</span>
               </button>
-            </div>
-          ) : null}
-          {user?.role === "admin" ? (
-            <div className="admin-header-account">
-              <NavLink
-                aria-label={t("Open admin profile")}
-                className="admin-header-profile"
-                to="/admin/users"
-                onClick={closeAllHeaderMenus}
-              >
-                <span className="account-chip-initials" aria-hidden="true">
-                  {accountInitials}
-                </span>
-                <span className="account-chip-copy">
-                  <strong>{user.name}</strong>
-                  <small>{t("Operations")} · {accountDistrict ? `${t(accountDistrict)} HQ` : t("Dhaka HQ")}</small>
-                </span>
-              </NavLink>
             </div>
           ) : null}
         </div>
@@ -897,22 +883,13 @@ export default function App() {
                   <button className="mobile-menu-signup" type="button" onClick={openHeaderRegisterChoice}>{t("Sign up free")}</button>
                 </>
               ) : null}
-              {user?.role === "admin" ? (
+              {user ? (
                 <>
-                  <NavLink className="mobile-menu-action-link" to="/admin/users" onClick={closeAllHeaderMenus}>
-                    <span className="mobile-menu-avatar" aria-hidden="true">{accountInitials}</span>
-                    <span>{user.name}</span>
-                  </NavLink>
-                  <button className="mobile-menu-action-link" type="button" onClick={requestLogout}><LogOut aria-hidden="true" size={17} />{t("Log out")}</button>
-                </>
-              ) : null}
-              {user && user.role !== "admin" ? (
-                <>
-                  <NavLink className="mobile-menu-action-link" to={participantProfilePath} onClick={closeAllHeaderMenus}>
+                  <NavLink className="mobile-menu-action-link" to={accountHomePath} onClick={closeAllHeaderMenus}>
                     <span className={`mobile-menu-avatar${headerAvatarObjectUrl ? " has-photo" : ""}`} aria-hidden="true">
                       {headerAvatarObjectUrl ? <img alt="" src={headerAvatarObjectUrl} /> : accountInitials}
                     </span>
-                    <span>{t("Profile")}</span>
+                    <span>{user.name}</span>
                   </NavLink>
                   <button className="mobile-menu-action-link" type="button" onClick={requestLogout}><LogOut aria-hidden="true" size={17} />{t("Log out")}</button>
                 </>
@@ -1044,7 +1021,6 @@ export default function App() {
                 openDisputeCount={notificationOrders.filter((order) => Boolean(order.disputeOpenedAt)).length}
                 registrations={registrations}
                 onAdminReply={sendAdminChatReply}
-                onLogout={requestLogout}
                 onThreadOpen={markChatThreadOpen}
                 onUpdateRegistration={updateRegistrationStatus}
                 user={user}

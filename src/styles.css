@@ -8042,44 +8042,6 @@ textarea:focus-visible {
   padding: 0 14px;
   font-size: 14px;
 }
-.account-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  min-height: 42px;
-  padding: 0 10px 0 6px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--surface);
-  color: inherit;
-  text-align: left;
-  transition: background-color 120ms var(--ak-ease);
-}
-.account-chip:hover {
-  background: var(--bg);
-}
-.account-chip-initials {
-  display: grid;
-  flex: none;
-  width: 30px;
-  height: 30px;
-  place-items: center;
-  border-radius: 50%;
-  color: #ffffff;
-  background: var(--ak-green);
-  font-size: 12px;
-  font-weight: 700;
-}
-.account-chip-copy strong {
-  display: block;
-  font-size: 13px;
-  line-height: 1.2;
-}
-.account-chip-copy small {
-  display: block;
-  color: var(--fg-muted);
-  font-size: 11px;
-}
 .main-nav a {
   display: inline-flex;
   align-items: center;
@@ -11718,26 +11680,6 @@ textarea:focus-visible {
   color: #9aa3af;
   font-size: 11px;
 }
-.admin-console-logout {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  width: 100%;
-  min-height: 36px;
-  padding: 0 10px;
-  border: 1px solid #2a4035;
-  border-radius: 6px;
-  color: #c4ccc7;
-  background: transparent;
-  font-size: 12px;
-  font-weight: 600;
-}
-.admin-console-logout:hover {
-  border-color: #cc0001;
-  color: #ffffff;
-  background: #cc0001;
-}
 .admin-console-content.admin-console-page {
   display: flex;
   width: auto;
@@ -12813,47 +12755,6 @@ textarea:focus-visible {
   }
 }
 
-/* v2 admin header identity; support messages stay inside the console inbox. */
-.admin-header-account,
-.admin-header-profile {
-  display: inline-flex;
-  align-items: center;
-}
-.admin-header-account {
-  gap: 12px;
-}
-.admin-header-profile {
-  gap: 9px;
-  padding: 5px 8px;
-  border-radius: 8px;
-  color: inherit;
-  text-decoration: none;
-}
-.admin-header-profile:hover,
-.admin-header-profile[aria-current="page"] {
-  background: #f5f7fa;
-}
-.admin-header-profile .account-chip-initials {
-  width: 32px;
-  height: 32px;
-  color: #0f5636;
-  background: #e7f2ec;
-}
-.admin-header-profile .account-chip-copy strong {
-  color: #111827;
-  font-size: 13px;
-  font-weight: 600;
-}
-.admin-header-profile .account-chip-copy small {
-  color: #6b7280;
-  font-size: 11px;
-}
-@media (max-width: 1080px) {
-  .admin-header-profile .account-chip-copy {
-    display: none;
-  }
-}
-
 /* =====================================================================
    Responsive consolidation — current web product on phones and tablets.
    This block intentionally comes last so older fixed desktop grids cannot
@@ -12918,7 +12819,6 @@ canvas {
     margin-left: 0;
   }
   .site-header > .header-actions > .language-toggle,
-  .site-header > .header-actions > .admin-header-account,
   .site-header > .header-actions > .participant-account,
   .site-header > .header-actions > .header-auth {
     display: none;

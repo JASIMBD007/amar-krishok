@@ -8,7 +8,6 @@ import {
   Globe,
   History,
   LayoutDashboard,
-  LogOut,
   MessageSquare,
   Package,
   Shield,
@@ -109,7 +108,6 @@ function getInitials(name: string) {
 export function AdminPage({
   chatThreads,
   onAdminReply,
-  onLogout,
   onMessageUser,
   onThreadOpen,
   onUpdateRegistration,
@@ -120,7 +118,6 @@ export function AdminPage({
 }: {
   chatThreads: ChatThread[];
   onAdminReply: (threadId: string, text: string) => void;
-  onLogout: () => void;
   /** Opens the header messenger on a conversation with this person. */
   onMessageUser: (target: { id?: string; name: string; phone: string; role: "buyer" | "farmer" }) => void;
   onThreadOpen: (threadId: string) => void;
@@ -255,15 +252,12 @@ export function AdminPage({
             })}</div>;
           })}
         </nav>
+        {/* Identity only. Logging out is in the topbar, the same place every other role does it. */}
         <div className="admin-console-user">
           <div className="admin-console-user-identity">
             <i>{getInitials(user?.name ?? "Staff")}</i>
             <span><strong>{user?.name ?? t("Staff")}</strong><small>{t(staffRole === "super" ? "Super admin" : "Support agent")}</small></span>
           </div>
-          <button className="admin-console-logout" type="button" onClick={onLogout}>
-            <LogOut aria-hidden="true" size={16} />
-            <span>{t("Log out")}</span>
-          </button>
         </div>
       </aside>
 
