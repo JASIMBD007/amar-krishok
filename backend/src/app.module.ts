@@ -8,6 +8,7 @@ import { AdminModule } from "./modules/admin/admin.module";
 import { AnalyticsModule } from "./modules/analytics/analytics.module";
 import { AuthModule } from "./modules/auth/auth.module";
 import { ChatModule } from "./modules/chat/chat.module";
+import { DashboardModule } from "./modules/dashboard/dashboard.module";
 import { DistrictsModule } from "./modules/districts/districts.module";
 import { HealthModule } from "./modules/health/health.module";
 import { LotsModule } from "./modules/lots/lots.module";
@@ -30,6 +31,7 @@ import { UploadsModule } from "./modules/uploads/uploads.module";
     AuthModule,
     AdminModule,
     AnalyticsModule,
+    DashboardModule,
     DistrictsModule,
     LotsModule,
     OffersModule,

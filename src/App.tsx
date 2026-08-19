@@ -1,5 +1,5 @@
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Link, Navigate, NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { Link, Navigate, NavLink, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
 import { usePageViewBeacon } from "./analytics/usePageViewBeacon";
 import { MessengerPanel, type ComposeTarget } from "./components/messages/MessengerPanel";
 import { fetchMyThreads } from "./api/chat";
@@ -39,14 +39,14 @@ import { LanguageContext, translate } from "./i18n";
 import { lots, routeByView, serviceDistricts } from "./data";
 import {
   AdminPage,
+  BuyerDashboardPage,
   CheckoutPage,
   EditListingPage,
-  FarmerDeskPage,
+  FarmerDashboardPage,
   HomePage,
   LotDetailPage,
   LoginPage,
   MarketplacePage,
-  MyOrdersPage,
   OrderPage,
   OrderPlacedPage,
   OrderTrackingPage,
@@ -113,6 +113,12 @@ function HeaderNavLink({
       {children}
     </NavLink>
   );
+}
+
+/** The listing editor moved from /farmer/listings/:id to /desk/listings/:id; old links still land. */
+function FarmerListingRedirect() {
+  const { lotId } = useParams();
+  return <Navigate to={`/desk/listings/${encodeURIComponent(lotId ?? "")}`} replace />;
 }
 
 function saveStoredReviewedNotificationIds(user: AuthUser | null, ids: string[]) {
@@ -374,6 +380,15 @@ export default function App() {
     setNotificationPanelOpen(false);
   };
 
+  /** Both workspaces pin Messages to the sidebar; conversations live in the header panel. */
+  const openMessenger = () => {
+    closeHeaderMenus();
+    setNotificationPanelOpen(false);
+    setMessengerFocusId(null);
+    setComposeTarget(null);
+    setMessengerOpen(true);
+  };
+
   useEffect(() => {
     if (user?.role === "admin" && !user.accessToken) {
       setUser(null);
@@ -557,7 +572,7 @@ export default function App() {
   };
 
   const handleMarketplaceEditLot = (lot: CropLot) => {
-    navigate(`/farmer/listings/${encodeURIComponent(lot.id)}`);
+    navigate(`/desk/listings/${encodeURIComponent(lot.id)}`);
   };
 
   const openHeaderRegisterChoice = () => {
@@ -685,18 +700,19 @@ export default function App() {
         .toUpperCase()
     : "";
 
-  // The former "Admin" tab becomes a role-aware "Dashboard" link that sends each
-  // signed-in user to their own workspace (farmer/buyer/admin), or to login otherwise.
-  // The demo's nav: the logo goes home, so the bar itself carries only the five destinations.
+  // The topbar carries one role-aware workspace item — "Farmer dashboard" or "Buyer dashboard" —
+  // rather than a farmer desk and an order list side by side. Counts belong in the workspace sidebar,
+  // next to the section they open, so the global nav never carries a number.
   // Staff enter the console through their account chip; the public nav stays focused on public destinations.
+  const workspacePath = user?.role === "farmer" ? "/desk" : "/orders";
+  const workspaceLabel = user?.role === "farmer" ? "Farmer dashboard" : "Buyer dashboard";
   const navItems: Array<{ id: string; label: string; path: string; count?: number; staff?: boolean }> = [
     { id: "market", label: "Marketplace", path: "/marketplace" },
     { id: "prices", label: "Market rates", path: "/prices" },
-    { id: "farmer", label: "Farmer desk", path: user ? "/farmer" : "/login?next=%2Ffarmer" },
     {
-      id: "orders",
-      label: "My orders",
-      path: user ? "/orders" : "/login?next=%2Forders",
+      id: "workspace",
+      label: workspaceLabel,
+      path: user ? workspacePath : `/login?next=${encodeURIComponent(workspacePath)}`,
     },
   ];
 
@@ -942,12 +958,17 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+        {/* The buyer workspace. A farmer landing here belongs on their own dashboard. */}
         <Route
           path="/orders"
           element={
-            <ProtectedRoute allowedRoles={["admin", "buyer", "farmer"]} user={user} t={t}>
-              <MyOrdersPage user={user} />
-            </ProtectedRoute>
+            user?.role === "farmer" ? (
+              <Navigate to="/desk" replace />
+            ) : (
+              <ProtectedRoute allowedRoles={["admin", "buyer"]} user={user} t={t}>
+                <BuyerDashboardPage lots={marketplaceLots} onOpenMessages={openMessenger} user={user} />
+              </ProtectedRoute>
+            )
           }
         />
         <Route
@@ -966,31 +987,38 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+        {/* The farmer workspace. Posting and editing keep their own route, as the v2 IA has them. */}
         <Route
-          path="/farmer"
+          path="/desk"
           element={
             <ProtectedRoute allowedRoles={["farmer", "admin"]} user={user} t={t}>
-              <FarmerDeskPage user={user} />
+              <FarmerDashboardPage onOpenMessages={openMessenger} user={user} />
             </ProtectedRoute>
           }
         />
         <Route
-          path="/farmer/listings/:lotId"
+          path="/desk/listings/:lotId"
           element={
             <ProtectedRoute allowedRoles={["farmer", "admin"]} user={user} t={t}>
               <EditListingPage user={user} />
             </ProtectedRoute>
           }
         />
-        {/* Posting, editing and the profile panel keep their own route, as the v2 IA has them. */}
         <Route
-          path="/farmer/post"
+          path="/desk/post"
           element={
             <ProtectedRoute allowedRoles={["farmer", "admin"]} user={user} t={t}>
               <PostCropPage user={user} />
             </ProtectedRoute>
           }
         />
+        {/* The desk used to live under /farmer. Every link and notification that still points there
+            keeps working rather than dropping a farmer on the home page. */}
+        <Route path="/farmer" element={<Navigate to="/desk" replace />} />
+        <Route path="/farmer/post" element={<Navigate to="/desk/post" replace />} />
+        <Route path="/farmer/listings/:lotId" element={<FarmerListingRedirect />} />
+        {/* The buyer's workspace is /orders now. /buyer keeps the older direct order-request form,
+            which the v2 IA has no screen for; it is reachable but no longer linked from the nav. */}
         <Route
           path="/buyer"
           element={

@@ -170,7 +170,7 @@ export const orders: Order[] = [
 export const views: Array<{ id: View; label: string; path: string }> = [
   { id: "home", label: "Home", path: "/" },
   { id: "market", label: "Marketplace", path: "/marketplace" },
-  { id: "farmer", label: "Post Crop", path: "/farmer" },
+  { id: "farmer", label: "Post Crop", path: "/desk/post" },
   { id: "buyer", label: "Order", path: "/buyer" },
   { id: "prices", label: "Prices", path: "/prices" },
   { id: "admin", label: "Admin", path: "/admin" },
@@ -190,7 +190,7 @@ export const roleOptions: Array<{ role: Role; label: string; detail: string; vie
 export const roleHomePath: Record<Role, string> = {
   admin: "/admin",
   buyer: "/buyer",
-  farmer: "/farmer",
+  farmer: "/desk",
 };
 
 export const dashboardStats: DashboardStat[] = [

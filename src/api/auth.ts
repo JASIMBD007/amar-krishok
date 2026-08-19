@@ -157,6 +157,8 @@ export type BackendOrderItem = {
   id: string;
   crop: { name: string };
   cropLotId: string | null;
+  /** The grade agreed when the order was placed, not the lot's grade today. */
+  grade?: string | null;
   /** Present when the order was placed against a specific lot, which is the marketplace path. */
   cropLot?: {
     farmer?: { id: string; name: string } | null;
@@ -194,7 +196,19 @@ export type BackendOrder = {
   payments?: BackendPayment[];
   status: string;
   targetDate: string | null;
+  /** The crop subtotal, excluding transport and the platform fee. The rate comparison uses only this. */
+  cropTotal?: string | number;
+  /** The carrier's slice. Never the farmer's and never the buyer's saving. */
+  transportAmount?: string | number;
+  /** The platform's slice, as charged. Read it — never multiply a fee rate back in. */
+  feeAmount?: string | number;
+  paymentMethod?: string | null;
   totalValue: string | number;
+  /**
+   * The caller's own side of the money, computed server-side: what this farmer earns on the order, or
+   * what this buyer paid. Clients must not re-derive the split.
+   */
+  viewerShare?: number;
   updatedAt: string;
 };
 

@@ -77,20 +77,6 @@ export function fetchPlatformStats() {
   return apiRequest<BackendPlatformStats>("/api/stats/platform");
 }
 
-export type BackendFarmerEscrow = {
-  grossValue: number;
-  held: number;
-  heldCount: number;
-  orderCount: number;
-  released: number;
-  releasedCount: number;
-};
-
-/** A farmer's own escrow and payout totals. Does not expose the buyers' orders. */
-export function fetchFarmerEscrow(accessToken: string) {
-  return apiRequest<BackendFarmerEscrow>("/api/orders/farmer-escrow", { accessToken });
-}
-
 /** Records a withdrawal request for staff. Does not move money — bKash disbursement is manual. */
 export function requestPayout(accessToken: string) {
   return apiRequest<{ amount: number; reference: string; requestedPayouts: number }>("/api/orders/payout-request", {

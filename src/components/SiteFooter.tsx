@@ -10,9 +10,9 @@ const COLUMNS: Array<{ heading: string; links: FooterLink[] }> = [
   {
     heading: "Farmers",
     links: [
-      { label: "Post a crop", to: "/farmer" },
+      { label: "Post a crop", to: "/desk/post" },
       { label: "Market rates", to: "/prices" },
-      { label: "Payouts", to: "/farmer" },
+      { label: "Payouts", to: "/desk?tab=payouts" },
     ],
   },
   {

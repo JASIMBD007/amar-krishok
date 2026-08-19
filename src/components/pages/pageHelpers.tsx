@@ -14,7 +14,7 @@ export function roleCanOpenPath(role: Role, path: string) {
     return role === "buyer" || role === "admin";
   }
 
-  if (path.startsWith("/farmer")) {
+  if (path.startsWith("/desk") || path.startsWith("/farmer")) {
     return role === "farmer" || role === "admin";
   }
 

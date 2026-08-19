@@ -33,7 +33,7 @@ function loginRoleFromQuery(role: string | null): Role | "" {
 }
 
 function loginRoleFromIntent(next: string): Role | "" {
-  if (next.startsWith("/farmer")) return "farmer";
+  if (next.startsWith("/desk") || next.startsWith("/farmer")) return "farmer";
   if (next.startsWith("/orders") || next.startsWith("/buyer") || next.startsWith("/checkout")) return "buyer";
   if (next.startsWith("/admin")) return "admin";
   return "";
@@ -166,7 +166,8 @@ function AuthRoleSegments({
 
 /** Explain gated redirects so the login page never reads like a dead end. */
 function gateReasonFor(next: string) {
-  if (next.startsWith("/farmer")) return "Log in to reach your farmer desk, listings and payouts.";
+  if (next.startsWith("/desk") || next.startsWith("/farmer"))
+    return "Log in to reach your farmer dashboard, listings and payouts.";
   if (next.startsWith("/checkout")) return "Log in to pay into escrow. Nothing is charged until you confirm.";
   if (next.startsWith("/orders")) return "Log in to see your orders and escrow balances.";
   if (next.startsWith("/buyer")) return "Log in to reach your buyer workspace.";
