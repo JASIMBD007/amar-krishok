@@ -81,3 +81,13 @@
   for = "/desk*"
   [headers.values]
     X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+  for = "/notifications*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+  for = "/messages*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
