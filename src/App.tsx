@@ -380,6 +380,50 @@ export default function App() {
     setNotificationPanelOpen(false);
   };
 
+  /**
+   * The header panels close when you click away from them, or on Escape. Until now the only way to
+   * dismiss one was to press its own button again, so a panel stayed open over the page while you
+   * carried on reading and clicking behind it.
+   *
+   * pointerdown rather than click: it fires before the button's own handler, and each panel only
+   * closes when the press landed outside its own wrapper, so toggling still works.
+   */
+  useEffect(() => {
+    if (!notificationPanelOpen && !messengerOpen) {
+      return;
+    }
+
+    const dismissOnPressOutside = (event: PointerEvent) => {
+      const target = event.target instanceof Element ? event.target : null;
+      if (!target) {
+        return;
+      }
+
+      if (notificationPanelOpen && !target.closest(".notification-shell")) {
+        setNotificationPanelOpen(false);
+      }
+
+      if (messengerOpen && !target.closest(".header-messages")) {
+        setMessengerOpen(false);
+      }
+    };
+
+    const dismissOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setNotificationPanelOpen(false);
+        setMessengerOpen(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", dismissOnPressOutside);
+    document.addEventListener("keydown", dismissOnEscape);
+
+    return () => {
+      document.removeEventListener("pointerdown", dismissOnPressOutside);
+      document.removeEventListener("keydown", dismissOnEscape);
+    };
+  }, [messengerOpen, notificationPanelOpen]);
+
   /** Both workspaces pin Messages to the sidebar; conversations live in the header panel. */
   const openMessenger = () => {
     closeHeaderMenus();
@@ -767,6 +811,8 @@ export default function App() {
           >
             EN <span aria-hidden="true">·</span> <span className="bn-glyph">বাংলা</span>
           </button>
+          {/* Splits the site-wide control from everything that belongs to you. */}
+          <span className="header-divider" aria-hidden="true" />
           {/* Messages, then notifications: both are "something is waiting for you", in the order
               the handoff's topbar spec has them. */}
           {user ? (
