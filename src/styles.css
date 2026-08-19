@@ -2507,7 +2507,6 @@ button {
   justify-content: center;
   width: 58px;
   height: 58px;
-  min-height: 58px;
   padding: 0;
   border: 0;
   border-radius: 999px;
@@ -4558,11 +4557,6 @@ th {
 
   .floating-chat-contact {
     grid-template-columns: 1fr;
-  }
-
-  .floating-chat-button {
-    min-height: 52px;
-    padding: 0 15px;
   }
 
   .farmer-dashboard-hero {
@@ -13468,20 +13462,8 @@ canvas {
     width: 100%;
     gap: 24px;
   }
-  .floating-chat-button {
-    justify-content: center;
-    width: 52px;
-    min-width: 52px;
-    min-height: 52px;
-    padding: 0;
-  }
-  .floating-chat-button > span {
-    display: none;
-  }
+  /* A smaller count to match the smaller circle the 768px rules set. */
   .floating-chat-badge {
-    position: absolute;
-    top: -5px;
-    right: -5px;
     min-width: 20px;
     min-height: 20px;
     padding: 0 5px;
