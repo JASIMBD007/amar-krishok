@@ -1232,6 +1232,7 @@ const bn: Record<string, string> = {
   "Sign up free": "ফ্রি অ্যাকাউন্ট খুলুন",
   "Log in": "লগইন",
   "Farmer desk": "কৃষক ডেস্ক",
+  "Farmer dashboard": "কৃষক ড্যাশবোর্ড",
   "Quantity (mon)": "পরিমাণ (মন)",
   "Your asking price / mon": "আপনার চাওয়া দাম / মন",
   "Pickup readiness": "পিকআপ প্রস্তুতি",
