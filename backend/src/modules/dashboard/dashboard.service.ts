@@ -40,6 +40,12 @@ const dhakaMonth = new Intl.DateTimeFormat("en-CA", { month: "2-digit", timeZone
 /** A lot's price is above the fair range when it sits more than this over the district rate. */
 const ABOVE_FAIR_RANGE = 0.03;
 
+/**
+ * How far back to look for the rate in force on a given trading day. Rates are published daily, so
+ * this only matters across a gap in publication; beyond it an order simply has no comparison.
+ */
+const RATE_LOOKBACK_DAYS = 30;
+
 const orderScopeInclude = {
   district: { select: { name: true } },
   items: {
@@ -507,9 +513,18 @@ export class DashboardService {
   }
 
   /**
-   * The published rate per kg for each (crop, district, day) asked for. The rate for the day the
-   * order was placed, not today's — an order is compared against the market it was placed into.
-   * Falls back to the national benchmark district, which is where staff publish by default.
+   * The published rate per kg to compare each (crop, district, day) against: the most recent rate
+   * published on or before that trading day, preferring the lot's own district and falling back to
+   * the national benchmark, which is where staff publish by default.
+   *
+   * "On or before" rather than an exact day match, because rates are published once each morning and
+   * a trading day in Dhaka begins six hours before the day turns in UTC. Requiring the exact day
+   * blanked the comparison for every order placed between midnight Dhaka and the next publication —
+   * an eight-hour hole in the product's central figure, every single day.
+   *
+   * This is not the forbidden fallback: that rule is about a *live* lot, whose fair-price verdict
+   * must be hidden when today's rate is missing rather than judged against a stale one. A placed
+   * order is compared against the rate that was actually in force when it was placed.
    */
   private async ratesFor(wanted: Array<{ crop: string; date: Date; district: string }>) {
     const rates = new Map<string, number>();
@@ -521,8 +536,9 @@ export class DashboardService {
     const districts = Array.from(new Set([...wanted.map((entry) => entry.district), BENCHMARK_DISTRICT]));
     const days = Array.from(new Set(wanted.map((entry) => dhakaDay.format(entry.date))));
 
+    // Reach back far enough to find the last publication before the oldest order in the set.
     const earliest = new Date(`${days.slice().sort()[0]}T00:00:00.000Z`);
-    earliest.setUTCDate(earliest.getUTCDate() - 1);
+    earliest.setUTCDate(earliest.getUTCDate() - RATE_LOOKBACK_DAYS);
 
     const prices = await this.prisma.marketPrice.findMany({
       include: { crop: { select: { name: true } }, district: { select: { name: true } } },
@@ -534,19 +550,22 @@ export class DashboardService {
       },
     });
 
-    const published = new Map<string, number>();
+    // priceDate is a day stamp written at UTC midnight, not a moment: read it as a plain date label.
+    // Running it through a Dhaka formatter shifts it back a day and stops it matching anything.
+    const published = new Map<string, Array<{ day: string; rate: number }>>();
     for (const price of prices) {
-      const key = `${price.crop.name}|${price.district.name}|${dhakaDay.format(price.priceDate)}`;
-      if (!published.has(key)) {
-        published.set(key, amount(price.wholesale));
-      }
+      const key = `${price.crop.name}|${price.district.name}`;
+      const series = published.get(key) ?? [];
+      series.push({ day: price.priceDate.toISOString().slice(0, 10), rate: amount(price.wholesale) });
+      published.set(key, series);
     }
+
+    // findMany came back newest-first, so the first entry at or before the day is the one in force.
+    const asOf = (key: string, day: string) => published.get(key)?.find((entry) => entry.day <= day)?.rate;
 
     for (const entry of wanted) {
       const day = dhakaDay.format(entry.date);
-      const own = published.get(`${entry.crop}|${entry.district}|${day}`);
-      const benchmark = published.get(`${entry.crop}|${BENCHMARK_DISTRICT}|${day}`);
-      const rate = own ?? benchmark;
+      const rate = asOf(`${entry.crop}|${entry.district}`, day) ?? asOf(`${entry.crop}|${BENCHMARK_DISTRICT}`, day);
 
       if (rate !== undefined) {
         rates.set(rateKey(entry.crop, entry.district, entry.date), rate);

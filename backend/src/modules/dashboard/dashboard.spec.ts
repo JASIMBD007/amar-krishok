@@ -5,6 +5,7 @@ import { test } from "node:test";
 import { AuthenticatedUser } from "../auth/types/authenticated-user";
 import { carrierShare, farmerShare, platformShare } from "../orders/order-money";
 import { farmerOrderScope, ordersVisibleTo } from "../orders/order-scope";
+import { BENCHMARK_DISTRICT } from "../market-prices/market-prices.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { DashboardService } from "./dashboard.service";
 
@@ -81,7 +82,7 @@ function orderFor(farmerId: string, overrides: Partial<FakeOrder> = {}): FakeOrd
  * A Prisma stand-in that actually applies the `where` clauses the service builds, so a test proving
  * one farmer cannot see another's money is proving the query, not the fixture.
  */
-function fakePrisma(orders: FakeOrder[]) {
+function fakePrisma(orders: FakeOrder[], options: { rateCrop?: string; rateDistrict?: string } = {}) {
   const matches = (order: FakeOrder, where: Prisma.LegacyOrderWhereInput | undefined): boolean => {
     if (!where) {
       return true;
@@ -121,17 +122,22 @@ function fakePrisma(orders: FakeOrder[]) {
       }),
     },
     lotOffer: { findMany: async () => [] },
-    // The published district rate for the order's crop, district and day: ৳ 21/kg wholesale.
+    /**
+     * The published rate for the order's crop and district: ৳ 21/kg wholesale, stamped the way
+     * publishing really stamps it — a day label at UTC midnight, newest first, as findMany returns.
+     */
     marketPrice: {
       findFirst: async () => ({ priceDate: new Date("2026-08-19T00:00:00.000Z") }),
-      findMany: async () => [
-        {
-          crop: { name: "Potato" },
-          district: { name: "Bogura" },
-          priceDate: new Date("2026-08-19T00:00:00.000Z"),
-          wholesale: decimal(21),
-        },
-      ],
+      findMany: async () =>
+        [
+          { day: "2026-08-19", rate: 21 },
+          { day: "2026-08-18", rate: 20 },
+        ].map((entry) => ({
+          crop: { name: options.rateCrop ?? "Potato" },
+          district: { name: options.rateDistrict ?? "Bogura" },
+          priceDate: new Date(`${entry.day}T00:00:00.000Z`),
+          wholesale: decimal(entry.rate),
+        })),
     },
     payoutAccount: { findFirst: async () => null },
   } as unknown as PrismaService;
@@ -231,6 +237,44 @@ test("saved vs. district rate compares the crop subtotal only", async () => {
   // the exact contradiction the lot page's own fair-price badge caught.
   equal(buying.kpis.savedVsRateDelta, -4.8);
   equal(buying.kpis.comparedOrderCount, 1);
+});
+
+test("an order placed after midnight Dhaka is still compared against the morning's rate", async () => {
+  // The bug this pins down: 19:10 UTC on the 19th is 01:10 on the 20th in Dhaka, so the order's
+  // trading day is the 20th — but that day's rate is not published until 08:00 Dhaka. Requiring an
+  // exact day match left savedVsRate null for every evening order, blanking the card for eight
+  // hours a day. The rate in force is the last one published on or before the trading day.
+  const service = new DashboardService(
+    fakePrisma([orderFor(ONE_FARMER, { id: "order-evening", createdAt: new Date("2026-08-19T19:10:13.000Z") })]),
+  );
+
+  const buying = await service.buyerDashboard(asBuyer(BUYER));
+
+  equal(buying.kpis.comparedOrderCount, 1);
+  equal(buying.kpis.savedVsRate, 4_000);
+  equal(buying.kpis.savedVsRateDelta, -4.8);
+});
+
+test("a rate published only for the benchmark district still covers a lot's own district", async () => {
+  // Staff publish under "All districts" by default, so a Bogura lot has to fall back to it or the
+  // comparison never runs in production.
+  const service = new DashboardService(fakePrisma([orderFor(ONE_FARMER)], { rateDistrict: BENCHMARK_DISTRICT }));
+
+  const buying = await service.buyerDashboard(asBuyer(BUYER));
+
+  equal(buying.kpis.comparedOrderCount, 1);
+  equal(buying.kpis.savedVsRate, 4_000);
+});
+
+test("a crop with no rate ever published is left out of the comparison", async () => {
+  const service = new DashboardService(fakePrisma([orderFor(ONE_FARMER)], { rateCrop: "Onion" }));
+
+  const buying = await service.buyerDashboard(asBuyer(BUYER));
+
+  // No rate for Potato, so nothing is comparable — null rather than a guessed or zero saving.
+  equal(buying.kpis.comparedOrderCount, 0);
+  equal(buying.kpis.savedVsRate, null);
+  equal(buying.kpis.savedVsRateDelta, null);
 });
 
 test("the buyer's escrow and spend are the gross they paid, not the farmer's share", async () => {
