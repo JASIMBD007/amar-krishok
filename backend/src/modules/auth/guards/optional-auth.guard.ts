@@ -4,7 +4,7 @@ import { AccountStatus, Role } from "@prisma/client";
 import { Request } from "express";
 import { verify } from "jsonwebtoken";
 import { PrismaService } from "../../prisma/prisma.service";
-import { requireJwtSecret } from "../jwt-secret";
+import { requireJwtSecret, tokenVersionMatches } from "../jwt-secret";
 import { AuthenticatedUser } from "../types/authenticated-user";
 
 type RequestWithUser = Request & { user?: AuthenticatedUser };
@@ -42,6 +42,10 @@ export class OptionalAuthGuard implements CanActivate {
 
       const user = await this.prisma.legacyUser.findUnique({ where: { id: payload.sub } });
       if (!user || user.role !== payload.role) {
+        return true;
+      }
+
+      if (!tokenVersionMatches(payload, user)) {
         return true;
       }
 

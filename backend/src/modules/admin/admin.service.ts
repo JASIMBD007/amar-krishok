@@ -2,6 +2,7 @@ import { BadRequestException, ConflictException, Injectable, NotFoundException }
 import { AccountStatus, PasswordResetStatus, PlatformRole, PlatformUserStatus, Prisma, Role } from "@prisma/client";
 import { districtCreateData } from "../../common/catalogue-data";
 import { hash } from "bcryptjs";
+import { PASSWORD_HASH_ROUNDS } from "../auth/auth.service";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { normalizeUsername } from "../auth/username";
@@ -188,7 +189,7 @@ export class AdminService {
       where: { name: dto.district },
     });
     const status = accountStatus(dto.status) ?? AccountStatus.ACTIVE;
-    const passwordHash = await hash(dto.password, 10);
+    const passwordHash = await hash(dto.password, PASSWORD_HASH_ROUNDS);
 
     return this.prisma.legacyUser.create({
       data: {
@@ -249,7 +250,9 @@ export class AdminService {
     };
 
     if (dto.password) {
-      data.passwordHash = await hash(dto.password, 10);
+      data.passwordHash = await hash(dto.password, PASSWORD_HASH_ROUNDS);
+      // Staff setting a password is often a response to a compromise, so old tokens must die with it.
+      data.tokenVersion = { increment: 1 };
     }
 
     if (dto.district?.trim()) {
@@ -309,7 +312,7 @@ export class AdminService {
     const reviewedAt = new Date();
     const updatedRequest = await this.prisma.$transaction(async (tx) => {
       await tx.legacyUser.update({
-        data: { passwordHash: request.passwordHash },
+        data: { passwordHash: request.passwordHash, tokenVersion: { increment: 1 } },
         where: { id: request.userId },
       });
 

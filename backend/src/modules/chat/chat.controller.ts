@@ -1,9 +1,8 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
 import { Role } from "@prisma/client";
 import { Auth } from "../auth/decorators/auth.decorator";
 import { CurrentUser } from "../auth/decorators/current-user.decorator";
-import { OptionalAuthGuard } from "../auth/guards/optional-auth.guard";
 import { AuthenticatedUser } from "../auth/types/authenticated-user";
 import { ChatService } from "./chat.service";
 import { CreateChatMessageDto, CreateChatThreadDto } from "./dto/chat.dto";
@@ -32,15 +31,21 @@ export class ChatController {
     return this.chatService.markRead(threadId, user);
   }
 
-  @UseGuards(OptionalAuthGuard)
+  /**
+   * Writing to a conversation requires a session. These two were optionally authenticated, which let
+   * anyone who knew a thread id append a message to it under a display name of their choosing — into
+   * a stranger's private dispute thread, attributed to the participant when staff read it. No shipped
+   * client ever posted anonymously: the guest support widget keeps its conversation in the browser.
+   */
+  @Auth(Role.ADMIN, Role.BUYER, Role.FARMER)
   @Post("threads")
-  createThread(@Body() dto: CreateChatThreadDto, @CurrentUser() user: AuthenticatedUser | undefined) {
+  createThread(@Body() dto: CreateChatThreadDto, @CurrentUser() user: AuthenticatedUser) {
     return this.chatService.createThread(dto, user);
   }
 
-  @UseGuards(OptionalAuthGuard)
+  @Auth(Role.ADMIN, Role.BUYER, Role.FARMER)
   @Post("threads/:id/messages")
-  createMessage(@Param("id") threadId: string, @Body() dto: CreateChatMessageDto, @CurrentUser() user: AuthenticatedUser | undefined) {
+  createMessage(@Param("id") threadId: string, @Body() dto: CreateChatMessageDto, @CurrentUser() user: AuthenticatedUser) {
     return this.chatService.createMessage(threadId, dto, user);
   }
 }

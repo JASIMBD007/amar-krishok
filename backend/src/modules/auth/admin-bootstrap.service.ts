@@ -2,6 +2,7 @@ import { Injectable, Logger, OnApplicationBootstrap } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { AccountStatus, Role } from "@prisma/client";
 import { hash } from "bcryptjs";
+import { PASSWORD_HASH_ROUNDS } from "./auth.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { getAdminLoginName, getAdminUsername } from "./admin-login-name";
 import { normalizeUsername } from "./username";
@@ -25,7 +26,7 @@ export class AdminBootstrapService implements OnApplicationBootstrap {
       return;
     }
 
-    const passwordHash = await hash(password, 10);
+    const passwordHash = await hash(password, PASSWORD_HASH_ROUNDS);
     const existingAdmin = await this.prisma.legacyUser.findFirst({
       where: {
         OR: [{ username }, { phone, role: Role.ADMIN }],

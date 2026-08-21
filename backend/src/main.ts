@@ -55,7 +55,11 @@ async function bootstrap() {
     .setVersion("0.1.0")
     .addBearerAuth()
     .build();
-  SwaggerModule.setup("docs", app, SwaggerModule.createDocument(app, swaggerConfig));
+  // The docs map every endpoint and DTO on the platform. Useful while building, an inventory for an
+  // attacker in production, so they are only mounted outside it.
+  if (config.get<string>("NODE_ENV") !== "production") {
+    SwaggerModule.setup("docs", app, SwaggerModule.createDocument(app, swaggerConfig));
+  }
 
   const port = config.get<number>("PORT") ?? 4000;
   await app.listen(port);

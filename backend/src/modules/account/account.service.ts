@@ -1,6 +1,7 @@
 import { BadRequestException, ForbiddenException, Injectable } from "@nestjs/common";
 import { PlatformRole, Prisma, Role } from "@prisma/client";
 import { compare, hash } from "bcryptjs";
+import { PASSWORD_HASH_ROUNDS } from "../auth/auth.service";
 import { districtCreateData } from "../../common/catalogue-data";
 import { AuthenticatedUser } from "../auth/types/authenticated-user";
 import { PrismaService } from "../prisma/prisma.service";
@@ -134,10 +135,10 @@ export class AccountService {
       throw new BadRequestException("New password must be different from the current password.");
     }
 
-    const passwordHash = await hash(dto.newPassword, 10);
+    const passwordHash = await hash(dto.newPassword, PASSWORD_HASH_ROUNDS);
     const platformRole = account.role === Role.FARMER ? PlatformRole.FARMER : PlatformRole.BUYER;
     await this.prisma.$transaction([
-      this.prisma.legacyUser.update({ data: { passwordHash }, where: { id: user.id } }),
+      this.prisma.legacyUser.update({ data: { passwordHash, tokenVersion: { increment: 1 } }, where: { id: user.id } }),
       this.prisma.user.updateMany({
         data: { passwordHash, pinHash: passwordHash, tokenVersion: { increment: 1 } },
         where: { phone: platformPhone(account.phone), role: platformRole },

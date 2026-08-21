@@ -250,6 +250,9 @@ model LegacyUser {
   /// When staff checked the identity document. Null means accepted but not yet verified: the
   /// account can sign in and look around, but cannot post a lot or place an order.
   verifiedAt              DateTime?
+  /// Bumped whenever the password changes, which invalidates every access token issued before it.
+  /// Without this a stolen web token stayed usable for its full life even after a password reset.
+  tokenVersion            Int                    @default(0)
   district                District?              @relation(fields: [districtId], references: [id])
   buyerProfile            BuyerProfile?
   farmerProfile           FarmerProfile?

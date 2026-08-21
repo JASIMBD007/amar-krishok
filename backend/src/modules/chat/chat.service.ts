@@ -35,13 +35,8 @@ function toApiChatRole(role: Role): ApiChatRole {
  */
 function resolveEffectiveSender(
   thread: { participantId: string | null; participantPhone: string; participantRole: Role },
-  requester: AuthenticatedUser | undefined,
-  claimedName: string,
+  requester: AuthenticatedUser,
 ) {
-  if (!requester) {
-    return { id: undefined, name: claimedName, role: "guest" as ApiChatRole };
-  }
-
   // Ownership by id or by phone, matching how the thread list finds it. Checking the id alone
   // would let someone open a conversation from their list and then be refused when they replied.
   const owns = requester.id === thread.participantId || requester.phone === thread.participantPhone;
@@ -113,7 +108,7 @@ export class ChatService {
     });
   }
 
-  async createThread(dto: CreateChatThreadDto, requester?: AuthenticatedUser) {
+  async createThread(dto: CreateChatThreadDto, requester: AuthenticatedUser) {
     const isTrustedParticipant = requester && requester.role !== Role.ADMIN;
     // A client-supplied participantId is only honoured for staff. This endpoint accepts anonymous
     // callers, so trusting it generally would let anyone attach a thread to another user's account.
@@ -165,13 +160,13 @@ export class ChatService {
     return thread;
   }
 
-  async createMessage(threadId: string, dto: CreateChatMessageDto, requester?: AuthenticatedUser) {
+  async createMessage(threadId: string, dto: CreateChatMessageDto, requester: AuthenticatedUser) {
     const thread = await this.prisma.chatThread.findUnique({ where: { id: threadId } });
     if (!thread) {
       throw new NotFoundException("Chat thread not found.");
     }
 
-    const sender = resolveEffectiveSender(thread, requester, dto.senderName);
+    const sender = resolveEffectiveSender(thread, requester);
 
     const updatedThread = await this.prisma.chatThread.update({
       data: {
