@@ -4,7 +4,7 @@ import { AccountStatus, Role } from "@prisma/client";
 import { Request } from "express";
 import { JwtPayload, verify } from "jsonwebtoken";
 import { PrismaService } from "../../prisma/prisma.service";
-import { requireJwtSecret } from "../jwt-secret";
+import { requireJwtSecret, tokenVersionMatches } from "../jwt-secret";
 import { AuthenticatedUser } from "../types/authenticated-user";
 
 type RequestWithUser = Request & {
@@ -54,6 +54,10 @@ export class JwtAuthGuard implements CanActivate {
     const user = await this.prisma.legacyUser.findUnique({ where: { id: payload.sub } });
     if (!user || user.role !== payload.role) {
       throw new UnauthorizedException("Invalid access token user.");
+    }
+
+    if (!tokenVersionMatches(payload, user)) {
+      throw new UnauthorizedException("This session ended when the password changed. Please log in again.");
     }
 
     if (user.role !== Role.ADMIN && user.status !== AccountStatus.ACTIVE) {

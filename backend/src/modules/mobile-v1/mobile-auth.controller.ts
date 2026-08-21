@@ -1,5 +1,4 @@
 import { Body, Controller, Delete, Get, Headers, Param, Post, Res, UseGuards } from "@nestjs/common";
-import { PlatformRole } from "@prisma/client";
 import { Response } from "express";
 
 import { PrismaService } from "../prisma/prisma.service";
@@ -22,25 +21,6 @@ export class MobileAuthController {
   @Post("register")
   async register(@Body() body: Parameters<MobileAuthService["register"]>[0]) {
     return envelope(await this.auth.register(body));
-  }
-
-  @Post("otp/request")
-  requestOtp(@Body() body: { phone: string; role: PlatformRole }) {
-    return envelope(this.auth.requestOtp(body.phone, body.role));
-  }
-
-  @Post("otp/verify")
-  async verifyOtp(@Body() body: { deviceId?: string; otp: string; phone: string; pin: string; platform?: string; pushToken?: string; role: PlatformRole }, @Res({ passthrough: true }) response: Response) {
-    const result = await this.auth.verifyOtp(body);
-    response.cookie("ak_refresh", result.refreshToken, { httpOnly: true, maxAge: 30 * 24 * 60 * 60 * 1000, sameSite: "strict", secure: process.env.NODE_ENV === "production" });
-    return envelope(result);
-  }
-
-  @Post("pin")
-  async pin(@Body() body: { phone: string; pin: string }, @Res({ passthrough: true }) response: Response) {
-    const result = await this.auth.loginWithPin(body.phone, body.pin);
-    response.cookie("ak_refresh", result.refreshToken, { httpOnly: true, maxAge: 30 * 24 * 60 * 60 * 1000, sameSite: "strict", secure: process.env.NODE_ENV === "production" });
-    return envelope(result);
   }
 
   @Post("refresh")

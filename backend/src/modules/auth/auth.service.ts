@@ -3,6 +3,9 @@ import { ConfigService } from "@nestjs/config";
 import { AccountStatus, LegacyUser as User, PasswordResetStatus, PlatformRole, PlatformUserStatus, Role } from "@prisma/client";
 import { districtCreateData } from "../../common/catalogue-data";
 import { compare, hash } from "bcryptjs";
+
+/** bcrypt work factor for new password hashes. Existing hashes keep verifying at their own cost. */
+export const PASSWORD_HASH_ROUNDS = 12;
 import { sign } from "jsonwebtoken";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
@@ -80,7 +83,11 @@ export class AuthService {
     }
 
     const secret = requireJwtSecret(this.config);
-    const accessToken = sign({ sub: user.id, role: user.role }, secret, { algorithm: "HS256", expiresIn: "7d" });
+    // The version travels in the token so a password change can invalidate it; see LegacyUser.tokenVersion.
+    const accessToken = sign({ sub: user.id, role: user.role, version: user.tokenVersion }, secret, {
+      algorithm: "HS256",
+      expiresIn: "7d",
+    });
 
     return {
       accessToken,
@@ -98,7 +105,7 @@ export class AuthService {
     const cleanPhone = dto.phone.trim();
     // Hash before the lookup (and unconditionally) so the response time doesn't reveal whether the account exists.
     const [passwordHash, user] = await Promise.all([
-      hash(dto.password, 10),
+      hash(dto.password, PASSWORD_HASH_ROUNDS),
       this.prisma.legacyUser.findUnique({
         where: { phone_role: { phone: cleanPhone, role: dto.role } },
       }),
@@ -181,7 +188,7 @@ export class AuthService {
       update: { active: true },
       where: { name: dto.district },
     });
-    const passwordHash = await hash(dto.password, 10);
+    const passwordHash = await hash(dto.password, PASSWORD_HASH_ROUNDS);
 
     const user = await this.prisma.legacyUser.create({
       data: {
