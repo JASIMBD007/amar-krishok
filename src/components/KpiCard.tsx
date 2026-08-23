@@ -1,4 +1,5 @@
 import type { LucideIcon } from "lucide-react";
+import { Box, Card, Typography } from "@mui/material";
 import type { DashboardStat } from "../types";
 import { KpiTrendChart, type KpiTrendPoint } from "./KpiTrendChart";
 import { TrendIcon } from "./pages/pageHelpers";
@@ -38,24 +39,24 @@ export function KpiCard({
   trend?: DashboardStat["trend"];
 }) {
   return (
-    <article className="stat-card dashboard-stat kpi-card">
-      <div className="kpi-top">
+    <Card component="article" className="stat-card dashboard-stat kpi-card">
+      <Box className="kpi-top">
         {Icon ? (
-          <span className="kpi-icon">
+          <Box component="span" className="kpi-icon">
             <Icon size={17} />
-          </span>
+          </Box>
         ) : (
           <span />
         )}
         {delta ? (
-          <span className={`kpi-delta ${trend}`}>
+          <Box component="span" className={`kpi-delta ${trend}`}>
             <TrendIcon trend={trend} />
             {delta}
-          </span>
+          </Box>
         ) : null}
-      </div>
-      <span className="kpi-label">{label}</span>
-      <strong className="kpi-value">{value}</strong>
+      </Box>
+      <Typography component="span" className="kpi-label">{label}</Typography>
+      <Typography component="strong" className="kpi-value">{value}</Typography>
       {trendData && trendData.length > 1 ? (
         <KpiTrendChart data={trendData} color={trendColor} />
       ) : spark && spark.length > 1 ? (
@@ -64,8 +65,8 @@ export function KpiCard({
           <circle cx={SPARK_LAST_X} cy={spark[spark.length - 1]} r={3} />
         </svg>
       ) : null}
-      <p className="kpi-detail">{detail}</p>
-    </article>
+      <Typography component="p" className="kpi-detail">{detail}</Typography>
+    </Card>
   );
 }
 
