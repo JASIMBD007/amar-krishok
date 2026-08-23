@@ -780,7 +780,10 @@ export default function App() {
         </button>
         <NavLink className="brand" to="/" onClick={closeAllHeaderMenus} aria-label={t("AmarKrishok home")} end>
           <BrandMark className="brand-mark" />
-          <strong>AmarKrishok</strong>
+          <span className="brand-copy">
+            <strong>AmarKrishok</strong>
+            <small>{t("Direct from Farmer, Fair for All")}</small>
+          </span>
         </NavLink>
 
         <nav className="main-nav" aria-label={t("Main navigation")}>

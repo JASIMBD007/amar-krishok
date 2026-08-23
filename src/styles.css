@@ -8162,6 +8162,19 @@ textarea:focus-visible {
   letter-spacing: -0.01em;
   color: var(--fg);
 }
+.brand-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+.brand-copy small {
+  margin-top: 3px;
+  color: var(--fg-muted);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.1;
+  white-space: nowrap;
+}
 
 .main-nav {
   display: flex;
