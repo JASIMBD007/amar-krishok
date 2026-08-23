@@ -1,6 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
+  FormControl,
+  FormHelperText,
+  IconButton,
+  InputAdornment,
+  InputLabel,
+  OutlinedInput,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
+} from "@mui/material";
+import {
   CheckCircle2,
   Clock3,
   Eye,
@@ -74,32 +85,32 @@ function PasswordField({
   const toggleLabel = visible ? "Hide password" : "Show password";
 
   return (
-    <label className="auth-field auth-password-field">
-      <span>
-        {t(label)}
-        {required ? <strong className="required-mark"> *</strong> : null}
-      </span>
-      <div className="password-control">
-        <input
+    <FormControl className="auth-field auth-password-field" required={required} variant="outlined">
+      <InputLabel>{t(label)}</InputLabel>
+        <OutlinedInput
           autoComplete={autoComplete}
           value={value}
           onChange={(event) => onChange(event.target.value)}
           type={visible ? "text" : "password"}
           placeholder={placeholder ?? t("Password")}
+          label={t(label)}
+          endAdornment={
+            <InputAdornment position="end">
+              <IconButton
+                className="password-toggle"
+                aria-label={t(toggleLabel)}
+                aria-pressed={visible}
+                title={t(toggleLabel)}
+                onClick={() => setVisible((current) => !current)}
+                edge="end"
+              >
+                <ToggleIcon size={18} />
+              </IconButton>
+            </InputAdornment>
+          }
         />
-        <button
-          className="password-toggle"
-          type="button"
-          aria-label={t(toggleLabel)}
-          aria-pressed={visible}
-          title={t(toggleLabel)}
-          onClick={() => setVisible((current) => !current)}
-        >
-          <ToggleIcon size={18} />
-        </button>
-      </div>
-      {hint ? <small>{hint}</small> : null}
-    </label>
+      {hint ? <FormHelperText>{hint}</FormHelperText> : null}
+    </FormControl>
   );
 }
 
@@ -114,21 +125,19 @@ function PhoneField({
 }) {
   const t = useTranslate();
   return (
-    <label className="auth-field auth-phone-field">
-      <span>{t(label)}</span>
-      <div className="auth-phone-control">
-        <span>+880</span>
-        <input
-          aria-label={t(label)}
+    <FormControl className="auth-field auth-phone-field" variant="outlined">
+      <InputLabel>{t(label)}</InputLabel>
+        <OutlinedInput
           autoComplete="tel"
           inputMode="tel"
-          maxLength={10}
           placeholder="1XXXXXXXXX"
           value={value}
           onChange={(event) => onChange(localBangladeshPhone(event.target.value))}
+          label={t(label)}
+          slotProps={{ input: { maxLength: 10 } }}
+          startAdornment={<InputAdornment position="start">+880</InputAdornment>}
         />
-      </div>
-    </label>
+    </FormControl>
   );
 }
 
@@ -145,22 +154,26 @@ function AuthRoleSegments({
   const labels: Record<Role, string> = { admin: "Staff", buyer: "Buyer", farmer: "Farmer" };
 
   return (
-    <div className="auth-role-group">
-      <span>{t("I am a")}</span>
-      <div className="auth-role-segments">
+    <FormControl className="auth-role-group">
+      <Typography component="span">{t("I am a")}</Typography>
+      <ToggleButtonGroup
+        className="auth-role-segments"
+        exclusive
+        value={accountType}
+        onChange={(_, role: Role | null) => { if (role) onChange(role); }}
+        aria-label={t("I am a")}
+      >
         {roles.map((role) => (
-          <button
-            aria-pressed={accountType === role}
+          <ToggleButton
             className={`${accountType === role ? "on" : ""}${role === "admin" ? " staff" : ""}`}
             key={role}
-            type="button"
-            onClick={() => onChange(role)}
+            value={role}
           >
             {t(labels[role])}
-          </button>
+          </ToggleButton>
         ))}
-      </div>
-    </div>
+      </ToggleButtonGroup>
+    </FormControl>
   );
 }
 
