@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
+  Button,
+  ButtonBase,
   FormControl,
   FormHelperText,
   IconButton,
   InputAdornment,
   InputLabel,
   OutlinedInput,
+  MenuItem,
+  TextField,
   ToggleButton,
   ToggleButtonGroup,
   Typography,
@@ -327,13 +331,13 @@ export function LoginPage({
           <PasswordField autoComplete="new-password" label="New password" value={resetPassword} onChange={setResetPassword} placeholder={t("New password")} required />
           <PasswordField autoComplete="new-password" label="Confirm new password" value={resetPasswordConfirm} onChange={setResetPasswordConfirm} placeholder={t("Confirm new password")} required />
           {resetError ? <p className="auth-error">{resetError}</p> : null}
-          <button className="auth-primary-action" type="submit" disabled={isResetSubmitting}>
+          <Button className="auth-primary-action" variant="contained" type="submit" disabled={isResetSubmitting}>
             {t(isResetSubmitting ? "Submitting" : "Send reset request")}
-          </button>
+          </Button>
           <p className="auth-card-link-line">
-            <button type="button" onClick={() => { setAuthMode("login"); setResetError(""); }}>
+            <Button variant="text" type="button" onClick={() => { setAuthMode("login"); setResetError(""); }}>
               {t("Back to login")}
-            </button>
+            </Button>
           </p>
         </form>
       </section>
@@ -367,16 +371,15 @@ export function LoginPage({
         />
 
         {accountType === "admin" ? (
-          <label className="auth-field auth-staff-field">
-            <span>{t("Staff ID")}</span>
-            <input
+          <TextField
+              className="auth-field auth-staff-field"
+              label={t("Staff ID")}
               autoComplete="username"
               value={identifier}
               onChange={(event) => setIdentifier(event.target.value)}
               placeholder="AK-OPS-014"
+              helperText={t("Staff credentials are checked by the server. Every action is written to the audit log.")}
             />
-            <small>{t("Staff credentials are checked by the server. Every action is written to the audit log.")}</small>
-          </label>
         ) : (
           <PhoneField value={identifier} onChange={(value) => { setIdentifier(value); setError(""); }} />
         )}
@@ -385,15 +388,15 @@ export function LoginPage({
         {error ? <p className="auth-error">{error}</p> : null}
         {notice ? <p className="auth-info">{notice}</p> : null}
 
-        <button className="auth-primary-action" type="submit" disabled={isSubmitting}>
+        <Button className="auth-primary-action" variant="contained" type="submit" disabled={isSubmitting}>
           <LockKeyhole aria-hidden="true" size={17} />
           {t(isSubmitting ? "Signing in" : "Login")}
-        </button>
+        </Button>
         <p className="auth-card-link-line">
-          {t("Forgot password?")} <button type="button" onClick={openPasswordReset}>{t("Reset")}</button>
+          {t("Forgot password?")} <Button variant="text" type="button" onClick={openPasswordReset}>{t("Reset")}</Button>
         </p>
         <p className="auth-card-link-line">
-          {t("New here?")} <button type="button" onClick={() => navigate("/register/farmer")}>{t("Create an account")}</button>
+          {t("New here?")} <Button variant="text" type="button" onClick={() => navigate("/register/farmer")}>{t("Create an account")}</Button>
         </p>
       </form>
     </section>
@@ -555,20 +558,19 @@ export function RegisterPage({
                 const Icon = item.icon;
                 const selected = role === item.id;
                 return (
-                  <button
+                  <ButtonBase
                     aria-pressed={selected}
                     className={selected ? "on" : ""}
                     key={item.id}
-                    type="button"
                     onClick={() => navigate(`/register/${item.id}`)}
                   >
                     <span className="auth-register-role-icon"><Icon size={20} /></span>
                     <span><strong>{t(item.label)}</strong><em>{t(item.sub)}</em></span>
-                  </button>
+                  </ButtonBase>
                 );
               })}
             </div>
-            <button className="auth-register-next" type="button" onClick={() => moveToStep(2)}>{t("Continue")}</button>
+            <Button className="auth-register-next" variant="contained" type="button" onClick={() => moveToStep(2)}>{t("Continue")}</Button>
           </>
         ) : null}
 
@@ -576,41 +578,20 @@ export function RegisterPage({
           <>
             <h2>{t("Your details")}</h2>
             <div className="auth-register-fields">
-              <label className="auth-field">
-                <span>{t("Full name")}</span>
-                <input autoComplete="name" value={name} onChange={(event) => { setName(event.target.value); setError(""); }} placeholder={t("Your full name")} />
-              </label>
+              <TextField className="auth-field" label={t("Full name")} autoComplete="name" value={name} onChange={(event) => { setName(event.target.value); setError(""); }} placeholder={t("Your full name")} />
               <PhoneField value={phone} onChange={(value) => { setPhone(value); setError(""); }} />
-              <label className="auth-field">
-                <span>{t("District")}</span>
-                <select value={district} onChange={(event) => { setDistrict(event.target.value); setUpazilla(""); setError(""); }}>
-                  <option value="" disabled>{t("Select service district")}</option>
-                  {serviceDistricts.map((item) => <option key={item} value={item}>{t(item)}</option>)}
-                </select>
-              </label>
-              <label className="auth-field">
-                <span>{t("Upazilla")}</span>
-                <select value={upazilla} onChange={(event) => { setUpazilla(event.target.value); setError(""); }} disabled={!district}>
-                  <option value="" disabled>{t(district ? "Select upazilla" : "Select district first")}</option>
-                  {availableUpazillas.map((item) => <option key={item} value={item}>{t(item)}</option>)}
-                </select>
-              </label>
-              <label className="auth-field">
-                <span>{t("Business / farm name")}</span>
-                <input value={organization} onChange={(event) => { setOrganization(event.target.value); setError(""); }} placeholder={t("Business or farm name")} />
-              </label>
-              <label className="auth-field">
-                <span>{t("NID / trade license")}</span>
-                <input value={identity} onChange={(event) => { setIdentity(event.target.value); setError(""); }} placeholder={t("NID or trade license number")} />
-              </label>
-              <label className="auth-field">
-                <span>{t("Crop interest / supply focus")}</span>
-                <input value={focus} onChange={(event) => { setFocus(event.target.value); setError(""); }} placeholder={t("Crops you buy or sell")} />
-              </label>
-              <label className="auth-field auth-field-wide">
-                <span>{t("Address")}</span>
-                <input value={address} onChange={(event) => { setAddress(event.target.value); setError(""); }} placeholder={t("Your address")} />
-              </label>
+              <TextField className="auth-field" select label={t("District")} value={district} onChange={(event) => { setDistrict(event.target.value); setUpazilla(""); setError(""); }}>
+                <MenuItem value="" disabled>{t("Select service district")}</MenuItem>
+                {serviceDistricts.map((item) => <MenuItem key={item} value={item}>{t(item)}</MenuItem>)}
+              </TextField>
+              <TextField className="auth-field" select label={t("Upazilla")} value={upazilla} onChange={(event) => { setUpazilla(event.target.value); setError(""); }} disabled={!district}>
+                <MenuItem value="" disabled>{t(district ? "Select upazilla" : "Select district first")}</MenuItem>
+                {availableUpazillas.map((item) => <MenuItem key={item} value={item}>{t(item)}</MenuItem>)}
+              </TextField>
+              <TextField className="auth-field" label={t("Business / farm name")} value={organization} onChange={(event) => { setOrganization(event.target.value); setError(""); }} placeholder={t("Business or farm name")} />
+              <TextField className="auth-field" label={t("NID / trade license")} value={identity} onChange={(event) => { setIdentity(event.target.value); setError(""); }} placeholder={t("NID or trade license number")} />
+              <TextField className="auth-field" label={t("Crop interest / supply focus")} value={focus} onChange={(event) => { setFocus(event.target.value); setError(""); }} placeholder={t("Crops you buy or sell")} />
+              <TextField className="auth-field auth-field-wide" label={t("Address")} value={address} onChange={(event) => { setAddress(event.target.value); setError(""); }} placeholder={t("Your address")} />
             </div>
             <div className="auth-register-info">
               <Info aria-hidden="true" size={17} />
@@ -620,8 +601,8 @@ export function RegisterPage({
             </div>
             {error ? <p className="auth-error">{error}</p> : null}
             <div className="auth-register-actions">
-              <button className="back" type="button" onClick={() => moveToStep(1)}>{t("Back")}</button>
-              <button className="next" type="button" onClick={continueFromDetails}>{t("Continue")}</button>
+              <Button className="back" variant="outlined" type="button" onClick={() => moveToStep(1)}>{t("Back")}</Button>
+              <Button className="next" variant="contained" type="button" onClick={continueFromDetails}>{t("Continue")}</Button>
             </div>
           </>
         ) : null}
@@ -643,8 +624,8 @@ export function RegisterPage({
             </div>
             {error ? <p className="auth-error">{error}</p> : null}
             <div className="auth-register-actions">
-              <button className="back" type="button" onClick={() => moveToStep(2)}>{t("Back")}</button>
-              <button className="finish" type="submit" disabled={isSubmitting}>{t(isSubmitting ? "Submitting" : "Create account")}</button>
+              <Button className="back" variant="outlined" type="button" onClick={() => moveToStep(2)}>{t("Back")}</Button>
+              <Button className="finish" variant="contained" type="submit" disabled={isSubmitting}>{t(isSubmitting ? "Submitting" : "Create account")}</Button>
             </div>
             <p className="auth-terms">{t("By creating an account you accept the marketplace terms and the escrow payment rules.")}</p>
           </>
