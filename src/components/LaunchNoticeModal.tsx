@@ -1,49 +1,44 @@
 import { ArrowRight, Rocket, X } from "lucide-react";
+import { Box, Button, Dialog, IconButton, Typography } from "@mui/material";
 import { useTranslate } from "../i18n";
 
 export function LaunchNoticeModal({ onClose }: { onClose: () => void }) {
   const t = useTranslate();
 
   return (
-    <div
-      className="launch-notice-backdrop"
-      role="presentation"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) {
-          onClose();
-        }
+    <Dialog
+      open
+      onClose={onClose}
+      aria-labelledby="launch-notice-title"
+      slotProps={{
+        backdrop: { className: "launch-notice-backdrop" },
+        paper: { className: "launch-notice-modal" },
       }}
     >
-      <section
-        className="launch-notice-modal"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="launch-notice-title"
-      >
-        <button
+      <Box component="section">
+        <IconButton
           aria-label={t("Close")}
           className="icon-button close-button launch-notice-close"
           onClick={onClose}
           title={t("Close")}
-          type="button"
         >
           <X size={20} />
-        </button>
-        <div aria-hidden className="launch-notice-icon">
+        </IconButton>
+        <Box aria-hidden className="launch-notice-icon">
           <Rocket size={28} />
-        </div>
-        <span className="launch-notice-eyebrow">{t("Launching soon")}</span>
-        <h2 id="launch-notice-title">{t("A fairer harvest journey is coming")}</h2>
-        <p>
+        </Box>
+        <Typography component="span" className="launch-notice-eyebrow">{t("Launching soon")}</Typography>
+        <Typography component="h2" id="launch-notice-title">{t("A fairer harvest journey is coming")}</Typography>
+        <Typography component="p">
           {t(
             "AmarKrishok is preparing to connect farmers, buyers, and trusted delivery partners across Bangladesh.",
           )}
-        </p>
-        <button className="primary-button" onClick={onClose} type="button">
+        </Typography>
+        <Button className="primary-button" variant="contained" onClick={onClose} type="button">
           <ArrowRight size={18} />
           {t("Explore the preview")}
-        </button>
-      </section>
-    </div>
+        </Button>
+      </Box>
+    </Dialog>
   );
 }
