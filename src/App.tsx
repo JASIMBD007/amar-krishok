@@ -1,6 +1,6 @@
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate, NavLink, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
-import { Box, Button, IconButton } from "@mui/material";
+import { Box, Button, Dialog, IconButton, Typography } from "@mui/material";
 import { usePageViewBeacon } from "./analytics/usePageViewBeacon";
 import { fetchMyThreads } from "./api/chat";
 import {
@@ -1102,51 +1102,47 @@ export default function App() {
       <SiteFooter />
       <CookieConsentBanner />
       <FloatingSupportChat chatThreads={chatThreads} user={user} onSendMessage={sendParticipantChatMessage} />
-      {logoutConfirmOpen && (
-        <div
-          className="admin-modal-backdrop"
-          role="presentation"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) {
-              setLogoutConfirmOpen(false);
-            }
-          }}
-        >
-          <section className="admin-modal confirm-modal" role="dialog" aria-modal="true" aria-labelledby="logout-confirm-title">
-            <div className="admin-modal-header">
-              <div>
-                <span>{t("Account session")}</span>
-                <h2 id="logout-confirm-title">{t("Log out?")}</h2>
-              </div>
-              <button className="icon-button" type="button" aria-label={t("Close modal")} onClick={() => setLogoutConfirmOpen(false)}>
+      <Dialog
+        open={logoutConfirmOpen}
+        onClose={() => setLogoutConfirmOpen(false)}
+        aria-labelledby="logout-confirm-title"
+        slotProps={{
+          backdrop: { className: "admin-modal-backdrop" },
+          paper: { className: "admin-modal confirm-modal" },
+        }}
+      >
+            <Box className="admin-modal-header">
+              <Box>
+                <Typography component="span">{t("Account session")}</Typography>
+                <Typography component="h2" id="logout-confirm-title">{t("Log out?")}</Typography>
+              </Box>
+              <IconButton className="icon-button" aria-label={t("Close modal")} onClick={() => setLogoutConfirmOpen(false)}>
                 <X size={20} />
-              </button>
-            </div>
-            <div className="confirm-modal-body">
+              </IconButton>
+            </Box>
+            <Box className="confirm-modal-body">
               <LogOut size={22} />
-              <strong>{t("Do you want to log out?")}</strong>
+              <Typography component="strong">{t("Do you want to log out?")}</Typography>
               {/* Escrow keeps running whether or not you are signed in — say so when money is held. */}
               {heldOrderCount > 0 ? (
-                <p>
+                <Typography component="p">
                   {t("You have")} {t(String(heldOrderCount))}{" "}
                   {t(heldOrderCount === 1 ? "order still in escrow." : "orders still in escrow.")}{" "}
                   {t("Escrow keeps running whether you are signed in or not.")}
-                </p>
+                </Typography>
               ) : (
-                <p>{t("You can stay signed in or log out of this device.")}</p>
+                <Typography component="p">{t("You can stay signed in or log out of this device.")}</Typography>
               )}
-            </div>
-            <div className="confirm-modal-actions">
-              <button className="secondary-button" type="button" onClick={() => setLogoutConfirmOpen(false)}>
+            </Box>
+            <Box className="confirm-modal-actions">
+              <Button className="secondary-button" variant="outlined" type="button" onClick={() => setLogoutConfirmOpen(false)}>
                 {t("Stay logged in")}
-              </button>
-              <button className="primary-button danger-button" type="button" onClick={completeLogout}>
+              </Button>
+              <Button className="primary-button danger-button" color="error" variant="contained" type="button" onClick={completeLogout}>
                 {t("Log out")}
-              </button>
-            </div>
-          </section>
-        </div>
-      )}
+              </Button>
+            </Box>
+      </Dialog>
     </Box>
     </LanguageContext.Provider>
   );
