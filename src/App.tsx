@@ -1,6 +1,5 @@
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate, NavLink, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
-import { Box, Button, Dialog, IconButton, Typography } from "@mui/material";
 import { usePageViewBeacon } from "./analytics/usePageViewBeacon";
 import { fetchMyThreads } from "./api/chat";
 import {
@@ -768,22 +767,23 @@ export default function App() {
   return (
     <LanguageContext.Provider value={language}>
     <Seo language={language} pathname={location.pathname} />
-    <Box className="app-shell" lang={language}>
-      <Box component="header" className="site-header">
-        <IconButton
+    <div className="app-shell" lang={language}>
+      <header className="site-header">
+        <button
           className="icon-button mobile-only"
+          type="button"
           aria-expanded={menuOpen}
           aria-label={menuOpen ? t("Close menu") : t("Open menu")}
           onClick={toggleMenuOpen}
         >
           {menuOpen ? <X size={21} /> : <Menu size={21} />}
-        </IconButton>
+        </button>
         <NavLink className="brand" to="/" onClick={closeAllHeaderMenus} aria-label={t("AmarKrishok home")} end>
           <BrandMark className="brand-mark" />
           <strong>AmarKrishok</strong>
         </NavLink>
 
-        <Box component="nav" className="main-nav" aria-label={t("Main navigation")}>
+        <nav className="main-nav" aria-label={t("Main navigation")}>
           {navItems.map((item) => (
             <HeaderNavLink
               className={item.staff ? "nav-staff" : undefined}
@@ -800,16 +800,17 @@ export default function App() {
               </span>
             </HeaderNavLink>
           ))}
-        </Box>
+        </nav>
 
-        <Box className="header-actions">
-          <Button
+        <div className="header-actions">
+          <button
             className="language-toggle"
+            type="button"
             aria-label={t("Language switch")}
             onClick={() => setLanguage(language === "en" ? "bn-BD" : "en")}
           >
             EN <span aria-hidden="true">·</span> <span className="bn-glyph">বাংলা</span>
-          </Button>
+          </button>
           {/* Splits the site-wide control from everything that belongs to you. */}
           <span className="header-divider" aria-hidden="true" />
           {/* Messages, then notifications: both are "something is waiting for you", in the order
@@ -842,20 +843,20 @@ export default function App() {
           ) : null}
           {/* Signed out, the demo shows the two calls to action directly rather than a menu. */}
           {!user ? (
-            <Box component="span" className="header-auth">
+            <span className="header-auth">
               <NavLink className="text-link" to="/login" onClick={closeAllHeaderMenus}>
                 {t("Log in")}
               </NavLink>
-              <Button className="primary-button danger-button" variant="contained" type="button" onClick={openHeaderRegisterChoice}>
+              <button className="primary-button danger-button" type="button" onClick={openHeaderRegisterChoice}>
                 {t("Sign up free")}
-              </Button>
-            </Box>
+              </button>
+            </span>
           ) : null}
           {/* One account block for every role: avatar, name, and Log out. Staff used to get a chip
               with no way out of the app except the console sidebar, and buyers and farmers got a
               different-looking one. */}
           {user ? (
-            <Box className="participant-account">
+            <div className="participant-account">
               <NavLink
                 aria-label={t("Open profile")}
                 className="participant-profile"
@@ -870,17 +871,17 @@ export default function App() {
                   <small>{accountSubtitle}</small>
                 </span>
               </NavLink>
-              <Button className="secondary-button participant-logout-button" variant="outlined" type="button" onClick={requestLogout}>
+              <button className="secondary-button participant-logout-button" type="button" onClick={requestLogout}>
                 <LogOut aria-hidden="true" size={17} />
                 <span>{t("Log out")}</span>
-              </Button>
-            </Box>
+              </button>
+            </div>
           ) : null}
-        </Box>
+        </div>
 
         {menuOpen && (
-          <Box component="nav" className="mobile-menu-panel" aria-label={t("Mobile navigation")}>
-            <Box className="mobile-menu-links">
+          <nav className="mobile-menu-panel" aria-label={t("Mobile navigation")}>
+            <div className="mobile-menu-links">
               {navItems.map((item) => (
                 <HeaderNavLink
                   className={item.staff ? "nav-staff" : undefined}
@@ -894,19 +895,20 @@ export default function App() {
                   {item.count === undefined ? null : <span className="nav-count">{t(String(item.count))}</span>}
                 </HeaderNavLink>
               ))}
-            </Box>
-            <Box className="mobile-menu-actions">
-              <Button
+            </div>
+            <div className="mobile-menu-actions">
+              <button
                 className="language-toggle"
+                type="button"
                 aria-label={t("Language switch")}
                 onClick={() => setLanguage(language === "en" ? "bn-BD" : "en")}
               >
                 EN <span aria-hidden="true">·</span> <span className="bn-glyph">বাংলা</span>
-              </Button>
+              </button>
               {!user ? (
                 <>
                   <NavLink className="mobile-menu-action-link" to="/login" onClick={closeAllHeaderMenus}>{t("Log in")}</NavLink>
-                  <Button className="mobile-menu-signup" variant="contained" type="button" onClick={openHeaderRegisterChoice}>{t("Sign up free")}</Button>
+                  <button className="mobile-menu-signup" type="button" onClick={openHeaderRegisterChoice}>{t("Sign up free")}</button>
                 </>
               ) : null}
               {user ? (
@@ -917,13 +919,13 @@ export default function App() {
                     </span>
                     <span>{user.name}</span>
                   </NavLink>
-                  <Button className="mobile-menu-action-link" type="button" onClick={requestLogout}><LogOut aria-hidden="true" size={17} />{t("Log out")}</Button>
+                  <button className="mobile-menu-action-link" type="button" onClick={requestLogout}><LogOut aria-hidden="true" size={17} />{t("Log out")}</button>
                 </>
               ) : null}
-            </Box>
-          </Box>
+            </div>
+          </nav>
         )}
-      </Box>
+      </header>
       <RateTicker />
       {launchNoticeOpen && <LaunchNoticeModal onClose={() => setLaunchNoticeOpen(false)} />}
       {selectedNotification && (
@@ -1102,48 +1104,52 @@ export default function App() {
       <SiteFooter />
       <CookieConsentBanner />
       <FloatingSupportChat chatThreads={chatThreads} user={user} onSendMessage={sendParticipantChatMessage} />
-      <Dialog
-        open={logoutConfirmOpen}
-        onClose={() => setLogoutConfirmOpen(false)}
-        aria-labelledby="logout-confirm-title"
-        slotProps={{
-          backdrop: { className: "admin-modal-backdrop" },
-          paper: { className: "admin-modal confirm-modal" },
-        }}
-      >
-            <Box className="admin-modal-header">
-              <Box>
-                <Typography component="span">{t("Account session")}</Typography>
-                <Typography component="h2" id="logout-confirm-title">{t("Log out?")}</Typography>
-              </Box>
-              <IconButton className="icon-button" aria-label={t("Close modal")} onClick={() => setLogoutConfirmOpen(false)}>
+      {logoutConfirmOpen && (
+        <div
+          className="admin-modal-backdrop"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setLogoutConfirmOpen(false);
+            }
+          }}
+        >
+          <section className="admin-modal confirm-modal" role="dialog" aria-modal="true" aria-labelledby="logout-confirm-title">
+            <div className="admin-modal-header">
+              <div>
+                <span>{t("Account session")}</span>
+                <h2 id="logout-confirm-title">{t("Log out?")}</h2>
+              </div>
+              <button className="icon-button" type="button" aria-label={t("Close modal")} onClick={() => setLogoutConfirmOpen(false)}>
                 <X size={20} />
-              </IconButton>
-            </Box>
-            <Box className="confirm-modal-body">
+              </button>
+            </div>
+            <div className="confirm-modal-body">
               <LogOut size={22} />
-              <Typography component="strong">{t("Do you want to log out?")}</Typography>
+              <strong>{t("Do you want to log out?")}</strong>
               {/* Escrow keeps running whether or not you are signed in — say so when money is held. */}
               {heldOrderCount > 0 ? (
-                <Typography component="p">
+                <p>
                   {t("You have")} {t(String(heldOrderCount))}{" "}
                   {t(heldOrderCount === 1 ? "order still in escrow." : "orders still in escrow.")}{" "}
                   {t("Escrow keeps running whether you are signed in or not.")}
-                </Typography>
+                </p>
               ) : (
-                <Typography component="p">{t("You can stay signed in or log out of this device.")}</Typography>
+                <p>{t("You can stay signed in or log out of this device.")}</p>
               )}
-            </Box>
-            <Box className="confirm-modal-actions">
-              <Button className="secondary-button" variant="outlined" type="button" onClick={() => setLogoutConfirmOpen(false)}>
+            </div>
+            <div className="confirm-modal-actions">
+              <button className="secondary-button" type="button" onClick={() => setLogoutConfirmOpen(false)}>
                 {t("Stay logged in")}
-              </Button>
-              <Button className="primary-button danger-button" color="error" variant="contained" type="button" onClick={completeLogout}>
+              </button>
+              <button className="primary-button danger-button" type="button" onClick={completeLogout}>
                 {t("Log out")}
-              </Button>
-            </Box>
-      </Dialog>
-    </Box>
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
+    </div>
     </LanguageContext.Provider>
   );
 }

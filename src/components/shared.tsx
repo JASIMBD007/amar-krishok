@@ -1,5 +1,4 @@
 import React from "react";
-import { Box, Button, Card, TextField, Typography } from "@mui/material";
 import type { LucideIcon } from "lucide-react";
 import { BadgeCheck, Banknote, CalendarClock, CalendarDays, MapPin, PackageCheck, PenLine } from "lucide-react";
 import { environment } from "../config/environment";
@@ -46,7 +45,7 @@ export function CropCard({
   const postedDate = formatPostedDate(lot.postedAt, language);
 
   return (
-    <Card component="article" className="crop-card">
+    <article className="crop-card">
       <img src={lot.image} alt={`${t(lot.crop)} ${t("harvest")}`} />
       <div className="crop-card-body">
         <div className="crop-title-row">
@@ -71,35 +70,38 @@ export function CropCard({
           </div>
         )}
         <div className="crop-card-actions">
-          <Button className="order-button" variant="contained" type="button" onClick={onOrder}>{t("Order")}</Button>
+          <button className="order-button" type="button" onClick={onOrder}>{t("Order")}</button>
           {canEdit && onEdit ? (
-            <Button className="edit-lot-button" variant="outlined" type="button" onClick={onEdit}>
+            <button className="edit-lot-button" type="button" onClick={onEdit}>
               <PenLine aria-hidden="true" size={16} />
               {t("Edit")}
-            </Button>
+            </button>
           ) : null}
         </div>
       </div>
-    </Card>
+    </article>
   );
 }
 
 export function SectionTitle({ eyebrow, title, t }: { eyebrow: string; title: string; t: Translator }) {
   return (
-    <Box className="section-title">
-      <Typography component="span">{t(eyebrow)}</Typography>
-      <Typography component="h1">{t(title)}</Typography>
-    </Box>
+    <div className="section-title">
+      <span>{t(eyebrow)}</span>
+      <h1>{t(title)}</h1>
+    </div>
   );
 }
 
 export function FormGrid({ children }: { children: React.ReactNode }) {
-  return <Box className="form-grid">{children}</Box>;
+  return <div className="form-grid">{children}</div>;
 }
 
 export function Input({ label, placeholder, t }: { label: string; placeholder: string; t: Translator }) {
   return (
-    <TextField className="input-field" label={t(label)} placeholder={t(placeholder)} fullWidth />
+    <label className="input-field">
+      <span>{t(label)}</span>
+      <input placeholder={t(placeholder)} />
+    </label>
   );
 }
 
@@ -119,12 +121,12 @@ export function StatCard({
   value: string;
 }) {
   return (
-    <Card component="article" className="stat-card">
+    <article className="stat-card">
       <Icon size={21} />
-      <Typography component="span">{t(label)}</Typography>
-      <Typography component="strong">{v(value)}</Typography>
-      <Typography component="p">{t(detail)}</Typography>
-    </Card>
+      <span>{t(label)}</span>
+      <strong>{v(value)}</strong>
+      <p>{t(detail)}</p>
+    </article>
   );
 }
 

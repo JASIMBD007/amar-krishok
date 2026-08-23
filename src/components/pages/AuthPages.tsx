@@ -1,21 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
-  Button,
-  ButtonBase,
-  FormControl,
-  FormHelperText,
-  IconButton,
-  InputAdornment,
-  InputLabel,
-  OutlinedInput,
-  MenuItem,
-  TextField,
-  ToggleButton,
-  ToggleButtonGroup,
-  Typography,
-} from "@mui/material";
-import {
   CheckCircle2,
   Clock3,
   Eye,
@@ -89,32 +74,32 @@ function PasswordField({
   const toggleLabel = visible ? "Hide password" : "Show password";
 
   return (
-    <FormControl className="auth-field auth-password-field" required={required} variant="outlined">
-      <InputLabel>{t(label)}</InputLabel>
-        <OutlinedInput
+    <label className="auth-field auth-password-field">
+      <span>
+        {t(label)}
+        {required ? <strong className="required-mark"> *</strong> : null}
+      </span>
+      <div className="password-control">
+        <input
           autoComplete={autoComplete}
           value={value}
           onChange={(event) => onChange(event.target.value)}
           type={visible ? "text" : "password"}
           placeholder={placeholder ?? t("Password")}
-          label={t(label)}
-          endAdornment={
-            <InputAdornment position="end">
-              <IconButton
-                className="password-toggle"
-                aria-label={t(toggleLabel)}
-                aria-pressed={visible}
-                title={t(toggleLabel)}
-                onClick={() => setVisible((current) => !current)}
-                edge="end"
-              >
-                <ToggleIcon size={18} />
-              </IconButton>
-            </InputAdornment>
-          }
         />
-      {hint ? <FormHelperText>{hint}</FormHelperText> : null}
-    </FormControl>
+        <button
+          className="password-toggle"
+          type="button"
+          aria-label={t(toggleLabel)}
+          aria-pressed={visible}
+          title={t(toggleLabel)}
+          onClick={() => setVisible((current) => !current)}
+        >
+          <ToggleIcon size={18} />
+        </button>
+      </div>
+      {hint ? <small>{hint}</small> : null}
+    </label>
   );
 }
 
@@ -129,19 +114,21 @@ function PhoneField({
 }) {
   const t = useTranslate();
   return (
-    <FormControl className="auth-field auth-phone-field" variant="outlined">
-      <InputLabel>{t(label)}</InputLabel>
-        <OutlinedInput
+    <label className="auth-field auth-phone-field">
+      <span>{t(label)}</span>
+      <div className="auth-phone-control">
+        <span>+880</span>
+        <input
+          aria-label={t(label)}
           autoComplete="tel"
           inputMode="tel"
+          maxLength={10}
           placeholder="1XXXXXXXXX"
           value={value}
           onChange={(event) => onChange(localBangladeshPhone(event.target.value))}
-          label={t(label)}
-          slotProps={{ input: { maxLength: 10 } }}
-          startAdornment={<InputAdornment position="start">+880</InputAdornment>}
         />
-    </FormControl>
+      </div>
+    </label>
   );
 }
 
@@ -158,26 +145,22 @@ function AuthRoleSegments({
   const labels: Record<Role, string> = { admin: "Staff", buyer: "Buyer", farmer: "Farmer" };
 
   return (
-    <FormControl className="auth-role-group">
-      <Typography component="span">{t("I am a")}</Typography>
-      <ToggleButtonGroup
-        className="auth-role-segments"
-        exclusive
-        value={accountType}
-        onChange={(_, role: Role | null) => { if (role) onChange(role); }}
-        aria-label={t("I am a")}
-      >
+    <div className="auth-role-group">
+      <span>{t("I am a")}</span>
+      <div className="auth-role-segments">
         {roles.map((role) => (
-          <ToggleButton
+          <button
+            aria-pressed={accountType === role}
             className={`${accountType === role ? "on" : ""}${role === "admin" ? " staff" : ""}`}
             key={role}
-            value={role}
+            type="button"
+            onClick={() => onChange(role)}
           >
             {t(labels[role])}
-          </ToggleButton>
+          </button>
         ))}
-      </ToggleButtonGroup>
-    </FormControl>
+      </div>
+    </div>
   );
 }
 
@@ -331,13 +314,13 @@ export function LoginPage({
           <PasswordField autoComplete="new-password" label="New password" value={resetPassword} onChange={setResetPassword} placeholder={t("New password")} required />
           <PasswordField autoComplete="new-password" label="Confirm new password" value={resetPasswordConfirm} onChange={setResetPasswordConfirm} placeholder={t("Confirm new password")} required />
           {resetError ? <p className="auth-error">{resetError}</p> : null}
-          <Button className="auth-primary-action" variant="contained" type="submit" disabled={isResetSubmitting}>
+          <button className="auth-primary-action" type="submit" disabled={isResetSubmitting}>
             {t(isResetSubmitting ? "Submitting" : "Send reset request")}
-          </Button>
+          </button>
           <p className="auth-card-link-line">
-            <Button variant="text" type="button" onClick={() => { setAuthMode("login"); setResetError(""); }}>
+            <button type="button" onClick={() => { setAuthMode("login"); setResetError(""); }}>
               {t("Back to login")}
-            </Button>
+            </button>
           </p>
         </form>
       </section>
@@ -371,15 +354,16 @@ export function LoginPage({
         />
 
         {accountType === "admin" ? (
-          <TextField
-              className="auth-field auth-staff-field"
-              label={t("Staff ID")}
+          <label className="auth-field auth-staff-field">
+            <span>{t("Staff ID")}</span>
+            <input
               autoComplete="username"
               value={identifier}
               onChange={(event) => setIdentifier(event.target.value)}
               placeholder="AK-OPS-014"
-              helperText={t("Staff credentials are checked by the server. Every action is written to the audit log.")}
             />
+            <small>{t("Staff credentials are checked by the server. Every action is written to the audit log.")}</small>
+          </label>
         ) : (
           <PhoneField value={identifier} onChange={(value) => { setIdentifier(value); setError(""); }} />
         )}
@@ -388,15 +372,15 @@ export function LoginPage({
         {error ? <p className="auth-error">{error}</p> : null}
         {notice ? <p className="auth-info">{notice}</p> : null}
 
-        <Button className="auth-primary-action" variant="contained" type="submit" disabled={isSubmitting}>
+        <button className="auth-primary-action" type="submit" disabled={isSubmitting}>
           <LockKeyhole aria-hidden="true" size={17} />
           {t(isSubmitting ? "Signing in" : "Login")}
-        </Button>
+        </button>
         <p className="auth-card-link-line">
-          {t("Forgot password?")} <Button variant="text" type="button" onClick={openPasswordReset}>{t("Reset")}</Button>
+          {t("Forgot password?")} <button type="button" onClick={openPasswordReset}>{t("Reset")}</button>
         </p>
         <p className="auth-card-link-line">
-          {t("New here?")} <Button variant="text" type="button" onClick={() => navigate("/register/farmer")}>{t("Create an account")}</Button>
+          {t("New here?")} <button type="button" onClick={() => navigate("/register/farmer")}>{t("Create an account")}</button>
         </p>
       </form>
     </section>
@@ -558,19 +542,20 @@ export function RegisterPage({
                 const Icon = item.icon;
                 const selected = role === item.id;
                 return (
-                  <ButtonBase
+                  <button
                     aria-pressed={selected}
                     className={selected ? "on" : ""}
                     key={item.id}
+                    type="button"
                     onClick={() => navigate(`/register/${item.id}`)}
                   >
                     <span className="auth-register-role-icon"><Icon size={20} /></span>
                     <span><strong>{t(item.label)}</strong><em>{t(item.sub)}</em></span>
-                  </ButtonBase>
+                  </button>
                 );
               })}
             </div>
-            <Button className="auth-register-next" variant="contained" type="button" onClick={() => moveToStep(2)}>{t("Continue")}</Button>
+            <button className="auth-register-next" type="button" onClick={() => moveToStep(2)}>{t("Continue")}</button>
           </>
         ) : null}
 
@@ -578,20 +563,41 @@ export function RegisterPage({
           <>
             <h2>{t("Your details")}</h2>
             <div className="auth-register-fields">
-              <TextField className="auth-field" label={t("Full name")} autoComplete="name" value={name} onChange={(event) => { setName(event.target.value); setError(""); }} placeholder={t("Your full name")} />
+              <label className="auth-field">
+                <span>{t("Full name")}</span>
+                <input autoComplete="name" value={name} onChange={(event) => { setName(event.target.value); setError(""); }} placeholder={t("Your full name")} />
+              </label>
               <PhoneField value={phone} onChange={(value) => { setPhone(value); setError(""); }} />
-              <TextField className="auth-field" select label={t("District")} value={district} onChange={(event) => { setDistrict(event.target.value); setUpazilla(""); setError(""); }}>
-                <MenuItem value="" disabled>{t("Select service district")}</MenuItem>
-                {serviceDistricts.map((item) => <MenuItem key={item} value={item}>{t(item)}</MenuItem>)}
-              </TextField>
-              <TextField className="auth-field" select label={t("Upazilla")} value={upazilla} onChange={(event) => { setUpazilla(event.target.value); setError(""); }} disabled={!district}>
-                <MenuItem value="" disabled>{t(district ? "Select upazilla" : "Select district first")}</MenuItem>
-                {availableUpazillas.map((item) => <MenuItem key={item} value={item}>{t(item)}</MenuItem>)}
-              </TextField>
-              <TextField className="auth-field" label={t("Business / farm name")} value={organization} onChange={(event) => { setOrganization(event.target.value); setError(""); }} placeholder={t("Business or farm name")} />
-              <TextField className="auth-field" label={t("NID / trade license")} value={identity} onChange={(event) => { setIdentity(event.target.value); setError(""); }} placeholder={t("NID or trade license number")} />
-              <TextField className="auth-field" label={t("Crop interest / supply focus")} value={focus} onChange={(event) => { setFocus(event.target.value); setError(""); }} placeholder={t("Crops you buy or sell")} />
-              <TextField className="auth-field auth-field-wide" label={t("Address")} value={address} onChange={(event) => { setAddress(event.target.value); setError(""); }} placeholder={t("Your address")} />
+              <label className="auth-field">
+                <span>{t("District")}</span>
+                <select value={district} onChange={(event) => { setDistrict(event.target.value); setUpazilla(""); setError(""); }}>
+                  <option value="" disabled>{t("Select service district")}</option>
+                  {serviceDistricts.map((item) => <option key={item} value={item}>{t(item)}</option>)}
+                </select>
+              </label>
+              <label className="auth-field">
+                <span>{t("Upazilla")}</span>
+                <select value={upazilla} onChange={(event) => { setUpazilla(event.target.value); setError(""); }} disabled={!district}>
+                  <option value="" disabled>{t(district ? "Select upazilla" : "Select district first")}</option>
+                  {availableUpazillas.map((item) => <option key={item} value={item}>{t(item)}</option>)}
+                </select>
+              </label>
+              <label className="auth-field">
+                <span>{t("Business / farm name")}</span>
+                <input value={organization} onChange={(event) => { setOrganization(event.target.value); setError(""); }} placeholder={t("Business or farm name")} />
+              </label>
+              <label className="auth-field">
+                <span>{t("NID / trade license")}</span>
+                <input value={identity} onChange={(event) => { setIdentity(event.target.value); setError(""); }} placeholder={t("NID or trade license number")} />
+              </label>
+              <label className="auth-field">
+                <span>{t("Crop interest / supply focus")}</span>
+                <input value={focus} onChange={(event) => { setFocus(event.target.value); setError(""); }} placeholder={t("Crops you buy or sell")} />
+              </label>
+              <label className="auth-field auth-field-wide">
+                <span>{t("Address")}</span>
+                <input value={address} onChange={(event) => { setAddress(event.target.value); setError(""); }} placeholder={t("Your address")} />
+              </label>
             </div>
             <div className="auth-register-info">
               <Info aria-hidden="true" size={17} />
@@ -601,8 +607,8 @@ export function RegisterPage({
             </div>
             {error ? <p className="auth-error">{error}</p> : null}
             <div className="auth-register-actions">
-              <Button className="back" variant="outlined" type="button" onClick={() => moveToStep(1)}>{t("Back")}</Button>
-              <Button className="next" variant="contained" type="button" onClick={continueFromDetails}>{t("Continue")}</Button>
+              <button className="back" type="button" onClick={() => moveToStep(1)}>{t("Back")}</button>
+              <button className="next" type="button" onClick={continueFromDetails}>{t("Continue")}</button>
             </div>
           </>
         ) : null}
@@ -624,8 +630,8 @@ export function RegisterPage({
             </div>
             {error ? <p className="auth-error">{error}</p> : null}
             <div className="auth-register-actions">
-              <Button className="back" variant="outlined" type="button" onClick={() => moveToStep(2)}>{t("Back")}</Button>
-              <Button className="finish" variant="contained" type="submit" disabled={isSubmitting}>{t(isSubmitting ? "Submitting" : "Create account")}</Button>
+              <button className="back" type="button" onClick={() => moveToStep(2)}>{t("Back")}</button>
+              <button className="finish" type="submit" disabled={isSubmitting}>{t(isSubmitting ? "Submitting" : "Create account")}</button>
             </div>
             <p className="auth-terms">{t("By creating an account you accept the marketplace terms and the escrow payment rules.")}</p>
           </>

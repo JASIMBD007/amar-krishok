@@ -1,5 +1,4 @@
 import { Bell, X } from "lucide-react";
-import { Box, Dialog, IconButton, Typography } from "@mui/material";
 import { useTranslate } from "../../i18n";
 import type { AppNotification } from "../../types";
 
@@ -47,54 +46,54 @@ export function NotificationDetailDialog({
   const createdAt = formatNotificationDate(notification.createdAt);
 
   return (
-    <Dialog
-      open
-      onClose={onClose}
-      aria-labelledby="notification-detail-title"
-      slotProps={{
-        backdrop: { className: "admin-modal-backdrop notification-detail-backdrop" },
-        paper: { className: "admin-modal notification-detail-modal" },
-      }}
-    >
-        <Box className="admin-modal-header">
-          <Box>
-            <Typography component="span">{t("Notification details")}</Typography>
-            <Typography component="h2" id="notification-detail-title">{t(notification.title)}</Typography>
-          </Box>
-          <IconButton className="icon-button close-button" aria-label={t("Close modal")} onClick={onClose}>
+    <div className="admin-modal-backdrop notification-detail-backdrop" role="presentation" onMouseDown={onClose}>
+      <section
+        className="admin-modal notification-detail-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="notification-detail-title"
+        onMouseDown={(event) => event.stopPropagation()}
+      >
+        <div className="admin-modal-header">
+          <div>
+            <span>{t("Notification details")}</span>
+            <h2 id="notification-detail-title">{t(notification.title)}</h2>
+          </div>
+          <button className="icon-button close-button" type="button" aria-label={t("Close modal")} onClick={onClose}>
             <X size={20} />
-          </IconButton>
-        </Box>
-        <Box className="notification-detail-body">
-          <Box className={`notification-detail-type ${notification.tone}`}>
+          </button>
+        </div>
+        <div className="notification-detail-body">
+          <div className={`notification-detail-type ${notification.tone}`}>
             <Bell size={18} />
-            <Typography component="strong">{t(notification.meta)}</Typography>
-            {createdAt ? <Typography component="span">{createdAt}</Typography> : null}
-          </Box>
-          <Box className="notification-detail-summary">
+            <strong>{t(notification.meta)}</strong>
+            {createdAt ? <span>{createdAt}</span> : null}
+          </div>
+          <div className="notification-detail-summary">
             {lines.length > 0 ? (
               lines.map((line, index) => {
                 const parsed = parseNotificationLine(line);
                 if (!parsed) {
                   return (
-                    <Typography component="p" className="notification-detail-paragraph" key={`${line}-${index}`}>
+                    <p className="notification-detail-paragraph" key={`${line}-${index}`}>
                       {line}
-                    </Typography>
+                    </p>
                   );
                 }
 
                 return (
-                  <Box className="notification-detail-line" key={`${line}-${index}`}>
-                    <Typography component="strong">{t(parsed.label)}</Typography>
-                    <Typography component="span">{parsed.value || "-"}</Typography>
-                  </Box>
+                  <div className="notification-detail-line" key={`${line}-${index}`}>
+                    <strong>{t(parsed.label)}</strong>
+                    <span>{parsed.value || "-"}</span>
+                  </div>
                 );
               })
             ) : (
-              <Typography component="p" className="notification-detail-paragraph">{t("No details provided.")}</Typography>
+              <p className="notification-detail-paragraph">{t("No details provided.")}</p>
             )}
-          </Box>
-        </Box>
-    </Dialog>
+          </div>
+        </div>
+      </section>
+    </div>
   );
 }

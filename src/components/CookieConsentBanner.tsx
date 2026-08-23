@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { ShieldCheck } from "lucide-react";
-import { Box, Button, Paper, Switch, Typography } from "@mui/material";
 import { useTranslate } from "../i18n";
 import {
   COOKIE_PREFERENCES_OPEN_EVENT,
@@ -38,67 +37,74 @@ export function CookieConsentBanner() {
   }
 
   return (
-    <Paper component="aside" elevation={8} className="cookie-consent" aria-labelledby="cookie-consent-title">
-      <Box className="cookie-consent-heading">
-        <Box component="span" className="cookie-consent-icon" aria-hidden="true">
+    <aside className="cookie-consent" aria-labelledby="cookie-consent-title">
+      <div className="cookie-consent-heading">
+        <span className="cookie-consent-icon" aria-hidden="true">
           <ShieldCheck size={22} />
-        </Box>
-        <Box>
-          <Typography component="h2" id="cookie-consent-title">{t("Your privacy choices")}</Typography>
-          <Typography component="p">
+        </span>
+        <div>
+          <h2 id="cookie-consent-title">{t("Your privacy choices")}</h2>
+          <p>
             {t(
               "We use necessary storage to keep the site working. With your permission, optional analytics helps us understand which pages are useful.",
             )}
-          </Typography>
-        </Box>
-      </Box>
+          </p>
+        </div>
+      </div>
 
       {showPreferences && (
-        <Box className="cookie-consent-options">
-          <Box className="cookie-consent-option">
-            <Box>
-              <Typography component="strong">{t("Necessary cookies")}</Typography>
-              <Typography component="p">{t("Required for login, language, security and your consent choice.")}</Typography>
-            </Box>
-            <Typography component="span" className="cookie-consent-required">{t("Always on")}</Typography>
-          </Box>
-          <Box className="cookie-consent-option">
-            <Box>
-              <Typography component="strong">{t("Optional analytics")}</Typography>
-              <Typography component="p">
+        <div className="cookie-consent-options">
+          <div className="cookie-consent-option">
+            <div>
+              <strong>{t("Necessary cookies")}</strong>
+              <p>{t("Required for login, language, security and your consent choice.")}</p>
+            </div>
+            <span className="cookie-consent-required">{t("Always on")}</span>
+          </div>
+          <div className="cookie-consent-option">
+            <div>
+              <strong>{t("Optional analytics")}</strong>
+              <p>
                 {t(
                   "Records page views, external referrer and approximate country. Form values are never included.",
                 )}
-              </Typography>
-            </Box>
-            <Switch
-              checked={analytics}
-              onChange={(_, checked) => setAnalytics(checked)}
-              slotProps={{ input: { "aria-label": t("Optional analytics") } }}
-            />
-          </Box>
-        </Box>
+              </p>
+            </div>
+            <button
+              aria-checked={analytics}
+              aria-label={t("Optional analytics")}
+              className={`cookie-consent-switch${analytics ? " on" : ""}`}
+              onClick={() => setAnalytics((enabled) => !enabled)}
+              role="switch"
+              type="button"
+            >
+              <span className="cookie-consent-switch-track" aria-hidden="true">
+                <span />
+              </span>
+            </button>
+          </div>
+        </div>
       )}
 
-      <Box className="cookie-consent-actions">
+      <div className="cookie-consent-actions">
         {!showPreferences && (
-          <Button className="cookie-consent-action manage" variant="text" type="button" onClick={() => setShowPreferences(true)}>
+          <button className="cookie-consent-action manage" type="button" onClick={() => setShowPreferences(true)}>
             {t("Manage preferences")}
-          </Button>
+          </button>
         )}
-        <Button className="cookie-consent-action necessary" variant="outlined" type="button" onClick={() => save(false)}>
+        <button className="cookie-consent-action necessary" type="button" onClick={() => save(false)}>
           {t("Only necessary")}
-        </Button>
+        </button>
         {showPreferences ? (
-          <Button className="cookie-consent-action accept" variant="contained" type="button" onClick={() => save(analytics)}>
+          <button className="cookie-consent-action accept" type="button" onClick={() => save(analytics)}>
             {t("Save preferences")}
-          </Button>
+          </button>
         ) : (
-          <Button className="cookie-consent-action accept" variant="contained" type="button" onClick={() => save(true)}>
+          <button className="cookie-consent-action accept" type="button" onClick={() => save(true)}>
             {t("Accept all")}
-          </Button>
+          </button>
         )}
-      </Box>
-    </Paper>
+      </div>
+    </aside>
   );
 }
