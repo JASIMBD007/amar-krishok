@@ -2,12 +2,11 @@ import { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { BadgeCheck, Camera, Handshake, ShieldCheck, ShoppingBasket, Sprout, Truck } from "lucide-react";
 import { fetchPlatformStats, type BackendPlatformStats } from "../../api/market";
-import { useLanguage, useTranslate, useValueText } from "../../i18n";
+import { useTranslate, useValueText } from "../../i18n";
 import { cheapestVsMarket } from "../../market/deriveLots";
-import { cropNamesBn } from "../../market/marketData";
 import { useMarketLots } from "../../market/useMarket";
 import type { CropLot, View } from "../../types";
-import { DeltaPill } from "../market/MarketBits";
+import { MarketplaceLotCard } from "../market/MarketplaceLotCard";
 
 const STEPS = [
   {
@@ -43,7 +42,6 @@ function formatDuration(minutes: number) {
 }
 
 export function HomePage({ lots, setView }: { lots: CropLot[]; setView: (view: View) => void }) {
-  const language = useLanguage();
   const t = useTranslate();
   const v = useValueText();
   // This is the same live collection used by the marketplace and detail routes, so every
@@ -68,8 +66,6 @@ export function HomePage({ lots, setView }: { lots: CropLot[]; setView: (view: V
       active = false;
     };
   }, []);
-
-  const cropLabel = (crop: string) => (language === "bn-BD" ? cropNamesBn[crop] ?? t(crop) : t(crop));
 
   return (
     <>
@@ -116,33 +112,20 @@ export function HomePage({ lots, setView }: { lots: CropLot[]; setView: (view: V
           </div>
         </div>
 
-        <div className="market-console">
+      </section>
+
+      <section className="home-lots-section" aria-labelledby="home-lots-title">
+        <div className="market-console home-lots-panel">
           <div className="console-header">
-            <strong>{t("Cheapest lots right now")}</strong>
+            <strong id="home-lots-title">{t("Cheapest lots right now")}</strong>
             <NavLink className="link-button" to="/marketplace">
               {t("See all")}
             </NavLink>
           </div>
           {/* Cheapest against their own district rate — the fair-price claim, proven before signup. */}
-          <div className="cheapest-lots">
+          <div className="lot-grid home-lot-grid">
             {cheapestLots.map((lot) => (
-              <NavLink className="cheapest-lot" key={lot.id} to={`/lot/${lot.id}`}>
-                <span className="cheapest-lot-tile" aria-hidden="true">
-                  <img src={lot.image} alt="" loading="lazy" />
-                </span>
-                <span className="cheapest-lot-copy">
-                  <strong>
-                    {cropLabel(lot.crop)} · {t("Grade")} {v(lot.grade)}
-                  </strong>
-                  <small>
-                    {t(lot.farmer)} · {t(lot.district)} · {v(lot.quantityMon)} {t("mon")}
-                  </small>
-                </span>
-                <span className="cheapest-lot-price">
-                  <strong className="mono-figure">{v(lot.priceLabel)}</strong>
-                  <DeltaPill delta={lot.delta} withSuffix />
-                </span>
-              </NavLink>
+              <MarketplaceLotCard key={lot.id} lot={lot} />
             ))}
           </div>
           <p className="console-escrow-note">
