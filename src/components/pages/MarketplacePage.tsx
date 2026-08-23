@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
-import { ArrowUpDown, Check, Inbox, Search, SlidersHorizontal } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { ArrowUpDown, Check, Inbox, Leaf, PenLine, Search, SlidersHorizontal, Star, Truck } from "lucide-react";
 import { useLanguage, useTranslate, useValueText } from "../../i18n";
 import { applyMarketFilters, sortLots } from "../../market/deriveLots";
 import { cropNamesBn, taka } from "../../market/marketData";
@@ -8,7 +9,7 @@ import { useMarketLots } from "../../market/useMarket";
 import { useMarketStore } from "../../store/useMarketStore";
 import type { AuthUser, CropLot } from "../../types";
 import { ListLoading } from "../EmptyState";
-import { MarketplaceLotCard } from "../market/MarketplaceLotCard";
+import { DeltaPill, VerificationBadge } from "../market/MarketBits";
 
 const MARKETPLACE_PAGE_SIZE = 12;
 const PRICE_STEP = 20;
@@ -49,6 +50,7 @@ export function MarketplacePage({
   onEditLot: (lot: CropLot) => void;
 }) {
   const language = useLanguage();
+  const navigate = useNavigate();
   const t = useTranslate();
   const v = useValueText();
   const [page, setPage] = useState(0);
@@ -356,14 +358,62 @@ export function MarketplacePage({
         {!isLoading && results.length > 0 ? (
           <div className="lot-grid">
             {pageLots.map((lot) => (
-              <MarketplaceLotCard
-                key={lot.id}
-                lot={lot}
-                onEdit={canEditLot(lot) ? () => {
-                  const source = filteredLots.find((item) => item.id === lot.id);
-                  if (source) onEditLot(source);
-                } : undefined}
-              />
+              <article className="lot-card" key={lot.id}>
+                <div className="lot-card-photo">
+                  {lot.image ? (
+                    <img alt={`${cropLabel(lot.crop)} ${t("harvest")}`} src={lot.image} />
+                  ) : (
+                    <Leaf aria-hidden="true" size={30} />
+                  )}
+                </div>
+                <div className="lot-card-body">
+                  <div>
+                    <div className="lot-card-heading">
+                      <h2>
+                        {cropLabel(lot.crop)} · {t("Grade")} {v(lot.grade)}
+                      </h2>
+                      <VerificationBadge verified={lot.verified} />
+                    </div>
+                    <p>
+                      {t(lot.farmer)} · {t(lot.district)} · {v(lot.quantityMon)} {t("mon")}
+                    </p>
+                  </div>
+                  <div className="lot-card-price">
+                    <strong className="mono-figure">{v(lot.priceLabel)}</strong>
+                    <span>/ {t("mon")}</span>
+                    <DeltaPill delta={lot.delta} />
+                  </div>
+                  <div className="lot-card-meta">
+                    <span>
+                      <Star aria-hidden="true" size={13} /> {lot.completedOrders ? v(lot.ratingLabel) : t("New seller")}
+                    </span>
+                    <span>
+                      <Truck aria-hidden="true" size={13} /> {t(lot.logisticsLabel)}
+                    </span>
+                    <span className="lot-card-vs">{t("vs. market")}</span>
+                  </div>
+                  <div className="lot-card-actions">
+                    <button className="primary-button full" type="button" onClick={() => navigate(`/lot/${lot.id}`)}>
+                      {t("View lot")}
+                    </button>
+                    {canEditLot(lot) ? (
+                      <button
+                        className="edit-lot-button"
+                        type="button"
+                        onClick={() => {
+                          const source = filteredLots.find((item) => item.id === lot.id);
+                          if (source) {
+                            onEditLot(source);
+                          }
+                        }}
+                      >
+                        <PenLine aria-hidden="true" size={16} />
+                        {t("Edit")}
+                      </button>
+                    ) : null}
+                  </div>
+                </div>
+              </article>
             ))}
           </div>
         ) : null}

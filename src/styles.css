@@ -8176,61 +8176,6 @@ textarea:focus-visible {
   white-space: nowrap;
 }
 
-/* Homepage supply preview: a wide showcase using the canonical marketplace cards. */
-.home-lots-section {
-  width: 100%;
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 0 24px 48px;
-}
-.home-lots-panel {
-  gap: 24px;
-  padding: 32px;
-  border-radius: 16px;
-  box-shadow: 0 18px 42px rgba(15, 86, 54, 0.1);
-}
-.home-lots-panel .console-header strong {
-  font-size: 22px;
-  font-weight: 700;
-}
-.home-lot-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 20px;
-}
-.home-lot-grid .lot-card {
-  min-width: 0;
-}
-.home-lot-grid .lot-card-actions .primary-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
-}
-
-@media (max-width: 900px) {
-  .home-lot-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 640px) {
-  .home-lots-section {
-    padding: 0 16px 36px;
-  }
-  .home-lots-panel {
-    gap: 18px;
-    padding: 18px;
-    border-radius: 12px;
-  }
-  .home-lots-panel .console-header strong {
-    font-size: 18px;
-  }
-  .home-lot-grid {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 16px;
-  }
-}
-
 .main-nav {
   display: flex;
   gap: 4px;
