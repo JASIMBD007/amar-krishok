@@ -1,5 +1,6 @@
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate, NavLink, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
+import { Box, Button, IconButton } from "@mui/material";
 import { usePageViewBeacon } from "./analytics/usePageViewBeacon";
 import { fetchMyThreads } from "./api/chat";
 import {
@@ -767,23 +768,22 @@ export default function App() {
   return (
     <LanguageContext.Provider value={language}>
     <Seo language={language} pathname={location.pathname} />
-    <div className="app-shell" lang={language}>
-      <header className="site-header">
-        <button
+    <Box className="app-shell" lang={language}>
+      <Box component="header" className="site-header">
+        <IconButton
           className="icon-button mobile-only"
-          type="button"
           aria-expanded={menuOpen}
           aria-label={menuOpen ? t("Close menu") : t("Open menu")}
           onClick={toggleMenuOpen}
         >
           {menuOpen ? <X size={21} /> : <Menu size={21} />}
-        </button>
+        </IconButton>
         <NavLink className="brand" to="/" onClick={closeAllHeaderMenus} aria-label={t("AmarKrishok home")} end>
           <BrandMark className="brand-mark" />
           <strong>AmarKrishok</strong>
         </NavLink>
 
-        <nav className="main-nav" aria-label={t("Main navigation")}>
+        <Box component="nav" className="main-nav" aria-label={t("Main navigation")}>
           {navItems.map((item) => (
             <HeaderNavLink
               className={item.staff ? "nav-staff" : undefined}
@@ -800,17 +800,16 @@ export default function App() {
               </span>
             </HeaderNavLink>
           ))}
-        </nav>
+        </Box>
 
-        <div className="header-actions">
-          <button
+        <Box className="header-actions">
+          <Button
             className="language-toggle"
-            type="button"
             aria-label={t("Language switch")}
             onClick={() => setLanguage(language === "en" ? "bn-BD" : "en")}
           >
             EN <span aria-hidden="true">·</span> <span className="bn-glyph">বাংলা</span>
-          </button>
+          </Button>
           {/* Splits the site-wide control from everything that belongs to you. */}
           <span className="header-divider" aria-hidden="true" />
           {/* Messages, then notifications: both are "something is waiting for you", in the order
@@ -843,20 +842,20 @@ export default function App() {
           ) : null}
           {/* Signed out, the demo shows the two calls to action directly rather than a menu. */}
           {!user ? (
-            <span className="header-auth">
+            <Box component="span" className="header-auth">
               <NavLink className="text-link" to="/login" onClick={closeAllHeaderMenus}>
                 {t("Log in")}
               </NavLink>
-              <button className="primary-button danger-button" type="button" onClick={openHeaderRegisterChoice}>
+              <Button className="primary-button danger-button" variant="contained" type="button" onClick={openHeaderRegisterChoice}>
                 {t("Sign up free")}
-              </button>
-            </span>
+              </Button>
+            </Box>
           ) : null}
           {/* One account block for every role: avatar, name, and Log out. Staff used to get a chip
               with no way out of the app except the console sidebar, and buyers and farmers got a
               different-looking one. */}
           {user ? (
-            <div className="participant-account">
+            <Box className="participant-account">
               <NavLink
                 aria-label={t("Open profile")}
                 className="participant-profile"
@@ -871,17 +870,17 @@ export default function App() {
                   <small>{accountSubtitle}</small>
                 </span>
               </NavLink>
-              <button className="secondary-button participant-logout-button" type="button" onClick={requestLogout}>
+              <Button className="secondary-button participant-logout-button" variant="outlined" type="button" onClick={requestLogout}>
                 <LogOut aria-hidden="true" size={17} />
                 <span>{t("Log out")}</span>
-              </button>
-            </div>
+              </Button>
+            </Box>
           ) : null}
-        </div>
+        </Box>
 
         {menuOpen && (
-          <nav className="mobile-menu-panel" aria-label={t("Mobile navigation")}>
-            <div className="mobile-menu-links">
+          <Box component="nav" className="mobile-menu-panel" aria-label={t("Mobile navigation")}>
+            <Box className="mobile-menu-links">
               {navItems.map((item) => (
                 <HeaderNavLink
                   className={item.staff ? "nav-staff" : undefined}
@@ -895,20 +894,19 @@ export default function App() {
                   {item.count === undefined ? null : <span className="nav-count">{t(String(item.count))}</span>}
                 </HeaderNavLink>
               ))}
-            </div>
-            <div className="mobile-menu-actions">
-              <button
+            </Box>
+            <Box className="mobile-menu-actions">
+              <Button
                 className="language-toggle"
-                type="button"
                 aria-label={t("Language switch")}
                 onClick={() => setLanguage(language === "en" ? "bn-BD" : "en")}
               >
                 EN <span aria-hidden="true">·</span> <span className="bn-glyph">বাংলা</span>
-              </button>
+              </Button>
               {!user ? (
                 <>
                   <NavLink className="mobile-menu-action-link" to="/login" onClick={closeAllHeaderMenus}>{t("Log in")}</NavLink>
-                  <button className="mobile-menu-signup" type="button" onClick={openHeaderRegisterChoice}>{t("Sign up free")}</button>
+                  <Button className="mobile-menu-signup" variant="contained" type="button" onClick={openHeaderRegisterChoice}>{t("Sign up free")}</Button>
                 </>
               ) : null}
               {user ? (
@@ -919,13 +917,13 @@ export default function App() {
                     </span>
                     <span>{user.name}</span>
                   </NavLink>
-                  <button className="mobile-menu-action-link" type="button" onClick={requestLogout}><LogOut aria-hidden="true" size={17} />{t("Log out")}</button>
+                  <Button className="mobile-menu-action-link" type="button" onClick={requestLogout}><LogOut aria-hidden="true" size={17} />{t("Log out")}</Button>
                 </>
               ) : null}
-            </div>
-          </nav>
+            </Box>
+          </Box>
         )}
-      </header>
+      </Box>
       <RateTicker />
       {launchNoticeOpen && <LaunchNoticeModal onClose={() => setLaunchNoticeOpen(false)} />}
       {selectedNotification && (
@@ -1149,7 +1147,7 @@ export default function App() {
           </section>
         </div>
       )}
-    </div>
+    </Box>
     </LanguageContext.Provider>
   );
 }
