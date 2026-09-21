@@ -6,6 +6,7 @@ import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateOrderDto } from "./dto/create-order.dto";
 import { nextStatusAfter, platformFeeFor, stageOf } from "./escrow";
+import { reserveLotQuantity } from "./reserve-lot";
 import { buyerGross, farmerShare } from "./order-money";
 import { ordersVisibleTo } from "./order-scope";
 
@@ -228,7 +229,16 @@ export class OrdersService {
     // crop value plus transport plus the platform fee.
     const totalValue = cropValue + transportFee + platformFee;
 
-    const order = await this.prisma.legacyOrder.create({
+    // Reserving the lots and writing the order share one transaction: if a lot has sold out from
+    // under the buyer, the escrow payment must not be created either.
+    const order = await this.prisma.$transaction(async (tx) => {
+      for (const item of dto.items) {
+        if (item.cropLotId) {
+          await reserveLotQuantity(tx, item.cropLotId, item.quantityKg);
+        }
+      }
+
+      return tx.legacyOrder.create({
       data: {
         buyerId,
         // The split is written onto the order itself: the dashboards read these columns rather than
@@ -256,6 +266,7 @@ export class OrdersService {
         upazilla: dto.upazilla,
       },
       include: orderInclude,
+      });
     });
 
     await this.notifications.notifyAdmins({

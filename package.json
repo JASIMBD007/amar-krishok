@@ -17,6 +17,7 @@
     "mobile:typecheck": "npm --prefix mobile run typecheck",
     "test:mobile-role": "npm --prefix backend run test:mobile",
     "test:dashboards": "npm --prefix backend run test:dashboards",
+    "test:orders": "npm --prefix backend run test:orders",
     "seed": "npm --prefix backend run seed",
     "test:p0": "npm --prefix backend run test:p0",
     "dev": "vite --host 0.0.0.0",
