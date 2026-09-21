@@ -16,6 +16,7 @@ import { MarketPricesModule } from "./modules/market-prices/market-prices.module
 import { MobileV1Module } from "./modules/mobile-v1/mobile-v1.module";
 import { NotificationsModule } from "./modules/notifications/notifications.module";
 import { OffersModule } from "./modules/offers/offers.module";
+import { ReviewsModule } from "./modules/reviews/reviews.module";
 import { OrdersModule } from "./modules/orders/orders.module";
 import { PrismaModule } from "./modules/prisma/prisma.module";
 import { StatsModule } from "./modules/stats/stats.module";
@@ -35,6 +36,7 @@ import { UploadsModule } from "./modules/uploads/uploads.module";
     DistrictsModule,
     LotsModule,
     OffersModule,
+    ReviewsModule,
     OrdersModule,
     NotificationsModule,
     MarketPricesModule,

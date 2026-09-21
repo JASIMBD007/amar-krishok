@@ -114,6 +114,10 @@ type ApiPasswordResetRequest = {
 
 type ApiLotFarmer = Omit<ApiUser, "phone"> & {
   phone?: string;
+  /** Average of the farmer's visible reviews. Null means nobody has reviewed them yet. */
+  rating?: number | null;
+  reviewCount?: number;
+  completedOrders?: number;
 };
 
 export type BackendCropLot = {

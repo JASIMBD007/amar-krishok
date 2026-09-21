@@ -4,6 +4,7 @@ import { cropCreateData, districtCreateData } from "../../common/catalogue-data"
 import { AuthenticatedUser } from "../auth/types/authenticated-user";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
+import { NO_REPUTATION, farmerReputations } from "../reviews/farmer-reputation";
 import { CreateLotDto, UpdateLotDto } from "./dto/create-lot.dto";
 import { UpdateLotPhotoDto } from "./dto/lot-photo.dto";
 
@@ -136,7 +137,7 @@ export class LotsService {
   ) {}
 
   async findAll(filters: { crop?: string; district?: string }) {
-    return this.prisma.cropLot.findMany({
+    const lots = await this.prisma.cropLot.findMany({
       include: publicLotInclude,
       orderBy: { createdAt: "desc" },
       where: {
@@ -145,6 +146,19 @@ export class LotsService {
         status: LotStatus.ACTIVE,
       },
     });
+
+    // Reputation rides along on the farmer because the marketplace card shows it, and it is read
+    // from reviews here rather than trusted from the client. A farmer nobody has rated comes back
+    // with a null rating, which the card renders as a new seller.
+    const reputations = await farmerReputations(
+      this.prisma,
+      lots.map((lot) => lot.farmerId),
+    );
+
+    return lots.map((lot) => ({
+      ...lot,
+      farmer: { ...lot.farmer, ...(reputations.get(lot.farmerId) ?? NO_REPUTATION) },
+    }));
   }
 
   async findMine(user: AuthenticatedUser) {

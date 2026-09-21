@@ -247,7 +247,7 @@ export function LotDetailPage({ lots, user }: { lots: CropLot[]; user: AuthUser 
               </div>
               <div>
                 <strong className="mono-figure">
-                  {lot.completedOrders ? v(lot.rating.toFixed(1)) : "—"} <Star aria-hidden="true" size={12} />
+                  {lot.reviewCount ? v(lot.rating.toFixed(1)) : "—"} <Star aria-hidden="true" size={12} />
                 </strong>
                 <span>{t("rating")}</span>
               </div>

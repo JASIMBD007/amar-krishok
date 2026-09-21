@@ -266,6 +266,9 @@ model LegacyUser {
   chatMessages            ChatMessage[]
   passwordResets          PasswordResetRequest[] @relation("PasswordResetRequests")
   passwordResetReviews    PasswordResetRequest[] @relation("PasswordResetReviews")
+  reviewsWritten          Review[]               @relation("ReviewsWritten")
+  reviewsReceived         Review[]               @relation("ReviewsReceived")
+  reviewsHidden           Review[]               @relation("ReviewsHidden")
 
   @@unique([phone, role])
   @@index([role, status])
@@ -902,10 +905,44 @@ model LegacyOrder {
   items           OrderItem[]
   logisticsJobs   LogisticsJob[]
   payments        Payment[]
+  reviews         Review[]
 
   @@index([buyerId, status])
   @@index([districtId, status])
   @@map("Order")
+}
+
+/// A buyer's verdict on one farmer's share of a completed order.
+///
+/// Marketplace reputation is built only from these rows. Nothing is derived, inferred or seeded:
+/// ratings used to be synthesised from a checksum of the lot id, which meant one farmer showed a
+/// different score on every lot, and a rating no buyer wrote is a rating that misleads the next one.
+/// A farmer with no reviews reads as new, which is the truth.
+model Review {
+  id         String      @id @default(cuid())
+  orderId    String
+  /// The farmer under review. One order can draw on several farmers' lots, so a verdict belongs to
+  /// the farmer who supplied it rather than to the order as a whole.
+  revieweeId String
+  /// The buyer who wrote it. Only the buyer on the order may review, and only once it completed.
+  authorId   String
+  /// Whole stars, 1 to 5. The bound is also a CHECK constraint, since Prisma cannot express it.
+  rating     Int
+  comment    String?
+  /// Set by staff to pull a review from public view without destroying the buyer's record of it.
+  hiddenAt   DateTime?
+  hiddenById String?
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  order      LegacyOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  reviewee   LegacyUser  @relation("ReviewsReceived", fields: [revieweeId], references: [id], onDelete: Cascade)
+  author     LegacyUser  @relation("ReviewsWritten", fields: [authorId], references: [id], onDelete: Cascade)
+  hiddenBy   LegacyUser? @relation("ReviewsHidden", fields: [hiddenById], references: [id])
+
+  /// One verdict per farmer per order, so a buyer cannot stack ratings on a single delivery.
+  @@unique([orderId, revieweeId])
+  @@index([revieweeId, hiddenAt])
+  @@index([authorId])
 }
 
 model OrderItem {
@@ -1010,20 +1047,20 @@ model LegacyPayout {
 }
 
 model ChatThread {
-  id               String        @id @default(cuid())
-  participantId    String?
-  participantRole  Role
-  participantName  String
-  participantPhone String
-  subject          String
-  status           ChatStatus    @default(WAITING)
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
+  id                String        @id @default(cuid())
+  participantId     String?
+  participantRole   Role
+  participantName   String
+  participantPhone  String
+  subject           String
+  status            ChatStatus    @default(WAITING)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
   /// Read marks are per side, so one unread badge cannot clear the other's. Anything newer than
   /// the mark and sent by the other side is unread.
   participantReadAt DateTime?
   staffReadAt       DateTime?
-  messages         ChatMessage[]
+  messages          ChatMessage[]
 
   @@index([participantPhone, participantRole])
   @@index([status, updatedAt])
