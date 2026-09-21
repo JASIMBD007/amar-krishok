@@ -19,6 +19,7 @@
     "test:dashboards": "npm --prefix backend run test:dashboards",
     "test:orders": "npm --prefix backend run test:orders",
     "test:reviews": "npm --prefix backend run test:reviews",
+    "test:health": "npm --prefix backend run test:health",
     "seed": "npm --prefix backend run seed",
     "test:p0": "npm --prefix backend run test:p0",
     "dev": "vite --host 0.0.0.0",

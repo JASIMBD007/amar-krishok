@@ -48,6 +48,7 @@ jobs:
       - run: npm run test:dashboards
       - run: npm run test:orders
       - run: npm run test:reviews
+      - run: npm run test:health
       - run: npm run test:mobile-role
       - run: npm run lint
       - run: npm run build
