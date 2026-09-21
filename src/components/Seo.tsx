@@ -96,7 +96,25 @@ const privateSeo: Record<string, SeoConfig> = {
 
 const privatePrefixes = ["/admin", "/buyer", "/checkout", "/desk", "/farmer", "/login", "/messages", "/notifications", "/orders", "/profile", "/signed-out"];
 
-function getSeo(pathname: string): SeoConfig {
+/**
+ * Netlify serves pretty URLs, so every non-root path arrives with a trailing slash
+ * ("/marketplace" 301s to "/marketplace/"). publicSeo is keyed without it, so an
+ * un-normalized lookup falls through to the not-found entry and serves the real
+ * marketplace and prices pages a "Page not found" title plus noindex, nofollow.
+ */
+function normalizePathname(pathname: string): string {
+  const withLeadingSlash = pathname.startsWith("/") ? pathname : `/${pathname}`;
+  return withLeadingSlash.length > 1 ? withLeadingSlash.replace(/\/+$/, "") : "/";
+}
+
+/** Canonical URLs must match the trailing-slash form Netlify actually serves. */
+function canonicalUrl(path: string): string {
+  const normalized = normalizePathname(path);
+  return normalized === "/" ? `${siteUrl}/` : `${siteUrl}${normalized}/`;
+}
+
+function getSeo(rawPathname: string): SeoConfig {
+  const pathname = normalizePathname(rawPathname);
   const privatePrefix = privatePrefixes.find((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
   if (privatePrefix) {
     const base = privateSeo[privatePrefix] ?? {
@@ -151,7 +169,7 @@ function setCanonical(url: string) {
 export function Seo({ language, pathname }: { language: Language; pathname: string }) {
   useEffect(() => {
     const seo = getSeo(pathname);
-    const canonical = `${siteUrl}${seo.path}`;
+    const canonical = canonicalUrl(seo.path);
 
     document.documentElement.lang = language;
     document.title = seo.title;
