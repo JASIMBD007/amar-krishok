@@ -10,6 +10,7 @@ import { EmptyState, ListLoading } from "../EmptyState";
 // The stage map and the escrow state live with the workspace order table, so the tracking page and
 // the two dashboards can never label the same order differently.
 import { escrowStateOf as escrowState, orderReference, stageOfOrder as stageOf } from "../workspace/orderStages";
+import { RateSellerPrompt } from "../reviews/RateSellerPrompt";
 
 function heldPayment(order: BackendOrder): BackendPayment | undefined {
   return order.payments?.find((payment) => payment.status === "HELD");
@@ -199,6 +200,9 @@ export function OrderTrackingPage({ user }: { user: AuthUser | null }) {
               {t(isAdvancing ? "Working" : advanceLabel)}
             </button>
           ) : null}
+          {/* Rendered unconditionally: the server decides whether this order can be rated, and the
+              prompt draws nothing when it cannot, so the rule is not duplicated here. */}
+          <RateSellerPrompt orderId={order.id} user={user} />
         </div>
 
         <aside className="order-detail-rail">
