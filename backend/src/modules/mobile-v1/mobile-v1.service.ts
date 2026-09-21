@@ -5,6 +5,7 @@ import { randomUUID } from "node:crypto";
 import { compare, hash } from "bcryptjs";
 
 import { PrismaService } from "../prisma/prisma.service";
+import { reserveListingQuantity } from "./reserve-listing";
 import type { PlatformAuthenticatedUser } from "./platform-auth";
 
 function integer(value: unknown, field: string) {
@@ -216,10 +217,13 @@ export class MobileV1Service {
       const listing = await this.prisma.listing.findUnique({ where: { id: body.listingId } });
       if (!listing || listing.status !== ListingStatus.LIVE) throw new ConflictException({ error: { code: "LISTING_NOT_LIVE", message: "The listing is not live.", messageBn: "লটটি এখন লাইভ নেই।" } });
       const quantity = integer(body.quantityMon, "quantityMon");
-      if (quantity > listing.quantity) throw new ConflictException({ error: { code: "INSUFFICIENT_QUANTITY", message: "The requested quantity is unavailable.", messageBn: "চাহিদামতো পরিমাণ পাওয়া যাচ্ছে না।" } });
       const total = quantity * listing.price;
       const code = `AK-${String(Date.now()).slice(-6)}`;
       const order = await this.prisma.$transaction(async (tx) => {
+        // Reserved first and inside the transaction. The quantity used to be checked out here
+        // against a row read before the transaction opened and then never decremented, so two
+        // buyers could each escrow money against the same mon.
+        await reserveListingQuantity(tx, listing.id, quantity);
         const created = await tx.order.create({ data: { buyerId: user.id, code, farmerId: listing.farmerId, feeAmount: 0, listingId: listing.id, paymentMethod: body.paymentMethod ?? "bKash", quantity, total, unitPrice: listing.price } });
         await tx.escrow.create({ data: { amount: total, heldAt: new Date(), orderId: created.id } });
         await tx.thread.create({ data: { kind: "DIRECT", orderId: created.id, subject: `অর্ডার ${created.code}`, members: { create: [{ lastReadAt: new Date(), userId: user.id }, { lastReadAt: new Date(), userId: listing.farmerId }] } } });
