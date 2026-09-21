@@ -118,6 +118,8 @@ export type CropLot = {
   completedOrders?: number;
   farmingSince?: number;
   rating?: number;
+  /** How many visible reviews the rating averages. Zero means the farmer is unrated. */
+  reviewCount?: number;
   /** True only when the farmer uploaded a real image; catalogue fallback art does not count. */
   hasFarmPhotos?: boolean;
   transportIncluded?: boolean;

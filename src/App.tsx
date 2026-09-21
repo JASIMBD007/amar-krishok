@@ -204,6 +204,11 @@ function toMarketplaceLot(lot: BackendCropLot): CropLot {
     postedAt: lot.createdAt,
     pricePerKg: numericBackendValue(lot.pricePerKg),
     quantity: formatBackendQuantity(lot.quantityKg),
+    // Reputation is whatever the server counted from reviews. Undefined stays undefined: the market
+    // layer must not substitute a number here, which is how synthetic ratings arrived last time.
+    completedOrders: lot.farmer.completedOrders,
+    rating: lot.farmer.rating ?? undefined,
+    reviewCount: lot.farmer.reviewCount,
     quantityKg: numericBackendValue(lot.quantityKg),
     pickupWithin24h: Boolean(lot.pickupWithin24h),
     status: lot.status,

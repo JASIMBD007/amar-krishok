@@ -43,17 +43,19 @@ export function FarmerListingsVsMarket({
     () =>
       lots.map((lot) => {
         const source: MarketLotSource = {
+          // The farmer's own listings table reuses decorateLot purely for price and delta
+          // formatting, so reputation is not applicable here and is left empty rather than faked.
           completedOrders: 0,
           crop: lot.crop,
           district: lot.district,
           farmer: "",
-          farmingSince: 2020,
           grade: lot.grade.replace(/^Grade\s+/i, "") || "B",
           hasFarmPhotos: false,
           id: lot.id,
           pricePerMon: perKgToPerMon(lot.pricePerKg),
           quantityMon: Math.max(1, Math.round(kgToMon(lot.quantityKg))),
           rating: 0,
+          reviewCount: 0,
           pickupWithin24h: false,
           transportIncluded: false,
         };

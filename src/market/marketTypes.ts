@@ -21,6 +21,8 @@ export type MarketLotSource = {
   /** Absent until the backend records how long the farmer has been selling. */
   farmingSince?: number;
   rating: number;
+  /** Reviews behind the rating. The card shows a star only when this is above zero. */
+  reviewCount: number;
   completedOrders: number;
   /** Straight from the backend: the farmer's account status and the lot's own status. */
   farmerStatus?: string;

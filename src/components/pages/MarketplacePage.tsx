@@ -84,10 +84,10 @@ export function MarketplacePage({
   const visibleCount = useMemo(() => marketLots.filter((lot) => lot.visible).length, [marketLots]);
   const cropOptions = useMemo(() => ["All crops", ...Array.from(cropCounts.keys()).sort()], [cropCounts]);
 
-  // Ratings only exist once sellers have completed orders. With none recorded the rating filter
-  // can only empty the grid, which reads as a broken page, so it is ignored until one lands.
-  // Filters are persisted, so this has to override the stored value rather than only disable the
-  // switch, or someone who enabled it earlier would come back to an empty marketplace.
+  // A rating exists only once a buyer has reviewed the seller. While none of the listed farmers
+  // has one the rating filter can only empty the grid, which reads as a broken page, so it is
+  // ignored until one lands. Filters are persisted, so this overrides the stored value rather than
+  // only disabling the switch, or someone who enabled it earlier would return to an empty grid.
   const ratingsAvailable = useMemo(() => marketLots.some((lot) => lot.rating > 0), [marketLots]);
   const effectiveFilters = useMemo(
     () => ({
@@ -393,7 +393,7 @@ export function MarketplacePage({
                   </div>
                   <div className="lot-card-meta">
                     <span>
-                      <Star aria-hidden="true" size={13} /> {lot.completedOrders ? v(lot.ratingLabel) : t("New seller")}
+                      <Star aria-hidden="true" size={13} /> {lot.reviewCount ? v(lot.ratingLabel) : t("New seller")}
                     </span>
                     <span>
                       <Truck aria-hidden="true" size={13} /> {t(lot.logisticsLabel)}
