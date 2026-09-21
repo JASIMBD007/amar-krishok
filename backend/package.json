@@ -19,6 +19,7 @@
     "test:mobile": "node --test -r ts-node/register src/modules/mobile-v1/*.spec.ts",
     "test:dashboards": "node --test -r ts-node/register src/modules/dashboard/*.spec.ts",
     "test:orders": "node --test -r ts-node/register src/modules/orders/*.spec.ts",
+    "test:reviews": "node --test -r ts-node/register src/modules/reviews/*.spec.ts",
     "start": "node dist/main.js",
     "start:prod": "node dist/main.js",
     "geo:country": "node scripts/fetch-geo-country-db.mjs"
