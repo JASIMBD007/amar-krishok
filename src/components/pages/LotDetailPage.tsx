@@ -235,7 +235,8 @@ export function LotDetailPage({ lots, user }: { lots: CropLot[]; user: AuthUser 
             <div>
               <strong>{t(lot.farmer)}</strong>
               <span>
-                {t("Farming since")} {v(lot.farmingSince)} · {t(lot.district)} ·{" "}
+                {lot.farmingSince ? `${t("Farming since")} ${v(lot.farmingSince)} · ` : ""}
+                {t(lot.district)} ·{" "}
                 {t(lot.verified ? "Identity document verified" : "verification in progress")}
               </span>
             </div>

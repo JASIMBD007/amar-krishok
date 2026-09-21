@@ -42,23 +42,26 @@ function parseQuantityKg(quantity: string) {
 
 /**
  * A lot the marketplace already loads (backend or seed catalogue) expressed in the units the
- * market layer works in. Anything the backend does not track yet is derived deterministically
- * from the lot id so cards do not reshuffle between renders.
+ * market layer works in.
+ *
+ * Reputation is never invented here. Rating, completed orders, and farming-since describe a
+ * seller's track record, and buyers prepay strangers on the strength of them, so an unbacked
+ * number is worse than no number. Until the backend records reviews these stay empty and the
+ * card reads "New seller". Any value the backend does send wins.
  */
 export function toMarketLotSource(lot: CropLot): MarketLotSource {
   const pricePerKg = lot.pricePerKg ?? parseTakaPerKg(lot.ask);
   const quantityKg = lot.quantityKg ?? parseQuantityKg(lot.quantity);
-  const seed = lot.id.split("").reduce((total, character) => total + character.charCodeAt(0), 0);
 
   return {
-    completedOrders: lot.completedOrders ?? seed % 90,
+    completedOrders: lot.completedOrders ?? 0,
     crop: lot.crop,
     district: lot.district,
     farmer: lot.farmer,
     farmerId: lot.farmerId,
     farmerPhone: lot.farmerPhone,
     farmerStatus: lot.farmerStatus,
-    farmingSince: lot.farmingSince ?? 2006 + (seed % 18),
+    farmingSince: lot.farmingSince,
     grade: lot.grade.replace(/^Grade\s+/i, "") || "B",
     hasFarmPhotos: lot.hasFarmPhotos ?? Boolean(lot.image),
     harvest: lot.harvest,
@@ -67,7 +70,7 @@ export function toMarketLotSource(lot: CropLot): MarketLotSource {
     postedAt: lot.postedAt,
     pricePerMon: perKgToPerMon(pricePerKg),
     quantityMon: Math.max(1, Math.round(kgToMon(quantityKg))),
-    rating: lot.rating ?? Math.round((41 + (seed % 9)) / 10 * 10) / 10,
+    rating: lot.rating ?? 0,
     pickupWithin24h: lot.pickupWithin24h ?? false,
     status: lot.status,
     transportIncluded: lot.transportIncluded ?? false,
