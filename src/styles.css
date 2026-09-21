@@ -17261,3 +17261,76 @@ canvas {
     width: 100%;
   }
 }
+
+/* Rate your seller: shown on a completed order, so it reads as a task rather than a notice. */
+.review-prompt {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+  border-color: var(--ak-green-border);
+  background: var(--ak-green-soft);
+}
+.review-prompt p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.review-star-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.review-star-row em {
+  margin-left: 8px;
+  color: var(--ak-green-deep);
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 600;
+}
+.review-star {
+  display: inline-flex;
+  padding: 4px;
+  border: 0;
+  border-radius: var(--ak-r-sm);
+  background: none;
+  color: var(--ak-line-strong);
+  cursor: pointer;
+}
+/* The filled run up to the chosen star is the rating; hover previews the same run. */
+.review-star.on {
+  color: var(--ak-harvest);
+}
+.review-star.on svg {
+  fill: currentColor;
+}
+.review-star:focus-visible {
+  outline: 2px solid var(--ak-green);
+  outline-offset: 1px;
+}
+.review-comment {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+}
+.review-comment textarea {
+  padding: 8px 10px;
+  border: 1px solid var(--ak-line);
+  border-radius: var(--ak-r-sm);
+  background: var(--ak-surface);
+  color: var(--ak-ink);
+  font: inherit;
+  resize: vertical;
+}
+.review-prompt-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.review-prompt-remaining {
+  color: var(--color-text-muted);
+  font-size: 12px;
+}

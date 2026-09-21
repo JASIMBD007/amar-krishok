@@ -331,7 +331,23 @@ export class OrdersService {
       title: nextStatus === OrderStatus.COMPLETED ? "Payment released" : "Order update",
     });
 
+    if (nextStatus === OrderStatus.COMPLETED) {
+      await this.inviteReviews(updated);
+    }
+
     return updated;
+  }
+
+  /**
+   * Asks the buyer to rate the farmers once the money has moved. Sent on completion rather than on
+   * delivery so a pending payment can never be leverage over a rating, and it is the only nudge:
+   * nobody is chased for a review they did not want to leave.
+   */
+  private async inviteReviews(order: { buyerId: string; items: Array<{ crop: { name: string } }> }) {
+    await this.notifications.notifyUser(order.buyerId, {
+      body: `Tell other buyers how the ${order.items.map((item) => item.crop.name).join(", ")} arrived.`,
+      title: "Rate your seller",
+    });
   }
 
   /** Staff release the money to the farmer, or refund the buyer. Both are recorded in the audit log. */
@@ -375,6 +391,10 @@ export class OrdersService {
           : `৳${heldPayment.amount} was refunded to you for ${updated.id}.`,
       title: action === "release" ? "Payment released" : "Payment refunded",
     });
+
+    if (action === "release") {
+      await this.inviteReviews(updated);
+    }
 
     return updated;
   }
