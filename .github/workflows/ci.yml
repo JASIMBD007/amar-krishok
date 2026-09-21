@@ -46,6 +46,7 @@ jobs:
       - run: npm run seed
       - run: npm run test:p0
       - run: npm run test:dashboards
+      - run: npm run test:orders
       - run: npm run test:mobile-role
       - run: npm run lint
       - run: npm run build

@@ -872,6 +872,7 @@ const bn: Record<string, string> = {
   "All crops": "সব ফসল",
   "Verified farms only": "শুধু যাচাই করা খামার",
   "Has farm photos": "খামারের ছবি আছে",
+  "No seller ratings yet": "এখনো কোনো বিক্রেতার রেটিং নেই",
   "Rating 4.5 ★ and up": "রেটিং ৪.৫ ★ বা বেশি",
   "Transport included": "পরিবহন অন্তর্ভুক্ত",
   "Pickup within 24 h": "২৪ ঘণ্টার মধ্যে পিকআপ",

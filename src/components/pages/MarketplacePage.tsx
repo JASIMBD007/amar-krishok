@@ -84,13 +84,19 @@ export function MarketplacePage({
   const visibleCount = useMemo(() => marketLots.filter((lot) => lot.visible).length, [marketLots]);
   const cropOptions = useMemo(() => ["All crops", ...Array.from(cropCounts.keys()).sort()], [cropCounts]);
 
+  // Ratings only exist once sellers have completed orders. With none recorded the rating filter
+  // can only empty the grid, which reads as a broken page, so it is ignored until one lands.
+  // Filters are persisted, so this has to override the stored value rather than only disable the
+  // switch, or someone who enabled it earlier would come back to an empty marketplace.
+  const ratingsAvailable = useMemo(() => marketLots.some((lot) => lot.rating > 0), [marketLots]);
   const effectiveFilters = useMemo(
     () => ({
       ...filters,
       maxPrice: filters.maxPrice === null ? null : selectedMaxPrice,
       minPrice: filters.minPrice === null ? null : selectedMinPrice,
+      rating45Only: filters.rating45Only && ratingsAvailable,
     }),
-    [filters, selectedMaxPrice, selectedMinPrice],
+    [filters, ratingsAvailable, selectedMaxPrice, selectedMinPrice],
   );
   const results = useMemo(
     () => sortLots(applyMarketFilters(marketLots, effectiveFilters), filters.sort),
@@ -279,7 +285,9 @@ export function MarketplacePage({
           <button
             aria-checked={filters.rating45Only}
             className="filter-switch"
+            disabled={!ratingsAvailable}
             role="switch"
+            title={ratingsAvailable ? undefined : t("No seller ratings yet")}
             type="button"
             onClick={() => setFilter("rating45Only", !filters.rating45Only)}
           >

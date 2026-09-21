@@ -18,7 +18,8 @@ export type MarketLotSource = {
   postedAt?: string;
   transportIncluded: boolean;
   pickupWithin24h: boolean;
-  farmingSince: number;
+  /** Absent until the backend records how long the farmer has been selling. */
+  farmingSince?: number;
   rating: number;
   completedOrders: number;
   /** Straight from the backend: the farmer's account status and the lot's own status. */
